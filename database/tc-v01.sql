@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS [person] (
-    [ID] integer PRIMARY KEY AUTOINCREMENT NOT NULL,    
+    [ID] integer KEY AUTOINCREMENT NOT NULL,    
 	[FirstName] text,
-    [ProvinceID] text,
+	[LastName] text,    
 	[IsTerminate] bit NOT NULL,	
 	[HasAuditRole] text NOT NULL COLLATE NOCASE,
 	[PosID] text NOT NULL COLLATE NOCASE,

@@ -143,6 +143,7 @@
     <Compile Include="OutletService\OutletRepo.cs" />
     <Compile Include="ProvinceService\IProvinceService.cs" />
     <Compile Include="ProvinceService\ProvinceRepo.cs" />
+    <Compile Include="Shared\Constants.cs" />
     <Compile Include="Shared\OutletResponse.cs" />
     <Compile Include="Shared\ConfigResponse.cs" />
     <Compile Include="Shared\LoginResponse.cs" />

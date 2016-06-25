@@ -19,7 +19,7 @@ namespace TradeCensus
                 }
                 catch (Exception ex)
                 {
-                    resp.Status = 1;
+                    resp.Status = Constants.ErrorCode;
                     resp.ErrorMessage = ex.Message;
                 }
                 return resp;
@@ -38,7 +38,7 @@ namespace TradeCensus
                 }
                 catch (Exception ex)
                 {
-                    resp.Status = 1;
+                    resp.Status = Constants.ErrorCode;
                     resp.ErrorMessage = ex.Message;
                 }
                 return resp;
@@ -57,7 +57,7 @@ namespace TradeCensus
                 }
                 catch (Exception ex)
                 {
-                    resp.Status = 1;
+                    resp.Status = Constants.ErrorCode;
                     resp.ErrorMessage = ex.Message;
                 }
                 return resp;
@@ -76,7 +76,7 @@ namespace TradeCensus
                 }
                 catch (Exception ex)
                 {
-                    resp.Status = 1;
+                    resp.Status = Constants.ErrorCode;
                     resp.ErrorMessage = ex.Message;
                 }
                 return resp;
@@ -95,7 +95,7 @@ namespace TradeCensus
                 }
                 catch (Exception ex)
                 {
-                    resp.Status = 1;
+                    resp.Status = Constants.ErrorCode;
                     resp.ErrorMessage = ex.Message;
                 }
                 return resp;

@@ -6,3 +6,11 @@
 function log(message) {
     console.log(message);
 }
+
+function showDialog(message, title, onDialogDismissed) {
+    navigator.notification.alert(message, onDialogDismissed, title, "Close");
+}
+
+function showConfirm(message, title, onDialogDismissed) {
+    navigator.notification.confirm(message, onDialogDismissed, title, ['OK', 'Cancel']);
+}

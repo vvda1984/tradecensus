@@ -9,11 +9,12 @@ app.controller("MainController", ["$scope", "$route", "$location", function ($sc
 
     console.log("Load local settings");
     $scope.config = loadSavedConfig();
+    $scope.baseURL = buildURL($scope.config.Protocol, $scope.config.IP, $scope.config.Port, $scope.config.ServiceName);
 
     $scope.token = "";
     //$scope.route = $route;   
 
-    // Correct URL
+    //*******************************************************
     $scope.$on("$routeChangeSuccess", function (ev) {
         console.log("routed to " + $location.path());
         /*
@@ -25,11 +26,12 @@ app.controller("MainController", ["$scope", "$route", "$location", function ($sc
 		*/
     });
 
+    //*******************************************************
     $scope.changeView = function (name) {
         console.log("change view");
         //$location.path = "#/" + name;
         $location.path("/" + name);
-    };
+    };    
 
     $location.path("/login");
 }]);

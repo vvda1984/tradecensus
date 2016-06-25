@@ -43,7 +43,7 @@ namespace TradeCensus
                 return res;
             }
             else
-                throw new Exception(string.Format("User {0} doesn't exist"));
+                throw new Exception(string.Format("User {0} doesn't exist", id));
         }
     }
 }

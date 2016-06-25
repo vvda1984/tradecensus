@@ -4,9 +4,6 @@ var db;                     // database instance
 var isOnline = false;       // network status
 var userOutletTable = "outlet"; // outlet table name for current user
 
-log("initialize application...");
-var app = angular.module("TradeCensus", ["ngRoute", 'ngMaterial', 'ngMessages']);
-
 // for WEB
 $(document).ready(function () {
     console.log("ready!");
@@ -22,7 +19,6 @@ $(document).ready(function () {
 
 function initalizeApp() {   
     log("check network status...");
-
     isOnline = true;
     // for mobile
     //isOnline = checkConnection();
@@ -53,11 +49,19 @@ function loadSavedConfig() {
     // Load database...
     return {
         Protocol: "http",
-        IPAddress: "localhost",
+        IP: "localhost",
         Port: "33333",
         ServiceName: "TradeCensusService.svc",
         ItemCount: 20,
         Distance: 200,
         // add more here...
     };
+}
+
+function isEmpty(text) {
+    return (!text || 0 === text.length);
+}
+
+function buildURL(protocol, ip, port, serviceName) {
+    return protocol + "://" + ip + ":" + port + "/" + serviceName;
 }

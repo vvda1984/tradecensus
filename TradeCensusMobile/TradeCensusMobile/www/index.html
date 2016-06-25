@@ -4,8 +4,9 @@
     <meta charset="utf-8" />
     <meta content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />
 
-    <!-- JQuery -->
+    <!-- Libs -->
     <script src="assets/libs/jquery.js"></script>
+    <script src="assets/libs/moment.js"></script>
 
     <!-- Kendo UI -->
     <link href="assets/libs/kendo/kendo.common.min.css" rel="stylesheet" type="text/css" />
@@ -32,14 +33,19 @@
 <body ng-app="TradeCensus" ng-controller="MainController">
     <ng-view id="mainView"></ng-view>
 
+    <script type="text/javascript">      
+        var app = angular.module("TradeCensus", ["ngRoute", 'ngMaterial', 'ngMessages']);
+    </script>
+
     <script src="js/app.utils.js"></script>
     <script src="js/app.database.js"></script>
+    <script src="js/app.service.js"></script>
     <script src="js/app.js"></script>
     <script src="js/route.js"></script>
     <script src="js/mainController.js"></script>
     <script src="js/loginController.js"></script>
     <script src="js/configController.js"></script>
     <script src="js/homeController.js"></script>
-    <!-- <script type="text/javascript" src="cordova.js"></script> -->
+    <script type="text/javascript" src="cordova.js"></script>
 </body>
 </html>
