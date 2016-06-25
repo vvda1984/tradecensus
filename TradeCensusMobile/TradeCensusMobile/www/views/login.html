@@ -1,0 +1,36 @@
+<div id="view-login" class="main-view">
+    <div class="center-view">
+        <div class="box">                  
+            <md-button id="login-setting-button" class="md-icon-button md-primary" aria-label="Settings" ng-click="changeView('config')">
+                <md-icon md-svg-icon="assets/img/setting.svg"></md-icon>
+            </md-button>
+            <image id="login-logo" src="assets/img/logo.png" />
+            <div id="login-form">
+                <md-content layout-padding="" class="md-content-white">
+                    <form name="loginForm">
+                        <md-input-container class="md-block">
+                            <label>{{ resource.text_EnterUserID }}</label>
+                            <input required="" name="userId" ng-model="userID">
+                            <!--<div ng-messages="loginForm.userName.$error" role="alert">
+                                <div ng-message="required">{{ resource.text_ValRequired }}</div>
+                            </div>-->
+                        </md-input-container>
+                    
+                        <md-input-container class="md-block">
+                            <label>{{ resource.text_EnterPassword }}</label>
+                            <input required="" name="password" type="password" ng-model="password">
+                            <!--<div ng-messages="loginForm.password.$error" role="alert">
+                                <div ng-message="required">{{ resource.text_ValRequired }}</div>                                
+                            </div>-->
+                        </md-input-container>                    
+                    </form>
+                </md-content>
+            </div>
+
+            <div class="action-buttons">                
+                <md-button class="md-raised md-primary" ng-click="login(userID,password)">{{ resource.text_Login }}</md-button>
+                <md-button class="md-raised" ng-click="exit()">{{ resource.text_Exit }}</md-button>                
+            </div>
+        </div>
+    </div>
+</div>

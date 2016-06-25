@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="0dcb230e4c2d48e583fd3a8aa60b576e" Name="Diagram1">
+        <EntityTypeShape EntityType="tradecensusModel.Area" Width="1.5" PointX="0.75" PointY="4.75" />
+        <EntityTypeShape EntityType="tradecensusModel.OutletImage" Width="1.5" PointX="4.75" PointY="4.75" />
+        <EntityTypeShape EntityType="tradecensusModel.OutletType" Width="1.5" PointX="5.75" PointY="0.75" />
+        <EntityTypeShape EntityType="tradecensusModel.Person" Width="1.5" PointX="6.75" PointY="3.75" />
+        <EntityTypeShape EntityType="tradecensusModel.PersonRole" Width="1.5" PointX="7.75" PointY="0.75" />
+        <EntityTypeShape EntityType="tradecensusModel.Province" Width="1.5" PointX="8.75" PointY="3.75" />
+        <EntityTypeShape EntityType="tradecensusModel.SyncDetail" Width="1.5" PointX="3" PointY="1.125" />
+        <EntityTypeShape EntityType="tradecensusModel.SyncHistory" Width="1.5" PointX="0.75" PointY="1" />
+        <EntityTypeShape EntityType="tradecensusModel.sysdiagram" Width="1.5" PointX="8.75" PointY="6.75" />
+        <EntityTypeShape EntityType="tradecensusModel.Zone" Width="1.5" PointX="9.75" PointY="0.75" />
+        <AssociationConnector Association="tradecensusModel.FK_SyncDetail_SyncHistory" />
+        <EntityTypeShape EntityType="tradecensusModel.Config" Width="1.5" PointX="9.375" PointY="9.75" />
+        <EntityTypeShape EntityType="tradecensusModel.Outlet" Width="1.5" PointX="0.75" PointY="7.75" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>

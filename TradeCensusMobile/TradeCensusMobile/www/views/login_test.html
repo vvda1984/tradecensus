@@ -1,0 +1,25 @@
+<div id="view-login" class="main-view">
+    <div class="center-view">
+        <div class="box">
+            <a href="#/config"><image id="setting-button" src="assets/img/gear.png" /></a>
+            <div class="view-form-header">
+                <image id="login-logo" src="assets/img/logo.png" />
+            </div>
+            <ul class="view-form">
+                <li>
+                    <label>{{ resource.text_UserName }}</label>
+                    <input type="text" id="userName" class="k-textbox" placeholder="User Name" ng-model="userName" />
+                </li>
+                <li>
+                    <label>{{ resource.text_Password }}</label>
+                    <input type="password" id="password" class="k-textbox" placeholder="Password" ng-model="password" />
+                </li>
+            </ul>
+
+            <div class="action-buttons">
+                <button ng-click="login(userName,password)" class="mat-button" data-transition="overlay:down reverse">{{ resource.text_Login }}</button>
+                <button ng-click="exit()" id="exit-button" class="mat-button" href="#view-welcome" data-transition="overlay:down reverse">{{ resource.text_Exit }}</button>
+            </div>
+        </div>
+    </div>
+</div>

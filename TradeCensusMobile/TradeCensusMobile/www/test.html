@@ -1,0 +1,56 @@
+﻿<!DOCTYPE html>
+<html class="">
+<head>
+    <meta charset="utf-8" />
+    <meta content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />       
+    
+	<!--<link href="assets/styles/kendo.common-nova.min.css" rel="stylesheet" type="text/css" />
+    <link href="assets/styles/kendo.nova.min.css" rel="stylesheet" type="text/css" />-->
+    <!--<link href="assets/styles/kendo.common-material.min.css" rel="stylesheet" type="text/css" />
+    <link href="assets/styles/kendo.material.min.css" rel="stylesheet" type="text/css" />-->
+
+    <link href="assets/css/angular-material.css" rel="stylesheet" type="text/css" />        
+	<link href="assets/css/style.css" rel="stylesheet" type="text/css" />
+	
+    <script src="assets/libs/jquery.js"></script>
+    <!--<script src="assets/libs/kendo.all.min.js"></script>--> 
+    <script src="assets/libs/angular.js"></script>
+    <script src="assets/libs/angular-route.js"></script>
+
+    <script src="assets/libs/angular-animate.js"></script>
+    <script src="assets/libs/angular-aria.js"></script>
+    <script src="assets/libs/angular-material.js"></script>
+    
+	<!-- <script src="assets/libs/angular-kendo.js"></script> -->	
+	<!-- <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDpKidHSrPMfErXLJSts9R6pam7iUOr_W0&callback=initMap" async defer></script> -->
+	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDpKidHSrPMfErXLJSts9R6pam7iUOr_W0" ></script>			
+</head>
+<body id="body">	
+    <div id="view-login" class="main-view" ng-controller="LoginController">
+        <div class="center-view">
+            <div class="box">
+                <a href="#/config"><image id="setting-button" src="assets/img/gear.png" /></a>
+                <div class="view-form-header">
+                    <image id="login-logo" src="assets/img/logo.png" />
+                </div>
+                <md-content layout-padding="">
+                    <div>
+                        <form name="userForm">                          
+                            <div layout-gt-sm="row">
+                                <md-input-container class="md-block" flex-gt-sm="">
+                                    <label>First name</label>
+                                    <input ng-model="user.firstName">
+                                </md-input-container>                             
+                            </div>                                                      
+                        </form>
+                    </div>
+                </md-content>
+                </div>
+        </div>
+    </div>
+
+    <script src="js/script.init.js"></script>
+    <script src="js/script.js"></script>  
+</body>
+    
+</html>

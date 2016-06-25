@@ -1,0 +1,29 @@
+<div id="view-setting" class="main-view" ng-controller="ConfigController">
+    <div class="center-view">
+        <div class="box">
+            <image id="setting-back" src="assets/img/back.png" />
+            <h1>SERVER CONFIGURATION</h1>
+            <ul class="view-form">
+                <li>
+                    <label>Protocol</label>
+                    <select id="protocol-selector" class="form-selector" ng-model="protocol">
+                        <option value="http">HTTP</option>
+                        <option value="https">HTTPS</option>
+                    </select>
+                </li>
+                <li>
+                    <label>IP Address</label>
+                    <input type="text" placeholder="192.168.1.1" class="k-textbox" ng-model="ipAddress" />
+                </li>
+                <li>
+                    <label>Port</label>
+                    <input type="number" placeholder="33333" class="k-textbox" ng-model="port" />
+                </li>
+            </ul>
+
+            <div class="action-buttons">
+                <button href="/login" class="mat-button" data-transition="overlay:down reverse">OK</button>
+            </div>
+        </div>
+    </div>				
+</div>
