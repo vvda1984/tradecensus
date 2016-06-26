@@ -22,4 +22,11 @@ namespace TradeCensus
             get; set;
         }
     }
+
+    [DataContract]
+    public class GetOutletTypeResponse : Response
+    {
+        [DataMember]
+        public List<OutletType> Items { get; set; }
+    }
 }

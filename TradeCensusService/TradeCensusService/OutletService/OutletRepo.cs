@@ -31,5 +31,11 @@ namespace TradeCensus
 
             return item;
         }
+
+        public List<OutletType> GetAllOutletTypes()
+        {
+            Log("Get list of OutletTypes");
+            return _entities.OutletTypes.ToList();
+        }
     }
 }

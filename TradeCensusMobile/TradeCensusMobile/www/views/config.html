@@ -1,28 +1,52 @@
-<div id="view-setting" class="main-view" ng-controller="ConfigController">
+<div id="view-setting" class="main-view">
     <div class="center-view">
         <div class="box">
-            <image id="setting-back" src="assets/img/back.png" />
-            <h1>SERVER CONFIGURATION</h1>
-            <ul class="view-form">
-                <li>
-                    <label>Protocol</label>
-                    <select id="protocol-selector" class="form-selector" ng-model="protocol">
-                        <option value="http">HTTP</option>
-                        <option value="https">HTTPS</option>
-                    </select>
-                </li>
-                <li>
-                    <label>IP Address</label>
-                    <input type="text" placeholder="192.168.1.1" class="k-textbox" ng-model="ipAddress" />
-                </li>
-                <li>
-                    <label>Port</label>
-                    <input type="number" placeholder="33333" class="k-textbox" ng-model="port" />
-                </li>
-            </ul>
+            <h1>SETTINGS</h1>
+            <div id="config-form">
+                <md-content layout-padding="" class="md-content-white">
+                    <form name="configForm">
+                        <md-input-container class="md-block" flex-gt-sm="" style="margin-bottom:38px;">
+                            <label>{{ resource.text_EnterProtocol }}</label>
+                            <md-select ng-model="config.protocol">
+                                <md-option value="http">HTTP
+                                </md-option>
+                                <md-option value="https">
+                                    HTTPS
+                                </md-option>
+                            </md-select>
+                        </md-input-container>
+
+                        <md-input-container class="md-block">
+                            <label>{{ resource.text_EnterIPAddress }}</label>
+                            <input required="" name="ipAddress" ng-model="config.ip">
+                            <!--<div ng-messages="configForm.ipAddress.$error" role="alert">
+                                <div ng-message="required">{{ resource.text_ValRequired }}</div>
+                            </div>-->
+                        </md-input-container>
+
+                        <md-input-container class="md-block">
+                            <label>{{ resource.text_EnterPort }}</label>
+                            <input required="" name="ipAddress" ng-model="config.port">
+                             <!--<div ng-messages="configForm.ipAddress.$error" role="alert">
+                                 <div ng-message="required">{{ resource.text_ValRequired }}</div>
+                            </div>-->
+                        </md-input-container>
+
+                        <md-input-container class="md-block" flex-gt-sm="" style="margin-bottom:0px;">
+                            <label>{{ resource.text_EnterProvince }}</label>
+                            <md-select ng-model="config.province_id">
+                                <md-option ng-repeat="p in provinces" value="{{p.id}}">
+                                    {{p.name}}
+                                </md-option>                                
+                            </md-select>
+                        </md-input-container>
+                    </form>
+                </md-content>
+            </div>
 
             <div class="action-buttons">
-                <button href="/login" class="mat-button" data-transition="overlay:down reverse">OK</button>
+                <md-button class="md-raised md-primary" ng-click="saveConfig()">{{ resource.text_OK }}</md-button>
+                <md-button class="md-raised" ng-click="cancel()">{{ resource.text_Cancel }}</md-button>
             </div>
         </div>
     </div>				

@@ -5,11 +5,12 @@ html, body {
     padding: 0px;
 }
 
-.md-icon-button-primary{
-    color:#3A678D;
+.md-icon-button-primary {
+    color: #3A678D;
 }
-.md-content-white{
-    background:white;
+
+.md-content-white {
+    background: white;
 }
 
 .main-view {
@@ -25,7 +26,7 @@ html, body {
 
     .main-view .center-view {
         display: table-cell;
-        vertical-align: middle;        
+        vertical-align: middle;
     }
 
         .main-view .center-view .box {
@@ -37,46 +38,52 @@ html, body {
             margin-right: 25%;
             padding: 8px;
         }
+
     .main-view .box-f {
-        display:table-cell;
+        display: table-cell;
     }
 
 #view-home {
     margin: 0px;
-    padding: 0px;    
+    padding: 0px;
     min-width: 100%;
-    min-height: 100%;    
+    min-height: 100%;
     background: #E5E5E5;
-    display:block;
+    display: block;
 }
 
-.view-form {    
-    margin: 1em;
-    padding: 0;
+#overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    background: rgba(0, 0, 0, 0.6); /*rgba(0,0,0,0.6);*/
+    z-index: 105;
+    width: 100%;
+    height: 100%;        
+    display: table;
+    text-align: center;    
 }
 
-    .view-form li {
-        list-style: none;
-        padding-bottom: .7em;
-        text-align: left;
-    }
+#overlay-view {
+    display: table-cell;
+    vertical-align: middle;
+}
 
-    .view-form label {
-        display: block;
-        padding-bottom: .3em;
-        font-weight: bold;
-        text-transform: uppercase;
-        font-size: .8em;
-        color: #3A678D;
-    }
-
-    .view-form .form-selector {
-        width: 100%;
-    }
-
-    .view-form input {
-        width: 100%;
-    }
+#overlay-content {    
+    background: white;
+    border: 1px solid #E5E5E5;
+    box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+    border-radius: 0px;    
+    margin-left: 32%;
+    margin-right: 32%;
+    padding:16px;
+    /*
+    width: 200px;
+    height: 160px;
+    top: 50%;
+    left: 50%;
+    margin: -100px 0 0 -80px;*/     
+}
 
 .main-view .center-view .box h1 {
     padding-bottom: 1.2em;
@@ -87,12 +94,8 @@ html, body {
     text-align: center;
 }
 
-.view-form-header {
-    padding-top:32px;
-}
-
 .action-buttons {
-    margin-top:24px;
+    margin-top: 24px;
 }
 /*
 .action-buttons button {
@@ -109,71 +112,13 @@ html, body {
 }
 */
 
-.mat-button {
-    position: relative;
-    min-width: 100px;
-    min-height: 36px;
-    display: inline;
-    margin: 0px auto;
-    padding: 0;
-    overflow: hidden;
-    border-width: 0;
-    outline: none;
-    border-radius: 2px;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, .6);
-    background-color: #3A678D;
-    color: #ecf0f1;
-    transition: background-color .3s;
-}
-
-    .mat-button:hover, .mat-button:focus {
-        background-color: #3A678D;
-    }
-
-    .mat-button > * {
-        position: relative;
-    }
-
-    .mat-button span {
-        display: block;
-        padding: 12px 24px;
-    }
-
-    .mat-button:before {
-        content: "";
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        display: block;
-        width: 0;
-        padding-top: 0;
-        border-radius: 100%;
-        background-color: rgba(236, 240, 241, .3);
-        -webkit-transform: translate(-50%, -50%);
-        -moz-transform: translate(-50%, -50%);
-        -ms-transform: translate(-50%, -50%);
-        -o-transform: translate(-50%, -50%);
-        transform: translate(-50%, -50%);
-    }
-
-    .mat-button:active:before {
-        width: 120%;
-        padding-top: 120%;
-        transition: width .2s ease-out, padding-top .2s ease-out;
-    }
-
-/* Styles, not important */
-*, *:before, *:after {
-    box-sizing: border-box;
-}
-
 /* ============================================ */
 
 /* ==================== LOGIN ================= */
 #login-logo {
-    border: 1px #3A678D;  
-    margin-right:-36px;
-    margin-top:12px;
+    border: 1px #3A678D;
+    margin-right: -36px;
+    margin-top: 12px;
 }
 
 #exit-button {
@@ -189,18 +134,18 @@ html, body {
     height: 32px;
 }
 
-#login-setting-button{
+#login-setting-button {
     float: right;
     border: 0px;
     width: 36px;
     height: 36px;
 }
 
-#login-form {    
+#login-form, #config-form {
     margin: 4px;
     padding: 0px;
-    text-align:left;
-    background:white;
+    text-align: left;
+    background: white;
 }
 
 /* ============================================ */

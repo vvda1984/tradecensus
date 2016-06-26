@@ -10,5 +10,8 @@ namespace TradeCensus
 
         [OperationContract]
         GetOutletResponse GetOutletByID(string id);
+
+        [OperationContract]
+        GetOutletTypeResponse GetOutlets();
     }
 }

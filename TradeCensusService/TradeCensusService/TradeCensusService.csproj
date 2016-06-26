@@ -204,6 +204,7 @@
     <Content Include="TradeCensusModel.edmx.diagram">
       <DependentUpon>TradeCensusModel.edmx</DependentUpon>
     </Content>
+    <None Include="Properties\PublishProfiles\local.pubxml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

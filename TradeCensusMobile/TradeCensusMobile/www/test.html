@@ -1,56 +1,67 @@
 ﻿<!DOCTYPE html>
-<html class="">
+<html>
 <head>
     <meta charset="utf-8" />
-    <meta content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />       
-    
-	<!--<link href="assets/styles/kendo.common-nova.min.css" rel="stylesheet" type="text/css" />
-    <link href="assets/styles/kendo.nova.min.css" rel="stylesheet" type="text/css" />-->
-    <!--<link href="assets/styles/kendo.common-material.min.css" rel="stylesheet" type="text/css" />
-    <link href="assets/styles/kendo.material.min.css" rel="stylesheet" type="text/css" />-->
+    <meta content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />
 
-    <link href="assets/css/angular-material.css" rel="stylesheet" type="text/css" />        
-	<link href="assets/css/style.css" rel="stylesheet" type="text/css" />
-	
+    <!-- Libs -->
     <script src="assets/libs/jquery.js"></script>
-    <!--<script src="assets/libs/kendo.all.min.js"></script>--> 
-    <script src="assets/libs/angular.js"></script>
-    <script src="assets/libs/angular-route.js"></script>
+    <script src="assets/libs/moment.js"></script>
 
-    <script src="assets/libs/angular-animate.js"></script>
-    <script src="assets/libs/angular-aria.js"></script>
-    <script src="assets/libs/angular-material.js"></script>
-    
-	<!-- <script src="assets/libs/angular-kendo.js"></script> -->	
-	<!-- <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDpKidHSrPMfErXLJSts9R6pam7iUOr_W0&callback=initMap" async defer></script> -->
-	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDpKidHSrPMfErXLJSts9R6pam7iUOr_W0" ></script>			
+    <!-- Kendo UI -->
+    <link href="assets/libs/kendo/kendo.common.min.css" rel="stylesheet" type="text/css" />
+    <link href="assets/libs/kendo/kendo.silver.min.css" rel="stylesheet" type="text/css" />
+    <link href="assets/libs/kendo/kendo.mobile.all.min.css" rel="stylesheet" type="text/css" />
+
+    <!-- Angular Material -->
+    <link rel="stylesheet" href="assets/libs/angular/angular-material.min.css">
+    <script src="assets/libs/angular/angular.min.js"></script>
+    <script src="assets/libs/angular/angular-animate.min.js"></script>
+    <script src="assets/libs/angular/angular-aria.min.js"></script>
+    <script src="assets/libs/angular/angular-messages.min.js"></script>
+    <script src="assets/libs/angular/angular-material.min.js"></script>
+    <script src="assets/libs/angular/angular-route.js"></script>
+    <!-- <script src="assets/libs/angular/angular-kendo.js"></script> -->
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="assets/css/style.css">
+
+    <!-- MAP -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDpKidHSrPMfErXLJSts9R6pam7iUOr_W0"></script>
 </head>
-<body id="body">	
-    <div id="view-login" class="main-view" ng-controller="LoginController">
+<!--<body ng-app="TradeCensus" ng-controller="MainController">-->
+<body >
+    <div id="view-setting" class="main-view">
         <div class="center-view">
             <div class="box">
-                <a href="#/config"><image id="setting-button" src="assets/img/gear.png" /></a>
-                <div class="view-form-header">
-                    <image id="login-logo" src="assets/img/logo.png" />
-                </div>
-                <md-content layout-padding="">
-                    <div>
-                        <form name="userForm">                          
-                            <div layout-gt-sm="row">
-                                <md-input-container class="md-block" flex-gt-sm="">
-                                    <label>First name</label>
-                                    <input ng-model="user.firstName">
-                                </md-input-container>                             
-                            </div>                                                      
-                        </form>
-                    </div>
-                </md-content>
-                </div>
-        </div>
-    </div>
+                <h1>SETTINGS</h1>
+                <div id="config-form">
+                    <md-content layout-padding="" class="md-content-white">
+                        <form name="loginForm">
+                            <md-input-container class="md-block">
+                                <label>{{ resource.text_EnterIPAddress }}</label>
+                                <input required="" name="ipAddress" ng-model="config.ip">
+                                <!--<div ng-messages="config.ipAddress.$error" role="alert">
+                                    <div ng-message="required">{{ resource.text_ValRequired }}</div>
+                                </div>-->
+                            </md-input-container>
 
-    <script src="js/script.init.js"></script>
-    <script src="js/script.js"></script>  
+                            <md-input-container class="md-block">
+                                <label>{{ resource.text_EnterPort }}</label>
+                                <input required="" name="ipAddress" ng-model="config.port">
+                                <!--<div ng-messages="config.ipAddress.$error" role="alert">
+                                    <div ng-message="required">{{ resource.text_ValRequired }}</div>
+                                </div>-->
+                            </md-input-container>
+                        </form>
+                    </md-content>
+                </div>
+
+                <div class="action-buttons">
+                    <md-button class="md-raised md-primary" ng-click="saveConfit(userID,password)">{{ resource.text_OK }}</md-button>
+                    <md-button class="md-raised" ng-click="changeView('login')">{{ resource.text_Cancel }}</md-button>
+                </div>
+            </div>
+        </div>
+    </div>   
 </body>
-    
 </html>

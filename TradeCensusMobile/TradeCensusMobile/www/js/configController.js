@@ -1,4 +1,24 @@
-﻿console.log("Add config controller");
+﻿console.log("Add ConfigController");
 app.controller("ConfigController", ["$scope", function ($scope) {
-    console.log("Enter setting page");
+    console.log("Enter config page");
+
+    var protocol = $scope.config.protocol;
+    var ip = $scope.config.ip;
+    var port = $scope.config.port;
+    $scope.provinces = provinces;
+    log($scope.provinces.length);
+
+    $scope.saveConfig = function () {
+        log("save config");
+        insertConfig($scope.config, function () {
+            $scope.changeView("login");
+        }, handleError);
+    }
+
+    $scope.cancel = function () {
+        $scope.config.protocol = protocol;
+        $scope.config.ip = ip;
+        $scope.config.port = port;
+        $scope.changeView("login");
+    }
 }]);

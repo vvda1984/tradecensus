@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ServiceModel.Web;
+using System.Threading;
 using TradeCensus.Shared;
 
 namespace TradeCensus
@@ -7,9 +8,12 @@ namespace TradeCensus
     //http://localhost:33333/TradeCensusService.svc
     public partial class TradeCensusService : ITradeCensusService
     {             
-        [WebGet(UriTemplate = "login/{id}-{pass}", ResponseFormat = WebMessageFormat.Json)]
+        [WebGet(UriTemplate = "login/{id}/{pass}", ResponseFormat = WebMessageFormat.Json)]
         public LoginResponse Login(string id, string pass)
         {
+#if DEBUG
+            Thread.Sleep(3000);
+#endif
             using(var repo = new PersonRepo())
             {
                 LoginResponse resp = new LoginResponse();
@@ -92,6 +96,25 @@ namespace TradeCensus
                 try
                 {
                     resp.Item = repo.GetByID(id);
+                }
+                catch (Exception ex)
+                {
+                    resp.Status = Constants.ErrorCode;
+                    resp.ErrorMessage = ex.Message;
+                }
+                return resp;
+            }
+        }
+
+        [WebGet(UriTemplate = "outlet/getoutlettypes", ResponseFormat = WebMessageFormat.Json)]
+        public GetOutletTypeResponse GetOutlets()
+        {
+            using (var repo = new OutletRepo())
+            {
+                var resp = new GetOutletTypeResponse();
+                try
+                {
+                    resp.Items = repo.GetAllOutletTypes();
                 }
                 catch (Exception ex)
                 {
