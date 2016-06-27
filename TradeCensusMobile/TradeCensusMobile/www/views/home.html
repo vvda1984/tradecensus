@@ -1,17 +1,35 @@
-<!--<div id="view-main">
-    
-    <md-button class="md-fab md-mini md-primary" aria-label="Setting" style="float:right;">
-        <md-icon md-svg-icon="assets/img/setting-white.svg"></md-icon>
-    </md-button>	
-    <md-button class="md-fab md-mini md-primary" aria-label="Favorite" style="float:left;">
-        <md-icon md-svg-icon="assets/img/arrow-right-white.svg"></md-icon>
-    </md-button>	
-</div>-->
-<!--<div id="view-home" class="main-view">
-    <div id="map" style="position: relative;min-height:100px;height:100%"></div>  
-</div>-->
-
 <div id="view-home">  
-    <div id="map" style="display:flex;position:absolute;width:100%;height:100%;overflow:visible;"></div>
+    <div id="outletPanel" class="overlay">
+        <a href="javascript:void(0)" class="closebtn" onclick="openOutletPanel()">×</a>
+        <div class="overlay-content">
+            <span>{{outletHeader}}</span>
+            <div style="float:right;display:inline">
+                <md-button ng-show="showExpander" class="md-icon-button md-primary" aria-label="Settings" ng-click="showLeftPanelFull()">
+                    <md-icon md-svg-icon="assets/img/arrow-next.svg"></md-icon>
+                </md-button>
+
+                <md-button ng-show="showCollapser" class="md-icon-button md-primary" aria-label="Settings" ng-click="hideLeftPanel()">
+                    <md-icon md-svg-icon="assets/img/arrow-back.svg"></md-icon>
+                </md-button>
+            </div>
+            <h2>OUTLET 1</h2> <br/>
+            <h2>OUTLET 2</h2>
+        </div>
+    </div>
+    
+    <div id="view-map">
+        <div id="map" class="view-map-content"></div>            
+    </div>
+    <div id="#view-home-content">
+        <md-button id="#expander-1" class="md-icon-button md-primary" aria-label="Settings" ng-click="showLeftPanel()">
+            <md-icon md-svg-icon="assets/img/menu.svg"></md-icon>
+        </md-button>
+
+        <div style="position: absolute; bottom: 0;left: 0;display:inline;">
+            <button ng-model="button1" ng-click="button1Click()" ng-class="{'outlet-button-active':button1state == 1,'outlet-button':button1state == 0}">Near-by Outlets</button>
+            <button ng-model="button2" ng-click="button2Click()" ng-class="{'outlet-button-active':button2state == 1,'outlet-button':button2state == 0}">New Outlets</button>
+            <button ng-model="button3" ng-click="button3Click()" ng-class="{'outlet-button-active':button3state == 1,'outlet-button':button3state == 0}">Updated Outlets</button>
+        </div>
+    </div>
 </div>
 

@@ -27,41 +27,22 @@
 
     <!-- MAP -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDpKidHSrPMfErXLJSts9R6pam7iUOr_W0"></script>
+    <script src="js/app.global.js"></script>
 </head>
 <!--<body ng-app="TradeCensus" ng-controller="MainController">-->
 <body >
-    <div id="view-setting" class="main-view">
-        <div class="center-view">
-            <div class="box">
-                <h1>SETTINGS</h1>
-                <div id="config-form">
-                    <md-content layout-padding="" class="md-content-white">
-                        <form name="loginForm">
-                            <md-input-container class="md-block">
-                                <label>{{ resource.text_EnterIPAddress }}</label>
-                                <input required="" name="ipAddress" ng-model="config.ip">
-                                <!--<div ng-messages="config.ipAddress.$error" role="alert">
-                                    <div ng-message="required">{{ resource.text_ValRequired }}</div>
-                                </div>-->
-                            </md-input-container>
-
-                            <md-input-container class="md-block">
-                                <label>{{ resource.text_EnterPort }}</label>
-                                <input required="" name="ipAddress" ng-model="config.port">
-                                <!--<div ng-messages="config.ipAddress.$error" role="alert">
-                                    <div ng-message="required">{{ resource.text_ValRequired }}</div>
-                                </div>-->
-                            </md-input-container>
-                        </form>
-                    </md-content>
-                </div>
-
-                <div class="action-buttons">
-                    <md-button class="md-raised md-primary" ng-click="saveConfit(userID,password)">{{ resource.text_OK }}</md-button>
-                    <md-button class="md-raised" ng-click="changeView('login')">{{ resource.text_Cancel }}</md-button>
-                </div>
+    <div id="view-home">
+        <div id="myNav" class="overlay">
+            <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
+            <div class="overlay-content">
+                <a href="#">About</a>
+                <a href="#">Services</a>
+                <a href="#">Clients</a>
+                <a href="#">Contact</a>
             </div>
         </div>
-    </div>   
+        <span style="font-size:30px;cursor:pointer" onclick="openNav()">? open</span>
+        <div id="map" style="display:flex;position:absolute;width:100%;height:100%;overflow:visible;"></div>
+    </div>
 </body>
 </html>

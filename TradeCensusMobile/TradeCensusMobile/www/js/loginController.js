@@ -1,12 +1,12 @@
 ﻿/// <reference path="app.service.js" />
 console.log("Add LoginController");
 app.controller("LoginController", ["$scope", "$location", "$http", function ($scope, $location, $http) {   
-    if (!$scope.isInitialize) {
-        $scope.userID = "123456";
-        $scope.password = "1";
-        $scope.provinces = provinces;
+    $scope.userID = "123456";
+    $scope.password = "1";
 
-        $scope.isInitialize = true;
+    if (!isInitialize) {
+        isInitialize = true;
+
         showLoadingDlg("Initializing...", "Please wait", function () { });
         selectConfigs(function (tx2, dbres2) {
             var rowLen = dbres2.rows.length;
@@ -47,8 +47,6 @@ app.controller("LoginController", ["$scope", "$location", "$http", function ($sc
         }, function (dberr) {
             showDialog(dberr.message, "DB Error", function () { });
         });
-
-
 
         //initalizeDB(function () {
         //    console.log("Load config");
@@ -140,6 +138,7 @@ app.controller("LoginController", ["$scope", "$location", "$http", function ($sc
             showLoadingDlg("Downloading Settings...", "Please wait", function () { isCancel = true; });
             downloadServerConfig(function () {
                 closeLoadingDlg();
+                log("Navigate to home (online)");
                 $scope.changeView("home");
             }, function (err) {
                 closeLoadingDlg();
@@ -147,6 +146,7 @@ app.controller("LoginController", ["$scope", "$location", "$http", function ($sc
             });
         }
         else {
+            log("Navigate to home (offline)");
             $scope.changeView("home");
         }
     }
