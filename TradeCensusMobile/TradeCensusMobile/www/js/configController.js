@@ -5,6 +5,7 @@ app.controller("ConfigController", ["$scope", function ($scope) {
     var protocol = $scope.config.protocol;
     var ip = $scope.config.ip;
     var port = $scope.config.port;
+    var province_id = $scope.config.province_id;
     $scope.provinces = provinces;
     log($scope.provinces.length);
 
@@ -19,6 +20,7 @@ app.controller("ConfigController", ["$scope", function ($scope) {
         $scope.config.protocol = protocol;
         $scope.config.ip = ip;
         $scope.config.port = port;
+        $scope.config.province_id = province_id;
         $scope.changeView("login");
     }
 }]);

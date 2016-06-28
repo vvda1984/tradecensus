@@ -1,8 +1,7 @@
 ﻿/// <reference path="app.service.js" />
 console.log("Add LoginController");
-app.controller("LoginController", ["$scope", "$location", "$http", function ($scope, $location, $http) {   
-    $scope.userID = "123456";
-    $scope.password = "1";
+app.controller("LoginController", ["$scope", "$location", "$http", function ($scope, $location, $http) {
+    console.log("Enter Login Controller");
 
     if (!isInitialize) {
         isInitialize = true;
@@ -69,22 +68,24 @@ app.controller("LoginController", ["$scope", "$location", "$http", function ($sc
     }
     var protocol = $scope.config.protocol;
 
-    $scope.login = function (userID, password) {
+    $scope.login = function () {
+        log($scope.userID);
+
         // validate...
-        if (isEmpty(userID)) {
+        if (isEmpty($scope.userID)) {
             showDialog("User ID is empty!", "Error", function () { })
             return;
         }
 
-        if (isEmpty(password)) {
+        if (isEmpty($scope.password)) {
             showDialog("Password is empty!", "Error", function () { })
             return;
         }
 
-        var isCancel = false;
+        var isCancel = false;        
         showLoadingDlg("Login...", "Please wait", function () { isCancel = true; });
         if (isOnline) {            
-            var url = $scope.baseURL + "/login/" + userID + "/" + password;
+            var url = $scope.baseURL + "/login/" + $scope.userID + "/" + $scope.password;
             log("Call service api: " + url);
             $http({
                 method: 'GET',
@@ -95,7 +96,7 @@ app.controller("LoginController", ["$scope", "$location", "$http", function ($sc
                 if (data.Status == -1) { // error
                     showDialog(data.ErrorMessage, "Error", function () { });
                 } else {
-                    insertPerson(data.People, password,
+                    insertPerson(data.People, $scope.password,
                         function (tx, row) {
                             afterLogin();
                         },
@@ -109,7 +110,7 @@ app.controller("LoginController", ["$scope", "$location", "$http", function ($sc
             });
         } else {
             log("Login using local db");
-            selectUserByID(userID, password,
+            selectUserByID($scope.userID, $scope.password,
                 function (tx, dbres) {
                     closeLoadingDlg();
                     var rowLen = dbres.rows.length;
@@ -130,15 +131,13 @@ app.controller("LoginController", ["$scope", "$location", "$http", function ($sc
         navigator.app.exitApp();
     };
 
-    function afterLogin() {
-        $scope.password = "";
+    function afterLogin() {       
         log("Login successfully");
-
         if (isOnline) {
             showLoadingDlg("Downloading Settings...", "Please wait", function () { isCancel = true; });
             downloadServerConfig(function () {
                 closeLoadingDlg();
-                log("Navigate to home (online)");
+                log("Navigate to home (online)");                
                 $scope.changeView("home");
             }, function (err) {
                 closeLoadingDlg();

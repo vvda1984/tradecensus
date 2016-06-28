@@ -12,7 +12,7 @@ namespace TradeCensus
         public LoginResponse Login(string id, string pass)
         {
 #if DEBUG
-            Thread.Sleep(3000);
+            //Thread.Sleep(3000);
 #endif
             using(var repo = new PersonRepo())
             {

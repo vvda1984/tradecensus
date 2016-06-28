@@ -1,7 +1,9 @@
 ﻿log("Add MainController");
 app.controller("MainController", ["$scope", "$route", "$location", function ($scope, $route, $location) {
     log("Load resources");
-    $scope.resource = loadResources();
+    $scope.resource = loadResources();    
+    $scope.userID = "123456";
+    $scope.password = "1";
 
     log("check network status...");   
     if (!isWeb) {

@@ -49,7 +49,7 @@ function insertPerson(person, password, onSuccess, onError) {
         sql = sql.concat("'", toStr(person.WorkAddress), "', ");
         sql = sql.concat("'", toStr(person.Phone), "', ");
         sql = sql.concat("'", hashString(password), "')");
-        log("Execute sql: " + sql);
+        logSqlCommand(sql);
         tx.executeSql(sql, [], onSuccess, onError);
     });
 }
@@ -57,7 +57,7 @@ function insertPerson(person, password, onSuccess, onError) {
 function selectConfigs(onSuccess, onError) {
     db.transaction(function (tx) {
         var sql = "SELECT * FROM config";
-        log("Execute sql: " + sql);
+        logSqlCommand(sql);
         tx.executeSql(sql, [], onSuccess, onError);
     });   
 }
@@ -66,7 +66,7 @@ function selectUserByID(userID, password, onSuccess, onError) {
     db.transaction(function (tx) {
         var sql = "SELECT * FROM person WHERE ";
         sql = sql.concat("id=", userID.toString(), " AND OfflinePassword='" + hashString(password), "'");
-        log("Execute sql: " + sql);
+        logSqlCommand(sql);
         tx.executeSql(sql, [], onSuccess, onError);
     });
 }
@@ -78,7 +78,7 @@ function insertProvinces(items, onSuccess, onError) {
             var sql = "INSERT OR REPLACE INTO [province] VALUES (";           
             sql = sql.concat("'", p.ID, "', ");            
             sql = sql.concat("'", p.Name, "')");
-            log("Execute sql: " + sql);
+            logSqlCommand(sql);
             tx.executeSql(sql, [], function(tx){}, onError);
         };
         onSuccess();        
@@ -94,7 +94,7 @@ function insertOutletTypes(items, onSuccess, onError) {
             sql = sql.concat("'", p.Name, "', ");
             sql = sql.concat("'", p.OGroupID, "', ");
             sql = sql.concat(p.ID.toString(), ")");            
-            log("Execute sql: " + sql);
+            logSqlCommand(sql);
             tx.executeSql(sql, [], function (tx) { }, onError);
         };
         onSuccess();
@@ -123,7 +123,7 @@ function insertConfigRow(tx, name, value) {
     var sql = "INSERT OR REPLACE INTO [config] VALUES (";
     sql = sql.concat("'", name, "', ");
     sql = sql.concat("'", value, "')");
-    log("Execute sql: " + sql);
+    logSqlCommand(sql);
     tx.executeSql(sql);
 }
 
@@ -205,14 +205,18 @@ function initializeProvinceRow(tx, name, value) {
     var sql = "INSERT INTO [province] VALUES (";
     sql = sql.concat("'", name, "', ");
     sql = sql.concat("'", value, "')");
-    log("Execute sql: " + sql);
+    logSqlCommand(sql);
     tx.executeSql(sql);
 }
 
 function selectProvinces(onSuccess, onError) {
     db.transaction(function (tx) {
         var sql = "SELECT * FROM province";
-        log("Execute sql: " + sql);
+        logSqlCommand(sql);
         tx.executeSql(sql, [], onSuccess, onError);
     });   
+}
+
+function logSqlCommand(sql) {
+    //log("Execute sql: " + sql);
 }
