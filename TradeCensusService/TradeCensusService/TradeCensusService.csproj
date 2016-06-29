@@ -130,6 +130,7 @@
       <DependentUpon>TradeCensusModel.tt</DependentUpon>
     </Compile>
     <Compile Include="OutletService\IOutletService.cs" />
+    <Compile Include="OutletService\OutletModel.cs" />
     <Compile Include="OutletType.cs">
       <DependentUpon>TradeCensusModel.tt</DependentUpon>
     </Compile>

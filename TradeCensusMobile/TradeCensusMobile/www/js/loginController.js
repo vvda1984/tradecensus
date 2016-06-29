@@ -88,17 +88,21 @@ app.controller("LoginController", ["$scope", "$location", "$http", function ($sc
             var url = $scope.baseURL + "/login/" + $scope.userID + "/" + $scope.password;
             log("Call service api: " + url);
             $http({
-                method: 'GET',
+                method: $scope.config.http_method,
                 url: url
             }).then(function (resp) {
-                closeLoadingDlg();             
-                var data = resp.data;
+                closeLoadingDlg();                             
                 if (data.Status == -1) { // error
                     showDialog(data.ErrorMessage, "Error", function () { });
                 } else {
+                    if(data.People.ister)
                     insertPerson(data.People, $scope.password,
                         function (tx, row) {
-                            afterLogin();
+                            if (!data.People.IsTerminate) {
+                                afterLogin();
+                            } else {
+                                showDialog($scope.resource.text_UserTerminated, "Error", function () { });
+                            }
                         },
                         function (dberr) {
                             showDialog(dberr.message, "DB Error", function () { });
@@ -133,6 +137,7 @@ app.controller("LoginController", ["$scope", "$location", "$http", function ($sc
 
     function afterLogin() {       
         log("Login successfully");
+
         if (isOnline) {
             showLoadingDlg("Downloading Settings...", "Please wait", function () { isCancel = true; });
             downloadServerConfig(function () {
@@ -155,7 +160,7 @@ app.controller("LoginController", ["$scope", "$location", "$http", function ($sc
         var url = $scope.baseURL + "/config/getall";        
         log("Call service api: " + url);
         $http({
-            method: 'GET',
+            method: $scope.config.http_method,
             url: url
         }).then(function (resp) {           
             var data = resp.data;
@@ -210,7 +215,7 @@ app.controller("LoginController", ["$scope", "$location", "$http", function ($sc
         var url = $scope.baseURL + "/provinces/getall";
         log("Call service api: " + url);
         $http({
-            method: 'GET',
+            method: $scope.config.http_method,
             url: url
         }).then(function (resp) {
             var data = resp.data;
@@ -228,7 +233,7 @@ app.controller("LoginController", ["$scope", "$location", "$http", function ($sc
         var url = $scope.baseURL + "/outlet/getoutlettypes";
         log("Call service api: " + url);
         $http({
-            method: 'GET',
+            method: $scope.config.http_method,
             url: url
         }).then(function (resp) {
             var data = resp.data;

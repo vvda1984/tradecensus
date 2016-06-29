@@ -5,10 +5,11 @@ using TradeCensus.Shared;
 
 namespace TradeCensus
 {
-    //http://localhost:33333/TradeCensusService.svc
+    //http://localhost:33334/TradeCensusService.svc
     public partial class TradeCensusService : ITradeCensusService
     {             
-        [WebGet(UriTemplate = "login/{id}/{pass}", ResponseFormat = WebMessageFormat.Json)]
+        //[WebGet(UriTemplate = "login/{id}/{pass}", ResponseFormat = WebMessageFormat.Json)]
+        [WebInvoke(Method = "POST", UriTemplate = "login/{id}/{pass}", ResponseFormat = WebMessageFormat.Json)]
         public LoginResponse Login(string id, string pass)
         {
 #if DEBUG
@@ -30,7 +31,8 @@ namespace TradeCensus
             }
         }
 
-        [WebGet(UriTemplate = "provinces/getall", ResponseFormat = WebMessageFormat.Json)]
+        //[WebGet(UriTemplate = "provinces/getall", ResponseFormat = WebMessageFormat.Json)]
+        [WebInvoke(Method = "POST", UriTemplate = "provinces/getall", ResponseFormat = WebMessageFormat.Json)]
         public ProvinceResponse GetProvinces()
         {
             using (var repo = new ProvinceRepo())
@@ -49,7 +51,8 @@ namespace TradeCensus
             }
         }
 
-        [WebGet(UriTemplate = "config/getall", ResponseFormat = WebMessageFormat.Json)]
+        //[WebGet(UriTemplate = "config/getall", ResponseFormat = WebMessageFormat.Json)]
+        [WebInvoke(Method = "POST", UriTemplate = "config/getall", ResponseFormat = WebMessageFormat.Json)]
         public ConfigResponse GetConfig()
         {
             using (var repo = new ConfigRepo())
@@ -67,8 +70,9 @@ namespace TradeCensus
                 return resp;
             }
         }
-        
-        [WebGet(UriTemplate = "outlet/getbyprovince/{provinceID}", ResponseFormat = WebMessageFormat.Json)]
+
+        //[WebGet(UriTemplate = "outlet/getbyprovince/{provinceID}", ResponseFormat = WebMessageFormat.Json)]
+        [WebInvoke(Method = "POST", UriTemplate = "outlet/getbyprovince/{provinceID}", ResponseFormat = WebMessageFormat.Json)]
         public OutletResponse GetOutletIDsByProvince(string provinceID)
         {
             using (var repo = new OutletRepo())
@@ -87,7 +91,8 @@ namespace TradeCensus
             }
         }
 
-        [WebGet(UriTemplate = "outlet/get/{id}", ResponseFormat = WebMessageFormat.Json)]
+        //[WebGet(UriTemplate = "outlet/get/{id}", ResponseFormat = WebMessageFormat.Json)]
+        [WebInvoke(Method = "POST", UriTemplate = "outlet/get/{id}", ResponseFormat = WebMessageFormat.Json)]
         public GetOutletResponse GetOutletByID(string id)
         {
             using (var repo = new OutletRepo())
@@ -106,7 +111,8 @@ namespace TradeCensus
             }
         }
 
-        [WebGet(UriTemplate = "outlet/getoutlettypes", ResponseFormat = WebMessageFormat.Json)]
+        //[WebGet(UriTemplate = "outlet/getoutlettypes", ResponseFormat = WebMessageFormat.Json)]
+        [WebInvoke(Method = "POST", UriTemplate = "outlet/getoutlettypes", ResponseFormat = WebMessageFormat.Json)]
         public GetOutletTypeResponse GetOutlets()
         {
             using (var repo = new OutletRepo())
@@ -115,6 +121,27 @@ namespace TradeCensus
                 try
                 {
                     resp.Items = repo.GetAllOutletTypes();
+                }
+                catch (Exception ex)
+                {
+                    resp.Status = Constants.ErrorCode;
+                    resp.ErrorMessage = ex.Message;
+                }
+                return resp;
+            }
+        }
+
+        [WebInvoke(Method = "POST", UriTemplate = "outlet/getoutlets/{lat}/{lng}/{provinceID}/{meter}/{count}", ResponseFormat = WebMessageFormat.Json)]
+        public GetOutletListResponse GetOutletLists(string lat, string lng, string provinceID, string meter, string count)
+        {
+            //WebOperationContext.Current.
+
+            using (var repo = new OutletRepo())
+            {
+                var resp = new GetOutletListResponse();
+                try
+                {
+                    resp.Items = repo.GetOutletByLocation(Convert.ToDouble(lat), Convert.ToDouble(lng), provinceID, Convert.ToDouble(meter), Convert.ToInt32(count));
                 }
                 catch (Exception ex)
                 {

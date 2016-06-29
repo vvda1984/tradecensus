@@ -16,7 +16,6 @@ namespace TradeCensus
     {
         public int ID { get; set; }
         public string AreaID { get; set; }
-        public string TerritoryID { get; set; }
         public string OTypeID { get; set; }
         public string Name { get; set; }
         public string AddLine { get; set; }
@@ -24,33 +23,14 @@ namespace TradeCensus
         public string District { get; set; }
         public string ProvinceID { get; set; }
         public string Phone { get; set; }
-        public int CallRate { get; set; }
         public Nullable<System.DateTime> CloseDate { get; set; }
-        public System.DateTime CreateDate { get; set; }
         public byte Tracking { get; set; }
-        public string Class { get; set; }
-        public string Open1st { get; set; }
-        public string Close1st { get; set; }
-        public string Open2nd { get; set; }
-        public string Close2nd { get; set; }
-        public byte SpShift { get; set; }
         public string LastContact { get; set; }
-        public Nullable<System.DateTime> LastVisit { get; set; }
         public int PersonID { get; set; }
         public string Note { get; set; }
-        public Nullable<decimal> Longitude { get; set; }
-        public Nullable<decimal> Latitude { get; set; }
-        public string TaxID { get; set; }
-        public Nullable<int> ModifiedStatus { get; set; }
-        public Nullable<int> InputBy { get; set; }
-        public Nullable<System.DateTime> InputDate { get; set; }
-        public int AmendBy { get; set; }
-        public System.DateTime AmendDate { get; set; }
+        public double Longitude { get; set; }
+        public double Latitude { get; set; }
         public string OutletEmail { get; set; }
-        public string DISAlias { get; set; }
-        public Nullable<int> JDEDISID { get; set; }
-        public string LegalName { get; set; }
-        public int rn { get; set; }
         public int PCreatedBy { get; set; }
         public System.DateTime PCreatedDate { get; set; }
         public int PModifiedBy { get; set; }

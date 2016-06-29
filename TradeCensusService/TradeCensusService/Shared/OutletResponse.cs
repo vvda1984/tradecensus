@@ -17,7 +17,7 @@ namespace TradeCensus
     public class GetOutletResponse : Response
     {
         [DataMember]
-        public Outlet Item
+        public OutletModel Item
         {
             get; set;
         }
@@ -28,5 +28,12 @@ namespace TradeCensus
     {
         [DataMember]
         public List<OutletType> Items { get; set; }
+    }
+
+    [DataContract]
+    public class GetOutletListResponse : Response
+    {
+        [DataMember]
+        public List<OutletModel> Items { get; set; }
     }
 }

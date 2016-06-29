@@ -22,8 +22,8 @@ namespace TradeCensus
     
         public int ID { get; set; }
         public string TableName { get; set; }
-        public System.DateTime LastSyncDateTime { get; set; }
-        public int LastSyncBy { get; set; }
+        public System.DateTime SyncDateTime { get; set; }
+        public int SyncBy { get; set; }
         public string Note { get; set; }
         public byte Status { get; set; }
     

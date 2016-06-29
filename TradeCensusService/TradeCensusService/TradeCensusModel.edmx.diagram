@@ -11,12 +11,12 @@
         <EntityTypeShape EntityType="tradecensusModel.Person" Width="1.5" PointX="6.75" PointY="3.75" />
         <EntityTypeShape EntityType="tradecensusModel.PersonRole" Width="1.5" PointX="7.75" PointY="0.75" />
         <EntityTypeShape EntityType="tradecensusModel.Province" Width="1.5" PointX="8.75" PointY="3.75" />
-        <EntityTypeShape EntityType="tradecensusModel.SyncDetail" Width="1.5" PointX="3" PointY="1.125" />
-        <EntityTypeShape EntityType="tradecensusModel.SyncHistory" Width="1.5" PointX="0.75" PointY="1" />
         <EntityTypeShape EntityType="tradecensusModel.sysdiagram" Width="1.5" PointX="8.75" PointY="6.75" />
         <EntityTypeShape EntityType="tradecensusModel.Zone" Width="1.5" PointX="9.75" PointY="0.75" />
-        <AssociationConnector Association="tradecensusModel.FK_SyncDetail_SyncHistory" />
         <EntityTypeShape EntityType="tradecensusModel.Config" Width="1.5" PointX="9.375" PointY="9.75" />
+        <EntityTypeShape EntityType="tradecensusModel.SyncDetail" Width="1.5" PointX="5.625" PointY="11.125" />
+        <EntityTypeShape EntityType="tradecensusModel.SyncHistory" Width="1.5" PointX="3.375" PointY="11" />
+        <AssociationConnector Association="tradecensusModel.FK_SyncDetail_SyncHistory" />
         <EntityTypeShape EntityType="tradecensusModel.Outlet" Width="1.5" PointX="0.75" PointY="7.75" />
       </Diagram>
     </edmx:Diagrams>

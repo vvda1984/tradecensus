@@ -31,11 +31,11 @@ namespace TradeCensus
         public virtual DbSet<Person> People { get; set; }
         public virtual DbSet<PersonRole> PersonRoles { get; set; }
         public virtual DbSet<Province> Provinces { get; set; }
-        public virtual DbSet<SyncDetail> SyncDetails { get; set; }
-        public virtual DbSet<SyncHistory> SyncHistories { get; set; }
         public virtual DbSet<sysdiagram> sysdiagrams { get; set; }
         public virtual DbSet<Zone> Zones { get; set; }
         public virtual DbSet<Config> Configs { get; set; }
+        public virtual DbSet<SyncDetail> SyncDetails { get; set; }
+        public virtual DbSet<SyncHistory> SyncHistories { get; set; }
         public virtual DbSet<Outlet> Outlets { get; set; }
     }
 }

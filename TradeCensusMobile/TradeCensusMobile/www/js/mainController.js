@@ -104,7 +104,8 @@ function loadResources() {
         text_EnterPassword: "Enter Password",
         text_EnterProvince: "Enter Province",
         text_ValRequired: "Required.",
-        text_ValLength10: "Has to be less than 10 characters long.",        
+        text_ValLength10: "Has to be less than 10 characters long.",
+        text_UserTerminated: "User has been terminated",
     };
 }
 
@@ -119,6 +120,7 @@ function loadDefaultConfig() {
         item_count: 20,
         distance: 200,
         province_id: 50, // HCM
+        http_method : "GET",
         calc_distance_algorithm: "circle",
         tbl_area_ver: "0",
         tbl_outlettype_ver: "0",
