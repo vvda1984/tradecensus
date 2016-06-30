@@ -34,6 +34,7 @@
           <Property Name="District" Type="nvarchar" MaxLength="40" />
           <Property Name="ProvinceID" Type="nvarchar" MaxLength="3" Nullable="false" />
           <Property Name="Phone" Type="nchar" MaxLength="10" />
+          <Property Name="CreateDate" Type="datetime" Nullable="false" />
           <Property Name="CloseDate" Type="datetime" />
           <Property Name="Tracking" Type="tinyint" Nullable="false" />
           <Property Name="LastContact" Type="nvarchar" MaxLength="255" Nullable="false" />
@@ -42,10 +43,13 @@
           <Property Name="Longitude" Type="float" Nullable="false" />
           <Property Name="Latitude" Type="float" Nullable="false" />
           <Property Name="OutletEmail" Type="nvarchar" MaxLength="512" />
-          <Property Name="PCreatedBy" Type="int" Nullable="false" />
-          <Property Name="PCreatedDate" Type="datetime" Nullable="false" />
-          <Property Name="PModifiedBy" Type="int" Nullable="false" />
-          <Property Name="PModifiedDate" Type="datetime" Nullable="false" />
+          <Property Name="InputBy" Type="int" Nullable="false" />
+          <Property Name="InputDate" Type="datetime" Nullable="false" />
+          <Property Name="AmendBy" Type="int" Nullable="false" />
+          <Property Name="AmendDate" Type="datetime" Nullable="false" />
+          <Property Name="AuditStatus" Type="tinyint" Nullable="false" />
+          <Property Name="TotalVolume" Type="int" Nullable="false" />
+          <Property Name="VBLVolume" Type="int" Nullable="false" />
           <Property Name="PIsDeleted" Type="bit" Nullable="false" />
           <Property Name="PRowID" Type="uniqueidentifier" Nullable="false" />
         </EntityType>
@@ -55,9 +59,9 @@
           </Key>
           <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="OutletID" Type="int" Nullable="false" />
-          <Property Name="Image1" Type="varbinary(max)" />
-          <Property Name="Image2" Type="varbinary(max)" />
-          <Property Name="Image3" Type="varbinary(max)" />
+          <Property Name="Image1" Type="nvarchar(max)" />
+          <Property Name="Image2" Type="nvarchar(max)" />
+          <Property Name="Image3" Type="nvarchar(max)" />
         </EntityType>
         <EntityType Name="OutletType">
           <Key>
@@ -134,16 +138,6 @@
           <Property Name="Note" Type="nvarchar" MaxLength="100" />
           <Property Name="Status" Type="tinyint" Nullable="false" />
         </EntityType>
-        <EntityType Name="sysdiagrams">
-          <Key>
-            <PropertyRef Name="diagram_id" />
-          </Key>
-          <Property Name="name" Type="nvarchar" MaxLength="128" Nullable="false" />
-          <Property Name="principal_id" Type="int" Nullable="false" />
-          <Property Name="diagram_id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="version" Type="int" />
-          <Property Name="definition" Type="varbinary(max)" />
-        </EntityType>
         <EntityType Name="Zone">
           <Key>
             <PropertyRef Name="ID" />
@@ -153,6 +147,18 @@
           <Property Name="RegionID" Type="varchar" MaxLength="10" Nullable="false" />
           <Property Name="ZoneCode" Type="varchar" MaxLength="4" Nullable="false" />
         </EntityType>
+        <Association Name="FK_OutletImage_Outlet">
+          <End Role="Outlet" Type="Self.Outlet" Multiplicity="1" />
+          <End Role="OutletImage" Type="Self.OutletImage" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Outlet">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="OutletImage">
+              <PropertyRef Name="OutletID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_SyncDetail_SyncHistory">
           <End Role="SyncHistory" Type="Self.SyncHistory" Multiplicity="1" />
           <End Role="SyncDetail" Type="Self.SyncDetail" Multiplicity="*" />
@@ -176,8 +182,11 @@
           <EntitySet Name="Province" EntityType="Self.Province" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="SyncDetail" EntityType="Self.SyncDetail" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="SyncHistory" EntityType="Self.SyncHistory" Schema="dbo" store:Type="Tables" />
-          <EntitySet Name="sysdiagrams" EntityType="Self.sysdiagrams" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Zone" EntityType="Self.Zone" Schema="dbo" store:Type="Tables" />
+          <AssociationSet Name="FK_OutletImage_Outlet" Association="Self.FK_OutletImage_Outlet">
+            <End Role="Outlet" EntitySet="Outlet" />
+            <End Role="OutletImage" EntitySet="OutletImage" />
+          </AssociationSet>
           <AssociationSet Name="FK_SyncDetail_SyncHistory" Association="Self.FK_SyncDetail_SyncHistory">
             <End Role="SyncHistory" EntitySet="SyncHistory" />
             <End Role="SyncDetail" EntitySet="SyncDetail" />
@@ -189,21 +198,24 @@
       <Schema Namespace="tradecensusModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
         <EntityContainer Name="tradecensusEntities" annotation:LazyLoadingEnabled="true">
           <EntitySet Name="Areas" EntityType="tradecensusModel.Area" />
+          <EntitySet Name="Configs" EntityType="tradecensusModel.Config" />
+          <EntitySet Name="Outlets" EntityType="tradecensusModel.Outlet" />
           <EntitySet Name="OutletImages" EntityType="tradecensusModel.OutletImage" />
           <EntitySet Name="OutletTypes" EntityType="tradecensusModel.OutletType" />
           <EntitySet Name="People" EntityType="tradecensusModel.Person" />
           <EntitySet Name="PersonRoles" EntityType="tradecensusModel.PersonRole" />
           <EntitySet Name="Provinces" EntityType="tradecensusModel.Province" />
-          <EntitySet Name="sysdiagrams" EntityType="tradecensusModel.sysdiagram" />
-          <EntitySet Name="Zones" EntityType="tradecensusModel.Zone" />
-          <EntitySet Name="Configs" EntityType="tradecensusModel.Config" />
           <EntitySet Name="SyncDetails" EntityType="tradecensusModel.SyncDetail" />
           <EntitySet Name="SyncHistories" EntityType="tradecensusModel.SyncHistory" />
+          <EntitySet Name="Zones" EntityType="tradecensusModel.Zone" />
+          <AssociationSet Name="FK_OutletImage_Outlet" Association="tradecensusModel.FK_OutletImage_Outlet">
+            <End Role="Outlet" EntitySet="Outlets" />
+            <End Role="OutletImage" EntitySet="OutletImages" />
+          </AssociationSet>
           <AssociationSet Name="FK_SyncDetail_SyncHistory" Association="tradecensusModel.FK_SyncDetail_SyncHistory">
             <End Role="SyncHistory" EntitySet="SyncHistories" />
             <End Role="SyncDetail" EntitySet="SyncDetails" />
           </AssociationSet>
-          <EntitySet Name="Outlets" EntityType="tradecensusModel.Outlet" />
         </EntityContainer>
         <EntityType Name="Area">
           <Key>
@@ -213,15 +225,57 @@
           <Property Name="Name" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
           <Property Name="ZoneID" Type="String" Nullable="false" MaxLength="10" FixedLength="false" Unicode="false" />
         </EntityType>
+        <EntityType Name="Config">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Name" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="Value" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+        </EntityType>
+        <EntityType Name="Outlet">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="Int32" Nullable="false" />
+          <Property Name="AreaID" Type="String" Nullable="false" MaxLength="3" FixedLength="false" Unicode="true" />
+          <Property Name="OTypeID" Type="String" Nullable="false" MaxLength="40" FixedLength="false" Unicode="true" />
+          <Property Name="Name" Type="String" Nullable="false" MaxLength="40" FixedLength="false" Unicode="true" />
+          <Property Name="AddLine" Type="String" MaxLength="40" FixedLength="false" Unicode="true" />
+          <Property Name="AddLine2" Type="String" MaxLength="40" FixedLength="false" Unicode="true" />
+          <Property Name="District" Type="String" MaxLength="40" FixedLength="false" Unicode="true" />
+          <Property Name="ProvinceID" Type="String" Nullable="false" MaxLength="3" FixedLength="false" Unicode="true" />
+          <Property Name="Phone" Type="String" MaxLength="10" FixedLength="true" Unicode="true" />
+          <Property Name="CreateDate" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="CloseDate" Type="DateTime" Precision="3" />
+          <Property Name="Tracking" Type="Byte" Nullable="false" />
+          <Property Name="LastContact" Type="String" Nullable="false" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="PersonID" Type="Int32" Nullable="false" />
+          <Property Name="Note" Type="String" MaxLength="512" FixedLength="false" Unicode="true" />
+          <Property Name="Longitude" Type="Double" Nullable="false" />
+          <Property Name="Latitude" Type="Double" Nullable="false" />
+          <Property Name="OutletEmail" Type="String" MaxLength="512" FixedLength="false" Unicode="true" />
+          <Property Name="InputBy" Type="Int32" Nullable="false" />
+          <Property Name="InputDate" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="AmendBy" Type="Int32" Nullable="false" />
+          <Property Name="AmendDate" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="AuditStatus" Type="Byte" Nullable="false" />
+          <Property Name="TotalVolume" Type="Int32" Nullable="false" />
+          <Property Name="VBLVolume" Type="Int32" Nullable="false" />
+          <Property Name="PIsDeleted" Type="Boolean" Nullable="false" />
+          <Property Name="PRowID" Type="Guid" Nullable="false" />
+          <NavigationProperty Name="OutletImages" Relationship="tradecensusModel.FK_OutletImage_Outlet" FromRole="Outlet" ToRole="OutletImage" />
+        </EntityType>
         <EntityType Name="OutletImage">
           <Key>
             <PropertyRef Name="ID" />
           </Key>
           <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="OutletID" Type="Int32" Nullable="false" />
-          <Property Name="Image1" Type="Binary" MaxLength="Max" FixedLength="false" />
-          <Property Name="Image2" Type="Binary" MaxLength="Max" FixedLength="false" />
-          <Property Name="Image3" Type="Binary" MaxLength="Max" FixedLength="false" />
+          <Property Name="Image1" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="Image2" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="Image3" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="Outlet" Relationship="tradecensusModel.FK_OutletImage_Outlet" FromRole="OutletImage" ToRole="Outlet" />
         </EntityType>
         <EntityType Name="OutletType">
           <Key>
@@ -278,33 +332,6 @@
           <Property Name="ID" Type="String" Nullable="false" MaxLength="10" FixedLength="false" Unicode="false" />
           <Property Name="Name" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
         </EntityType>
-        <EntityType Name="sysdiagram">
-          <Key>
-            <PropertyRef Name="diagram_id" />
-          </Key>
-          <Property Name="name" Type="String" Nullable="false" MaxLength="128" FixedLength="false" Unicode="true" />
-          <Property Name="principal_id" Type="Int32" Nullable="false" />
-          <Property Name="diagram_id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="version" Type="Int32" />
-          <Property Name="definition" Type="Binary" MaxLength="Max" FixedLength="false" />
-        </EntityType>
-        <EntityType Name="Zone">
-          <Key>
-            <PropertyRef Name="ID" />
-          </Key>
-          <Property Name="ID" Type="String" Nullable="false" MaxLength="3" FixedLength="false" Unicode="false" />
-          <Property Name="Name" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
-          <Property Name="RegionID" Type="String" Nullable="false" MaxLength="10" FixedLength="false" Unicode="false" />
-          <Property Name="ZoneCode" Type="String" Nullable="false" MaxLength="4" FixedLength="false" Unicode="false" />
-        </EntityType>
-        <EntityType Name="Config">
-          <Key>
-            <PropertyRef Name="ID" />
-          </Key>
-          <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="Name" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
-          <Property Name="Value" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
-        </EntityType>
         <EntityType Name="SyncDetail">
           <Key>
             <PropertyRef Name="ID" />
@@ -327,6 +354,27 @@
           <Property Name="Status" Type="Byte" Nullable="false" />
           <NavigationProperty Name="SyncDetails" Relationship="tradecensusModel.FK_SyncDetail_SyncHistory" FromRole="SyncHistory" ToRole="SyncDetail" />
         </EntityType>
+        <EntityType Name="Zone">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="String" Nullable="false" MaxLength="3" FixedLength="false" Unicode="false" />
+          <Property Name="Name" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="RegionID" Type="String" Nullable="false" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="ZoneCode" Type="String" Nullable="false" MaxLength="4" FixedLength="false" Unicode="false" />
+        </EntityType>
+        <Association Name="FK_OutletImage_Outlet">
+          <End Type="tradecensusModel.Outlet" Role="Outlet" Multiplicity="1" />
+          <End Type="tradecensusModel.OutletImage" Role="OutletImage" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Outlet">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="OutletImage">
+              <PropertyRef Name="OutletID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_SyncDetail_SyncHistory">
           <End Type="tradecensusModel.SyncHistory" Role="SyncHistory" Multiplicity="1" />
           <End Type="tradecensusModel.SyncDetail" Role="SyncDetail" Multiplicity="*" />
@@ -339,35 +387,7 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <EntityType Name="Outlet">
-          <Key>
-            <PropertyRef Name="ID" />
-          </Key>
-          <Property Name="ID" Type="Int32" Nullable="false" />
-          <Property Name="AreaID" Type="String" Nullable="false" MaxLength="3" FixedLength="false" Unicode="true" />
-          <Property Name="OTypeID" Type="String" Nullable="false" MaxLength="40" FixedLength="false" Unicode="true" />
-          <Property Name="Name" Type="String" Nullable="false" MaxLength="40" FixedLength="false" Unicode="true" />
-          <Property Name="AddLine" Type="String" MaxLength="40" FixedLength="false" Unicode="true" />
-          <Property Name="AddLine2" Type="String" MaxLength="40" FixedLength="false" Unicode="true" />
-          <Property Name="District" Type="String" MaxLength="40" FixedLength="false" Unicode="true" />
-          <Property Name="ProvinceID" Type="String" Nullable="false" MaxLength="3" FixedLength="false" Unicode="true" />
-          <Property Name="Phone" Type="String" MaxLength="10" FixedLength="true" Unicode="true" />
-          <Property Name="CloseDate" Type="DateTime" Precision="3" />
-          <Property Name="Tracking" Type="Byte" Nullable="false" />
-          <Property Name="LastContact" Type="String" Nullable="false" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="PersonID" Type="Int32" Nullable="false" />
-          <Property Name="Note" Type="String" MaxLength="512" FixedLength="false" Unicode="true" />
-          <Property Name="Longitude" Type="Double" Nullable="false" />
-          <Property Name="Latitude" Type="Double" Nullable="false" />
-          <Property Name="OutletEmail" Type="String" MaxLength="512" FixedLength="false" Unicode="true" />
-          <Property Name="PCreatedBy" Type="Int32" Nullable="false" />
-          <Property Name="PCreatedDate" Type="DateTime" Nullable="false" Precision="3" />
-          <Property Name="PModifiedBy" Type="Int32" Nullable="false" />
-          <Property Name="PModifiedDate" Type="DateTime" Nullable="false" Precision="3" />
-          <Property Name="PIsDeleted" Type="Boolean" Nullable="false" />
-          <Property Name="PRowID" Type="Guid" Nullable="false" />
-        </EntityType>
-      </Schema>
+        </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
     <edmx:Mappings>
@@ -378,6 +398,48 @@
               <MappingFragment StoreEntitySet="Area">
                 <ScalarProperty Name="ZoneID" ColumnName="ZoneID" />
                 <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="ID" ColumnName="ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Configs">
+            <EntityTypeMapping TypeName="tradecensusModel.Config">
+              <MappingFragment StoreEntitySet="Config">
+                <ScalarProperty Name="Value" ColumnName="Value" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="ID" ColumnName="ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Outlets">
+            <EntityTypeMapping TypeName="tradecensusModel.Outlet">
+              <MappingFragment StoreEntitySet="Outlet">
+                <ScalarProperty Name="PRowID" ColumnName="PRowID" />
+                <ScalarProperty Name="PIsDeleted" ColumnName="PIsDeleted" />
+                <ScalarProperty Name="VBLVolume" ColumnName="VBLVolume" />
+                <ScalarProperty Name="TotalVolume" ColumnName="TotalVolume" />
+                <ScalarProperty Name="AuditStatus" ColumnName="AuditStatus" />
+                <ScalarProperty Name="AmendDate" ColumnName="AmendDate" />
+                <ScalarProperty Name="AmendBy" ColumnName="AmendBy" />
+                <ScalarProperty Name="InputDate" ColumnName="InputDate" />
+                <ScalarProperty Name="InputBy" ColumnName="InputBy" />
+                <ScalarProperty Name="OutletEmail" ColumnName="OutletEmail" />
+                <ScalarProperty Name="Latitude" ColumnName="Latitude" />
+                <ScalarProperty Name="Longitude" ColumnName="Longitude" />
+                <ScalarProperty Name="Note" ColumnName="Note" />
+                <ScalarProperty Name="PersonID" ColumnName="PersonID" />
+                <ScalarProperty Name="LastContact" ColumnName="LastContact" />
+                <ScalarProperty Name="Tracking" ColumnName="Tracking" />
+                <ScalarProperty Name="CloseDate" ColumnName="CloseDate" />
+                <ScalarProperty Name="CreateDate" ColumnName="CreateDate" />
+                <ScalarProperty Name="Phone" ColumnName="Phone" />
+                <ScalarProperty Name="ProvinceID" ColumnName="ProvinceID" />
+                <ScalarProperty Name="District" ColumnName="District" />
+                <ScalarProperty Name="AddLine2" ColumnName="AddLine2" />
+                <ScalarProperty Name="AddLine" ColumnName="AddLine" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="OTypeID" ColumnName="OTypeID" />
+                <ScalarProperty Name="AreaID" ColumnName="AreaID" />
                 <ScalarProperty Name="ID" ColumnName="ID" />
               </MappingFragment>
             </EntityTypeMapping>
@@ -452,36 +514,6 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
-          <EntitySetMapping Name="sysdiagrams">
-            <EntityTypeMapping TypeName="tradecensusModel.sysdiagram">
-              <MappingFragment StoreEntitySet="sysdiagrams">
-                <ScalarProperty Name="definition" ColumnName="definition" />
-                <ScalarProperty Name="version" ColumnName="version" />
-                <ScalarProperty Name="diagram_id" ColumnName="diagram_id" />
-                <ScalarProperty Name="principal_id" ColumnName="principal_id" />
-                <ScalarProperty Name="name" ColumnName="name" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="Zones">
-            <EntityTypeMapping TypeName="tradecensusModel.Zone">
-              <MappingFragment StoreEntitySet="Zone">
-                <ScalarProperty Name="ZoneCode" ColumnName="ZoneCode" />
-                <ScalarProperty Name="RegionID" ColumnName="RegionID" />
-                <ScalarProperty Name="Name" ColumnName="Name" />
-                <ScalarProperty Name="ID" ColumnName="ID" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="Configs">
-            <EntityTypeMapping TypeName="tradecensusModel.Config">
-              <MappingFragment StoreEntitySet="Config">
-                <ScalarProperty Name="Value" ColumnName="Value" />
-                <ScalarProperty Name="Name" ColumnName="Name" />
-                <ScalarProperty Name="ID" ColumnName="ID" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
           <EntitySetMapping Name="SyncDetails">
             <EntityTypeMapping TypeName="tradecensusModel.SyncDetail">
               <MappingFragment StoreEntitySet="SyncDetail">
@@ -504,31 +536,12 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
-          <EntitySetMapping Name="Outlets">
-            <EntityTypeMapping TypeName="tradecensusModel.Outlet">
-              <MappingFragment StoreEntitySet="Outlet">
-                <ScalarProperty Name="PRowID" ColumnName="PRowID" />
-                <ScalarProperty Name="PIsDeleted" ColumnName="PIsDeleted" />
-                <ScalarProperty Name="PModifiedDate" ColumnName="PModifiedDate" />
-                <ScalarProperty Name="PModifiedBy" ColumnName="PModifiedBy" />
-                <ScalarProperty Name="PCreatedDate" ColumnName="PCreatedDate" />
-                <ScalarProperty Name="PCreatedBy" ColumnName="PCreatedBy" />
-                <ScalarProperty Name="OutletEmail" ColumnName="OutletEmail" />
-                <ScalarProperty Name="Latitude" ColumnName="Latitude" />
-                <ScalarProperty Name="Longitude" ColumnName="Longitude" />
-                <ScalarProperty Name="Note" ColumnName="Note" />
-                <ScalarProperty Name="PersonID" ColumnName="PersonID" />
-                <ScalarProperty Name="LastContact" ColumnName="LastContact" />
-                <ScalarProperty Name="Tracking" ColumnName="Tracking" />
-                <ScalarProperty Name="CloseDate" ColumnName="CloseDate" />
-                <ScalarProperty Name="Phone" ColumnName="Phone" />
-                <ScalarProperty Name="ProvinceID" ColumnName="ProvinceID" />
-                <ScalarProperty Name="District" ColumnName="District" />
-                <ScalarProperty Name="AddLine2" ColumnName="AddLine2" />
-                <ScalarProperty Name="AddLine" ColumnName="AddLine" />
+          <EntitySetMapping Name="Zones">
+            <EntityTypeMapping TypeName="tradecensusModel.Zone">
+              <MappingFragment StoreEntitySet="Zone">
+                <ScalarProperty Name="ZoneCode" ColumnName="ZoneCode" />
+                <ScalarProperty Name="RegionID" ColumnName="RegionID" />
                 <ScalarProperty Name="Name" ColumnName="Name" />
-                <ScalarProperty Name="OTypeID" ColumnName="OTypeID" />
-                <ScalarProperty Name="AreaID" ColumnName="AreaID" />
                 <ScalarProperty Name="ID" ColumnName="ID" />
               </MappingFragment>
             </EntityTypeMapping>

@@ -157,7 +157,7 @@ app.controller('LoginController', ['$scope', '$location', '$http', function ($sc
                 District: '1',
                 HomeAddress: 'home',
                 WorkAddress: 'work',
-                Phone: '0909000000',
+                Phone: '0909123456',
             });          
             return;
         }
@@ -182,6 +182,7 @@ app.controller('LoginController', ['$scope', '$location', '$http', function ($sc
             url: url
         }).then(function (resp) {
             closeLoadingDlg();
+            var data = resp.data;
             if (data.Status == -1) { // error
                 onError(data.ErrorMessage);
             } else {
@@ -193,7 +194,9 @@ app.controller('LoginController', ['$scope', '$location', '$http', function ($sc
                         onError(dberr.message);
                     });
             }
-        }, onError);
+        }, function (err) {
+            onError(err.statusText);
+        });
     }
 
     /**
@@ -264,15 +267,15 @@ app.controller('LoginController', ['$scope', '$location', '$http', function ($sc
                 closeLoadingDlg();
                 log('Navigate to home (online)');
                 $scope.changeView('home');
-            }, function (err) {
+            }, function (dberr) {
                 closeLoadingDlg();
-                showDialog(err, 'Unknown Error', function () { });
+                showDialog(dberr.message, 'Unknown Error', function () { });
             });
         }
         else {
             log('Navigate to home (offline)');
             $scope.changeView('home');
-        }
+        }       
     }
 
     function loginError(err) {
@@ -333,7 +336,7 @@ app.controller('LoginController', ['$scope', '$location', '$http', function ($sc
                     }
                 }, onError);
             }
-        }, onError);
+        }, handleHttpError);
     }
 
     /**
@@ -353,7 +356,7 @@ app.controller('LoginController', ['$scope', '$location', '$http', function ($sc
             } else {
                 insertProvinces(data.Items, onSuccess, onError);
             }
-        }, onError);
+        }, handleHttpError);
     }
 
     /**
@@ -373,6 +376,6 @@ app.controller('LoginController', ['$scope', '$location', '$http', function ($sc
             } else {
                 insertOutletTypes(data.Items, onSuccess, onError);
             }
-        }, onError);
+        }, handleHttpError);
     }
 }]);

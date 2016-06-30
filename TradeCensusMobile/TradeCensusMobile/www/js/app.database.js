@@ -95,7 +95,7 @@ function insertOutletTypes(items, onSuccess, onError) {
             sql = sql.concat("'", p.OGroupID, "', ");
             sql = sql.concat(p.ID.toString(), ")");            
             logSqlCommand(sql);
-            tx.executeSql(sql, [], function (tx) { }, onError);
+            tx.executeSql(sql);
         };
         onSuccess();
     });

@@ -8,6 +8,7 @@ EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Android = Debug|Android
+		Debug|Any CPU = Debug|Any CPU
 		Debug|iOS = Debug|iOS
 		Debug|Windows Phone (Universal) = Debug|Windows Phone (Universal)
 		Debug|Windows Phone 8 = Debug|Windows Phone 8
@@ -16,6 +17,7 @@ Global
 		Debug|Windows-x64 = Debug|Windows-x64
 		Debug|Windows-x86 = Debug|Windows-x86
 		Release|Android = Release|Android
+		Release|Any CPU = Release|Any CPU
 		Release|iOS = Release|iOS
 		Release|Windows Phone (Universal) = Release|Windows Phone (Universal)
 		Release|Windows Phone 8 = Release|Windows Phone 8
@@ -28,6 +30,7 @@ Global
 		{D6074D3A-2FC2-47CD-A76E-BC0F87811251}.Debug|Android.ActiveCfg = Debug|Android
 		{D6074D3A-2FC2-47CD-A76E-BC0F87811251}.Debug|Android.Build.0 = Debug|Android
 		{D6074D3A-2FC2-47CD-A76E-BC0F87811251}.Debug|Android.Deploy.0 = Debug|Android
+		{D6074D3A-2FC2-47CD-A76E-BC0F87811251}.Debug|Any CPU.ActiveCfg = Debug|Android
 		{D6074D3A-2FC2-47CD-A76E-BC0F87811251}.Debug|iOS.ActiveCfg = Debug|iOS
 		{D6074D3A-2FC2-47CD-A76E-BC0F87811251}.Debug|iOS.Build.0 = Debug|iOS
 		{D6074D3A-2FC2-47CD-A76E-BC0F87811251}.Debug|iOS.Deploy.0 = Debug|iOS
@@ -52,6 +55,7 @@ Global
 		{D6074D3A-2FC2-47CD-A76E-BC0F87811251}.Release|Android.ActiveCfg = Release|Android
 		{D6074D3A-2FC2-47CD-A76E-BC0F87811251}.Release|Android.Build.0 = Release|Android
 		{D6074D3A-2FC2-47CD-A76E-BC0F87811251}.Release|Android.Deploy.0 = Release|Android
+		{D6074D3A-2FC2-47CD-A76E-BC0F87811251}.Release|Any CPU.ActiveCfg = Release|Android
 		{D6074D3A-2FC2-47CD-A76E-BC0F87811251}.Release|iOS.ActiveCfg = Release|iOS
 		{D6074D3A-2FC2-47CD-A76E-BC0F87811251}.Release|iOS.Build.0 = Release|iOS
 		{D6074D3A-2FC2-47CD-A76E-BC0F87811251}.Release|iOS.Deploy.0 = Release|iOS

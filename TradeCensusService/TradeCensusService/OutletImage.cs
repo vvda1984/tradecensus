@@ -16,8 +16,10 @@ namespace TradeCensus
     {
         public int ID { get; set; }
         public int OutletID { get; set; }
-        public byte[] Image1 { get; set; }
-        public byte[] Image2 { get; set; }
-        public byte[] Image3 { get; set; }
+        public string Image1 { get; set; }
+        public string Image2 { get; set; }
+        public string Image3 { get; set; }
+    
+        public virtual Outlet Outlet { get; set; }
     }
 }

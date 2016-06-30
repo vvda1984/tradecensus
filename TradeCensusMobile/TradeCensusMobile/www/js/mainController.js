@@ -3,8 +3,8 @@ app.controller('MainController', ['$scope', '$route', '$location', function ($sc
     $scope.resource = loadResources();
 
     $scope.user = {
-        id: 600000, // dev
-        password: '000000',
+        id: 123456, // dev
+        password: '1',
         firstName: '',
         lastName: '',
         isTerminate: false,
@@ -42,6 +42,11 @@ app.controller('MainController', ['$scope', '$route', '$location', function ($sc
    
     $scope.changeView = function (name) {        
         console.log('change view: ' + name);
+        //$scope.$apply(function () {
+        //    $location.path("/" + name);
+        //    console.log($location.path());
+        //});
+
         $location.path('/' + name);
         try{
             $scope.$apply();
@@ -85,9 +90,9 @@ function loadDefaultConfig() {
         port: '33334',
         service_name: 'TradeCensusService.svc',
         item_count: 20,
-        distance: 200,
+        distance: 1000,
         province_id: 50, // HCM
-        http_method : 'GET',
+        http_method : 'POST',
         calc_distance_algorithm: 'circle',
         tbl_area_ver: '0',
         tbl_outlettype_ver: '0',

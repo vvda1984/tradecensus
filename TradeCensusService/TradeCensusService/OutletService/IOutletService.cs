@@ -15,6 +15,6 @@ namespace TradeCensus
         GetOutletTypeResponse GetOutlets();
 
         [OperationContract]
-        GetOutletListResponse GetOutletLists(string lat, string lng, string provinceID, string meter, string count);
+        GetOutletListResponse GetOutletLists(string lat, string lng, string meter, string count);
     }
 }

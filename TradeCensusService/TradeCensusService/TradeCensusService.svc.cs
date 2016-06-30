@@ -131,8 +131,8 @@ namespace TradeCensus
             }
         }
 
-        [WebInvoke(Method = "POST", UriTemplate = "outlet/getoutlets/{lat}/{lng}/{provinceID}/{meter}/{count}", ResponseFormat = WebMessageFormat.Json)]
-        public GetOutletListResponse GetOutletLists(string lat, string lng, string provinceID, string meter, string count)
+        [WebInvoke(Method = "POST", UriTemplate = "outlet/getoutlets/{lat}/{lng}/{meter}/{count}", ResponseFormat = WebMessageFormat.Json)]
+        public GetOutletListResponse GetOutletLists(string lat, string lng, string meter, string count)
         {
             //WebOperationContext.Current.
 
@@ -141,7 +141,7 @@ namespace TradeCensus
                 var resp = new GetOutletListResponse();
                 try
                 {
-                    resp.Items = repo.GetOutletByLocation(Convert.ToDouble(lat), Convert.ToDouble(lng), provinceID, Convert.ToDouble(meter), Convert.ToInt32(count));
+                    resp.Items = repo.GetOutletByLocation(Convert.ToDouble(lat), Convert.ToDouble(lng), Convert.ToDouble(meter), Convert.ToInt32(count));
                 }
                 catch (Exception ex)
                 {

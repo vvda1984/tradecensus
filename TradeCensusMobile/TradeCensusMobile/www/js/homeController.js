@@ -5,45 +5,9 @@ app.controller('HomeController', ['$scope', '$location', '$http', function ($sco
     log($scope.user.id);
     log($scope.config.province_id);
     
-    var homeMarker = null;
-    var curlat = 10.771136;
-    var curlng = 106.702655;
-    var map = new google.maps.Map(document.getElementById('map'), {
-        zoom: 14,
-        center: new google.maps.LatLng(curlat, curlng),
-        mapTypeId: google.maps.MapTypeId.ROADMAP,
-        mapTypeControl: false,
-        mapTypeControlOptions: {
-            style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
-            position: google.maps.ControlPosition.TOP_CENTER
-        },
-        streetViewControlOptions: {
-            position: google.maps.ControlPosition.RIGHT_BOTTOM
-        },
-        zoomControl: true,
-        zoomControlOptions: {
-            position: google.maps.ControlPosition.RIGHT_BOTTOM
-        },
-        scaleControl: true,
-        streetViewControl: true,
-        fullscreenControl: true,
-    });        
-    
-    $scope.showLeftPanel = function () {
-        openOutletPanelHalf();
-        
-    }
-    $scope.showLeftPanelFull = function () {
-        $scope.showExpander = false;
-        $scope.showCollapser = true;
-        openOutletPanel();
-    }
-    $scope.hideLeftPanel = function () {
-        $scope.showExpander = true;
-        $scope.showCollapser = false;
-        closeOutletPanel();
-    }
-        
+    var curlat = 10.773598;
+    var curlng = 106.7058;
+    var markers = [];
     $scope.showExpander = true;
     $scope.showCollapser = false;
     $scope.button1state = 1;
@@ -51,7 +15,57 @@ app.controller('HomeController', ['$scope', '$location', '$http', function ($sco
     $scope.button3state = 0;
     $scope.outletHeader = 'Near-by Outlets';
     $scope.outletCategory = 1; // 1: near-by; 2: new: 3: updated
+    var homeMarker = null;
 
+    $scope.refresh = function () {
+        onGetLocationSuccess(null);
+        //log('query location...');
+        //try{
+        //    navigator.geolocation.getCurrentPosition(onGetLocationSuccess, onGetLocationError);
+        //}catch (err) {
+        //    log(err);
+        //}
+    }
+
+    if (map == null) {
+        map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 16,
+            center: new google.maps.LatLng(curlat, curlng),
+            mapTypeId: google.maps.MapTypeId.ROADMAP,
+            mapTypeControl: false,
+            mapTypeControlOptions: {
+                style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+                position: google.maps.ControlPosition.TOP_CENTER
+            },
+            streetViewControlOptions: {
+                position: google.maps.ControlPosition.RIGHT_BOTTOM
+            },
+            zoomControl: true,
+            zoomControlOptions: {
+                position: google.maps.ControlPosition.RIGHT_BOTTOM
+            },
+            scaleControl: true,
+            streetViewControl: true,
+            fullscreenControl: true,
+        });
+    }    
+    
+    $scope.showLeftPanel = function () {
+        openOutletPanelHalf();        
+    }
+
+    $scope.showLeftPanelFull = function () {
+        $scope.showExpander = false;
+        $scope.showCollapser = true;
+        openOutletPanel();
+    }
+
+    $scope.hideLeftPanel = function () {
+        $scope.showExpander = true;
+        $scope.showCollapser = false;
+        closeOutletPanel();
+    }
+   
     $scope.button1Click = function () { // near-by
         $scope.button1state = 1;
         $scope.button2state = 0;
@@ -76,62 +90,76 @@ app.controller('HomeController', ['$scope', '$location', '$http', function ($sco
         loadOutlets();
     }
 
-    function onGetLocationSuccess(position) {        
-        log('Latitude: ' + position.coords.latitude + '\n' +
-            'Longitude: ' + position.coords.longitude + '\n' +
-            'Altitude: ' + position.coords.altitude + '\n' +
-            'Accuracy: ' + position.coords.accuracy + '\n' +
-            'Altitude Accuracy: ' + position.coords.altitudeAccuracy + '\n' +
-            'Heading: ' + position.coords.heading + '\n' +
-            'Speed: ' + position.coords.speed + '\n' +
-            'Timestamp: ' + position.timestamp + '\n');
-        curlat = position.coords.latitude;
-        curlng = position.coords.longitude;
+    function onGetLocationSuccess(position) {
+        //curlat = position.coords.latitude;
+        //curlng = position.coords.longitude;
         if (homeMarker == null) {
-            homeMarker = createMaker('', new google.maps.LatLng(curlat, curlng), 'pin-cur.png');
-        }else {
+            homeMarker = createMaker('', new google.maps.LatLng(curlat, curlng), 'pin-cur.png');            
+        } else {
             homeMarker.setPosition(new google.maps.LatLng(curlat, curlng));
         }
+        markers = [];
+        markers.push(homeMarker);        
         moveToCurLocation();
-        loadOutlets();
+        getOutletsOnline();
     };
 
     function onGetLocationError(error) {
         showDialog('Location is OFF!', 'Error', function () { });
     }
     
-    function loadOutlets() {
-        log('load outlets...');
+    function getOutletsOnline() {
+        showLoadingDlg("Loading outlets...");
+        var url = $scope.baseURL + '/outlet/getoutlets/' + curlat.toString() + '/' + curlng.toString() + '/' + $scope.config.distance.toString() + '/' + $scope.config.item_count.toString();
+        log('Call service api: ' + url);
+        $http({
+            method: $scope.config.http_method,
+            url: url
+        }).then(function (resp) {
+            closeLoadingDlg();
+            var data = resp.data;
+            if (data.Status == -1) { // error
+                handleError(data.ErrorMessage);
+            } else {
+                updateLocalOutlets(data.Items, loadOutletsToMap, handleError);
+            }
+        }, handleHttpError);
     }
 
-    $scope.refresh = function () {
-        log('query location...');
-        navigator.geolocation.getCurrentPosition(onGetLocationSuccess, onGetLocationError);
+    function loadOutletsToMap(outlets) {
+        log("load outlets to map");
+        outlets.forEach(function (outlet, i) {
+            var outlet = outlets[i];
+            var marker = createMaker(outlet.Name, new google.maps.LatLng(outlet.Latitude, outlet.Longitude), 'pin-open-dis.png');
+            markers.push(marker);
+        });
     }
 
-    $scope.refresh();
-
+    function updateLocalOutlets(outlets, onSuccess, onError) {
+        //TODO: update local outlets...
+        onSuccess(outlets);
+    }
+      
     function moveToCurLocation() {
         log('Move current location');
         var center = new google.maps.LatLng(curlat, curlng);
         map.panTo(center);
     }
 
-    function createMaker(title, latlng, iconurl) {
-        //var image = {
-        //    url: iconurl,            
-        //    size: new google.maps.Size(20, 30), // This marker is 20 pixels wide by 32 pixels high.            
-        //    origin: new google.maps.Point(0, 0), // The origin for this image is (0, 0).
-        //    // The anchor for this image is the base of the flagpole at (0, 32).
-        //    anchor: new google.maps.Point(0, 32)
-        //};
-        var iconFullUrl = 'assets/img/' + iconurl;
-
+    function createMaker(title, latlng, iconName) {
+        var iconUrl = 'assets/img/' + iconName;
         return marker = new google.maps.Marker({
             position: latlng,
             map: map,
             title: title,
-            icon: iconFullUrl,
+            icon: iconUrl,
         });        
     }
+    
+    log('Refresh view');
+    try {
+        $scope.refresh();
+    } catch (err) {
+        log(err);
+    }    
 }]);

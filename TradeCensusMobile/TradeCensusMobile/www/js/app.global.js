@@ -1,10 +1,11 @@
 ﻿var app;                            // angular TradeCensus module
 var db;                             // database instance
+var map;                            // google map
 var isOnline = true;                // network status
-var isDev = true                    // 
+var isDev = false;                  // enable DEV mode
 var userOutletTable = 'outlet';     // outlet table name for current user
 var isLoadingDlgOpened = false;     // 
-var isWeb = true;
+var isWeb = false;
 var isInitialize = false;
 var provinces = [];
 
@@ -39,6 +40,9 @@ function showConfirm(message, title, onClosed) {
     navigator.notification.confirm(message, onClosed, title, ['OK', 'Cancel']);
 }
 
+/** 
+* showError
+*/
 function showError(message) {
     navigator.notification.alert(message, function(){}, "Error", 'Close');
 }
@@ -167,4 +171,12 @@ function openOutletPanelHalf() {
 */
 function closeOutletPanel() {
     document.getElementById('outletPanel').style.width = '0%';
+}
+
+/** 
+* Handle http error
+*/
+function handleHttpError(err) {
+    closeLoadingDlg();
+    showError(err.statusText);
 }

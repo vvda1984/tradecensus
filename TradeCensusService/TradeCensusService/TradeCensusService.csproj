@@ -168,9 +168,6 @@
     <Compile Include="SyncHistory.cs">
       <DependentUpon>TradeCensusModel.tt</DependentUpon>
     </Compile>
-    <Compile Include="sysdiagram.cs">
-      <DependentUpon>TradeCensusModel.tt</DependentUpon>
-    </Compile>
     <Compile Include="TradeCensusModel.Context.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
