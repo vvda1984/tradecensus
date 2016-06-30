@@ -1,14 +1,14 @@
-﻿log("Add home controller");
-app.controller("HomeController", ["$scope", "$location", "$http", function ($scope, $location, $http) {
-    log("Enter Home page");
+﻿log('Add home controller');
+app.controller('HomeController', ['$scope', '$location', '$http', function ($scope, $location, $http) {
+    log('Enter Home page');
     log(isOnline);
-    log($scope.userID);
+    log($scope.user.id);
     log($scope.config.province_id);
     
     var homeMarker = null;
     var curlat = 10.771136;
     var curlng = 106.702655;
-    var map = new google.maps.Map(document.getElementById("map"), {
+    var map = new google.maps.Map(document.getElementById('map'), {
         zoom: 14,
         center: new google.maps.LatLng(curlat, curlng),
         mapTypeId: google.maps.MapTypeId.ROADMAP,
@@ -49,7 +49,7 @@ app.controller("HomeController", ["$scope", "$location", "$http", function ($sco
     $scope.button1state = 1;
     $scope.button2state = 0;
     $scope.button3state = 0;
-    $scope.outletHeader = "Near-by Outlets";
+    $scope.outletHeader = 'Near-by Outlets';
     $scope.outletCategory = 1; // 1: near-by; 2: new: 3: updated
 
     $scope.button1Click = function () { // near-by
@@ -88,7 +88,7 @@ app.controller("HomeController", ["$scope", "$location", "$http", function ($sco
         curlat = position.coords.latitude;
         curlng = position.coords.longitude;
         if (homeMarker == null) {
-            homeMarker = createMaker("", new google.maps.LatLng(curlat, curlng), "pin-cur.png");
+            homeMarker = createMaker('', new google.maps.LatLng(curlat, curlng), 'pin-cur.png');
         }else {
             homeMarker.setPosition(new google.maps.LatLng(curlat, curlng));
         }
@@ -97,22 +97,22 @@ app.controller("HomeController", ["$scope", "$location", "$http", function ($sco
     };
 
     function onGetLocationError(error) {
-        showDialog("Location is OFF!", "Error", function () { });
+        showDialog('Location is OFF!', 'Error', function () { });
     }
     
     function loadOutlets() {
-        log("load outlets...");
+        log('load outlets...');
     }
 
     $scope.refresh = function () {
-        log("query location...");
+        log('query location...');
         navigator.geolocation.getCurrentPosition(onGetLocationSuccess, onGetLocationError);
     }
 
     $scope.refresh();
 
     function moveToCurLocation() {
-        log("Move current location");
+        log('Move current location');
         var center = new google.maps.LatLng(curlat, curlng);
         map.panTo(center);
     }
@@ -125,7 +125,7 @@ app.controller("HomeController", ["$scope", "$location", "$http", function ($sco
         //    // The anchor for this image is the base of the flagpole at (0, 32).
         //    anchor: new google.maps.Point(0, 32)
         //};
-        var iconFullUrl = "assets/img/" + iconurl;
+        var iconFullUrl = 'assets/img/' + iconurl;
 
         return marker = new google.maps.Marker({
             position: latlng,
