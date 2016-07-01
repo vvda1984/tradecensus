@@ -1,0 +1,189 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />
+
+    <!-- Libs -->
+    <script src="assets/libs/jquery.js"></script>
+    <script src="assets/libs/xmltojson.js"></script>
+
+    <!-- Kendo UI -->
+    <!--<link href="assets/libs/kendo/kendo.common.min.css" rel="stylesheet" type="text/css" />
+    <link href="assets/libs/kendo/kendo.silver.min.css" rel="stylesheet" type="text/css" />
+    <link href="assets/libs/kendo/kendo.mobile.all.min.css" rel="stylesheet" type="text/css" />-->
+    <!-- Angular Material -->
+    <link rel="stylesheet" href="assets/libs/angular/angular-material.min.css">
+    <script src="assets/libs/angular/angular.min.js"></script>
+    <script src="assets/libs/angular/angular-animate.min.js"></script>
+    <script src="assets/libs/angular/angular-aria.min.js"></script>
+    <script src="assets/libs/angular/angular-messages.min.js"></script>
+    <script src="assets/libs/angular/angular-material.min.js"></script>
+    <script src="assets/libs/angular/angular-route.js"></script>
+    <!-- <script src="assets/libs/angular/angular-kendo.js"></script> -->
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script>
+        angular.module('MyApp', ['ngMaterial', 'ngMessages'])
+        .controller('AppCtrl', function ($scope, $mdDialog, $mdMedia) {
+            $scope.status = '  ';
+            $scope.customFullscreen = $mdMedia('xs') || $mdMedia('sm');
+           
+            $scope.showAdvanced = function (ev) {
+                var useFullScreen = ($mdMedia('sm') || $mdMedia('xs')) && $scope.customFullscreen;
+
+                $mdDialog.show({
+                    controller: DialogController,
+                    templateUrl: 'dialog1.tmpl.html',
+                    parent: angular.element(document.body),
+                    targetEvent: ev,
+                    clickOutsideToClose: true,
+                    fullscreen: useFullScreen
+                })
+                .then(function (answer) {
+                    $scope.status = 'You said the information was "' + answer + '".';
+                }, function () {
+                    $scope.status = 'You cancelled the dialog.';
+                });
+
+
+
+                $scope.$watch(function () {
+                    return $mdMedia('xs') || $mdMedia('sm');
+                }, function (wantsFullScreen) {
+                    $scope.customFullscreen = (wantsFullScreen === true);
+                });
+
+            };
+        
+            $scope.showPrerenderedDialog = function (ev) {
+                $mdDialog.show({
+                    controller: DialogController,
+                    contentElement: '#myDialog',
+                    parent: angular.element(document.body),
+                    targetEvent: ev,
+                    clickOutsideToClose: true
+                });
+            };
+        });
+
+        function DialogController($scope, $mdDialog) {
+            $scope.hide = function () {
+                $mdDialog.hide();
+            };
+
+            $scope.cancel = function () {
+                $mdDialog.cancel();
+            };
+
+            $scope.answer = function (answer) {
+                $mdDialog.hide(answer);
+            };
+        }
+    </script>
+</head>
+<!--<body ng-app="TradeCensus" ng-controller="MainController">-->
+<body ng-app="MyApp" ng-controller="AppCtrl">   
+    <div class="popup-overlay">
+        <div class="popup-window">
+            <div class="popup-window-center">                
+                <md-button class="md-primary md-raised" ng-click="showAdvanced($event)">
+                    Custom Dialog
+                </md-button>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/ng-template" id="dialog1.tmpl.html">
+        <md-dialog aria-label="Mango (Fruit)" ng-cloak>
+            <md-toolbar>
+                <div class="md-toolbar-tools">
+                    <md-button class="md-icon-button" aria-label="Go Back" ng-click="cancel()">
+                        <md-icon md-svg-icon="assets/img/back.svg"></md-icon>
+                    </md-button>
+                    <h2>
+                        <span>Settings</span>
+                    </h2>
+                </div>
+            </md-toolbar>
+
+            <md-content layout-padding="" class="popup-content">
+                <div>
+                    <form name="userForm">
+
+                        <div layout-gt-xs="row">
+                            <md-input-container class="md-block" flex-gt-xs="">
+                                <label>Company (Disabled)</label>
+                                <input ng-model="user.company" disabled="">
+                            </md-input-container>
+
+                            <md-datepicker ng-model="user.submissionDate" md-placeholder="Enter date">
+                            </md-datepicker>
+                        </div>
+
+                        <div layout-gt-sm="row">
+                            <md-input-container class="md-block" flex-gt-sm="">
+                                <label>First name</label>
+                                <input ng-model="user.firstName">
+                            </md-input-container>
+
+                            <md-input-container class="md-block" flex-gt-sm="">
+                                <label>Long Last Name That Will Be Truncated And 3 Dots (Ellipsis) Will Appear At The End</label>
+                                <input ng-model="theMax">
+                            </md-input-container>
+                        </div>
+
+                        <md-input-container class="md-block">
+                            <label>Address</label>
+                            <input ng-model="user.address">
+                        </md-input-container>
+
+                        <md-input-container md-no-float="" class="md-block">
+                            <input ng-model="user.address2" placeholder="Address 2">
+                        </md-input-container>
+
+                        <div layout-gt-sm="row">
+                            <md-input-container class="md-block" flex-gt-sm="">
+                                <label>City</label>
+                                <input ng-model="user.city">
+                            </md-input-container>
+
+                            <md-input-container class="md-block" flex-gt-sm="">
+                                <label>State</label>
+                                <md-select ng-model="user.state">
+                                    <md-option ng-repeat="state in states" value="{{state.abbrev}}">
+                                        {{state.abbrev}}
+                                    </md-option>
+                                </md-select>
+                            </md-input-container>
+
+                            <md-input-container class="md-block" flex-gt-sm="">
+                                <label>Postal Code</label>
+                                <input name="postalCode" ng-model="user.postalCode" placeholder="12345" required="" ng-pattern="/^[0-9]{5}$/" md-maxlength="5">
+
+                                <div ng-messages="userForm.postalCode.$error" role="alert" multiple="">
+                                    <div ng-message="required" class="my-message">You must supply a postal code.</div>
+                                    <div ng-message="pattern" class="my-message">
+                                        That doesn't look like a valid postal
+                                        code.
+                                    </div>
+                                    <div ng-message="md-maxlength" class="my-message">
+                                        Don't use the long version silly...we don't need to be that specific...
+                                    </div>
+                                </div>
+                            </md-input-container>
+                        </div>
+
+                        <md-input-container class="md-block">
+                            <label>Biography</label>
+                            <textarea ng-model="user.biography" md-maxlength="150" rows="5" md-select-on-focus=""></textarea>
+                        </md-input-container>
+                    </form>
+                </div>
+            </md-content>
+        </md-dialog>
+    </script>
+</body>
+
+
+</html>

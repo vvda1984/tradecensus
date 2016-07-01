@@ -50,37 +50,73 @@ html, body {
     background: #E5E5E5;
 }
 
-#overlay {
+#view-setting{
+   background: white;
+}
+
+#loading-overlay {
     position: fixed;
     top: 0;
     left: 0;
-    background: rgba(0, 0, 0, 0.6); /*rgba(0,0,0,0.6);*/
-    z-index: 105;
+    background: rgba(0, 0, 0, 0.4); /*rgba(0,0,0,0.6);*/
+    z-index: 15;
     width: 100%;
-    height: 100%;        
+    height: 100%;
     display: table;
-    text-align: center;    
+    text-align: center;
 }
 
-#overlay-view {
+#loading-window {
     display: table-cell;
     vertical-align: middle;
 }
 
-#overlay-content {    
+#loading-content {
     background: white;
     border: 1px solid #E5E5E5;
     box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
-    border-radius: 0px;    
+    border-radius: 2px;
     margin-left: 32%;
-    margin-right: 32%;
-    padding:16px;
+    margin-right: 32%;  
+    padding-top: 24px;
+    padding-left: 24px;
+    padding-right: 24px;
+    padding-bottom: 16px;
     /*
     width: 200px;
     height: 160px;
     top: 50%;
     left: 50%;
-    margin: -100px 0 0 -80px;*/     
+    margin: -100px 0 0 -80px;*/
+}
+
+#loading-content-header {
+    text-align: left;
+    width: 100%;
+    margin-bottom:24px;
+}
+
+#loading-content-title{
+    margin:4px;     
+    font-size:1.4em; 
+}
+
+#loading-content-message{  
+    color:#444444;
+    margin-bottom:24px;
+}
+
+#loading-content-footer {    
+    width: 100%;    
+    height:36px; 
+    display:table; 
+}
+
+#loading-content-footer a{
+    color:#3F51B5;
+    font-weight:bold;    
+    display:table-cell;
+    vertical-align: middle;
 }
 
 .main-view .center-view .box h1 {
@@ -90,6 +126,14 @@ html, body {
     font-size: 1.3em;
     color: #3A678D;
     text-align: center;
+}
+
+hr {
+    border: none;
+    height: 0.5px;
+    /* Set the hr color */
+    color: #1D3464; /* old IE */
+    background-color: #1D3464; /* Modern Browsers */
 }
 
 .action-buttons {
@@ -117,7 +161,7 @@ html, body {
 
 #login-setting-button {
     float: right;
-    border: 0px;    
+    border: 0px;
 }
 
 #login-form, #config-form {
@@ -125,33 +169,6 @@ html, body {
     padding: 0px;
     text-align: left;
     background: white;
-}
-
-.header {
-    position: fixed;
-    top: 0px;
-    left: 0px;
-    width: 100%;
-    padding: 0.5em;
-    height: 2.5em;
-    border: 1px solid rgba(20,53,80,0.05);
-    z-index: 100;
-    background: #EFF0F1;
-}
-
-.footer {
-    position: fixed;
-    bottom: 0px;
-    left: 0px;
-    width: 100%;
-    z-index: 100;
-}
-
-.footer-button {
-    vertical-align: middle;
-    background: #082543;
-    color: white;
-    border: 0px;
 }
 
 #slide-in-left {
@@ -177,12 +194,11 @@ html, body {
     text-indent: -999em;
 }
 
-/****************************************/
 .overlay {
     height: 100%;
     width: 0;
     position: fixed;
-    z-index: 1;
+    z-index: 10;
     top: 0;
     left: 0;
     background-color: rgb(0,0,0);
@@ -206,9 +222,9 @@ html, body {
     transition: 0.3s;
 }
 
-.overlay a:hover, .overlay a:focus {
-    color: #f1f1f1;
-}
+    .overlay a:hover, .overlay a:focus {
+        color: #f1f1f1;
+    }
 
 .closebtn {
     position: absolute;
@@ -217,52 +233,81 @@ html, body {
     font-size: 60px !important;
 }
 
-/****************************************/
-
 #view-map {
     height: 100%;
     width: 100%;
-    position: fixed; 
+    position: fixed;
     top: 0;
     left: 0;
     z-index: 0;
 }
 
-#map{
+#map {
     position: relative;
     top: 0%;
     width: 100%;
     height: 100%;
-    min-height:100px;
+    min-height: 100px;
     margin-top: 0px;
 }
 
 #view-home-content {
     height: 100%;
     width: 100%;
-    position: fixed; 
+    position: fixed;
     top: 0;
     left: 0;
     z-index: 2;
 }
 
-#expander-1{
+#expander-1 {
     float: left;
     border: 0px;
     width: 36px;
     height: 36px;
 }
-.outlet-button{
-    height:32px;
-    background:white;
+
+.outlet-button {
+    height: 32px;
+    background: white;
     border: 1px solid white;
     border-radius: 5px;
-    color:#1D3464;
+    color: #1D3464;
 }
-.outlet-button-active{
-    height:32px;
-    background:#1D3464;
+
+.outlet-button-active {
+    height: 32px;
+    background: #1D3464;
     border: 1px solid #1D3464;
     border-radius: 5px;
-    color:white;
+    color: white;
+}
+
+.popup-overlay {   
+    position: fixed;
+    top: 0;
+    left: 0;
+    background: rgba(0, 0, 0, 0.4); /*rgba(0,0,0,0.6);*/
+    z-index: 11;
+    width: 100%;
+    height: 100%;
+    display: table;    
+}
+
+.popup-overlay .popup-window {   
+    display: table-cell;
+    vertical-align: middle;        
+}
+
+.popup-overlay .popup-window .popup-window-center {
+    background: white;
+    border: 1px solid #E5E5E5;
+    box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+    border-radius: 0px;
+    margin: 5%;    
+}
+
+.popup-overlay .popup-window .popup-window-center .popup-content {
+    /*display: block;
+    overflow-y: scroll*/
 }

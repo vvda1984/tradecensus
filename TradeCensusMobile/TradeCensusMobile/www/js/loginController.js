@@ -1,12 +1,13 @@
-﻿/// <reference path='app.service.js' />
-console.log('Add LoginController');
+﻿/// <reference path="app.global.js" />
+
+//console.log('Add LoginController');
 app.controller('LoginController', ['$scope', '$location', '$http', function ($scope, $location, $http) {
     console.log('Enter Login Controller');
 
     if (!isInitialize) {
         isInitialize = true;
 
-        showLoadingDlg('Initializing...', 'Please wait', function () { });
+        showDlg('Read settings', 'Please wait...');
         selectConfigs(function (tx2, dbres2) {
             var rowLen = dbres2.rows.length;
             console.log('Config len: ' + rowLen.toString());
@@ -41,11 +42,11 @@ app.controller('LoginController', ['$scope', '$location', '$http', function ($sc
                     }
                 }
             }
-            closeLoadingDlg();
+            hideDlg();
             $scope.baseURL = buildURL($scope.config.protocol, $scope.config.ip, $scope.config.port, $scope.config.service_name);
         }, function (dberr) {
-            showDialog(dberr.message, 'DB Error', function () { });
-        });  
+            showDlg(dberr.message, 'DB Error');
+        });
     }
 
     $scope.exit = function () {
@@ -80,7 +81,7 @@ app.controller('LoginController', ['$scope', '$location', '$http', function ($sc
                 method: $scope.config.http_method,
                 url: url
             }).then(function (resp) {
-                closeLoadingDlg();                             
+                hideDlg();                             
                 if (data.Status == -1) { // error
                     showDialog(data.ErrorMessage, 'Error', function () { });
                 } else {
@@ -99,14 +100,14 @@ app.controller('LoginController', ['$scope', '$location', '$http', function ($sc
                         });
                 }
             }, function (err) {
-                closeLoadingDlg();                
+                hideDlg();                
                 showDialog(err, 'Unknown Error', function () { });
             });
         } else {
             log('Login using local db');
             selectUserByID($scope.user.id, $scope.user.password,
                 function (tx, dbres) {
-                    closeLoadingDlg();
+                    hideDlg();
                     var rowLen = dbres.rows.length;
                     if (rowLen == 1) {
                         afterLogin();
@@ -115,7 +116,7 @@ app.controller('LoginController', ['$scope', '$location', '$http', function ($sc
                     }
                 },
                 function (dberr) {
-                    closeLoadingDlg();
+                    hideDlg();
                     showDialog(dberr.message, 'Unknown Error', function () { });
                 });
         }
@@ -127,13 +128,13 @@ app.controller('LoginController', ['$scope', '$location', '$http', function ($sc
 
         // validate user id
         if (isEmpty($scope.user.id)) {
-            showDialog('User ID is empty!', 'Error', function () { })
+            showError('User ID is empty!');
             return;
         }
 
         // validate password
         if (isEmpty($scope.user.password)) {
-            showDialog('Password is empty!', 'Error', function () { })
+            showError('Password is empty!');
             return;
         }
 
@@ -158,14 +159,13 @@ app.controller('LoginController', ['$scope', '$location', '$http', function ($sc
                 HomeAddress: 'home',
                 WorkAddress: 'work',
                 Phone: '0909123456',
-            });          
+            });
             return;
         }
 
-        var isCancel = false;
-        showLoadingDlg('Login...', 'Please wait', function () { isCancel = true; });
+        showDlg('Login', 'Please wait...');
         if (isOnline) {
-            loginOnline(loginSuccess, loginError);         
+            loginOnline(loginSuccess, loginError);
         } else {
             loginOffline(loginSuccess, loginError);
         }
@@ -181,7 +181,7 @@ app.controller('LoginController', ['$scope', '$location', '$http', function ($sc
             method: $scope.config.http_method,
             url: url
         }).then(function (resp) {
-            closeLoadingDlg();
+            hideDlg();
             var data = resp.data;
             if (data.Status == -1) { // error
                 onError(data.ErrorMessage);
@@ -195,7 +195,8 @@ app.controller('LoginController', ['$scope', '$location', '$http', function ($sc
                     });
             }
         }, function (err) {
-            onError(err.statusText);
+            log(err);            
+            onError(err.statusText == '' ? $scope.resource.text_ConnectionTimeout : err.statusText);
         });
     }
 
@@ -206,10 +207,10 @@ app.controller('LoginController', ['$scope', '$location', '$http', function ($sc
         log('Login using local db');
         selectUserByID($scope.user.id, $scope.user.password,
             function (tx, dbres) {
-                closeLoadingDlg();
+                hideDlg();
                 if (dbres.rows.length == 1) {
                     var per = dbres.rows.item(0);
-                    onSuccess( {
+                    onSuccess({
                         ID: per.ID,
                         FirstName: per.FirstName,
                         LastName: per.LastName,
@@ -245,7 +246,7 @@ app.controller('LoginController', ['$scope', '$location', '$http', function ($sc
         }
         $scope.user.password = '';
         $scope.user.firstName = user.FirstName;
-        $scope.user.lastName = user.LastName;       
+        $scope.user.lastName = user.LastName;
         $scope.user.isTerminate = user.IsTerminate;
         $scope.user.hasAuditRole = user.HasAuditRole;
         $scope.user.posID = user.PosID;
@@ -262,42 +263,42 @@ app.controller('LoginController', ['$scope', '$location', '$http', function ($sc
         $scope.user.phone = user.Phone;
 
         if (isOnline && !isDev) {
-            showLoadingDlg('Downloading Settings...', 'Please wait', function () { isCancel = true; });
+            showDlg('Downloading Settings', 'Please wait...');
             downloadServerConfig(function () {
-                closeLoadingDlg();
+                hideDlg();
                 log('Navigate to home (online)');
                 $scope.changeView('home');
             }, function (dberr) {
-                closeLoadingDlg();
-                showDialog(dberr.message, 'Unknown Error', function () { });
+                hideDlg();
+                showError(dberr.message);
             });
         }
         else {
             log('Navigate to home (offline)');
             $scope.changeView('home');
-        }       
+        }
     }
 
     function loginError(err) {
-        closeLoadingDlg();
+        hideDlg();
         showError(err);
     }
-   
+
     /**
      * Download configs
      */
-    function downloadServerConfig(onSuccess, onError) {        
-        var url = $scope.baseURL + '/config/getall';        
+    function downloadServerConfig(onSuccess, onError) {
+        var url = $scope.baseURL + '/config/getall';
         log('Call service api: ' + url);
         $http({
             method: $scope.config.http_method,
             url: url
-        }).then(function (resp) {           
+        }).then(function (resp) {
             var data = resp.data;
             if (data.Status == -1) { // error
                 onError(data.ErrorMessage);
             } else {
-                setLoadingDlgMessage('Update settings')
+                setDlgMsg('Update settings...');
 
                 var syncProvinces = false;
                 var syncOutletTypes = false;
@@ -343,7 +344,7 @@ app.controller('LoginController', ['$scope', '$location', '$http', function ($sc
      * Download provinces
      */
     function downloadProvinces(onSuccess, onError) {
-        setLoadingDlgMessage('Downloading Provinces...')
+        setDlgMsg('Downloading Provinces...');
         var url = $scope.baseURL + '/provinces/getall';
         log('Call service api: ' + url);
         $http({
@@ -363,7 +364,7 @@ app.controller('LoginController', ['$scope', '$location', '$http', function ($sc
      * Dowload outlet types
      */
     function downloadOutletTypes(onSuccess, onError) {
-        setLoadingDlgMessage('Downloading Outlet Types...')
+        setDlgMsg('Downloading Outlet Types...');
         var url = $scope.baseURL + '/outlet/getoutlettypes';
         log('Call service api: ' + url);
         $http({

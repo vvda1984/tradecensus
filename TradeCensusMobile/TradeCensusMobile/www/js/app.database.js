@@ -1,4 +1,7 @@
-﻿function initalizeDB(onSuccess) {
+﻿/**
+* Initialize database
+*/
+function initalizeDB(onSuccess) {
     //db = window.sqlitePlugin.openDatabase({ name: "td-v01.db", location: 'default' });
     db = window.openDatabase("Database", "2.0", "td-v01.db", 200000);
     db.transaction(function (tx) {

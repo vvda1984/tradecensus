@@ -116,7 +116,7 @@ app.controller('HomeController', ['$scope', '$location', '$http', function ($sco
             method: $scope.config.http_method,
             url: url
         }).then(function (resp) {
-            closeLoadingDlg();
+            hideDlg();
             var data = resp.data;
             if (data.Status == -1) { // error
                 handleError(data.ErrorMessage);

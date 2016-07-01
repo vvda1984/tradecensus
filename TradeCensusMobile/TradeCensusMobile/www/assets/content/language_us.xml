@@ -1,0 +1,20 @@
+﻿<resources>
+  <AppName>Trade Censue</AppName>
+  <Login>Login</Login>
+  <Exit>Exit</Exit>
+  <OK>OK</OK>
+  <Cancel>Cancel</Cancel>
+  <InvalidUserPass>Invalid User/Password.</InvalidUserPass>
+  <ConfigServer>Configure Server</ConfigServer>
+  <UserName>User ID</UserName>
+  <Password>Password</Password>
+  <EnterProtocol>Enter Protocol</EnterProtocol>
+  <EnterUserID>Enter User ID</EnterUserID>
+  <EnterIPAddress>Enter IP Address</EnterIPAddress>
+  <EnterPort>Enter Port</EnterPort>
+  <EnterPassword>Enter Password</EnterPassword>
+  <EnterProvince>Enter Province</EnterProvince>
+  <ValRequired>Required.</ValRequired>
+  <ValLength10>Has to be less than 10 characters long.</ValLength10>
+  <UserTerminated>User has been terminated</UserTerminated>
+</resources>

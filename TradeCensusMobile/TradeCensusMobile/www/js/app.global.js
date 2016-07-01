@@ -1,16 +1,4 @@
-﻿var app;                            // angular TradeCensus module
-var db;                             // database instance
-var map;                            // google map
-var isOnline = true;                // network status
-var isDev = false;                  // enable DEV mode
-var userOutletTable = 'outlet';     // outlet table name for current user
-var isLoadingDlgOpened = false;     // 
-var isWeb = false;
-var isInitialize = false;
-var provinces = [];
-
-
-/** 
+﻿/** 
 * checkConnection
 */
 function checkConnection() {
@@ -24,55 +12,6 @@ function checkConnection() {
 */
 function log(message) {
     console.log(message);
-}
-
-/** 
-* showDialog
-*/
-function showDialog(message, title, onClosed) {
-    navigator.notification.alert(message, onClosed, title, 'Close');
-}
-
-/** 
-* showConfirm
-*/
-function showConfirm(message, title, onClosed) {
-    navigator.notification.confirm(message, onClosed, title, ['OK', 'Cancel']);
-}
-
-/** 
-* showError
-*/
-function showError(message) {
-    navigator.notification.alert(message, function(){}, "Error", 'Close');
-}
-
-/** 
-* showLoadingDlg
-*/
-function showLoadingDlg(message, title, onClosed) {
-    isLoadingDlgOpened = true;
-    //SpinnerDialog.show(message, title, function () {
-    //    IsLoadingDlgOpened = false;
-    //    onClosed();        
-    //});
-
-    showOverlay(message);
-}
-
-/** 
-* closeLoadingDlg
-*/
-function closeLoadingDlg() {
-    hideOverlay();
-    isLoadingDlgOpened = false;
-    //SpinnerDialog.hide();
-}
-
-/** 
-* setLoadingDlgMessage
-*/
-function setLoadingDlgMessage() {   
 }
 
 /** 
@@ -105,50 +44,73 @@ function buildURL(protocol, ip, port, serviceName) {
 }
 
 /** 
-* showOverlay
+* showLoading
 */
-function showOverlay(message) {
-    $('#cover').css('display', 'block');
-    $('#loadingScreen').css('display', 'block');
-
-    var cover = '<div id=\'overlay\'>' +
-                    '<div id=\'overlay-view\'>'+
-                        '<div id=\'overlay-content\'>' +
-                            message +
-                        '</div>' +
+function showDlg(title, message, allowClose) {
+    log("show dlg");
+    var cover = allowClose
+        ? '<div id="loading-overlay">' +
+            '<div id="loading-window">' +
+                '<div id="loading-content">' +
+                    '<div id="loading-content-header">' +
+                        '<h2 id="loading-content-title">' + title + '</h2>' +
                     '</div>' +
-                '</div>';
+                    '<span id="loading-content-message">' + message + '</span>' +
+                    '<div id="loading-content-footer">' +
+                        '<a onclick="hideDlg()">CLOSE</a>' +
+                    '</div>' +
+                '</div>' +
+            '</div>' +
+         '</div>'
+        : '<div id="loading-overlay">' +
+            '<div id="loading-window">' +
+                '<div id="loading-content">' +
+                    '<div id="loading-content-header">' +
+                        '<h2 id="loading-content-title">' + title + '</h2>' +
+                    '</div>' +
+                    '<span id="loading-content-message">' + message + '</span>' +
+                    '<div id="loading-content-footer">' +                       
+                    '</div>' +
+                '</div>' +
+            '</div>' +
+         '</div>';
+    //log(cover);
     $(cover).appendTo('body');
+}
 
-    // click on the overlay to remove it
-    //$('#overlay').click(function() {
-    //    $(this).remove();
-    //});
-
-    // hit escape to close the overlay
-    //$(document).keyup(function (e) {
-    //    if (e.which === 27) {
-    //        $('#overlay').remove();
-    //    }
-    //});
+/**
+* Set loading message
+*/
+function setDlgMsg(message) {
+    $('#loading-content-message').html(message);
 }
 
 /** 
-* hideOverlay
+* hideLoading
 */
-function hideOverlay() {
+function hideDlg() {
+    log("hide dlg");
     try {
-        $('#overlay').remove()
+        $('#loading-overlay').remove();
     }
     catch (err) {        
     }
 }
 
 /** 
+* showError
+*/
+function showError(message) {
+    //navigator.notification.alert(message, function () { }, "Error", 'Close');
+    hideDlg();
+    showDlg("Error", message, true);
+}
+
+/** 
 * handleError
 */
 function handleError(err) {
-    closeLoadingDlg();
+    hideDlg();
     showDialog(err, 'Error', function () { });
 }
 
@@ -177,6 +139,56 @@ function closeOutletPanel() {
 * Handle http error
 */
 function handleHttpError(err) {
-    closeLoadingDlg();
-    showError(err.statusText);
+    hideDlg();
+    var msg = err.statusText == '' ? $scope.resource.text_ConnectionTimeout : err.statusText;
+    showError(msg);
+}
+
+/** 
+* loadResources
+*/
+function loadResources() {
+    return {
+        text_AppName: 'Trade Censue',
+        text_Login: 'Login',
+        text_Exit: 'Exit',
+        text_OK: 'OK',
+        text_Cancel: 'Cancel',
+        text_InvalidUserPass: 'Invalid User/Password.',
+        text_ConfigServer: 'Configure Server',
+        text_UserName: 'User ID',
+        text_Password: 'Password',
+        text_EnterProtocol: 'Enter Protocol',
+        text_EnterUserID: 'Enter User ID',
+        text_EnterIPAddress: 'Enter IP Address',
+        text_EnterPort: 'Enter Port',
+        text_EnterPassword: 'Enter Password',
+        text_EnterProvince: 'Enter Province',
+        text_ValRequired: 'Required.',
+        text_ValLength10: 'Has to be less than 10 characters long.',
+        text_UserTerminated: 'User has been terminated',
+        text_ConnectionTimeout: 'Connection timeout',        
+    };
+}
+
+/**
+* loadDefaultConfig
+*/
+function loadDefaultConfig() {
+    // Load database...
+    return {
+        protocol: 'http',
+        ip: '192.168.1.104',
+        port: '33334',
+        service_name: 'TradeCensusService.svc',
+        item_count: 20,
+        distance: 1000,
+        province_id: 50, // HCM
+        http_method: 'POST',
+        calc_distance_algorithm: 'circle',
+        tbl_area_ver: '0',
+        tbl_outlettype_ver: '0',
+        tbl_province_ver: '1',
+        tbl_zone_ver: '0',
+    };
 }

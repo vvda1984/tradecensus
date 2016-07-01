@@ -6,6 +6,7 @@
 
     <!-- Libs -->
     <script src="assets/libs/jquery.js"></script>
+    <script src="assets/libs/xmltojson.js"></script>
 
     <!-- Kendo UI -->
     <!--<link href="assets/libs/kendo/kendo.common.min.css" rel="stylesheet" type="text/css" />
@@ -35,45 +36,43 @@
     <script src="js/app.global.js"></script>
     <script src="js/app.database.js"></script>      
     <script type="text/javascript">      
-        initalizeDB(function () {
-            selectProvinces(function (tx, dbrow) {
-                var rowLen = dbrow.rows.length;
-                if (rowLen > 0) {
-                    for (i = 0; i < rowLen; i++) {
-                        var p = {
-                            id: dbrow.rows.item(i).ID,
-                            name: dbrow.rows.item(i).Name,
-                        }
-                        provinces[i] = p;
-                    }
-                }
-            }, function (err) { })
-        });
+        //initalizeDB(function () {
+        //    selectProvinces(function (tx, dbrow) {
+        //        var rowLen = dbrow.rows.length;
+        //        if (rowLen) {
+        //            for (i = 0; i < rowLen; i++) {
+        //                provinces[i] = {
+        //                    id: dbrow.rows.item(i).ID,
+        //                    name: dbrow.rows.item(i).Name,
+        //                }
+        //            }
+        //        }
+        //    }, function (err) {
+        //    })
+        //});
 
-        var app = angular.module("TradeCensus", ["ngRoute", 'ngMaterial', 'ngMessages']);
-        app.config(["$routeProvider", function (routeProvider) {
-            //sceDelegateProvider.resourceUrlWhitelist(["**"]);
-            routeProvider
-                .when("/login", {
-                    templateUrl: "./views/login.html",
-                    controller: "LoginController",
-                })
-                .when("/config", {
-                    templateUrl: "./views/config.html",
-                    controller: "ConfigController",
-                })
-                .when("/home", {
-                    templateUrl: "./views/home.html",
-                    controller: "HomeController",
-                })
-            ;
-        }]);
-    </script>   
-    <!--<script src="js/app.init.js"></script>-->    
-    <script src="js/mainController.js"></script>
+        //var app = angular
+        //    .module("TradeCensus", ["ngRoute", 'ngMaterial', 'ngMessages'])
+        //    .config(["$routeProvider", function ($routeProvider) {
+        //        $routeProvider
+        //        .when("/login", {
+        //            templateUrl: "./views/login.html",
+        //            controller: "LoginController",
+        //        })
+        //        .when("/config", {
+        //            templateUrl: "./views/config.html",
+        //            controller: "ConfigController",
+        //        })
+        //        .when("/home", {
+        //            templateUrl: "./views/home.html",
+        //            controller: "HomeController",
+        //        });
+        //    }]);
+    </script>        
+    <script src="js/mainController.js"></script>  
     <script src="js/loginController.js"></script>
     <script src="js/configController.js"></script>
     <script src="js/homeController.js"></script>
-    <script type="text/javascript" src="cordova.js"></script>
+    <!--<script type="text/javascript" src="cordova.js"></script>-->-->
 </body>
 </html>
