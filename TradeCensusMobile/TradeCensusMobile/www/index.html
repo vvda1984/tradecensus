@@ -6,7 +6,8 @@
 
     <!-- Libs -->
     <script src="assets/libs/jquery.js"></script>    
-
+    <script src="assets/libs/json2.js"></script>    
+    
     <!-- Kendo UI -->
     <!--<link href="assets/libs/kendo/kendo.common.min.css" rel="stylesheet" type="text/css" />
     <link href="assets/libs/kendo/kendo.silver.min.css" rel="stylesheet" type="text/css" />
@@ -111,6 +112,110 @@
                             <div class="md-block-item-title">Closed Date</div>
                             <div class="md-block-item-value">{{outlet.CloseDate}}</div>
                         </div>
+                        <div class="md-block-item" ng-show="openedOptionVisible">
+                            <md-switch ng-model="outlet.IsOpened">{{outlet.IsOpened ? "Opened" : "Closed"}}</md-switch>
+                        </div>
+                        <div class="md-block-item" ng-show="trackedOptionVisible">
+                            <md-switch ng-model="outlet.IsTracked">{{outlet.IsTracked ? "Tracking" : "Non-Tracking"}}</md-switch>
+                        </div>
+                    </div>
+
+                    <div layout-gt-xs="row">
+                        <img id="outletImg1" class="outletImage" />
+                        <img id="outletImg2" class="outletImage" />
+                        <img id="outletImg3" class="outletImage" />
+                    </div>
+                    <div layout-gt-xs="row" layout-margin layout-align="center">
+                        <md-button class="md-raised md-primary" ng-click="saveUpdate()">Save</md-button>
+                        <md-button class="md-raised" ng-click="cancelUpdate()">Cancel</md-button>
+                    </div>
+                </form>
+            </md-content>
+        </md-dialog>
+    </script>
+    <script type="text/ng-template" id="outletnew.html">
+        <md-dialog aria-label="Mango (Fruit)" ng-cloak>
+            <md-toolbar>
+                <div class="md-toolbar-tools">
+                    <div>CREATE NEW OUTLET</div>
+                    <span flex=""></span>
+                    <div>Code: {{outlet.ID}}</div>
+                </div>
+            </md-toolbar>
+            <md-content layout-padding="" class="popup-content">
+                <form name="userForm">
+                    <div layout-gt-xs="row">
+                        <md-input-container class="md-block" flex>
+                            <label>Name</label>
+                            <input ng-model="outlet.Name">
+                        </md-input-container>
+                        <md-input-container class="md-block" flex-gt-sm="">
+                            <label>Outlet Type</label>
+                            <md-select ng-model="outlet.OTypeID">
+                                <md-option ng-repeat="o in outletTypes" value="{{o.id}}">
+                                    {{o.name}}
+                                </md-option>
+                            </md-select>
+                        </md-input-container>
+                        <md-input-container class="md-block">
+                            <label>Latitude</label>
+                            <input ng-model="outlet.Latitude" disabled="">
+                        </md-input-container>
+                        <md-input-container class="md-block">
+                            <label>Longitude</label>
+                            <input ng-model="outlet.Longitude" disabled="">
+                        </md-input-container>
+                    </div>
+
+                    <div layout-gt-sm="row">
+                        <md-input-container class="md-block">
+                            <label>House No</label>
+                            <input ng-model="outlet.AddLine">
+                        </md-input-container>
+                        <md-input-container class="md-block">
+                            <label>Street</label>
+                            <input ng-model="outlet.AddLine2">
+                        </md-input-container>
+                        <md-input-container class="md-block">
+                            <label>District</label>
+                            <input ng-model="outlet.District">
+                        </md-input-container>
+                        <md-input-container class="md-block">
+                            <label>Province</label>
+                            <input ng-model="outlet.ProvinceName" disabled="">
+                        </md-input-container>
+
+                    </div>
+
+                    <div layout-gt-sm="row">
+
+                        <md-input-container class="md-block">
+                            <label>TEL</label>
+                            <input ng-model="outlet.AddLine">
+                        </md-input-container>
+
+                        <div class="md-block-item">
+                            <div class="md-block-item-title" style="color:red">Volume (crates/cartons.Avg/month)</div>
+                            <div class="md-block-item-value"></div>
+                        </div>
+                        <md-input-container class="md-block">
+                            <label style="color:red">TOTAL</label>
+                            <input ng-model="outlet.TotalVolume">
+                        </md-input-container>
+                        <md-input-container class="md-block">
+                            <label style="color:red">VBL Product</label>
+                            <input ng-model="outlet.VBLVolume">
+                        </md-input-container>
+                    </div>
+
+                    <div layout-gt-xs="row">
+                        <img id="outletImg1" class="outletImage" />
+                        <img id="outletImg2" class="outletImage" />
+                        <img id="outletImg3" class="outletImage" />
+                    </div>
+                    <div layout-gt-xs="row" layout-margin layout-align="center">
+                        <md-button class="md-raised md-primary" ng-click="saveUpdate()">Save</md-button>
+                        <md-button class="md-raised" ng-click="cancelUpdate()">Cancel</md-button>
                     </div>
                 </form>
             </md-content>

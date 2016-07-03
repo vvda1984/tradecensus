@@ -79,8 +79,7 @@ var app = angular
             initalizeDB(function () {
                 showDlg('Initialize', 'Please wait...', false);
                 selectProvinces(
-                    function (tx, dbrow) { // Load Province Success
-                        //hideDlg();
+                    function (tx, dbrow) { // Load Province Success                        
                         var rowLen = dbrow.rows.length;
                         if (rowLen) {
                             for (i = 0; i < rowLen; i++) {

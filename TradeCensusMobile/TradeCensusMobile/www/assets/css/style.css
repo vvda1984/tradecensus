@@ -452,6 +452,8 @@ hr {
 
 .md-block {
     margin: 12px 8px 4px 8px;
+    /*min-width: 64px;
+    max-width: 176px;*/
 }
 
 .md-block-item {

@@ -6,7 +6,7 @@
 
     <!-- Libs -->
     <script src="assets/libs/jquery.js"></script>
-    <script src="assets/libs/xmltojson.js"></script>
+    <script src="assets/libs/json2.js"></script>   
 
     <!-- Kendo UI -->
     <!--<link href="assets/libs/kendo/kendo.common.min.css" rel="stylesheet" type="text/css" />
@@ -23,7 +23,7 @@
     <!-- <script src="assets/libs/angular/angular-kendo.js"></script> -->
     <!-- Custom CSS -->
     <link rel="stylesheet" href="assets/css/style.css">
-    <style>
+    <!--<style>
         ._md {
             min-height: 32px;
         }
@@ -34,7 +34,9 @@
         }
 
         .md-block{
-            margin:12px 8px 4px 8px;            
+            margin:12px 8px 4px 8px;    
+            min-width:100px;        
+            max-width:200px;
         }
 
         .md-block-item {
@@ -52,7 +54,7 @@
                 color: rgba(0,0,0,1);
                 display: inherit;
             }
-    </style>
+    </style>-->
     <script>
         angular.module('MyApp', ['ngMaterial', 'ngMessages'])
         .controller('AppCtrl', function ($scope, $mdDialog, $mdMedia) {
@@ -67,7 +69,7 @@
                 AmendDate: "2016-11-06 00:00:00",
                 AreaID: "HRC",
                 AuditStatus: 0,
-                CloseDate: "",
+                CloseDate: "2016-06-01",
                 CreateDate: "2016-06-01 00:00:00",
                 Distance: 611.4265072240927,
                 District: "Q.1",
@@ -90,7 +92,9 @@
                 StringImage1: null,
                 StringImage2: null,
                 StringImage3: null,
-                Tracking: 1
+                Tracking: 0,
+                IsOpened: false,
+                IsTracked: false,
             };
             //$scope.showAdvanced = function(evt) {
             //    $scope.data.dialogOpen = true;
@@ -109,26 +113,23 @@
             //    });
             //}
 
-            //var u = JSON.parse(JSON.stringify($scope.user));
-            //log(u);
+            var u = $.extend(true, {}, $scope.outlet);;
+            console.log(u);
 
             $scope.showAdvanced = function (ev) {
                 $mdDialog.show({
                     targetEvent: ev,
                     scope: $scope.$new(),
                     controller: function ($scope, $mdDialog) {
-                        //$scope.user = user;
-
-                        $scope.hide = function () {
-                            $mdDialog.hide();
+                        $scope.openedOptionVisible = !$scope.outlet.IsOpened;
+                        $scope.trackedOptionVisible = !$scope.outlet.IsTracked;
+                        $scope.outlet.Name = "ABC DEF AAA";
+                        $scope.saveUpdate = function () {
+                            $mdDialog.hide(true);
                         };
 
-                        $scope.cancel = function () {
+                        $scope.cancelUpdate = function () {
                             $mdDialog.cancel();
-                        };
-
-                        $scope.answer = function (answer) {
-                            $mdDialog.hide(answer);
                         };
                     },
                     templateUrl: 'dialog1.tmpl.html',
@@ -138,6 +139,9 @@
                 })
                 .then(function (answer) {
                     $scope.status = 'You said the information was "' + answer + '".';
+                    console.log($scope.status);
+                    console.log($scope.outlet);
+                    console.log(u);
                 }, function () {
                     $scope.status = 'You cancelled the dialog.';
                 });
@@ -183,54 +187,75 @@
         <md-dialog aria-label="Mango (Fruit)" ng-cloak>
             <md-toolbar>
                 <div class="md-toolbar-tools">
-                    <div>{{outlet.Name}}</div>
+                    <div>CREATE NEW OUTLET</div>
                     <span flex=""></span>
-                    <div>{{outlet.Distance}} (m)</div>
+                    <div>Code: {{outlet.ID}}</div>                    
                 </div>
             </md-toolbar>
             <md-content layout-padding="" class="popup-content">
                 <form name="userForm">
                     <div layout-gt-xs="row">
-                        <div class="md-block-item" flex>
-                            <div class="md-block-item-title">Address</div>
-                            <div class="md-block-item-value">{{outlet.FullAddress}}</div>
-                        </div>
-                        <div class="md-block-item">
-                            <div class="md-block-item-title">Outlet Code</div>
-                            <div class="md-block-item-value">{{outlet.ID}}</div>
-                        </div>                    
+                        <md-input-container class="md-block" flex>
+                            <label>Name</label>
+                            <input ng-model="outlet.Name">
+                        </md-input-container>
+                        <md-input-container class="md-block" flex-gt-sm="">
+                            <label>Outlet Type</label>
+                            <md-select ng-model="config.province_id">
+                                <md-option ng-repeat="p in provinces" value="{{p.id}}">
+                                    {{p.name}}
+                                </md-option>
+                            </md-select>
+                        </md-input-container>  
+                        <md-input-container class="md-block">
+                            <label>Latitude</label>
+                            <input ng-model="outlet.Latitude" disabled="">
+                        </md-input-container>
+                        <md-input-container class="md-block">
+                            <label>Longitude</label>
+                            <input ng-model="outlet.Longitude" disabled="">
+                        </md-input-container>          
                     </div>
 
                     <div layout-gt-sm="row">
-                        <div class="md-block-item">
-                            <div class="md-block-item-title">Outlet Type</div>
-                            <div class="md-block-item-value">{{outlet.OutletTypeName}}</div>
-                        </div>
-                        <div class="md-block-item">
-                            <div class="md-block-item-title">Telephone</div>
-                            <div class="md-block-item-value">{{outlet.Phone}}</div>
-                        </div> 
-                        <div class="md-block-item">
-                            <div class="md-block-item-title">Last Contact</div>
-                            <div class="md-block-item-value">{{outlet.LastContact}}</div>
-                        </div> 
-                        <div class="md-block-item">
-                            <div class="md-block-item-title">Last Visit</div>
-                            <div class="md-block-item-value">{{outlet.LastVisit}}</div>
-                        </div>
+                        <md-input-container class="md-block">
+                            <label>House No</label>
+                            <input ng-model="outlet.AddLine">
+                        </md-input-container>
+                        <md-input-container class="md-block">
+                            <label>Street</label>
+                            <input ng-model="outlet.AddLine2">
+                        </md-input-container>
+                        <md-input-container class="md-block">
+                            <label>District</label>
+                            <input ng-model="outlet.District">
+                        </md-input-container>   
+                        <md-input-container class="md-block">
+                            <label>Province</label>
+                            <input ng-model="outlet.ProvinceName" disabled="">
+                        </md-input-container>   
+                                                 
                     </div>
+                    
+                    <div layout-gt-sm="row">
 
-                    <div layout-gt-sm="row">                        
+                        <md-input-container class="md-block">
+                            <label>TEL</label>
+                            <input ng-model="outlet.AddLine">
+                        </md-input-container>      
+
                         <div class="md-block-item">
-                            <div class="md-block-item-title">Closed Date</div>
-                            <div class="md-block-item-value">{{outlet.CloseDate}}</div>
-                        </div>                    
-                        <div class="md-block-item" ng-show="closedOptionVisible">
-                            <md-switch ng-model="outlet.IsClosed">{{outlet.IsClosed ? "Closed" : "Opened"}}</md-switch>                            
-                        </div>
-                        <div class="md-block-item" ng-show="trackedOptionVisible">
-                            <md-switch ng-model="outlet.IsTracked">{{outlet.IsTracked ? "Tracking" : "Non-Tracking"}}</md-switch>
-                        </div>
+                            <div class="md-block-item-title" style="color:red">Volume (crates/cartons.Avg/month)</div>
+                            <div class="md-block-item-value"></div>
+                        </div>                                              
+                        <md-input-container class="md-block">
+                            <label style="color:red">TOTAL</label>
+                            <input ng-model="outlet.TotalVolume">
+                        </md-input-container>  
+                        <md-input-container class="md-block">
+                            <label style="color:red">VBL Product</label>
+                            <input ng-model="outlet.VBLVolume">
+                        </md-input-container>                       
                     </div>
 
                     <div layout-gt-xs="row">

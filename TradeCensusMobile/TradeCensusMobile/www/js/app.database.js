@@ -20,7 +20,7 @@ function initalizeDB(onSuccess) {
         tx.executeSql('CREATE TABLE IF NOT EXISTS [province] ( [ID] text PRIMARY KEY NOT NULL, [Name] text COLLATE NOCASE)');
        
         log("ensure table [outletType] exist");
-        tx.executeSql('CREATE TABLE IF NOT EXISTS [outletType] ( [ID] text PRIMARY KEY NOT NULL, [Name] text COLLATE NOCASE, [OGroupID] text COLLATE NOCASE, [KPIType] integer NOT NULL)');
+        tx.executeSql('CREATE TABLE IF NOT EXISTS [outletType] ( [ID] text PRIMARY KEY NOT NULL, [Name] text COLLATE NOCASE, [OGroupID] text COLLATE NOCASE, [KPIType] int NOT NULL)');
 
         //log("ensure table [outletSync] exist");
         //tx.executeSql('CREATE TABLE IF NOT EXISTS [outletSync] ( [ID] text PRIMARY KEY NOT NULL, [PersonID] integer NOT NULL, [LastSyncTS] text NOT NULL)');
@@ -100,9 +100,11 @@ function insertOutletTypes(items, onSuccess, onError) {
             sql = sql.concat("'", p.ID, "', ");
             sql = sql.concat("'", p.Name, "', ");
             sql = sql.concat("'", p.OGroupID, "', ");
-            sql = sql.concat(p.ID.toString(), ")");            
+            sql = sql.concat(p.KPIType.toString(), ")");
             logSqlCommand(sql);
-            tx.executeSql(sql);
+            tx.executeSql(sql, [], function (tx) { }, function (dberr) {
+                log(dberr.message);
+            });
         };
         onSuccess();
     });
@@ -224,10 +226,18 @@ function selectProvinces(onSuccess, onError) {
     });   
 }
 
+function selectOutletTypes(onSuccess, onError) {
+    db.transaction(function (tx) {
+        var sql = "SELECT * FROM outletType";
+        logSqlCommand(sql);
+        tx.executeSql(sql, [], onSuccess, onError);
+    });
+}
+
 function createOutletTables(outletSyncTbl, outletTbl, onDone) {
     db.transaction(function (tx) {
-        //tx.executeSql('DROP TABLE IF EXISTS ' + outletSyncTbl);
-        //tx.executeSql('DROP TABLE IF EXISTS ' + outletTbl);
+        tx.executeSql('DROP TABLE IF EXISTS ' + outletSyncTbl);
+        tx.executeSql('DROP TABLE IF EXISTS ' + outletTbl);
 
         log('ensure table [' + outletSyncTbl + ' exist');
         var sql = ('CREATE TABLE IF NOT EXISTS [' + outletSyncTbl + '](' +
@@ -273,13 +283,17 @@ function createOutletTables(outletSyncTbl, outletTbl, onDone) {
 	                    '[AmendBy] int NOT NULL,' +
 	                    '[AmendDate] text NOT NULL,' +
 	                    '[OutletEmail] text NULL,' +
-	                    '[AuditStatus] int NOT NULL,' +	
+	                    '[AuditStatus] int NOT NULL,' +
+                        '[TotalVolume] int NOT NULL,' +
+                        '[VBLVolume] int NOT NULL,' +                        
 	                    '[StringImage1] text,' +
 	                    '[StringImage2] text,' +
 	                    '[StringImage3] text,' +
 	                    '[OutletSource] int,' +
                         '[PRowID] text NULL,' +
-	                    '[PState] int,' +
+	                    '[PIsAdd] bit,' +
+                        '[PIsMod] bit,' +
+                        '[PIsAud] bit,' +
 	                    '[PSynced] bit,' +
 	                    '[PLastModTS] int,' +
 	                    '[PMarked] bit)');
@@ -309,14 +323,14 @@ function insertOutlets(userID, outletTbl, outlets, onSuccess, onError) {
                         if (existOutlet.AmendBy != outlet.AmendBy || existOutlet.AmendDate != outlet.AmendDate) {
                             log('Outlet was MODIFIED in server');
                             //if (existOutlet.state == 0) { // unchanged
-                            //    updateOutlet(tx, userID, outletTbl, outlet, 0, true, false);
+                            //    updateOutlet(tx, userID, outletTbl, outlet, 0, true);
                             //}
-                            updateOutlet(tx, userID, outletTbl, outlet, existOutlet.PState, true, false);
+                            updateOutlet(tx, outletTbl, outlet, 0, true);
                         } else {
                             log('Outlet was NOT changed');
                         }
                     } else {
-                        addNewOutlet(tx1, userID, outletTbl, outlet, 0, true, false);
+                        addNewOutlet(tx1, outletTbl, outlet, false, false, false, true, false);
                     }
                 },
                 function (dberr) { log('select outlet error'); log(dberr.message); });
@@ -331,7 +345,7 @@ function insertOutlets(userID, outletTbl, outlets, onSuccess, onError) {
     }, onError);
 }
 
-function addNewOutlet(tx, userID, outletTbl, outlet, state, synced, marked) {
+function addNewOutlet(tx, outletTbl, outlet, isAdd, isMod, isAud, synced, marked) {
     log('add new outlet');
     var n = (new Date()).getTime();
     var sql = 'INSERT INTO ' + outletTbl + ' VALUES (';
@@ -339,7 +353,7 @@ function addNewOutlet(tx, userID, outletTbl, outlet, state, synced, marked) {
     sql = sql.concat('"', outlet.AreaID, '", ');            //'[AreaID] text NOT NULL,' ,
     sql = sql.concat('" ",');                               //'[TerritoryID] text NOT NULL,' ,
     sql = sql.concat('"', outlet.OTypeID, '", ');           //'[OTypeID] text NOT NULL,' ,
-    sql = sql.concat('"', outlet.Name, '", ');              // '[Name] text NOT NULL,'
+    sql = sql.concat('"', outlet.Name, '", ');              //'[Name] text NOT NULL,'
     sql = sql.concat('"', outlet.AddLine, '", ');           //'[AddLine] text NULL,' ,
     sql = sql.concat('"', outlet.AddLine2, '", ');          //'[AddLine2] text NULL,' ,
     sql = sql.concat('"', outlet.District, '", ');          //'[District] text NULL,' ,
@@ -361,20 +375,24 @@ function addNewOutlet(tx, userID, outletTbl, outlet, state, synced, marked) {
     sql = sql.concat('"', outlet.Note, '", ');              //'[Note] text NULL,' ,
     sql = sql.concat(outlet.Longitude.toString(), ', ');    //'[Longitude] float NULL,' ,
     sql = sql.concat(outlet.Latitude.toString(), ', ');     //'[Latitude] float NULL,' ,
-    sql = sql.concat('" ", ');                               //'[TaxID] text NULL,' ,
+    sql = sql.concat('" ", ');                              //'[TaxID] text NULL,' ,
     sql = sql.concat('0, ');	                            //'[ModifiedStatus] int NULL,' ,
     sql = sql.concat(outlet.InputBy.toString(), ', ');      //'[InputBy] int NULL,' ,
-    sql = sql.concat('" ", ');                               //'[InputDate] text NULL,' ,
+    sql = sql.concat('" ", ');                              //'[InputDate] text NULL,' ,
     sql = sql.concat(outlet.AmendBy.toString(), ', ');      //'[AmendBy] int NOT NULL,' ,
     sql = sql.concat('"', outlet.AmendDate, '", ');         //'[AmendDate] text NOT NULL,' ,
-    sql = sql.concat('" ", ');                               //'[OutletEmail] text NULL,' ,
-    sql = sql.concat(outlet.AuditStatus.toString(), ', '); //'[AuditStatus] int NOT NULL,' ,	
+    sql = sql.concat('" ", ');                              //'[OutletEmail] text NULL,' ,    
+    sql = sql.concat(outlet.AuditStatus.toString(), ', ');  //'[AuditStatus] int NOT NULL,' ,	
+    sql = sql.concat(outlet.TotalVolume.toString(), ', ');  //'[TotalVolume] int NOT NULL,' +
+    sql = sql.concat(outlet.VBLVolume.toString(), ', ');    //'[VBLVolume] int NOT NULL,' +   
     sql = sql.concat('"', outlet.StringImage1, '", ');      //'[StringImage1] text,' ,
     sql = sql.concat('"', outlet.StringImage2, '", ');      //'[StringImage2] text,' ,
     sql = sql.concat('"', outlet.StringImage3, '", ');      //'[StringImage3] text,' ,
     sql = sql.concat(outlet.OutletSource.toString(), ', '); //'[OutletSource] int' ,
-    sql = sql.concat('"', outlet.PRowID, '", ');            //'[PRowID] text NULL,' ,
-    sql = sql.concat(state.toString(), ', ');               //'[PState] int,' ,
+    sql = sql.concat('"', outlet.PRowID, '", ');            //'[PRowID] text NULL,' ,  
+    sql = sql.concat(isAdd ? '1' : '0', ', ');              //'[PIsAdd] bit,' ,
+    sql = sql.concat(isMod ? '1' : '0', ', ');              //'[PIsMod] bit,' ,
+    sql = sql.concat(isAud ? '1' : '0', ', ');              //'[PIsAud] bit,' ,
     sql = sql.concat(synced ? '1' : '0', ', ');             //'[PSynced] bit,' ,
     sql = sql.concat(n.toString(), ', ');                   //'[PLastModTS] int,' ,
     sql = sql.concat(marked ? '1' : '0', ')');              //'[PMarked] bit)');
@@ -389,9 +407,11 @@ function addNewOutlet(tx, userID, outletTbl, outlet, state, synced, marked) {
         });
 }
 
-function updateOutlet(tx, userID, outletTbl, outlet, state, synced, marked) {
+function updateOutlet(tx, outletTbl, outlet, state, synced) {
     log('update outlet');
     var n = (new Date()).getTime();
+    var marked = n < outlet.PLastModTS;
+
     var sql = 'UPDATE ' + outletTbl + ' SET ';
     sql = sql.concat('AreaID="', outlet.AreaID, '", ');
     // TerritoryID text NOT NULL
@@ -421,20 +441,30 @@ function updateOutlet(tx, userID, outletTbl, outlet, state, synced, marked) {
     //'[TaxID] text NULL
     //'[ModifiedStatus] int NULL
     sql = sql.concat('InputBy=', outlet.InputBy.toString(), ', ');
-    sql = sql.concat('InputDate="', outlet.InputDate, '", ');
+    sql = sql.concat('InputDate="', outlet.InputDate == null ? '' : outlet.InputDate, '", ');
     sql = sql.concat('AmendBy=', outlet.AmendBy.toString(), ', ');
     sql = sql.concat('AmendDate="', outlet.AmendDate, '", ');
     //[OutletEmail] text NULL
-    sql = sql.concat('AuditStatus=', outlet.AuditStatus.toString(), '", ');
+    sql = sql.concat('AuditStatus=', outlet.AuditStatus.toString(), ', ');
+    sql = sql.concat('TotalVolume=', outlet.TotalVolume.toString(), ', ');
+    sql = sql.concat('VBLVolume=', outlet.VBLVolume.toString(), ', ');
     sql = sql.concat('StringImage1="', outlet.StringImage1, '", ');
     sql = sql.concat('StringImage2="', outlet.StringImage2, '", ');
     sql = sql.concat('StringImage3="', outlet.StringImage3, '", ');
     sql = sql.concat('OutletSource=', outlet.OutletSource, ', ');
     //[PRowID] text NULL
-    sql = sql.concat('PState=', state.toString(), ', ');
+    if (state == 1) sql = sql.concat('PIsAdd=1, ');
+    if (state == 2) sql = sql.concat('PIsMod=1, ');
+    if (state == 4) sql = sql.concat('PIsAud=1, ');
     sql = sql.concat('PSynced=', synced ? '1' : '0', ', ');
     sql = sql.concat('PLastModTS=', n.toString(), ', ');
-    sql = sql.concat('PMarked=', marked ? '1' : '0', ')');
+    sql = sql.concat('PMarked=', marked ? '1' : '0');
+    if (outlet.PRowID != null && outlet.PRowID.length > 0) {
+        sql = sql.concat(' WHERE PRowID="', outlet.PRowID , '"');
+    } else {
+        sql = sql.concat(' WHERE ID=', outlet.ID.toString());
+    }
+    
     logSqlCommand(sql);
     tx.executeSql(sql, [],
        function (tx1) {
@@ -446,13 +476,42 @@ function updateOutlet(tx, userID, outletTbl, outlet, state, synced, marked) {
        });
 }
 
-function selectOutlets(outletTbl, states, onSuccess, onError) {
+function selectOutlets(outletTbl, state, onSuccess, onError) {
     db.transaction(function (tx) {
         log('Select existing outlet')
-        var sql = 'SELECT * FROM ' + outletTbl + ' WHERE PState IN (' + states.join(', ') + ')';
+        var sql = 'SELECT * FROM ' + outletTbl + ' WHERE '
+        if (state == 1) {
+            sql = sql.concat('PIsAdd = 1');
+        } else if (state == 2) {
+            sql = sql.concat('PIsMod = 1');
+        } else if (state == 4) {
+            sql = sql.concat('PIsAud = 1');
+        }
         logSqlCommand(sql);
-        tx.executeSql(sql, [], function (tx1, dbrow) {
-            onSuccess(db.rows);
+        tx.executeSql(sql, [], function (tx1, dbres) {
+            onSuccess(dbres);
         }, onError);
+    }, onError);
+}
+
+function saveOutletDB(outletTbl, outlet, state, synced, onSuccess, onError) {
+    db.transaction(function (tx) {
+        try {
+            updateOutlet(tx, outletTbl, outlet, state, synced);
+        } catch (err) {
+            log(err);
+        }
+        onSuccess();
+    }, onError);
+}
+
+function addOutletDB(outletTbl, outlet, synced, onSuccess, onError) {
+    db.transaction(function (tx) {
+        try {
+            addNewOutlet(tx, outletTbl, outlet, true, false, false, synced, false);
+        } catch (err) {
+            log(err);
+        }
+        onSuccess();
     }, onError);
 }

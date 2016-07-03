@@ -39,12 +39,13 @@
     <div id="view-home-content-bottom">
         <a id="btn-near-by" ng-click="changeOutletView(0)" class="outlet-button-active">Near-by Outlets</a>
         <a id="btn-new-outlet" ng-click="changeOutletView(1)">New Outlets</a>
-        <a id="btn-new-update" ng-click="changeOutletView(2)">Updated Outlets</a>
+        <a id="btn-mod-outlet" ng-click="changeOutletView(2)">Updated Outlets</a>
+        <a id="btn-aud-outlet" ng-show="hasAuditRole" ng-click="changeOutletView(4)">Auditted Outlets</a>
     </div>
 
     <div id="view-home-content-top">        
         <a id="btn-refresh" ng-show="btnRefreshVisible" ng-click="refresh()">Refresh</a>
-        <a id="btn-add" ng-click="refresh()">Add Outlet</a>
+        <a id="btn-add" ng-click="createNewOutlet()">Add Outlet</a>
     </div>
 </div>
 

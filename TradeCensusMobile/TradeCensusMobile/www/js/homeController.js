@@ -22,13 +22,18 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', fu
     var curlat = 10.773598;
     var curlng = 106.7058;
     $scope.btnRefreshVisible = true;
+    $scope.hasAuditRole = $scope.user.hasAuditRole;
     $scope.outletHeader = 'Near-by Outlets';
-    $scope.outletCategory = 0; // 0: near-by; 1: new: 2: updated    
+    $scope.outletCategory = 0; // 0: near-by; 1: new: 2: updated       
 
     var homeMarker = null;
 
+    $scope.outletTypes = null;
+
     $scope.refresh = function () {
         //onGetLocationSuccess(null);
+        leftPanelStatus = 2;
+        $scope.viewLeftPanel();
         loadMap();
         log('query location...');
         try {
@@ -61,42 +66,171 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', fu
         if ($scope.outletCategory === v) return;
         log('change view to ' + v.toString());
 
+        leftPanelStatus = 2;
+        $scope.viewLeftPanel();
         $scope.outletCategory = v;
         const c = 'outlet-button-active';
         switch (v) {
             case 0:
                 log('view near by outlets');
+                $scope.outletHeader = 'Near-by Outlets';
                 $('#btn-near-by').addClass(c);
                 $('#btn-new-outlet').removeClass(c);
-                $('#btn-new-update').removeClass(c);
+                $('#btn-mod-outlet').removeClass(c);
+                $('#btn-aud-outlet').removeClass(c);
                 $scope.btnRefreshVisible = true;
                 break;
             case 1:
                 log('view new outlets');
+                $scope.outletHeader = 'New Outlets';
                 $('#btn-near-by').removeClass(c);
                 $('#btn-new-outlet').addClass(c);
-                $('#btn-new-update').removeClass(c);
+                $('#btn-mod-outlet').removeClass(c);
+                $('#btn-aud-outlet').removeClass(c);
+                
                 $scope.btnRefreshVisible = false;
-                getOutlets([1, 3, 5]);
+                getOutlets(1);
                 break
             case 2:
-                log("view updated outlets");                
+                log("view updated outlets");
+                $scope.outletHeader = 'Updated Outlets';
                 $('#btn-near-by').removeClass(c);
                 $('#btn-new-outlet').removeClass(c);
-                $('#btn-new-update').addClass(c);
+                $('#btn-mod-outlet').addClass(c);
+                $('#btn-aud-outlet').removeClass(c);
                 $scope.btnRefreshVisible = false;
-                getOutlets([2, 3, 6]);
+                getOutlets(2);
                 break;
             case 4:
                 log("view auditted outlets");
+                $scope.outletHeader = 'Auditted Outlets';
+                $('#btn-near-by').removeClass(c);
+                $('#btn-new-outlet').removeClass(c);
+                $('#btn-mod-outlet').removeClass(c);
+                $('#btn-aud-outlet').addClass(c);
                 $scope.btnRefreshVisible = false;
-                getOutlets([4, 5, 6]);
+                getOutlets(4);
                 break;
         }
     }
 
     $scope.openOutlet = function (i) {
         viewOutlet(i);
+    }
+
+    $scope.createNewOutlet = function () {
+        showDlg('Get current location', "Please wait...");
+        loadOutletTypes(
+            function () {
+                try {
+                    navigator.geolocation.getCurrentPosition(function (position) {
+                        var lat = position.coords.latitude;
+                        var lng = position.coords.longitude;
+
+                        moveToLocation(lat, lng);
+                        log($scope.outletTypes);
+                        $scope.outlet = {
+                            Action: 0,
+                            AddLine: "",
+                            AddLine2: "",
+                            AmendBy: 11693,
+                            AmendDate: "",
+                            AreaID: $scope.user.areaID,
+                            AuditStatus: 0,
+                            CloseDate: "",
+                            CreateDate: "",
+                            Distance: 0,
+                            District: "",
+                            FullAddress: "",
+                            ID: parseInt('65' + $scope.config.province_id + (Math.random() * 100000)),
+                            InputBy: $scope.user.id,
+                            IsOpened: true,
+                            IsTracked: false,
+                            LastContact: "",
+                            LastVisit: "",
+                            Latitude: lat,
+                            Longitude: lng,
+                            Name: "",
+                            Note: null,
+                            OTypeID: $scope.outletTypes[0].id,
+                            OutletEmail: null,
+                            OutletSource: 1,
+                            OutletTypeName: $scope.outletTypes[0].name,
+                            PRowID: '',
+                            PersonID: $scope.user.id,
+                            Phone: "",
+                            ProvinceID: $scope.config.province_id,
+                            ProvinceName: "Hồ Chí Minh",
+                            StringImage1: "",
+                            StringImage2: "",
+                            StringImage3: "",
+                            TotalVolume: 0,
+                            Tracking: 0,
+                            VBLVolume: 0
+                        };
+                        hideDlg();
+                        $mdDialog.show({
+                            scope: $scope.$new(),
+                            controller: function ($scope, $mdDialog) {
+                                $scope.saveUpdate = function () {
+                                    $mdDialog.hide(true);
+                                };
+
+                                $scope.cancelUpdate = function () {
+                                    $mdDialog.cancel();
+                                };
+                            },
+                            templateUrl: 'outletnew.html',
+                            parent: angular.element(document.body),
+                            clickOutsideToClose: false,
+                            fullscreen: false,
+                        })
+                        .then(function (r) {
+                            if (r) {                                                              
+                                log('save outlet')
+                                showDlg('Saving Outlet', 'Please wait...');
+                                saveOutlet($scope.outlet, function (synced) {                                    
+                                    addOutletDB($scope.config.tbl_outlet, $scope.outlet, synced, function () {
+                                        hideDlg();
+                                    }, function (dberr) {
+                                        hideDlg();
+                                        showError(dberr.message);
+                                    });
+                                });
+                            }
+                        }, function () {
+                        });
+                    }, onGetLocationError);
+                } catch (err) {
+                    log(err);
+                }
+            },
+            function (dberr) {
+                hideDlg();
+                showError(dberr.message);
+            });
+    }
+
+    function loadOutletTypes(onSuccess, onError) {
+        if ($scope.outletTypes != null) {
+            onSuccess();
+        } else {
+            $scope.outletTypes = [];
+            selectOutletTypes(function (tx, dbrow) {                  
+                var rowLen = dbrow.rows.length;
+                log('found ' + rowLen.toString() + ' outlet types');
+                if (rowLen) {
+                    for (i = 0; i < rowLen; i++) {
+                        $scope.outletTypes[i] = {
+                            id: dbrow.rows.item(i).ID,
+                            name: dbrow.rows.item(i).Name,
+                        }
+                    }
+                }
+
+                onSuccess();
+            }, onError);
+        }
     }
 
     function loadMap() {
@@ -210,15 +344,21 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', fu
         }, handleHttpError);
     }
 
-    function getOutlets(states) {
+    function getOutlets(state) {
         showDlg('Get new outlets', "Please wait...");
         try {
-            selectOutlets($scope.config.tbl_outlet, states,
-                function (dbrow) {
-                    var rowLen = dbrow.rows.length;
+            selectOutlets($scope.config.tbl_outlet, state,
+                function (dbres) {
+                    hideDlg();
+                    var rowLen = dbres.rows.length;                    
                     log('Found ' + rowLen.toString() + ' outlets');
                     if (rowLen) {
-                        loadOutlets(dbrow.rows);
+                        var foundOutlets = [];
+                        for (i = 0; i < rowLen; i++) {
+                            var i = dbres.rows.item(i);
+                            foundOutlets.push(i);
+                        }
+                        loadOutlets(foundOutlets);
                     } else {
                         loadOutlets([]);
                     }
@@ -317,12 +457,22 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', fu
     function viewOutlet(i) {
         log(i);
         //moveToLocation(nearbyOutlets[i]);
-        var outlet = nearbyOutlets[i];
-        $scope.outlet = outlet;
+        var outlet = $scope.outlets[i];
+        var clonedOutlet = cloneObj(outlet);
+        $scope.outlet = clonedOutlet;
 
         $mdDialog.show({
             scope: $scope.$new(),
-            controller: function ($scope, $mdDialog) {               
+            controller: function ($scope, $mdDialog) {
+                $scope.openedOptionVisible = !$scope.outlet.IsOpened;
+                $scope.trackedOptionVisible = !$scope.outlet.IsTracked;
+                $scope.saveUpdate = function () {
+                    $mdDialog.hide(true);
+                };
+
+                $scope.cancelUpdate = function () {
+                    $mdDialog.cancel();
+                };
             },
             templateUrl: 'outletview.html',
             parent: angular.element(document.body),
@@ -330,15 +480,80 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', fu
             fullscreen: false,
         })
         .then(function (answer) {
+            if (answer) {
+                if ($scope.outlet.IsTracked)
+                    $scope.outlet.Tracking = 1;
 
+                if ($scope.outlet.IsOpened)
+                    $scope.outlet.CloseDate = '';
+
+                $scope.outlet.AmendBy = $scope.user.id;
+
+                log('save outlet')
+                showDlg('Saving Outlet', 'Please wait...');
+                saveOutlet($scope.outlet, function (synced) {
+                    outlet.AmendBy = $scope.outlet.AmendBy;
+                    outlet.CloseDate = $scope.outlet.CloseDate;
+                    outlet.Tracking = $scope.outlet.Tracking;
+                    outlet.PState = $scope.outlet.PState;
+                    outlet.IsOpened = $scope.outlet.IsOpened;
+                    outlet.IsTracked = $scope.outlet.IsTracked;
+                    outlet.PRowID = $scope.outlet.PRowID;
+                    outlet.StringImage1 = $scope.outlet.StringImage1;
+                    outlet.StringImage2 = $scope.outlet.StringImage2;
+                    outlet.StringImage3 = $scope.outlet.StringImage3;
+
+                    saveOutletDB($scope.config.tbl_outlet, outlet, 2, synced, function () {
+                        hideDlg();
+                    }, function (dberr) {
+                        hideDlg();
+                        showError(dberr.message);
+                    });
+                });
+            }
         }, function () {
-
         });
+    }
 
-        //$scope.$watch(function () {
-        //    return $mdMedia('xs') || $mdMedia('sm');
-        //}, function (wantsFullScreen) {
-        //    $scope.customFullscreen = (wantsFullScreen === true);
+    function saveOutlet(outlet, onSuccess) {
+        isOnline = checkConnection();
+        if (isOnline) {
+            var url = baseURL + '/outlet/save';
+            log('Call service api: ' + url);
+            var data = JSON.stringify(outlet);
+            log(data);
+
+            outlet.PRowID = guid();
+            onSuccess(true);
+
+            //$http({
+            //    method: $scope.config.http_method,
+            //    data: JSON.stringify(outlet),
+            //    url: url,
+            //    headers: { 'Content-Type': 'application/json' }
+            //}).then(function (resp) {
+            //    log(resp);
+            //    var data = resp.data;                
+            //    if (data.Status == -1) { // error
+            //        handleError(data.ErrorMessage);
+            //    } else {
+            //        log('submit outlet successfully: ' + data.RowID);
+            //        outlet.PRowID = data.RowID;
+            //        onSuccess(true);
+            //    }
+            //}, handleHttpError);
+        } else {
+            onSuccess(false);            
+        }
+
+
+        //outlet.PState |= 2;
+        //outlet.AmendBy = $scope.user.id;
+
+        //saveOutletDB($scope.config.tbl_outlet, outlet, 2, function () {
+
+        //}, function (dberr) {
+
         //});
     }
 
@@ -358,7 +573,7 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', fu
     }
 
     try {
-        log('Refresh view to get near-by...');       
+        log('Refresh view to get near-by...');
         $scope.refresh();
     } catch (err) {
         log(err);

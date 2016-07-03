@@ -152,8 +152,8 @@ namespace TradeCensus
                 return resp;
             }
         }
-
-        [WebInvoke(Method = "POST", UriTemplate = "outlet/save", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
+                
+        [WebInvoke(Method = "POST", UriTemplate = "outlet/save", ResponseFormat = WebMessageFormat.Json)]
         public SaveOutletResponse SaveOutlet(OutletModel item)
         {
             using (var repo = new OutletRepo())

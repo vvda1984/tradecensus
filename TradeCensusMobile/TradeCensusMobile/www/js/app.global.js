@@ -176,3 +176,27 @@ function loadDefaultConfig() {
         tbl_outlet: 'outlet',
     };
 }
+
+/**
+* Clone object
+*/
+function cloneObj(i) {
+    return (JSON.parse(JSON.stringify(i)));
+}
+
+/**
+* Clone object
+*/
+function guid() {
+    return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+      s4() + '-' + s4() + s4() + s4();
+}
+
+/**
+* Clone object
+*/
+function s4() {
+    return Math.floor((1 + Math.random()) * 0x10000)
+      .toString(16)
+      .substring(1);
+}

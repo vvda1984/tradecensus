@@ -102,7 +102,7 @@ namespace TradeCensus
                             AddLine2 = outlet.AddLine2,
                             AreaID = outlet.AreaID,
                             CloseDate = outlet.CloseDate == null ? "" : outlet.CloseDate.Value.ToString("yyyy-mm-dd"),
-                            IsClosed = outlet.CloseDate != null,
+                            IsOpened = outlet.CloseDate == null,
                             District = outlet.District,
                             LastContact = outlet.LastContact,
                             LastVisit = outlet.LastVisit != null ? outlet.LastVisit.Value.ToString("yyyy-mm-dd") : "",
@@ -166,9 +166,9 @@ namespace TradeCensus
                 {
                     ID = outlet.ID,
                     TerritoryID = "",
-                    CallRate = 0,                    
+                    CallRate = 0,
                     CloseDate = null,
-                    CreateDate = DateTime.Now,                  
+                    CreateDate = DateTime.Now,
                     LastContact = "",
                     Tracking = 0,
                     Class = "",
@@ -187,6 +187,7 @@ namespace TradeCensus
                     DISAlias = null,
                     LegalName = null,
                     PIsDeleted = false,
+                    PRowID = Guid.NewGuid(),
                 };
                 _entities.Outlets.Add(existingOutlet);
             }

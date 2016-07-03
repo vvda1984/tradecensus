@@ -34,7 +34,7 @@ namespace TradeCensus
         [DataMember]
         public string CloseDate { get; set; }
         [DataMember]
-        public bool IsClosed { get; set; }
+        public bool IsOpened { get; set; }
         [DataMember]
         public byte Tracking { get; set; }
         [DataMember]
