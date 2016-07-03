@@ -2,7 +2,7 @@
 * checkConnection
 */
 function checkConnection() {
-    return true;
+    if (isWeb) return true;
     var networkState = navigator.connection.type;
     return (networkState != 'Unknown connection' && networkState != 'no network connection')
 }
@@ -114,26 +114,7 @@ function handleError(err) {
     showDialog(err, 'Error', function () { });
 }
 
-/**
-* openOutletPanel
-*/
-function openOutletPanel() {
-    document.getElementById('outletPanel').style.width = '100%';
-}
 
-/** 
-* openOutletPanelHalf
-*/
-function openOutletPanelHalf() {
-    document.getElementById('outletPanel').style.width = '40%';
-}
-
-/** 
-* Close Outlet Panel
-*/
-function closeOutletPanel() {
-    document.getElementById('outletPanel').style.width = '0%';
-}
 
 /** 
 * Handle http error
@@ -181,6 +162,7 @@ function loadDefaultConfig() {
         ip: '192.168.1.104',
         port: '33334',
         service_name: 'TradeCensusService.svc',
+        map_zoom: 18,
         item_count: 20,
         distance: 1000,
         province_id: 50, // HCM
@@ -190,5 +172,7 @@ function loadDefaultConfig() {
         tbl_outlettype_ver: '0',
         tbl_province_ver: '1',
         tbl_zone_ver: '0',
+        tbl_outletSync: 'outletSync',
+        tbl_outlet: 'outlet',
     };
 }

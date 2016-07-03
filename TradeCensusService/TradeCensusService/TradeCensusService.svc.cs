@@ -1,11 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.ServiceModel.Web;
 using System.Threading;
+using Newtonsoft.Json;
 using TradeCensus.Shared;
 
 namespace TradeCensus
 {
-    //http://localhost:33334/TradeCensusService.svc
+    //http://localhost:33333/TradeCensusService.svc/outlet/saveoutlets
     public partial class TradeCensusService : ITradeCensusService
     {             
         //[WebGet(UriTemplate = "login/{id}/{pass}", ResponseFormat = WebMessageFormat.Json)]
@@ -133,15 +136,33 @@ namespace TradeCensus
 
         [WebInvoke(Method = "POST", UriTemplate = "outlet/getoutlets/{lat}/{lng}/{meter}/{count}", ResponseFormat = WebMessageFormat.Json)]
         public GetOutletListResponse GetOutletLists(string lat, string lng, string meter, string count)
-        {
-            //WebOperationContext.Current.
-
+        {            
             using (var repo = new OutletRepo())
             {
                 var resp = new GetOutletListResponse();
                 try
                 {
                     resp.Items = repo.GetOutletByLocation(Convert.ToDouble(lat), Convert.ToDouble(lng), Convert.ToDouble(meter), Convert.ToInt32(count));
+                }
+                catch (Exception ex)
+                {
+                    resp.Status = Constants.ErrorCode;
+                    resp.ErrorMessage = ex.Message;
+                }
+                return resp;
+            }
+        }
+
+        [WebInvoke(Method = "POST", UriTemplate = "outlet/save", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
+        public SaveOutletResponse SaveOutlet(OutletModel item)
+        {
+            using (var repo = new OutletRepo())
+            {
+                var resp = new SaveOutletResponse();
+                try
+                {
+                    resp.ID = item.ID;
+                    resp.RowID = repo.SaveOutlet(item); ;
                 }
                 catch (Exception ex)
                 {

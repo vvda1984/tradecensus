@@ -1,35 +1,50 @@
 <div id="view-home">  
-    <div id="outletPanel" class="overlay">
-        <a href="javascript:void(0)" class="closebtn" onclick="openOutletPanel()">×</a>
-        <div class="overlay-content">
-            <span>{{outletHeader}}</span>
-            <div style="float:right;display:inline">
-                <md-button ng-show="showExpander" class="md-icon-button md-primary" aria-label="Settings" ng-click="showLeftPanelFull()">
-                    <md-icon md-svg-icon="assets/img/arrow-next.svg"></md-icon>
-                </md-button>
-
-                <md-button ng-show="showCollapser" class="md-icon-button md-primary" aria-label="Settings" ng-click="hideLeftPanel()">
-                    <md-icon md-svg-icon="assets/img/arrow-back.svg"></md-icon>
-                </md-button>
+    <div id="outletPanel" class="overlay">                
+        <div class="overlay-content">             
+            <a id="expander-2" ng-click="viewLeftPanel()">&nbsp;</a>           
+            <h3>{{outletHeader}}</h3>                        
+            <div class="outlet-list">
+                <div class="outlet-list-item" ng-repeat="outlet in outlets" >
+                    <div class="outlet-list-item-header" ng-click="openOutlet($index)">{{outlet.Name}}</div>
+                    <table>
+                        <tr>
+                            <td><div class="title">Address:</div></td>
+                            <td colspan="5"><div class="content1">{{outlet.FullAddress}}</div></td>
+                            <td ng-show="showFullOutlet"><div class="title1">Outlet type:</div></td>
+                            <td ng-show="showFullOutlet"><div class="content2">{{outlet.OutletTypeName}}</div></td>
+                        </tr>
+                        <tr ng-show="showFullOutlet">
+                            <td><div class="title">Distance:</div></td>
+                            <td><div class="content2">{{outlet.Distance}}</div></td>
+                            <td><div class="title">SR/DSM:</div></td>
+                            <td><div class="content2">{{outlet.Name}}</div></td>
+                            <td><div class="title">Tel:</div></td>
+                            <td><div>{{outlet.Phone}}</div></td>
+                            <td><div class="title1">Last contact:</div></td>
+                            <td><div class="content2">{{outlet.LastContact}}</div></td>
+                        </tr>
+                    </table>
+                </div>
             </div>
-            <h2>OUTLET 1</h2> <br/>
-            <h2>OUTLET 2</h2>
-        </div>
+        </div>        
     </div>
     
     <div id="view-map">
         <div id="map" class="view-map-content"></div>            
     </div>
-    <div id="#view-home-content">
-        <md-button id="#expander-1" class="md-icon-button md-primary" aria-label="Settings" ng-click="showLeftPanel()">
-            <md-icon md-svg-icon="assets/img/menu.svg"></md-icon>
-        </md-button>
 
-        <div style="position: absolute; bottom: 0;left: 0;display:inline;">
-            <button ng-model="button1" ng-click="button1Click()" ng-class="{'outlet-button-active':button1state == 1,'outlet-button':button1state == 0}">Near-by Outlets</button>
-            <button ng-model="button2" ng-click="button2Click()" ng-class="{'outlet-button-active':button2state == 1,'outlet-button':button2state == 0}">New Outlets</button>
-            <button ng-model="button3" ng-click="button3Click()" ng-class="{'outlet-button-active':button3state == 1,'outlet-button':button3state == 0}">Updated Outlets</button>
-        </div>
+    <a id="expander-1" class="view-button" ng-click="viewLeftPanel()"> > </a>
+    <!--<img src="assets/img/a-right.png"/>-->    
+
+    <div id="view-home-content-bottom">
+        <a id="btn-near-by" ng-click="changeOutletView(0)" class="outlet-button-active">Near-by Outlets</a>
+        <a id="btn-new-outlet" ng-click="changeOutletView(1)">New Outlets</a>
+        <a id="btn-new-update" ng-click="changeOutletView(2)">Updated Outlets</a>
+    </div>
+
+    <div id="view-home-content-top">        
+        <a id="btn-refresh" ng-show="btnRefreshVisible" ng-click="refresh()">Refresh</a>
+        <a id="btn-add" ng-click="refresh()">Add Outlet</a>
     </div>
 </div>
 

@@ -22,6 +22,7 @@ namespace TradeCensus
     
         public int ID { get; set; }
         public string AreaID { get; set; }
+        public string TerritoryID { get; set; }
         public string OTypeID { get; set; }
         public string Name { get; set; }
         public string AddLine { get; set; }
@@ -29,10 +30,18 @@ namespace TradeCensus
         public string District { get; set; }
         public string ProvinceID { get; set; }
         public string Phone { get; set; }
+        public int CallRate { get; set; }
         public System.DateTime CreateDate { get; set; }
         public Nullable<System.DateTime> CloseDate { get; set; }
         public byte Tracking { get; set; }
+        public string Class { get; set; }
+        public string Open1st { get; set; }
+        public string Close1st { get; set; }
+        public string Open2nd { get; set; }
+        public string Close2nd { get; set; }
+        public byte SpShift { get; set; }
         public string LastContact { get; set; }
+        public Nullable<System.DateTime> LastVisit { get; set; }
         public int PersonID { get; set; }
         public string Note { get; set; }
         public double Longitude { get; set; }
@@ -47,6 +56,11 @@ namespace TradeCensus
         public int VBLVolume { get; set; }
         public bool PIsDeleted { get; set; }
         public System.Guid PRowID { get; set; }
+        public int ModifiedStatus { get; set; }
+        public string TaxID { get; set; }
+        public string DISAlias { get; set; }
+        public int DEDISID { get; set; }
+        public string LegalName { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<OutletImage> OutletImages { get; set; }

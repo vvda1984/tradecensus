@@ -36,4 +36,13 @@ namespace TradeCensus
         [DataMember]
         public List<OutletModel> Items { get; set; }
     }
+
+    [DataContract]
+    public class SaveOutletResponse : Response
+    {
+        [DataMember]
+        public int ID { get; set; }
+        [DataMember]
+        public string RowID { get; set; }
+    }    
 }

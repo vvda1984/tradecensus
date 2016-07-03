@@ -102,8 +102,10 @@ namespace TradeCensus
                             AddLine2 = outlet.AddLine2,
                             AreaID = outlet.AreaID,
                             CloseDate = outlet.CloseDate == null ? "" : outlet.CloseDate.Value.ToString("yyyy-mm-dd"),
+                            IsClosed = outlet.CloseDate != null,
                             District = outlet.District,
                             LastContact = outlet.LastContact,
+                            LastVisit = outlet.LastVisit != null ? outlet.LastVisit.Value.ToString("yyyy-mm-dd") : "",
                             Latitude = outlet.Latitude,
                             Longitude = outlet.Longitude,
                             Note = outlet.Note,
@@ -113,15 +115,24 @@ namespace TradeCensus
                             PersonID = outlet.PersonID,
                             Phone = outlet.Phone,
                             ProvinceID = outlet.ProvinceID,
+                            ProvinceName = GetProvinceName(outlet.ProvinceID),                            
                             Tracking = outlet.Tracking,
+                            IsTracked = outlet.Tracking == 1,
                             PRowID = outlet.PRowID.ToString(),
                             Action = 0,
+                            InputBy = outlet.InputBy,                            
                             AmendBy = outlet.AmendBy,
                             AmendDate = outlet.AmendDate.ToString("yyyy-MM-dd HH:mm:ss"),
                             AuditStatus = outlet.AuditStatus,
                             CreateDate = outlet.CreateDate.ToString("yyyy-MM-dd HH:mm:ss"),
                             Distance = distance,
+                            OutletSource = (outlet.DEDISID > 0) || (!string.IsNullOrEmpty(outlet.DISAlias)) ? 1 : 0,
+                            StringImage1 = "",
+                            StringImage2 = "",
+                            StringImage3 = "",
                         };
+                        o.FullAddress = string.Format("{0} {1} {2} {3}", outlet.AddLine, outlet.AddLine2, outlet.District, o.ProvinceName);
+                        o.FullAddress = o.FullAddress.Trim().Replace("  ", " ");
 
                         var outletImg = outlet.OutletImages.FirstOrDefault();
                         if (outletImg != null)
@@ -140,18 +151,87 @@ namespace TradeCensus
             return res;
         }
 
+        public string SaveOutlet(OutletModel outlet)
+        {
+            Outlet existingOutlet = null;
+            if (!string.IsNullOrEmpty(outlet.PRowID))
+                existingOutlet = _entities.Outlets.FirstOrDefault(i => i.PRowID.ToString() == outlet.PRowID);
+
+            if (existingOutlet == null)
+                existingOutlet = _entities.Outlets.FirstOrDefault(i => i.ID == outlet.ID);
+
+            if (existingOutlet == null)
+            {
+                existingOutlet = new Outlet
+                {
+                    ID = outlet.ID,
+                    TerritoryID = "",
+                    CallRate = 0,                    
+                    CloseDate = null,
+                    CreateDate = DateTime.Now,                  
+                    LastContact = "",
+                    Tracking = 0,
+                    Class = "",
+                    Open1st = null,
+                    Close1st = null,
+                    Open2nd = null,
+                    Close2nd = null,
+                    SpShift = 0,
+                    LastVisit = null,
+                    TaxID = null,
+                    ModifiedStatus = 0,
+                    InputBy = outlet.InputBy,
+                    InputDate = DateTime.Now,
+                    OutletEmail = null,
+                    DEDISID = 0,
+                    DISAlias = null,
+                    LegalName = null,
+                    PIsDeleted = false,
+                };
+                _entities.Outlets.Add(existingOutlet);
+            }
+
+            existingOutlet.AreaID = outlet.AreaID;
+            existingOutlet.Name = outlet.Name;
+            existingOutlet.OTypeID = outlet.OTypeID;
+            existingOutlet.AddLine = outlet.AddLine;
+            existingOutlet.AddLine2 = outlet.AddLine2;
+            existingOutlet.District = outlet.District;
+            existingOutlet.ProvinceID = outlet.ProvinceID;
+            existingOutlet.Phone = outlet.Phone;
+            if (!string.IsNullOrEmpty(outlet.CloseDate))
+                existingOutlet.CloseDate = DateTime.Parse("yyyy-MM-dd HH:mm:ss");
+            else
+                existingOutlet.CloseDate = null;
+            existingOutlet.Tracking = outlet.Tracking;
+            existingOutlet.PersonID = outlet.PersonID;
+            existingOutlet.Note = outlet.Note;
+            existingOutlet.Longitude = outlet.Longitude;
+            existingOutlet.Latitude = outlet.Latitude;
+            existingOutlet.AmendBy = outlet.AmendBy;
+            existingOutlet.AmendDate = DateTime.Now;
+            existingOutlet.AuditStatus = (byte)outlet.AuditStatus;
+            existingOutlet.TotalVolume = outlet.TotalVolume;
+            existingOutlet.VBLVolume = outlet.VBLVolume;
+            if (!string.IsNullOrEmpty(outlet.PRowID))
+                existingOutlet.PRowID = new Guid(outlet.PRowID);
+
+            _entities.SaveChanges();
+
+            return existingOutlet.PRowID.ToString();
+        }
+
         private string GetOutletType(string id)
         {
             var item =_entities.OutletTypes.FirstOrDefault(i => i.ID == id);
             return item == null ? "" : item.Name;
         }
 
-        public void UpdateOutlet(List<OutletModel> items)
+        private string GetProvinceName(string id)
         {
-            foreach (var item in items)
-            {
-            }
-        }
+            var item = _entities.Provinces.FirstOrDefault(i => i.ID == id);
+            return item == null ? "" : item.Name;
+        }      
 
         public void DeleteOutlet(List<OutletModel> items)
         {
@@ -197,7 +277,7 @@ namespace TradeCensus
                 Lng = p.Lng + (dlng / Constants.EarthR) * (180 / Math.PI) / Math.Cos(p.Lat * Math.PI / 180)
             };
             return newP;
-        }
+        }        
     }
 
     public class Point

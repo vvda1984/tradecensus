@@ -1,53 +1,51 @@
 ﻿/// <reference path="app.global.js" />
 
-//console.log('Add LoginController');
-app.controller('LoginController', ['$scope', '$location', '$http', function ($scope, $location, $http) {
+app.controller('LoginController', ['$scope', '$http', function ($scope, $http) {
     console.log('Enter Login Controller');
-
-    if (!isInitialize) {
-        isInitialize = true;
-
-        showDlg('Read settings', 'Please wait...');
-        selectConfigs(function (tx2, dbres2) {
-            var rowLen = dbres2.rows.length;
-            console.log('Config len: ' + rowLen.toString());
-            if (rowLen) {
-                for (i = 0; i < rowLen; i++) {
-                    var name = dbres2.rows.item(i).Name;
-                    var value = dbres2.rows.item(i).Value;
-                    if (name == 'protocol') {
-                        $scope.config.protocol = value;
-                    } else if (name == 'ip') {
-                        $scope.config.ip = value;
-                    } else if (name == 'port') {
-                        $scope.config.port = value;
-                    } else if (name == 'service_name') {
-                        $scope.config.service_name = value;
-                    } else if (name == 'item_count') {
-                        $scope.config.item_count = value;
-                    } else if (name == 'distance') {
-                        $scope.config.distance = value;
-                    } else if (name == 'province_id') {
-                        $scope.config.province_id = value;
-                    } else if (name == 'calc_distance_algorithm') {
-                        $scope.config.calc_distance_algorithm = value;
-                    } else if (name == 'tbl_area_ver') {
-                        $scope.config.tbl_area_ver = value;
-                    } else if (name == 'tbl_outlettype_ver') {
-                        $scope.config.tbl_outlettype_ver = value;
-                    } else if (name == 'tbl_province_ver') {
-                        $scope.config.tbl_province_ver = value;
-                    } else if (name == 'tbl_zone_ver') {
-                        $scope.config.tbl_zone_ver = value;
-                    }
-                }
-            }
-            hideDlg();
-            $scope.baseURL = buildURL($scope.config.protocol, $scope.config.ip, $scope.config.port, $scope.config.service_name);
-        }, function (dberr) {
-            showDlg(dberr.message, 'DB Error');
-        });
-    }
+    //if (!isInitialize) {
+    //    isInitialize = true;
+    //    showDlg('Read settings', 'Please wait...');
+    //    selectConfigs(function (tx2, dbres2) {
+    //        var rowLen = dbres2.rows.length;
+    //        console.log('Config len: ' + rowLen.toString());
+    //        if (rowLen) {
+    //            for (i = 0; i < rowLen; i++) {
+    //                var name = dbres2.rows.item(i).Name;
+    //                var value = dbres2.rows.item(i).Value;
+    //                if (name == 'protocol') {
+    //                    $scope.config.protocol = value;
+    //                } else if (name == 'ip') {
+    //                    log('set ip: ' + value);
+    //                    $scope.config.ip = value;
+    //                } else if (name == 'port') {
+    //                    $scope.config.port = value;
+    //                } else if (name == 'service_name') {
+    //                    $scope.config.service_name = value;
+    //                } else if (name == 'item_count') {
+    //                    $scope.config.item_count = value;
+    //                } else if (name == 'distance') {
+    //                    $scope.config.distance = value;
+    //                } else if (name == 'province_id') {
+    //                    $scope.config.province_id = value;
+    //                } else if (name == 'calc_distance_algorithm') {
+    //                    $scope.config.calc_distance_algorithm = value;
+    //                } else if (name == 'tbl_area_ver') {
+    //                    $scope.config.tbl_area_ver = value;
+    //                } else if (name == 'tbl_outlettype_ver') {
+    //                    $scope.config.tbl_outlettype_ver = value;
+    //                } else if (name == 'tbl_province_ver') {
+    //                    $scope.config.tbl_province_ver = value;
+    //                } else if (name == 'tbl_zone_ver') {
+    //                    $scope.config.tbl_zone_ver = value;
+    //                }
+    //            }
+    //        }
+    //        hideDlg();
+    //        baseURL = buildURL($scope.config.protocol, $scope.config.ip, $scope.config.port, $scope.config.service_name);
+    //    }, function (dberr) {
+    //        showDlg(dberr.message, 'DB Error');
+    //    });
+    //}
 
     $scope.exit = function () {
         navigator.app.exitApp();
@@ -75,7 +73,7 @@ app.controller('LoginController', ['$scope', '$location', '$http', function ($sc
         var isCancel = false;        
         showLoadingDlg('Login...', 'Please wait', function () { isCancel = true; });
         if (isOnline) {
-            var url = $scope.baseURL + '/login/' + $scope.user.id + '/' + $scope.user.password;
+            var url = baseURL + '/login/' + $scope.user.id + '/' + $scope.user.password;
             log('Call service api: ' + url);
             $http({
                 method: $scope.config.http_method,
@@ -175,7 +173,7 @@ app.controller('LoginController', ['$scope', '$location', '$http', function ($sc
      * Login online
      */
     function loginOnline(onSuccess, onError) {
-        var url = $scope.baseURL + '/login/' + $scope.user.id + '/' + $scope.user.password;
+        var url = baseURL + '/login/' + $scope.user.id + '/' + $scope.user.password;
         log('Call service api: ' + url);
         $http({
             method: $scope.config.http_method,
@@ -261,34 +259,39 @@ app.controller('LoginController', ['$scope', '$location', '$http', function ($sc
         $scope.user.homeAddress = user.HomeAddress;
         $scope.user.workAddress = user.WorkAddress;
         $scope.user.phone = user.Phone;
+        $scope.config.tbl_outletSync = 'outletSync' + $scope.user.id;
+        $scope.config.tbl_outlet = 'outlet' + $scope.user.id;
 
-        if (isOnline && !isDev) {
-            showDlg('Downloading Settings', 'Please wait...');
-            downloadServerConfig(function () {
-                hideDlg();
-                log('Navigate to home (online)');
+        log('create outlet tables');
+        createOutletTables($scope.config.tbl_outletSync, $scope.config.tbl_outlet, function () {
+            if (isOnline && !isDev) {
+                showDlg('Downloading Settings', 'Please wait...');
+                downloadServerConfig(function () {
+                    hideDlg();
+                    log('Navigate to home (online)');
+                    $scope.changeView('home');
+                }, function (dberr) {
+                    hideDlg();
+                    showError(dberr.message);
+                });
+            }
+            else {
+                log('Navigate to home (offline)');
                 $scope.changeView('home');
-            }, function (dberr) {
-                hideDlg();
-                showError(dberr.message);
-            });
-        }
-        else {
-            log('Navigate to home (offline)');
-            $scope.changeView('home');
-        }
+            }
+        });      
     }
 
     function loginError(err) {
         hideDlg();
         showError(err);
-    }
+    }   
 
     /**
      * Download configs
      */
     function downloadServerConfig(onSuccess, onError) {
-        var url = $scope.baseURL + '/config/getall';
+        var url = baseURL + '/config/getall';
         log('Call service api: ' + url);
         $http({
             method: $scope.config.http_method,
@@ -345,7 +348,7 @@ app.controller('LoginController', ['$scope', '$location', '$http', function ($sc
      */
     function downloadProvinces(onSuccess, onError) {
         setDlgMsg('Downloading Provinces...');
-        var url = $scope.baseURL + '/provinces/getall';
+        var url = baseURL + '/provinces/getall';
         log('Call service api: ' + url);
         $http({
             method: $scope.config.http_method,
@@ -365,7 +368,7 @@ app.controller('LoginController', ['$scope', '$location', '$http', function ($sc
      */
     function downloadOutletTypes(onSuccess, onError) {
         setDlgMsg('Downloading Outlet Types...');
-        var url = $scope.baseURL + '/outlet/getoutlettypes';
+        var url = baseURL + '/outlet/getoutlettypes';
         log('Call service api: ' + url);
         $http({
             method: $scope.config.http_method,

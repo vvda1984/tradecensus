@@ -10,9 +10,11 @@ app.controller("ConfigController", ["$scope", function ($scope) {
     log($scope.provinces.length);
 
     $scope.saveConfig = function () {
-        log("save config");
+        log("save config");        
         insertConfig($scope.config, function () {
-            $scope.changeView("login");
+            $scope.changeView("login");            
+            baseURL = buildURL($scope.config.protocol, $scope.config.ip, $scope.config.port, $scope.config.service_name);
+            log('Update baseURL: ' + baseURL);
         }, handleError);
     }
 

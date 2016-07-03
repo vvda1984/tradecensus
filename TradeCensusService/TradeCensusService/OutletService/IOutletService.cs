@@ -1,4 +1,5 @@
-﻿using System.ServiceModel;
+﻿using System.Collections.Generic;
+using System.ServiceModel;
 
 namespace TradeCensus
 {
@@ -16,5 +17,8 @@ namespace TradeCensus
 
         [OperationContract]
         GetOutletListResponse GetOutletLists(string lat, string lng, string meter, string count);
+
+        [OperationContract]
+        SaveOutletResponse SaveOutlet(OutletModel item);
     }
 }

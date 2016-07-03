@@ -5,8 +5,7 @@
     <meta content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />
 
     <!-- Libs -->
-    <script src="assets/libs/jquery.js"></script>
-    <script src="assets/libs/xmltojson.js"></script>
+    <script src="assets/libs/jquery.js"></script>    
 
     <!-- Kendo UI -->
     <!--<link href="assets/libs/kendo/kendo.common.min.css" rel="stylesheet" type="text/css" />
@@ -34,45 +33,88 @@
     <ng-view id="mainView"></ng-view>     
     
     <script src="js/app.global.js"></script>
-    <script src="js/app.database.js"></script>      
-    <script type="text/javascript">      
-        //initalizeDB(function () {
-        //    selectProvinces(function (tx, dbrow) {
-        //        var rowLen = dbrow.rows.length;
-        //        if (rowLen) {
-        //            for (i = 0; i < rowLen; i++) {
-        //                provinces[i] = {
-        //                    id: dbrow.rows.item(i).ID,
-        //                    name: dbrow.rows.item(i).Name,
-        //                }
-        //            }
-        //        }
-        //    }, function (err) {
-        //    })
-        //});
-
-        //var app = angular
-        //    .module("TradeCensus", ["ngRoute", 'ngMaterial', 'ngMessages'])
-        //    .config(["$routeProvider", function ($routeProvider) {
-        //        $routeProvider
-        //        .when("/login", {
-        //            templateUrl: "./views/login.html",
-        //            controller: "LoginController",
-        //        })
-        //        .when("/config", {
-        //            templateUrl: "./views/config.html",
-        //            controller: "ConfigController",
-        //        })
-        //        .when("/home", {
-        //            templateUrl: "./views/home.html",
-        //            controller: "HomeController",
-        //        });
-        //    }]);
-    </script>        
+    <script src="js/app.database.js"></script>   
     <script src="js/mainController.js"></script>  
     <script src="js/loginController.js"></script>
     <script src="js/configController.js"></script>
     <script src="js/homeController.js"></script>
-    <!--<script type="text/javascript" src="cordova.js"></script>-->-->
+    <!--<script type="text/javascript" src="cordova.js"></script>-->  
+    
+    <script type="text/ng-template" id="outletlist.html">     
+        <div class="outlet-list">
+            <div class="outlet-list-item" ng-repeat="outlet in outlets">
+                <div class="outlet-list-item-header">{{outlet.Name}}</div>
+                <table>
+                    <tr>
+                        <td><div class="title">Address:</div></td>
+                        <td colspan="5"><div class="content1">{{outlet.AddLine}} {{outlet.AddLine2}} {{outlet.District}}</div></td>
+                        <td><div class="title1">Outlet type:</div></td>
+                        <td><div class="content2">{{outlet.OutletTypeName}}</div></td>
+                    </tr>
+                    <tr>
+                        <td><div class="title">Distance:</div></td>
+                        <td><div class="content2">{{outlet.Distance}} meters</div></td>
+                        <td><div class="title">SR/DSM:</div></td>
+                        <td><div class="content2">{{outlet.Name}}</div></td>
+                        <td><div class="title">Tel:</div></td>
+                        <td><div>{{outlet.Phone}}</div></td>
+                        <td><div class="title1">Last contact:</div></td>
+                        <td><div class="content2">{{outlet.LastContact}}</div></td>
+                    </tr>
+                </table>
+            </div>
+          </div>
+    </script>
+    <script type="text/ng-template" id="outletview.html">
+        <md-dialog aria-label="Mango (Fruit)" ng-cloak>
+            <md-toolbar>
+                <div class="md-toolbar-tools">
+                    <div>{{outlet.Name}}</div>
+                    <span flex=""></span>
+                    <div>{{outlet.Distance}} (m)</div>
+                </div>
+            </md-toolbar>
+            <md-content layout-padding="" class="popup-content">
+                <form name="userForm">
+                    <div layout-gt-xs="row">
+                        <div class="md-block-item" flex>
+                            <div class="md-block-item-title">Address</div>
+                            <div class="md-block-item-value">{{outlet.FullAddress}}</div>
+                        </div>
+                        <div class="md-block-item">
+                            <div class="md-block-item-title">Outlet Code</div>
+                            <div class="md-block-item-value">{{outlet.ID}}</div>
+                        </div>
+                    </div>
+
+                    <div layout-gt-sm="row">
+                        <div class="md-block-item">
+                            <div class="md-block-item-title">Outlet Type</div>
+                            <div class="md-block-item-value">{{outlet.OutletTypeName}}</div>
+                        </div>
+                        <div class="md-block-item">
+                            <div class="md-block-item-title">Telephone</div>
+                            <div class="md-block-item-value">{{outlet.Phone}}</div>
+                        </div>
+                        <div class="md-block-item">
+                            <div class="md-block-item-title">Last Contact</div>
+                            <div class="md-block-item-value">{{outlet.LastContact}}</div>
+                        </div>
+                        <div class="md-block-item">
+                            <div class="md-block-item-title">Last Visit</div>
+                            <div class="md-block-item-value">{{outlet.LastVisit}}</div>
+                        </div>
+                    </div>
+
+                    <div layout-gt-sm="row">
+                        <div class="md-block-item">
+                            <div class="md-block-item-title">Closed Date</div>
+                            <div class="md-block-item-value">{{outlet.CloseDate}}</div>
+                        </div>
+                    </div>
+                </form>
+            </md-content>
+        </md-dialog>
+    </script>
 </body>
 </html>
