@@ -36,6 +36,5 @@ namespace TradeCensus
         public virtual DbSet<SyncHistory> SyncHistories { get; set; }
         public virtual DbSet<Zone> Zones { get; set; }
         public virtual DbSet<Outlet> Outlets { get; set; }
-        public virtual DbSet<sysdiagram> sysdiagrams { get; set; }
     }
 }

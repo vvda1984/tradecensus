@@ -17,7 +17,6 @@
         <EntityTypeShape EntityType="tradecensusModel.Zone" Width="1.5" PointX="9.75" PointY="0.75" />
         <AssociationConnector Association="tradecensusModel.FK_SyncDetail_SyncHistory" />
         <EntityTypeShape EntityType="tradecensusModel.Outlet" Width="1.5" PointX="0.5" PointY="6.75" />
-        <EntityTypeShape EntityType="tradecensusModel.sysdiagram" Width="1.5" PointX="9.125" PointY="5.625" />
         <AssociationConnector Association="tradecensusModel.FK_OutletImage_Outlet" />
       </Diagram>
     </edmx:Diagrams>
