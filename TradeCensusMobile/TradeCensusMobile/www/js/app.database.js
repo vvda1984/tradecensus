@@ -137,6 +137,7 @@ function insertConfigRow(tx, name, value) {
 }
 
 function initializeProvinces(tx1, onSuccess) {
+    log('initialize provinces');
     tx1.executeSql("SELECT * FROM province", [], function (tx, dbres) {
         if (dbres.rows.length == 0) {
             initializeProvinceRow(tx, "11", "Cao Bằng");
@@ -203,11 +204,14 @@ function initializeProvinces(tx1, onSuccess) {
             initializeProvinceRow(tx, "98", "Bắc Giang");
             initializeProvinceRow(tx, "99", "Bắc Ninh");
 
+            log('initialize provinces completed...');
             onSuccess();
         }
         else
             onSuccess();
-    }, function (dberr) {});
+    }, function (dberr) {
+        onSuccess();
+    });
 }
 
 function initializeProvinceRow(tx, name, value) {
@@ -236,8 +240,8 @@ function selectOutletTypes(onSuccess, onError) {
 
 function createOutletTables(outletSyncTbl, outletTbl, onDone) {
     db.transaction(function (tx) {
-        tx.executeSql('DROP TABLE IF EXISTS ' + outletSyncTbl);
-        tx.executeSql('DROP TABLE IF EXISTS ' + outletTbl);
+        //tx.executeSql('DROP TABLE IF EXISTS ' + outletSyncTbl);
+        //tx.executeSql('DROP TABLE IF EXISTS ' + outletTbl);
 
         log('ensure table [' + outletSyncTbl + ' exist');
         var sql = ('CREATE TABLE IF NOT EXISTS [' + outletSyncTbl + '](' +
@@ -513,5 +517,18 @@ function addOutletDB(outletTbl, outlet, synced, onSuccess, onError) {
             log(err);
         }
         onSuccess();
+    }, onError);
+}
+
+function selectOutletsDistance(outletTbl, latMin, latMax, lngMin, lngMax, onSuccess, onError) {
+    db.transaction(function (tx) {
+        log('Select existing outlet')
+        var sql = 'SELECT * FROM ' + outletTbl + ' WHERE'
+        sql = sql.concat(' Latitude >= ', latMin.toString(), ' AND Latitude <= ', latMax.toString());
+        sql = sql.concat(' AND Longitude >= ', lngMin.toString(), ' AND Longitude <= ', lngMax.toString());
+        logSqlCommand(sql);
+        tx.executeSql(sql, [], function (tx1, dbres) {
+            onSuccess(dbres);
+        }, onError);
     }, onError);
 }

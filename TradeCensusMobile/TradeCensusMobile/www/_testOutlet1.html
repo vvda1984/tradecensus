@@ -185,9 +185,9 @@
         <md-dialog aria-label="Mango (Fruit)" ng-cloak>
             <md-toolbar>
                 <div class="md-toolbar-tools">
-                    <div>{{outlet.Name}}</div>
+                    <div>Name: {{outlet.Name}}</div>
                     <span flex=""></span>
-                    <div>{{outlet.Distance}} (m)</div>
+                    <div>Code: {{outlet.ID}}</div>
                 </div>
             </md-toolbar>
             <md-content layout-padding="" class="popup-content">
@@ -198,8 +198,8 @@
                             <div class="md-block-item-value">{{outlet.FullAddress}}</div>
                         </div>
                         <div class="md-block-item">
-                            <div class="md-block-item-title">Outlet Code</div>
-                            <div class="md-block-item-value">{{outlet.ID}}</div>
+                            <div class="md-block-item-title">Distance (m)</div>
+                            <div class="md-block-item-value">{{outlet.Distance}}</div>
                         </div>                    
                     </div>
 
@@ -220,25 +220,29 @@
                             <div class="md-block-item-title">Last Visit</div>
                             <div class="md-block-item-value">{{outlet.LastVisit}}</div>
                         </div>
-                    </div>
-
-                    <div layout-gt-sm="row">                        
                         <div class="md-block-item">
                             <div class="md-block-item-title">Closed Date</div>
                             <div class="md-block-item-value">{{outlet.CloseDate}}</div>
-                        </div>                    
+                        </div>    
+                    </div>
+
+                    <div layout-gt-sm="row">                                                            
                         <div class="md-block-item" ng-show="openedOptionVisible">
                             <md-switch ng-model="outlet.IsOpened">{{outlet.IsOpened ? "Opened" : "Closed"}}</md-switch>                            
                         </div>
                         <div class="md-block-item" ng-show="trackedOptionVisible">
                             <md-switch ng-model="outlet.IsTracked">{{outlet.IsTracked ? "Tracking" : "Non-Tracking"}}</md-switch>
                         </div>
+                        <md-input-container class="md-block" flex>
+                            <label>Comment</label>
+                            <textarea ng-model="outlet.Note" md-maxlength="150" rows="3" md-select-on-focus=""></textarea>
+                        </md-input-container>   
                     </div>
 
                     <div layout-gt-xs="row">
                         <img id="outletImg1" class="outletImage" />
                         <img id="outletImg2" class="outletImage" />
-                        <img id="outletImg3" class="outletImage" />
+                        <img id="outletImg3" class="outletImage" />                               
                     </div>
                     <div layout-gt-xs="row" layout-margin layout-align="center">    
                         <md-button class="md-raised md-primary" ng-click="saveUpdate()">Save</md-button>

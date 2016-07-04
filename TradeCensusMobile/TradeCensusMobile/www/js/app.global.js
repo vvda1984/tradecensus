@@ -2,6 +2,7 @@
 * checkConnection
 */
 function checkConnection() {
+    return false;
     if (isWeb) return true;
     var networkState = navigator.connection.type;
     return (networkState != 'Unknown connection' && networkState != 'no network connection')

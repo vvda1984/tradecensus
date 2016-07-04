@@ -4,8 +4,8 @@
 
 app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', function ($scope, $http, $mdDialog, $mdMedia) {
     //TODO:
-    //  - Integate google map events
-    //  - Marker Clusters
+    //  - Integate google map events    
+    isOnline = checkConnection();
 
     log('Enter Home page');
     log(isOnline);
@@ -17,10 +17,12 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', fu
     var markers = [];
     var markerInfoWindows = [];
     var nearbyOutlets = [];
+    var markerCluster;
 
     var leftPanelStatus = 0;
     var curlat = 10.773598;
     var curlng = 106.7058;
+    $scope.showFullOutlet = false;
     $scope.btnRefreshVisible = true;
     $scope.hasAuditRole = $scope.user.hasAuditRole;
     $scope.outletHeader = 'Near-by Outlets';
@@ -28,8 +30,11 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', fu
 
     var homeMarker = null;
 
-    $scope.outletTypes = null;
+    $scope.outletTypes = outletTypes;
+    log($scope.outletTypes);
 
+    $scope.provinces = provinces;
+    $scope.outlets = [];
     $scope.refresh = function () {
         //onGetLocationSuccess(null);
         leftPanelStatus = 2;
@@ -51,12 +56,15 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', fu
 
         log("show left panel: " + leftPanelStatus.toString());
         if (leftPanelStatus == 0) {
+            $scope.showFullOutlet = false;
             document.getElementById('outletPanel').style.width = '0%';
             //$('#expander-2').html('>');
         } else if (leftPanelStatus == 1) {
+            $scope.showFullOutlet = false;
             document.getElementById('outletPanel').style.width = '40%';
             //$('#expander-2').html('>');
         } else {
+            $scope.showFullOutlet = true;
             document.getElementById('outletPanel').style.width = '100%';
             //$('#expander-2').html('<');
         }
@@ -66,8 +74,10 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', fu
         if ($scope.outletCategory === v) return;
         log('change view to ' + v.toString());
 
-        leftPanelStatus = 2;
-        $scope.viewLeftPanel();
+        if (isOnline) {
+            leftPanelStatus = 2;
+            $scope.viewLeftPanel();
+        }
         $scope.outletCategory = v;
         const c = 'outlet-button-active';
         switch (v) {
@@ -79,6 +89,7 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', fu
                 $('#btn-mod-outlet').removeClass(c);
                 $('#btn-aud-outlet').removeClass(c);
                 $scope.btnRefreshVisible = true;
+                loadOutlets(nearbyOutlets);
                 break;
             case 1:
                 log('view new outlets');
@@ -120,95 +131,89 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', fu
 
     $scope.createNewOutlet = function () {
         showDlg('Get current location', "Please wait...");
-        loadOutletTypes(
-            function () {
-                try {
-                    navigator.geolocation.getCurrentPosition(function (position) {
-                        var lat = position.coords.latitude;
-                        var lng = position.coords.longitude;
 
-                        moveToLocation(lat, lng);
-                        log($scope.outletTypes);
-                        $scope.outlet = {
-                            Action: 0,
-                            AddLine: "",
-                            AddLine2: "",
-                            AmendBy: 11693,
-                            AmendDate: "",
-                            AreaID: $scope.user.areaID,
-                            AuditStatus: 0,
-                            CloseDate: "",
-                            CreateDate: "",
-                            Distance: 0,
-                            District: "",
-                            FullAddress: "",
-                            ID: parseInt('65' + $scope.config.province_id + (Math.random() * 100000)),
-                            InputBy: $scope.user.id,
-                            IsOpened: true,
-                            IsTracked: false,
-                            LastContact: "",
-                            LastVisit: "",
-                            Latitude: lat,
-                            Longitude: lng,
-                            Name: "",
-                            Note: null,
-                            OTypeID: $scope.outletTypes[0].id,
-                            OutletEmail: null,
-                            OutletSource: 1,
-                            OutletTypeName: $scope.outletTypes[0].name,
-                            PRowID: '',
-                            PersonID: $scope.user.id,
-                            Phone: "",
-                            ProvinceID: $scope.config.province_id,
-                            ProvinceName: "Hồ Chí Minh",
-                            StringImage1: "",
-                            StringImage2: "",
-                            StringImage3: "",
-                            TotalVolume: 0,
-                            Tracking: 0,
-                            VBLVolume: 0
-                        };
-                        hideDlg();
-                        $mdDialog.show({
-                            scope: $scope.$new(),
-                            controller: function ($scope, $mdDialog) {
-                                $scope.saveUpdate = function () {
-                                    $mdDialog.hide(true);
-                                };
+        try {
+            navigator.geolocation.getCurrentPosition(function (position) {
+                var lat = position.coords.latitude;
+                var lng = position.coords.longitude;
 
-                                $scope.cancelUpdate = function () {
-                                    $mdDialog.cancel();
-                                };
-                            },
-                            templateUrl: 'outletnew.html',
-                            parent: angular.element(document.body),
-                            clickOutsideToClose: false,
-                            fullscreen: false,
-                        })
-                        .then(function (r) {
-                            if (r) {                                                              
-                                log('save outlet')
-                                showDlg('Saving Outlet', 'Please wait...');
-                                saveOutlet($scope.outlet, function (synced) {                                    
-                                    addOutletDB($scope.config.tbl_outlet, $scope.outlet, synced, function () {
-                                        hideDlg();
-                                    }, function (dberr) {
-                                        hideDlg();
-                                        showError(dberr.message);
-                                    });
-                                });
-                            }
-                        }, function () {
-                        });
-                    }, onGetLocationError);
-                } catch (err) {
-                    log(err);
-                }
-            },
-            function (dberr) {
+                moveToLocation(lat, lng);
+                log($scope.outletTypes);
+                $scope.outlet = {
+                    Action: 0,
+                    AddLine: "",
+                    AddLine2: "",
+                    AmendBy: 11693,
+                    AmendDate: "",
+                    AreaID: $scope.user.areaID,
+                    AuditStatus: 0,
+                    CloseDate: "",
+                    CreateDate: "",
+                    Distance: 0,
+                    District: "",
+                    FullAddress: "",
+                    ID: parseInt('65' + $scope.config.province_id + (Math.random() * 100000)),
+                    InputBy: $scope.user.id,
+                    IsOpened: true,
+                    IsTracked: false,
+                    LastContact: "",
+                    LastVisit: "",
+                    Latitude: lat,
+                    Longitude: lng,
+                    Name: "",
+                    Note: null,
+                    OTypeID: $scope.outletTypes[0].id,
+                    OutletEmail: null,
+                    OutletSource: 1,
+                    OutletTypeName: $scope.outletTypes[0].name,
+                    PRowID: '',
+                    PersonID: $scope.user.id,
+                    Phone: "",
+                    ProvinceID: $scope.config.province_id,
+                    ProvinceName: "Hồ Chí Minh",
+                    StringImage1: "",
+                    StringImage2: "",
+                    StringImage3: "",
+                    TotalVolume: 0,
+                    Tracking: 0,
+                    VBLVolume: 0
+                };
                 hideDlg();
-                showError(dberr.message);
-            });
+                $mdDialog.show({
+                    scope: $scope.$new(),
+                    controller: function ($scope, $mdDialog) {
+                        $scope.saveUpdate = function () {
+                            $mdDialog.hide(true);
+                        };
+
+                        $scope.cancelUpdate = function () {
+                            $mdDialog.cancel();
+                        };
+                    },
+                    templateUrl: 'outletnew.html',
+                    parent: angular.element(document.body),
+                    clickOutsideToClose: false,
+                    fullscreen: false,
+                })
+                .then(function (r) {
+                    if (r) {
+                        log('save outlet')
+                        showDlg('Saving Outlet', 'Please wait...');
+                        saveOutlet($scope.outlet, function (synced) {
+                            addOutletDB($scope.config.tbl_outlet, $scope.outlet, synced, function () {
+                                hideDlg();
+                            }, function (dberr) {
+                                hideDlg();
+                                showError(dberr.message);
+                            });
+                        });
+                    }
+                }, function () {
+                });
+            }, onGetLocationError);
+        } catch (err) {
+            log(err);
+        }
     }
 
     function loadOutletTypes(onSuccess, onError) {
@@ -288,15 +293,9 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', fu
 
         log('reset near by outlets');
         nearbyOutlets = [];
-
-        if (homeMarker == null) {
-            homeMarker = createMaker('', new google.maps.LatLng(curlat, curlng), 'pin-cur.png');
-        } else {
-            homeMarker.setPosition(new google.maps.LatLng(curlat, curlng));
-        }
-
-        log('update position')
-        moveToLocation(curlat, curlng);
+        
+        //log('update position')
+        //moveToLocation(curlat, curlng);
 
         if (isOnline) {
             getNearByOutletsOnline();
@@ -312,6 +311,91 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', fu
     }
 
     function getNearByOutletsOffline() {
+        // hide panel
+        leftPanelStatus = 2;
+        $scope.viewLeftPanel();
+        meter = $scope.config.distance;
+        count = $scope.config.item_count;
+        var saleLoc =  { Lat : curlat, Lng : curlng };
+        var tl = calcRetangleBoundary(meter, 0 - meter, saleLoc);
+        var tr = calcRetangleBoundary(meter, meter, saleLoc);
+        var bl = calcRetangleBoundary(0 - meter, 0 - meter, saleLoc);
+        var br = calcRetangleBoundary(0 - meter, meter, saleLoc);
+        log('select outlets from local db');
+        selectOutletsDistance($scope.config.tbl_outlet, bl.Lat, tl.Lat, bl.Lng, br.Lng,
+            function (dbres) {
+                var rowLen = dbres.rows.length;
+                log('Found ' + rowLen.toString() + ' outlets');               
+                if (rowLen) {
+                    nearbyOutlets = [];
+                    var found = 0;
+                    for (i = 0; i < rowLen; i++) {
+                        var outlet = dbres.rows.item(i);
+
+                        var distance = 1000000;
+                        if ($scope.config.calc_distance_algorithm == "circle")
+                            distance = calcDistanceCircle(saleLoc, { Lat : outlet.Latitude, Lng : outlet.Longitude }, meter);
+                        log('Distance to Outlet ' + outlet.ID.toString() + ': ' + distance.toString());
+
+                        if (distance <= meter) {
+                            log('Add outlet ' + outlet.ID.toString() + ' to list');
+                            var provinceName = '';
+                            for (p = 0; p < $scope.provinces.length; p++)
+                                if ($scope.provinces[p].id === outlet.ProvinceID) {
+                                    provinceName = $scope.provinces[p].name;
+                                    break;
+                                }
+
+                            var outletTypeName = '';
+                            for (p = 0; p < $scope.outletTypes.length; p++)
+                                if ($scope.outletTypes[p].id === outlet.OTypeID) {
+                                    outletTypeName = $scope.outletTypes[p].name;
+                                    break;
+                                }
+
+                            outlet.FullAddress = outlet.AddLine + ' ' + outlet.AddLine2 + ' ' + outlet.District + ' ' + provinceName;
+                            outlet.OutletTypeName = outletTypeName;
+                            nearbyOutlets[found] = outlet;
+                            found++;
+                        }
+
+                        if (found >= count) break;
+                    }
+                    log('Display ' + nearbyOutlets.length.toString() + ' outlets');
+                    log(nearbyOutlets);
+                    loadOutlets(nearbyOutlets);
+                } else {
+                    loadOutlets([]);
+                }
+                hideDlg();
+           
+            }, function (dberr) {
+                hideDlg();
+                showError(dberr.message);
+            });
+    }
+
+    function calcRetangleBoundary(dlat, dlng, p) {
+        var np = {
+            Lat : p.Lat + (dlat / earthR) * (180 / Math.PI),
+            Lng : p.Lng + (dlng / earthR) * (180 / Math.PI) / Math.cos(p.Lat * Math.PI / 180)
+        };        
+        return np;
+    }
+
+    function calcDistanceCircle(saleLoc, outletLoc, meter) {
+        var R = 6378137; // Earth’s mean radius in meter
+         var dLat = calculateRad(outletLoc.Lat - saleLoc.Lat);
+         var dLong = calculateRad(outletLoc.Lng - saleLoc.Lng);
+         var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(calculateRad(saleLoc.Lat)) * Math.cos(calculateRad(outletLoc.Lat)) *
+                Math.sin(dLong / 2) * Math.sin(dLong / 2);
+         var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        var d = R * c;
+        return d;
+    }
+
+    function calculateRad(x) {
+        return x * Math.PI / 180;
     }
 
     function getNearByOutletsOnline() {
@@ -355,8 +439,25 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', fu
                     if (rowLen) {
                         var foundOutlets = [];
                         for (i = 0; i < rowLen; i++) {
-                            var i = dbres.rows.item(i);
-                            foundOutlets.push(i);
+                            var outlet = dbres.rows.item(i);
+
+                            var provinceName = '';
+                            for (p = 0; p < $scope.provinces.length; p++)
+                                if ($scope.provinces[p].id === outlet.ProvinceID) {
+                                    provinceName = $scope.provinces[p].name;
+                                    break;
+                                }
+
+                            var outletTypeName = '';
+                            for (p = 0; p < $scope.outletTypes.length; p++)
+                                if ($scope.outletTypes[p].id === outlet.OTypeID) {
+                                    outletTypeName = $scope.outletTypes[p].name;
+                                    break;
+                                }
+
+                            outlet.FullAddress = outlet.AddLine + ' ' + outlet.AddLine2 + ' ' + outlet.District + ' ' + provinceName;
+                            outlet.OutletTypeName = outletTypeName;
+                            foundOutlets[i] = outlet;
                         }
                         loadOutlets(foundOutlets);
                     } else {
@@ -379,14 +480,10 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', fu
         if (map != null) {            
             clearMarkers();
             log("load outlets to map");
-            items.forEach(function (outlet, i) {
+            for (var i = 0; i < items.length; i++) {
                 var outlet = items[i];
                 var marker = createMaker(outlet.Name, new google.maps.LatLng(outlet.Latitude, outlet.Longitude), 'pin-open-dis.png');
                 markers.push(marker);
-
-                //var infoWindow = new google.maps.InfoWindow({
-                //    content: '<div class=\'view-marker\' ng-click=\'viewOutlet(' + i.toString() + ')\'>' + outlet.Name + '</div>',
-                //});
 
                 var infoWindow = new google.maps.InfoWindow({
                     content: '<div class=\'view-marker\'>' + outlet.Name + '</div>',
@@ -395,25 +492,34 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', fu
                 markerInfoWindows.push(infoWindow);
 
                 marker.addListener('click', function () {
-                    viewOutlet(i);
+                    viewOutlet(markers.indexOf(marker));
                 });
+            };
 
-                //marker.addListener('click', function () {
-                //    if (curInfoWindow != null && infoWindow != curInfoWindow) {
-                //        curInfoWindow.close();
-                //    }
-                //    infoWindow.open(map, marker);
-                //    curInfoWindow = infoWindow;
-                //    //var loc = new google.maps.LatLng(marker.Latitude, marker.Longitude);
-                //    //map.panTo(loc);
-                //});
-            });
+            var options = {
+                imagePath: 'assets/img/m'
+            };
+            markerCluster = new MarkerClusterer(map, markers, options);
         }
-        
+                
         $scope.outlets = items;
+        try{
+            $scope.$apply();
+        }catch(err){
+            log(err);
+        }
+
+        log('create home marker');
+        if (isOnline)
+            homeMarker = createMaker('', new google.maps.LatLng(curlat, curlng), 'pin-cur.png');
+        else {         
+            leftPanelStatus = 1;
+            $scope.viewLeftPanel();
+        }
     }    
 
     function clearMarkers() {
+        if (homeMarker != null) homeMarker.setMap(null);
         for (var i = 0; i < markers.length; i++) {
             markers[i].setMap(null);
         }
@@ -456,8 +562,8 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', fu
 
     function viewOutlet(i) {
         log(i);
-        //moveToLocation(nearbyOutlets[i]);
-        var outlet = $scope.outlets[i];
+        //moveToLocation(nearbyOutlets[i]);     
+        var outlet = $scope.outlets[i];       
         var clonedOutlet = cloneObj(outlet);
         $scope.outlet = clonedOutlet;
 
@@ -523,7 +629,8 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', fu
             var data = JSON.stringify(outlet);
             log(data);
 
-            outlet.PRowID = guid();
+            if (outlet.PRowID == null)
+                outlet.PRowID = guid();
             onSuccess(true);
 
             //$http({
@@ -579,17 +686,3 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', fu
         log(err);
     }
 }]);
-
-//function moveToLocation(marker) {
-//    if (map == null) return;
-//    log('Move current location');
-//    log(marker);
-//    //log(marker.Latitude);
-//    //log(marker.Longitude);
-//    //var center = new google.maps.LatLng(curlat, curlng);
-//    //map.panTo(center);
-//    //if(map != null)
-//    //    map.setCenter(marker.position);
-//    //var center = new google.maps.LatLng(marker.Latitude, marker.Longitude);
-//    //map.panTo(center);
-//}

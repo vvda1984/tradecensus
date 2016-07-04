@@ -8,7 +8,9 @@ var userOutletTable = 'outlet';     // outlet table name for current user
 var isLoadingDlgOpened = false;     // 
 var isInitialize = false;
 var provinces = [];
+var outletTypes = [];
 var baseURL = '';
+const earthR = 6378137;
 
 $(document).ready(function () {    
     //initalizeDB(function () {
@@ -78,24 +80,68 @@ var app = angular
             isInitialize = true;
             initalizeDB(function () {
                 showDlg('Initialize', 'Please wait...', false);
-                selectProvinces(
-                    function (tx, dbrow) { // Load Province Success                        
-                        var rowLen = dbrow.rows.length;
-                        if (rowLen) {
-                            for (i = 0; i < rowLen; i++) {
-                                provinces[i] = {
-                                    id: dbrow.rows.item(i).ID,
-                                    name: dbrow.rows.item(i).Name,
-                                }
+                log('Load outlet types...')
+                loadOutletTypes(
+                    function () {
+                        log('Load provices...')
+                        loadProvinces(
+                            function () {
+                                loadConfig();
+                            },
+                            function (dberr) {
+                                hideDlg();
+                                showError(dberr.message);
+                            });
+                    },
+                    function (dberr) {
+                        hideDlg();
+                        showError(dberr.message);
+                    });
+            });
+        }
+
+        function loadProvinces(onSuccess, onError) {
+            if (provinces != null && provinces.length > 0) {
+                onSuccess();
+            } else {
+                provinces = [];
+                selectProvinces(function (tx, dbrow) {
+                    var rowLen = dbrow.rows.length;
+                    log('found ' + rowLen.toString() + ' provinces');
+                    if (rowLen) {
+                        for (i = 0; i < rowLen; i++) {
+                            provinces[i] = {
+                                id: dbrow.rows.item(i).ID,
+                                name: dbrow.rows.item(i).Name,
                             }
                         }
+                    }
 
-                        loadConfig();
-                    }, function (dberr) {     // Error
-                        hideDlg();
-                        log(dberr.message);
-                    })
-            });
+                    onSuccess();
+                }, onError);
+            }
+        }
+
+        function loadOutletTypes(onSuccess, onError) {
+            if (outletTypes != null && outletTypes.length > 0) {
+                onSuccess();
+            } else {
+                outletTypes = [];
+                selectOutletTypes(function (tx, dbrow) {
+                    var rowLen = dbrow.rows.length;
+                    log('found ' + rowLen.toString() + ' outlet types');
+                    if (rowLen) {
+                        for (i = 0; i < rowLen; i++) {
+                            outletTypes[i] = {
+                                id: dbrow.rows.item(i).ID,
+                                name: dbrow.rows.item(i).Name,
+                            }
+                        }
+                    }
+
+                    onSuccess();
+                }, onError);
+            }
         }
 
         function loadConfig() {

@@ -10,40 +10,43 @@ by editing this MSBuild file. In order to learn more about this please visit htt
   </PropertyGroup>
   <ItemGroup>
     <File Include="ApplicationInsights.config">
-      <publishTime>07/04/2016 11:19:28</publishTime>
+      <publishTime>07/04/2016 13:50:01</publishTime>
+    </File>
+    <File Include="bin/ApplicationInsights.config">
+      <publishTime>07/04/2016 13:50:01</publishTime>
     </File>
     <File Include="bin/EntityFramework.dll">
-      <publishTime>03/02/2015 09:32:24</publishTime>
+      <publishTime>12/19/2014 03:42:58</publishTime>
     </File>
     <File Include="bin/EntityFramework.SqlServer.dll">
-      <publishTime>03/02/2015 09:32:26</publishTime>
+      <publishTime>12/19/2014 03:43:00</publishTime>
     </File>
     <File Include="bin/Microsoft.AI.Agent.Intercept.dll">
       <publishTime>12/07/2015 19:04:38</publishTime>
     </File>
     <File Include="bin/Microsoft.AI.DependencyCollector.dll">
-      <publishTime>03/10/2016 14:26:18</publishTime>
+      <publishTime>06/06/2016 15:40:16</publishTime>
     </File>
     <File Include="bin/Microsoft.AI.PerfCounterCollector.dll">
-      <publishTime>03/10/2016 14:26:26</publishTime>
+      <publishTime>06/06/2016 15:40:34</publishTime>
     </File>
     <File Include="bin/Microsoft.AI.ServerTelemetryChannel.dll">
-      <publishTime>03/09/2016 12:00:14</publishTime>
+      <publishTime>06/06/2016 10:45:24</publishTime>
     </File>
     <File Include="bin/Microsoft.AI.Web.dll">
-      <publishTime>03/10/2016 14:26:26</publishTime>
+      <publishTime>06/06/2016 15:40:34</publishTime>
     </File>
     <File Include="bin/Microsoft.AI.WindowsServer.dll">
-      <publishTime>03/10/2016 14:26:26</publishTime>
+      <publishTime>06/06/2016 15:40:34</publishTime>
     </File>
     <File Include="bin/Microsoft.ApplicationInsights.dll">
-      <publishTime>03/09/2016 11:57:34</publishTime>
+      <publishTime>06/06/2016 10:42:24</publishTime>
     </File>
     <File Include="bin/Microsoft.CSharp.dll">
       <publishTime>03/19/2010 10:31:26</publishTime>
     </File>
     <File Include="bin/Microsoft.Diagnostics.Tracing.EventSource.dll">
-      <publishTime>04/08/2015 14:21:30</publishTime>
+      <publishTime>12/01/2015 14:31:46</publishTime>
     </File>
     <File Include="bin/Microsoft.Threading.Tasks.dll">
       <publishTime>04/07/2014 12:26:14</publishTime>
@@ -76,13 +79,13 @@ by editing this MSBuild file. In order to learn more about this please visit htt
       <publishTime>03/19/2010 10:31:26</publishTime>
     </File>
     <File Include="bin/System.IO.dll">
-      <publishTime>04/07/2014 10:39:28</publishTime>
+      <publishTime>02/18/2015 17:07:08</publishTime>
     </File>
     <File Include="bin/System.Net.dll">
       <publishTime>02/09/2011 03:05:56</publishTime>
     </File>
     <File Include="bin/System.Runtime.dll">
-      <publishTime>04/07/2014 10:39:28</publishTime>
+      <publishTime>02/18/2015 17:07:08</publishTime>
     </File>
     <File Include="bin/System.Runtime.Serialization.dll">
       <publishTime>03/19/2010 10:31:26</publishTime>
@@ -97,7 +100,7 @@ by editing this MSBuild file. In order to learn more about this please visit htt
       <publishTime>03/19/2010 10:31:26</publishTime>
     </File>
     <File Include="bin/System.Threading.Tasks.dll">
-      <publishTime>04/07/2014 10:39:28</publishTime>
+      <publishTime>02/18/2015 17:07:08</publishTime>
     </File>
     <File Include="bin/System.Web.ApplicationServices.dll">
       <publishTime>03/19/2010 10:31:26</publishTime>
@@ -124,10 +127,10 @@ by editing this MSBuild file. In order to learn more about this please visit htt
       <publishTime>03/19/2010 10:31:26</publishTime>
     </File>
     <File Include="bin/TradeCensus.dll">
-      <publishTime>07/04/2016 11:35:00</publishTime>
+      <publishTime>07/04/2016 13:53:33</publishTime>
     </File>
     <File Include="packages.config">
-      <publishTime>07/04/2016 11:32:51</publishTime>
+      <publishTime>07/04/2016 13:50:01</publishTime>
     </File>
     <File Include="scripts/ai.0.22.9-build00167.js">
       <publishTime>07/04/2016 11:07:52</publishTime>
@@ -138,11 +141,14 @@ by editing this MSBuild file. In order to learn more about this please visit htt
     <File Include="TraceCensusModel.edmx.diagram">
       <publishTime>07/04/2016 11:10:45</publishTime>
     </File>
+    <File Include="TradeCensusModel.edmx.diagram">
+      <publishTime>07/04/2016 11:10:45</publishTime>
+    </File>
     <File Include="TradeCensusService.svc">
       <publishTime>07/04/2016 11:11:24</publishTime>
     </File>
     <File Include="Web.config">
-      <publishTime>07/04/2016 11:35:01</publishTime>
+      <publishTime>07/04/2016 13:53:33</publishTime>
     </File>
   </ItemGroup>
 </Project>

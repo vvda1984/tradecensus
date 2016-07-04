@@ -28,7 +28,7 @@ namespace TradeCensus
                     Email = item.Email,
                     EmailTo = item.EmailTo,
                     FirstName = item.FirstName,
-                    HasAuditRole = ad == null || ad.IsAudit == 1,
+                    HasAuditRole = ad == null && ad.IsAudit == 1,
                     HomeAddress = item.HomeAddress,
                     HouseNo = item.HouseNo,
                     IsTerminate = item.TerminateDate != null,
