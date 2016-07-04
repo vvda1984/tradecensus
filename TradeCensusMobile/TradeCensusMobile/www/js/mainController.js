@@ -1,8 +1,8 @@
 ﻿/// <reference path='app.global.js' />
-var isWeb = true;                  // for testing
+
 var db;                             // database instance
-var map = null;                            // google map
-var isOnline = true;                // network status
+var map = null;                     // google map
+//var isOnline = true;              // network status
 var isDev = false;                  // enable DEV mode
 var userOutletTable = 'outlet';     // outlet table name for current user
 var isLoadingDlgOpened = false;     // 
@@ -190,12 +190,11 @@ var app = angular
             });
         }
 
-        log('check network status...');
-        if (!isWeb) {
-            isOnline = checkConnection();
-            document.addEventListener('online', function () { isOnline = true; }, false);
-            document.addEventListener('offline', function () { isOnline = false; }, false);
-        }
+        //log('check network status...');
+        //if (!isWeb) {            
+        //    document.addEventListener('online', function () { isOnline() = true; }, false);
+        //    document.addEventListener('offline', function () { isOnline() = false; }, false);
+        //}
         //baseURL = buildURL($scope.config.protocol, $scope.config.ip, $scope.config.port, $scope.config.service_name);
         $scope.route = $route;
         $scope.$on('$routeChangeSuccess', function (ev) {

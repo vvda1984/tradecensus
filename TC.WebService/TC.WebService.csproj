@@ -259,6 +259,7 @@
     <Content Include="TradeCensusModel.edmx.diagram">
       <DependentUpon>TradeCensusModel.edmx</DependentUpon>
     </Content>
+    <None Include="Properties\PublishProfiles\File.pubxml" />
     <None Include="Properties\PublishProfiles\FileSystem.pubxml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>

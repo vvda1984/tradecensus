@@ -1,10 +1,12 @@
-<div id="view-home">  
-    <div id="outletPanel" class="overlay">                
-        <div class="overlay-content">             
-            <a id="expander-2" ng-click="viewLeftPanel()">&nbsp;</a>           
-            <h3>{{outletHeader}}</h3>                        
+<div id="view-home">
+    <div id="outletPanel" class="overlay">
+        <div class="overlay-content">
+            <a id="expander-2" ng-click="viewLeftPanel()">&nbsp;</a>
+            <h3>{{outletHeader}}</h3>
             <div class="outlet-list">
-                <div class="outlet-list-item" ng-repeat="outlet in outlets" >
+                <!--<div class="outlet-list-item" id="outletlist">
+                </div>-->
+                <div class="outlet-list-item" ng-repeat="outlet in outlets">
                     <div class="outlet-list-item-header" ng-click="openOutlet($index)">{{outlet.Name}}</div>
                     <table>
                         <tr>
@@ -26,15 +28,15 @@
                     </table>
                 </div>
             </div>
-        </div>        
+        </div>
     </div>
-    
+
     <div id="view-map">
-        <div id="map" class="view-map-content"></div>            
+        <div id="map" class="view-map-content"></div>
     </div>
 
     <a id="expander-1" class="view-button" ng-click="viewLeftPanel()"> > </a>
-    <!--<img src="assets/img/a-right.png"/>-->    
+    <!--<img src="assets/img/a-right.png"/>-->
 
     <div id="view-home-content-bottom">
         <a id="btn-near-by" ng-click="changeOutletView(0)" class="outlet-button-active">Near-by Outlets</a>
@@ -43,7 +45,7 @@
         <a id="btn-aud-outlet" ng-show="hasAuditRole" ng-click="changeOutletView(4)">Auditted Outlets</a>
     </div>
 
-    <div id="view-home-content-top">        
+    <div id="view-home-content-top">
         <a id="btn-refresh" ng-show="btnRefreshVisible" ng-click="refresh()">Refresh</a>
         <a id="btn-add" ng-click="createNewOutlet()">Add Outlet</a>
     </div>

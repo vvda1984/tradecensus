@@ -1,9 +1,8 @@
 ﻿/** 
 * checkConnection
 */
-function checkConnection() {
-    return false;
-    if (isWeb) return true;
+function isOnline() {   
+    return true;   
     var networkState = navigator.connection.type;
     return (networkState != 'Unknown connection' && networkState != 'no network connection')
 }
@@ -160,8 +159,8 @@ function loadDefaultConfig() {
     // Load database...
     return {
         protocol: 'http',
-        ip: '192.168.1.104',
-        port: '33334',
+        ip: '27.0.15.234',
+        port: '3001',
         service_name: 'TradeCensusService.svc',
         map_zoom: 18,
         item_count: 20,

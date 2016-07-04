@@ -1,14 +1,12 @@
 ﻿/// <reference path="app.database.js" />
 /// <reference path="app.global.js" />
-
+/// <reference path="../assets/libs/markerclusterer.js" />
 
 app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', function ($scope, $http, $mdDialog, $mdMedia) {
     //TODO:
-    //  - Integate google map events    
-    isOnline = checkConnection();
-
+    //  - Integate google map events      
     log('Enter Home page');
-    log(isOnline);
+    //log(isOnline());
     log($scope.user.id);
     log($scope.config.province_id);
 
@@ -17,7 +15,7 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', fu
     var markers = [];
     var markerInfoWindows = [];
     var nearbyOutlets = [];
-    var markerCluster;
+    var markerClusterer;
 
     var leftPanelStatus = 0;
     var curlat = 10.773598;
@@ -74,7 +72,7 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', fu
         if ($scope.outletCategory === v) return;
         log('change view to ' + v.toString());
 
-        if (isOnline) {
+        if (isOnline()) {
             leftPanelStatus = 2;
             $scope.viewLeftPanel();
         }
@@ -182,6 +180,17 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', fu
                 $mdDialog.show({
                     scope: $scope.$new(),
                     controller: function ($scope, $mdDialog) {
+                        $scope.capture = function (i) {
+                            captureImage(function (imageURI) {
+                                var image = document.getElementById('outletImg' + i.toString());
+                                image.src = imageURI;
+                                //var image = document.getElementById('outletImg' + i);
+                                //image.src = "data:image/jpeg;base64," + imageData;
+                            }, function (err) {
+                                showError(err);
+                            });
+                        }
+
                         $scope.saveUpdate = function () {
                             $mdDialog.hide(true);
                         };
@@ -242,9 +251,8 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', fu
         try {
             log('Check map...');
             if (map == null) {
-                log('Initialize map...');
-                isOnline = checkConnection();
-                if (!isOnline) {
+                log('Initialize map...');             
+                if (!isOnline()) {
                     log('App is offline...');
                     return;
                 }
@@ -297,7 +305,7 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', fu
         //log('update position')
         //moveToLocation(curlat, curlng);
 
-        if (isOnline) {
+        if (isOnline()) {
             getNearByOutletsOnline();
         } else {
             getNearByOutletsOffline();
@@ -499,26 +507,58 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', fu
             var options = {
                 imagePath: 'assets/img/m'
             };
-            markerCluster = new MarkerClusterer(map, markers, options);
+            markerClusterer = new MarkerClusterer(map, markers, options);
         }
                 
         $scope.outlets = items;
+        //loadOutletsToListView(items);
         try{
-            $scope.$apply();
+            //$scope.$apply();
         }catch(err){
             log(err);
         }
 
         log('create home marker');
-        if (isOnline)
+        if (isOnline())
             homeMarker = createMaker('', new google.maps.LatLng(curlat, curlng), 'pin-cur.png');
         else {         
             leftPanelStatus = 1;
             $scope.viewLeftPanel();
         }
-    }    
+    }
+
+    function loadOutletsToListView(items) {
+        $("#outletlist").empty();
+        for (var i = 0; i < items.length; i++) {
+            var outlet = items[i];
+            var html =
+            '<div class="outlet-list-item-header" ng-click="openOutlet(' + i.toString() + ')">' + outlet.Name + '</div>' +
+               '<table>' +
+                    '<tr>' +
+                        '<td><div class="title">Address:</div></td>' +
+                        '<td colspan="5"><div class="content1">' + outlet.FullAddress + '</div></td>' +
+                        '<td ng-show="showFullOutlet"><div class="title1">Outlet type:</div></td>' +
+                        '<td ng-show="showFullOutlet"><div class="content2">' + outlet.OutletTypeName + '</div></td>' +
+                    '</tr>' +
+                    '<tr ng-show="showFullOutlet">' +
+                        '<td><div class="title">Distance:</div></td>' +
+                        '<td><div class="content2">' + outlet.Distance + '</div></td>' +
+                        '<td><div class="title">SR/DSM:</div></td>' +
+                        '<td><div class="content2">' + outlet.Name + '</div></td>' +
+                        '<td><div class="title">Tel:</div></td>' +
+                        '<td><div>' + outlet.Phone + '</div></td>' +
+                        '<td><div class="title1">Last contact:</div></td>' +
+                        '<td><div class="content2">' + outlet.LastContact + '</div></td>' +
+                    '</tr>' +
+                '</table>' +
+            '</div>';
+            $("#outletlist").append(html);
+        };
+    }
 
     function clearMarkers() {
+        if (markerClusterer)
+            markerClusterer.clearMarkers();
         if (homeMarker != null) homeMarker.setMap(null);
         for (var i = 0; i < markers.length; i++) {
             markers[i].setMap(null);
@@ -570,6 +610,16 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', fu
         $mdDialog.show({
             scope: $scope.$new(),
             controller: function ($scope, $mdDialog) {
+                $scope.capture = function (i) {
+                    captureImage(function (imageURI) {
+                        var image = document.getElementById('outletImg' + i.toString());
+                        image.src = imageURI;                     
+                        //var image = document.getElementById('outletImg' + i);
+                        //image.src = "data:image/jpeg;base64," + imageData;
+                    }, function (err) {
+                        showError(err);
+                    });
+                }
                 $scope.openedOptionVisible = !$scope.outlet.IsOpened;
                 $scope.trackedOptionVisible = !$scope.outlet.IsTracked;
                 $scope.saveUpdate = function () {
@@ -621,9 +671,21 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', fu
         });
     }
 
-    function saveOutlet(outlet, onSuccess) {
-        isOnline = checkConnection();
-        if (isOnline) {
+    function captureImage(onSuccess, onError) {
+        try {
+
+            navigator.camera.getPicture(onSuccess, onError,
+                {
+                    quality: 50,
+                    destinationType: Camera.DestinationType.FILE_URI // DATA_URL for base64 => not recommend due to memory issue
+                });
+        } catch (err) {
+            showError(err);
+        }
+    }
+
+    function saveOutlet(outlet, onSuccess) {      
+        if (isOnline()) {
             var url = baseURL + '/outlet/save';
             log('Call service api: ' + url);
             var data = JSON.stringify(outlet);

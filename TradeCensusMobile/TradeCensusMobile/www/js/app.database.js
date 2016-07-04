@@ -324,7 +324,7 @@ function insertOutlets(userID, outletTbl, outlets, onSuccess, onError) {
                         log('Outlet existed');
 
                         var existOutlet = dbrow.rows[0];
-                        if (existOutlet.AmendBy != outlet.AmendBy || existOutlet.AmendDate != outlet.AmendDate) {
+                        if (existOutlet && (existOutlet.AmendBy != outlet.AmendBy || existOutlet.AmendDate != outlet.AmendDate)) {
                             log('Outlet was MODIFIED in server');
                             //if (existOutlet.state == 0) { // unchanged
                             //    updateOutlet(tx, userID, outletTbl, outlet, 0, true);

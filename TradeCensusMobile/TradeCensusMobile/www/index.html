@@ -31,7 +31,7 @@
 </head>
 <!--<body ng-app="TradeCensus" ng-controller="MainController">-->
 <body ng-app="TradeCensus" ng-controller="MainController">
-    <ng-view id="mainView"></ng-view>     
+    <ng-view id="mainView"></ng-view>
     
     <script src="js/app.global.js"></script>
     <script src="js/app.database.js"></script>   
@@ -66,6 +66,7 @@
             </div>
           </div>
     </script>
+
     <script type="text/ng-template" id="outletview.html">
         <md-dialog aria-label="Mango (Fruit)" ng-cloak>
             <md-toolbar>
@@ -125,9 +126,9 @@
                     </div>
 
                     <div layout-gt-xs="row">
-                        <img id="outletImg1" class="outletImage" />
-                        <img id="outletImg2" class="outletImage" />
-                        <img id="outletImg3" class="outletImage" />
+                        <img id="outletImg1" class="outletImage" ng-click="capture(1);" />
+                        <img id="outletImg2" class="outletImage" ng-click="capture(2);" />
+                        <img id="outletImg3" class="outletImage" ng-click="capture(3);" />
                     </div>
                     <div layout-gt-xs="row" layout-margin layout-align="center">
                         <md-button class="md-raised md-primary" ng-click="saveUpdate()">{{hasAuditRole ? "Apcept" : "Save"}}</md-button>
@@ -137,6 +138,7 @@
             </md-content>
         </md-dialog>
     </script>
+
     <script type="text/ng-template" id="outletnew.html">
         <md-dialog aria-label="Mango (Fruit)" ng-cloak>
             <md-toolbar>
@@ -213,9 +215,9 @@
                     </div>
 
                     <div layout-gt-xs="row">
-                        <img id="outletImg1" class="outletImage" />
-                        <img id="outletImg2" class="outletImage" />
-                        <img id="outletImg3" class="outletImage" />
+                        <img id="outletImg1" class="outletImage" ng-click="capture(1);"/>
+                        <img id="outletImg2" class="outletImage" ng-click="capture(2);"/>
+                        <img id="outletImg3" class="outletImage" ng-click="capture(3);"/>
                     </div>
                     <div layout-gt-xs="row" layout-margin layout-align="center">
                         <md-button class="md-raised md-primary" ng-click="saveUpdate()">Save</md-button>
