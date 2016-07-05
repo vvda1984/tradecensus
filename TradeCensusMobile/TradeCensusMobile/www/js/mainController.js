@@ -10,6 +10,7 @@ var isInitialize = false;
 var provinces = [];
 var outletTypes = [];
 var baseURL = '';
+var user = null;
 const earthR = 6378137;
 
 $(document).ready(function () {
@@ -193,7 +194,7 @@ var app = angular
             //});
             $location.path('/' + name);
             try {
-                $scope.$apply();
+                if (!$scope.$$phase) $scope.$apply();
             } catch (err) {
             }
         };

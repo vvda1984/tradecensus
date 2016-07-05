@@ -50,77 +50,7 @@ app.controller('LoginController', ['$scope', '$http', function ($scope, $http) {
     $scope.exit = function () {
         navigator.app.exitApp();
     };
-
-    /*
-    $scope.login = function () {
-        log($scope.user.id);
-        // validate user id
-        if (isEmpty($scope.user.id)) {
-            showDialog('User ID is empty!', 'Error', function () { })
-            return;
-        }
-        // validate password
-        if (isEmpty($scope.user.password)) {
-            showDialog('Password is empty!', 'Error', function () { })
-            return;
-        }
-        // FOR dev
-        if ($scope.user.id == 600000) {          
-            $scope.areaID = 'AA';            
-            $scope.changeView('home');
-            return;
-        }
-        var isCancel = false;        
-        showLoadingDlg('Login...', 'Please wait', function () { isCancel = true; });
-        if (isOnline) {
-            var url = baseURL + '/login/' + $scope.user.id + '/' + $scope.user.password;
-            log('Call service api: ' + url);
-            $http({
-                method: $scope.config.http_method,
-                url: url
-            }).then(function (resp) {
-                hideDlg();                             
-                if (data.Status == -1) { // error
-                    showDialog(data.ErrorMessage, 'Error', function () { });
-                } else {
-                    if (data.People.IsTerminate) {
-                    }
-                    insertPerson(data.People, $scope.user.password,
-                        function (tx, row) {
-                            if (!data.People.IsTerminate) {
-                                afterLogin();
-                            } else {
-                                showDialog($scope.resource.text_UserTerminated, 'Error', function () { });
-                            }
-                        },
-                        function (dberr) {
-                            showDialog(dberr.message, 'DB Error', function () { });
-                        });
-                }
-            }, function (err) {
-                hideDlg();                
-                showDialog(err, 'Unknown Error', function () { });
-            });
-        } else {
-            log('Login using local db');
-            selectUserByID($scope.user.id, $scope.user.password,
-                function (tx, dbres) {
-                    hideDlg();
-                    var rowLen = dbres.rows.length;
-                    if (rowLen == 1) {
-                        afterLogin();
-                    } else {
-                        showDialog($scope.resource.text_InvalidUserPass, 'Error', function () { });
-                    }
-                },
-                function (dberr) {
-                    hideDlg();
-                    showDialog(dberr.message, 'Unknown Error', function () { });
-                });
-        }
-    };
-    */
-
+   
     $scope.login = function () {
         log($scope.user.id);
 
@@ -129,40 +59,42 @@ app.controller('LoginController', ['$scope', '$http', function ($scope, $http) {
             showError('User ID is empty!');
             return;
         }
-
+        
         // validate password
         if (isEmpty($scope.user.password)) {
             showError('Password is empty!');
             return;
-        }
+        }        
 
         // FOR dev
-        if ($scope.user.id == 600000 || $scope.user.id == 600001) {
-            isDev = true;
-            loginSuccess({
-                ID: $scope.user.id,
-                FirstName: 'DEV',
-                LastName: 'A',
-                IsTerminate: false,
-                HasAuditRole: $scope.user.id == 600001,
-                PosID: '1',
-                ZoneID: 'AA',
-                AreaID: '1',
-                ProvinceID: '50',
-                Email: 'test@mail.com',
-                EmailTo: 'testmailto@mail.com',
-                HouseNo: '1',
-                Street: 'Nguyen Dinh Chieu',
-                District: '1',
-                HomeAddress: 'home',
-                WorkAddress: 'work',
-                Phone: '0909123456',
-            });
-            return;
-        }
+        //if ($scope.user.id == 600000 || $scope.user.id == 600001) {
+        //    isDev = true;
+        //    loginSuccess({
+        //        ID: $scope.user.id,
+        //        FirstName: 'DEV',
+        //        LastName: 'A',
+        //        IsTerminate: false,
+        //        HasAuditRole: $scope.user.id == 600001,
+        //        PosID: '1',
+        //        ZoneID: 'AA',
+        //        AreaID: '1',
+        //        ProvinceID: '50',
+        //        Email: 'test@mail.com',
+        //        EmailTo: 'testmailto@mail.com',
+        //        HouseNo: '1',
+        //        Street: 'Nguyen Dinh Chieu',
+        //        District: '1',
+        //        HomeAddress: 'home',
+        //        WorkAddress: 'work',
+        //        Phone: '0909123456',
+        //    });
+        //    return;
+        //}
 
         showDlg('Login', 'Please wait...');
-        if (isOnline) {
+        var isConnected = isOnline();
+        log('Newwork status: ' + isConnected);
+        if (isConnected) {
             loginOnline(loginSuccess, loginError);
         } else {
             loginOffline(loginSuccess, loginError);
@@ -173,6 +105,7 @@ app.controller('LoginController', ['$scope', '$http', function ($scope, $http) {
      * Login online
      */
     function loginOnline(onSuccess, onError) {
+        log('Login online');
         var url = baseURL + '/login/' + $scope.user.id + '/' + $scope.user.password;
         log('Call service api: ' + url);
         $http({
@@ -202,7 +135,7 @@ app.controller('LoginController', ['$scope', '$http', function ($scope, $http) {
      * Login offline
      */
     function loginOffline(onSuccess, onError) {
-        log('Login using local db');
+        log('Login offline');
         selectUserByID($scope.user.id, $scope.user.password,
             function (tx, dbres) {
                 hideDlg();
@@ -261,10 +194,11 @@ app.controller('LoginController', ['$scope', '$http', function ($scope, $http) {
         $scope.user.phone = user.Phone;
         $scope.config.tbl_outletSync = 'outletSync' + $scope.user.id;
         $scope.config.tbl_outlet = 'outlet' + $scope.user.id;
+        log($scope.user.hasAuditRole);
 
         log('create outlet tables');
         createOutletTables($scope.config.tbl_outletSync, $scope.config.tbl_outlet, function () {
-            if (isOnline && !isDev) {
+            if (isOnline() && !isDev) {
                 showDlg('Downloading Settings', 'Please wait...');
                 downloadServerConfig(function () {
                     hideDlg();

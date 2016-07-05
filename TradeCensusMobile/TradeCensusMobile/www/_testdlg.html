@@ -25,47 +25,32 @@
     <script src="js/app.global.js"></script>
 </head>
 <!--<body ng-app="TradeCensus" ng-controller="MainController">-->
-<body>
+<body>      
     <div>
-        <a onclick="convert()">Convert</a>
-        <div id="content"></div>
+        <span> abc def</span>
+        <span> abc def</span>
+        <span> abc def</span>
+        <span> abc def</span>
     </div>
-    <!--<script>
-        function convert() {
-            var url = 'assets/content/language_us.xml';
-            var reader = new XMLHttpRequest();
-            reader.open('get', url, true);
-            reader.onreadystatechange = function () {
-                if (reader.readyState == 4) {
-                    var el = document.getElementById('content');
-                    el.innerHTML = reader.responseText;
-                    console.log(reader.responseText);
-                    console.log("parse xml");
-                    var r = xmlToJSON.parseString(reader.responseText);
-                    //var r = X2J.parseXml(reader.responseText);
-                    console.log(r);
-
-                    var res = r.resources[0];
-                    console.log(res);
-                    console.log(res.text_AppName[0]._text);
-                }
-            };
-            reader.send(null);
-        }
-    </script>-->
-    <div class="overlay">
+    <div id="loading-overlay">
         <div id="loading-window">
-            <div id="loading-content">
-                <div id="loading-content-header">
-                    <h2 id="loading-content-title">Title</h2>
+            <div class="dialog">       
+                <div class="loading">
+                    <img src="assets/img/loader.gif" width="28" height="28" />
+                </div>             
+                <div class="content">                    
+                    <div class="title">Permission</div><br>
+                    <div>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam.</div>
                 </div>
-                <div id="loading-content-message">
-                    message message message message message message message
-                    message message message message message message message
+                <!--<div class="button label-blue">
+                    <div class="center" fit>ACCEPT</div>
+                    <paper-ripple fit></paper-ripple>
                 </div>
-                <div id="loading-content-footer">
-                    <a onclick="hideOverlay()">CLOSE</a>
-                </div>
+                <div class="button">
+                    <div class="center" fit>DECLINE</div>
+                    <paper-ripple fit></paper-ripple>
+                </div>-->            
+                       
             </div>
         </div>
     </div>

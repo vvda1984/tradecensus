@@ -3,8 +3,8 @@
 */
 function isOnline() {   
     return true;   
-    var networkState = navigator.connection.type;
-    return (networkState != 'Unknown connection' && networkState != 'no network connection')
+    //var networkState = navigator.connection.type;
+    //return (networkState != 'Unknown connection' && networkState != 'no network connection')
 }
 
 /** 
@@ -48,33 +48,72 @@ function buildURL(protocol, ip, port, serviceName) {
 */
 function showDlg(title, message, allowClose) {
     log("show dlg");
-    var cover = allowClose
-        ? '<div id="loading-overlay">' +
-            '<div id="loading-window">' +
-                '<div id="loading-content">' +
-                    '<div id="loading-content-header">' +
-                        '<h2 id="loading-content-title">' + title + '</h2>' +
+    //var cover = allowClose
+    //    ? '<div id="loading-overlay">' +
+    //        '<div id="loading-window">' +
+    //            '<div id="loading-content">' +
+    //                '<div id="loading-content-header">' +
+    //                    '<h2 id="loading-content-title">' + title + '</h2>' +
+    //                '</div>' +
+    //                '<span id="loading-content-message">' + message + '</span>' +
+    //                '<div id="loading-content-footer">' +
+    //                    '<a onclick="hideDlg()">CLOSE</a>' +
+    //                '</div>' +
+    //            '</div>' +
+    //        '</div>' +
+    //     '</div>'
+    //    : '<div id="loading-overlay">' +
+    //        '<div id="loading-window">' +
+    //            '<div id="loading-content">' +
+    //                '<div id="loading-content-header">' +
+    //                    '<h2 id="loading-content-title">' + title + '</h2>' +
+    //                '</div>' +
+    //                '<span id="loading-content-message">' + message + '</span>' +
+    //                '<div id="loading-content-footer">' +                       
+    //                '</div>' +
+    //            '</div>' +
+    //        '</div>' +
+    //     '</div>';
+    ////log(cover);
+    
+    var cover = null;
+    if (allowClose) {
+        cover =
+            '<div id="loading-overlay">' +
+                '<div id="loading-window">' +
+                    '<div class="dialog">' +
+                        '<div class="content">' +
+                            '<div class="title">' + title + '</div><br>' +
+                            '<div>' + message + '</div>' +
+                        '</div>' +
+                        '<div class="button label-blue" onclick="hideDlg()">' +
+                           '<div class="center" fit>CLOSE</div>' +
+                            '<paper-ripple fit></paper-ripple>' +
+                        '</div>' +
+                        //'<div class="button">'+
+                        //    '<div class="center" fit>DECLINE</div>'+
+                        //    '<paper-ripple fit></paper-ripple>'+
+                        //'</div>'+                        
                     '</div>' +
-                    '<span id="loading-content-message">' + message + '</span>' +
-                    '<div id="loading-content-footer">' +
-                        '<a onclick="hideDlg()">CLOSE</a>' +
+                 '</div>' +
+            '</div>';
+    } else {
+        cover =
+            '<div id="loading-overlay">' +
+                '<div id="loading-window">' +
+                    '<div class="dialog">' +
+                        '<div class="loading">' +
+                            '<img src="assets/img/loader.gif" width="28" height="28" />' +
+                        '</div>' +
+                        '<div class="content">' +
+                            '<div class="title">' + title + '</div><br>' +
+                            '<div>' + message + '</div>' +
+                        '</div>' +
                     '</div>' +
                 '</div>' +
-            '</div>' +
-         '</div>'
-        : '<div id="loading-overlay">' +
-            '<div id="loading-window">' +
-                '<div id="loading-content">' +
-                    '<div id="loading-content-header">' +
-                        '<h2 id="loading-content-title">' + title + '</h2>' +
-                    '</div>' +
-                    '<span id="loading-content-message">' + message + '</span>' +
-                    '<div id="loading-content-footer">' +                       
-                    '</div>' +
-                '</div>' +
-            '</div>' +
-         '</div>';
-    //log(cover);
+            '</div>';
+    }
+
     $(cover).appendTo('body');
 }
 
@@ -199,4 +238,15 @@ function s4() {
     return Math.floor((1 + Math.random()) * 0x10000)
       .toString(16)
       .substring(1);
+}
+
+/**
+* Validate Empty
+*/
+function validateEmpty(name, value){    
+    if (isEmpty(value)) {
+        showError(name + ' is empty!');
+        return false;
+    }
+    return true;
 }

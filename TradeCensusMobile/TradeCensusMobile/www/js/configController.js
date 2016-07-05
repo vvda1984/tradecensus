@@ -10,6 +10,15 @@ app.controller("ConfigController", ["$scope", function ($scope) {
     log($scope.provinces.length);
 
     $scope.saveConfig = function () {
+        if (isEmpty($scope.config.ip)) {
+            showError('IP is empty!');
+            return;
+        }
+        if (isEmpty($scope.config.port)) {
+            showError('Port is empty!');
+            return;
+        }
+
         log("save config");        
         insertConfig($scope.config, function () {
             $scope.changeView("login");            
