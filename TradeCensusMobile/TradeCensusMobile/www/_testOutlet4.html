@@ -5,8 +5,7 @@
     <meta content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />
 
     <!-- Libs -->
-    <script src="assets/libs/jquery.js"></script>
-    <script src="assets/libs/json2.js"></script>   
+    <script src="assets/libs/jquery.js"></script>    
 
     <!-- Kendo UI -->
     <!--<link href="assets/libs/kendo/kendo.common.min.css" rel="stylesheet" type="text/css" />
@@ -113,14 +112,15 @@
             //    });
             //}
 
-            var u = $.extend(true, {}, $scope.outlet);;
-            console.log(u);
+            //var u = $.extend(true, {}, $scope.outlet);;
+            //console.log(u);
 
             $scope.showAdvanced = function (ev) {
                 $mdDialog.show({
                     targetEvent: ev,
                     scope: $scope.$new(),
                     controller: function ($scope, $mdDialog) {
+                        $scope.hasAuditRole = true;
                         $scope.openedOptionVisible = !$scope.outlet.IsOpened;
                         $scope.trackedOptionVisible = !$scope.outlet.IsTracked;
                         $scope.outlet.Name = "ABC DEF AAA";
@@ -264,7 +264,7 @@
                         <img id="outletImg3" class="outletImage" />
                     </div>
                     <div layout-gt-xs="row" layout-margin layout-align="center">    
-                        <md-button class="md-raised md-primary" ng-click="saveUpdate()">{{hasAuditRole ? }} Save</md-button>
+                        <md-button class="md-raised md-primary" ng-click="saveUpdate()">Save</md-button>
                         <md-button class="md-raised" ng-click="cancelUpdate()">Cancel</md-button>
                     </div>
                 </form>

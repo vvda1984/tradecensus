@@ -45,28 +45,46 @@
     </style>
 </head>
 <!--<body ng-app="TradeCensus" ng-controller="MainController">-->
+<!--<div class="outlet-list-item">
+    <div class="outlet-list-item-header">Quan 1</div>
+    <table>
+        <tr>
+            <td><div class="title">Address:</div></td>
+            <td colspan="5"><div class="content1">123 Dien Bien Phu - Quan 1 - Ho Chi Minh Ho Chi Minh Ho Chi Minh Ho Chi MinhHo Chi Minh</div></td>
+            <td><div class="title1">Outlet type:</div></td>
+            <td><div class="content2">Group Social</div></td>
+        </tr>
+        <tr>
+            <td><div class="title">Distance:</div></td>
+            <td><div class="content2">text text text</div></td>
+            <td><div class="title">SR/DSM:</div></td>
+            <td><div class="content2">text text text text text text</div></td>
+            <td><div class="title">Tel:</div></td>
+            <td><div>0987654321</div></td>
+            <td><div class="title1">Last contact:</div></td>
+            <td><div class="content2">text text text text text text</div></td>
+        </tr>
+    </table>
+</div>-->   
+
 <body>
     <div class="outlet-list">
-        <div class="outlet-list-item">            
-            <div class="outlet-list-item-header">Quan 1</div>
-            <table>             
-                <tr>
-                    <td><div class="title">Address:</div></td>
-                    <td colspan="5"><div class="content1">123 Dien Bien Phu - Quan 1 - Ho Chi Minh Ho Chi Minh Ho Chi Minh Ho Chi MinhHo Chi Minh</div></td>   
-                    <td><div class="title1">Outlet type:</div></td>                 
-                    <td><div class="content2">Group Social</div></td>
-                </tr>
-                <tr>
-                    <td><div class="title">Distance:</div></td>
-                    <td><div class="content2">text text text</div></td>
-                    <td><div class="title">SR/DSM:</div></td>
-                    <td><div class="content2">text text text text text text</div></td>
-                    <td><div class="title">Tel:</div></td>
-                    <td><div>0987654321</div></td>
-                    <td><div class="title1">Last contact:</div></td>
-                    <td><div class="content2">text text text text text text</div></td>
-                </tr>              
-            </table>
+        <div class="outlet-list-item">       
+            <div layout-gt-xs="row">
+                <div class="md-block-item" flex>
+                    <div class="md-block-item-title">Address</div>
+                    <div class="md-block-item-value">{{outlet.FullAddress}}</div>
+                </div>
+                <div class="md-block-item">
+                    <div class="md-block-item-title">Distance (m)</div>
+                    <div class="md-block-item-value">{{outlet.Distance}}</div>
+                </div>
+            </div>
+                <!--<tr><td colspan="2"><div class="outlet-text">200m</div></td></tr>
+                <tr><td><div class="outlet-title">Quan 1</div></td>
+                    <td><div class="outlet-text">123 Dien Bien Phu - Quan 1 - Ho Chi Minh</div> </td>
+                </tr>                
+            </div>-->             
         </div>   
         <div class="outlet-list-item">
             <div class="outlet-list-item-header">Quan 1</div>

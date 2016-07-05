@@ -12,26 +12,11 @@ var outletTypes = [];
 var baseURL = '';
 const earthR = 6378137;
 
-$(document).ready(function () {    
-    //initalizeDB(function () {
-    //    showDlg('Initialize', 'Please wait...', false);
-    //    selectProvinces(
-    //        function (tx, dbrow) { // Load Province Success
-    //            hideDlg();
-    //            var rowLen = dbrow.rows.length;
-    //            if (rowLen) {
-    //                for (i = 0; i < rowLen; i++) {
-    //                    provinces[i] = {
-    //                        id: dbrow.rows.item(i).ID,
-    //                        name: dbrow.rows.item(i).Name,
-    //                    }
-    //                }
-    //            }               
-    //        }, function (dberr) {     // Error
-    //            hideDlg();
-    //            log(dberr.message);
-    //        })
-    //});
+$(document).ready(function () {
+    document.addEventListener("backbutton", onBackKeyDown, false);
+    function onBackKeyDown(e) {
+        e.preventDefault();
+    }
 });
 
 var app = angular
