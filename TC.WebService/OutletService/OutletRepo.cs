@@ -248,7 +248,7 @@ namespace TradeCensus
                     Math.Sin(dLong / 2) * Math.Sin(dLong / 2);
             var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
             var d = R * c;
-            return d;
+            return Math.Round(d, 2);
         }
 
         private static double CalculateRad(double x)

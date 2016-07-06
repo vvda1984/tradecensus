@@ -140,18 +140,23 @@ var app = angular
                         var name = dbres2.rows.item(i).Name;
                         var value = dbres2.rows.item(i).Value;
                         if (name == 'protocol') {
+                            log('set protocol ' + value);
                             $scope.config.protocol = value;
                         } else if (name == 'ip') {
                             log('set ip: ' + value);
                             $scope.config.ip = value;
                         } else if (name == 'port') {
+                            log('set port: ' + value);
                             $scope.config.port = value;
                         } else if (name == 'service_name') {
+                            log('service name: ' + value);
                             $scope.config.service_name = value;
                         } else if (name == 'item_count') {
-                            $scope.config.item_count = value;
+                            log('item_count: ' + value);
+                            $scope.config.item_count = parseInt(value);
                         } else if (name == 'distance') {
-                            $scope.config.distance = value;
+                            log('distance: ' + value);
+                            $scope.config.distance = parseInt(value);
                         } else if (name == 'province_id') {
                             $scope.config.province_id = value;
                         } else if (name == 'calc_distance_algorithm') {

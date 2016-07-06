@@ -187,7 +187,9 @@ function loadResources() {
         text_ValRequired: 'Required.',
         text_ValLength10: 'Has to be less than 10 characters long.',
         text_UserTerminated: 'User has been terminated',
-        text_ConnectionTimeout: 'Connection timeout',        
+        text_ConnectionTimeout: 'Connection timeout',
+        text_Distance: 'Distance to find outlets (meter)',
+        text_ItemCount: 'Maximum outlets in result',
     };
 }
 
@@ -202,8 +204,8 @@ function loadDefaultConfig() {
         port: '3001',
         service_name: 'TradeCensusService.svc',
         map_zoom: 18,
-        item_count: 20,
         distance: 1000,
+        item_count: 20,        
         province_id: 50, // HCM
         http_method: 'POST',
         calc_distance_algorithm: 'circle',

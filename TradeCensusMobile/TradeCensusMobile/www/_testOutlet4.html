@@ -195,11 +195,11 @@
             <md-content layout-padding="" class="popup-content">
                 <form name="userForm">
                     <div layout-gt-xs="row">
-                        <md-input-container class="md-block" flex>
+                        <md-input-container class="md-block">
                             <label>Name</label>
                             <input ng-model="outlet.Name">
                         </md-input-container>
-                        <md-input-container class="md-block" flex-gt-sm="">
+                        <md-input-container class="md-block">
                             <label>Outlet Type</label>
                             <md-select ng-model="config.province_id">
                                 <md-option ng-repeat="p in provinces" value="{{p.id}}">
@@ -207,6 +207,16 @@
                                 </md-option>
                             </md-select>
                         </md-input-container>  
+                        <!--<md-input-container class="md-block">
+                            <label>House No</label>
+                            <input ng-model="outlet.Latitude">
+                        </md-input-container>
+
+                        <md-input-container class="md-block">
+                            <label>House No</label>
+                            <input ng-model="outlet.Longitude">
+                        </md-input-container>-->
+
                         <md-input-container class="md-block">
                             <label>Latitude</label>
                             <input ng-model="outlet.Latitude" disabled="">
@@ -214,7 +224,16 @@
                         <md-input-container class="md-block">
                             <label>Longitude</label>
                             <input ng-model="outlet.Longitude" disabled="">
-                        </md-input-container>          
+                        </md-input-container>  
+                        
+                        <!--<div class="md-block-item">
+                            <div class="md-block-item-title">Latitude</div>
+                            <div class="md-block-item-value">{{outlet.Latitude}}</div>
+                        </div>
+                        <div class="md-block-item">
+                            <div class="md-block-item-title">Longitude</div>
+                            <div class="md-block-item-value">{{outlet.Longitude}}</div>
+                        </div>-->           
                     </div>
 
                     <div layout-gt-sm="row">

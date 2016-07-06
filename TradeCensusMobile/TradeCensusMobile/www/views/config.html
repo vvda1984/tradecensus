@@ -37,6 +37,24 @@
                     </div>-->
                 </md-input-container>
 
+                <md-input-container class="md-block">
+                    <label>{{ resource.text_Distance }}</label>
+                    <input type="number" required="" name="distance" ng-model="config.distance">
+                    <!--<div ng-messages="configForm.ipAddress.$error" role="alert">
+                         <div ng-message="required">{{ resource.text_ValRequired }}</div>
+                    </div>-->
+
+                </md-input-container>
+
+                <md-input-container class="md-block">
+                    <label>{{ resource.text_ItemCount }}</label>
+                    <input type="number" required="" name="item_count" ng-model="config.item_count">
+                    <!--<div ng-messages="configForm.ipAddress.$error" role="alert">
+                     <div ng-message="required">{{ resource.text_ValRequired }}</div>
+                </div>-->
+
+                </md-input-container>
+
                 <md-input-container class="md-block" flex-gt-sm="" style="margin-bottom:0px;">
                     <label>{{ resource.text_EnterProvince }}</label>
                     <md-select ng-model="config.province_id">
@@ -44,7 +62,7 @@
                             {{p.name}}
                         </md-option>
                     </md-select>
-                </md-input-container>
+                </md-input-container>              
             </form>
         </md-content>
     </div>

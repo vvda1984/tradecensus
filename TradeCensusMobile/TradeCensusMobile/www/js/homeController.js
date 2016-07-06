@@ -19,8 +19,8 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', fu
 
     var leftPanelStatus = 0;
     var curlat = 10.773598;
-    var curlng = 106.7058;
-    $scope.showFullOutlet = false;
+    var curlng = 106.7058;    
+    $scope.viewOutletFull = false;
     $scope.btnRefreshVisible = true;
     $scope.hasAuditRole = $scope.user.hasAuditRole;
     $scope.outletHeader = 'Near-by Outlets';
@@ -30,13 +30,13 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', fu
 
     $scope.outletTypes = outletTypes;
     log($scope.outletTypes);
-
+    
     $scope.provinces = provinces;
     $scope.outlets = [];
+    
     $scope.refresh = function () {
         //onGetLocationSuccess(null);
-        leftPanelStatus = 2;
-        $scope.viewLeftPanel();
+        $scope.closeLeftPanel();
         loadMap();
         log('query location...');
         try {
@@ -47,35 +47,42 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', fu
         }
     }
 
-    $scope.viewLeftPanel = function () {
-        if (leftPanelStatus >= 2) leftPanelStatus = 0;
-        else
-            leftPanelStatus++;
+    $scope.closeLeftPanel = function () {
+        leftPanelStatus = 0
+        $scope.viewOutletFull = false;
+        document.getElementById('outletPanel').style.width = '0%';
+    }
+
+    $scope.showLeftPanel = function () {
+        if (leftPanelStatus >= 2) return;
+        leftPanelStatus++;        
 
         log("show left panel: " + leftPanelStatus.toString());
         if (leftPanelStatus == 0) {
-            $scope.showFullOutlet = false;
+            $scope.viewOutletFull = false;
             document.getElementById('outletPanel').style.width = '0%';
             //$('#expander-2').html('>');
         } else if (leftPanelStatus == 1) {
-            $scope.showFullOutlet = false;
+            $scope.viewOutletFull = false;
             document.getElementById('outletPanel').style.width = '40%';
             //$('#expander-2').html('>');
         } else {
-            $scope.showFullOutlet = true;
+            $scope.viewOutletFull = true;
+            log('view full outlet');
             document.getElementById('outletPanel').style.width = '100%';
             //$('#expander-2').html('<');
         }
     }
 
     $scope.changeOutletView = function (v) {
+        $scope.hideDropdown();
         if ($scope.outletCategory === v) return;
         log('change view to ' + v.toString());
 
-        if (isOnline()) {
-            leftPanelStatus = 2;
-            $scope.viewLeftPanel();
+        if (isOnline()) {            
+            $scope.closeLeftPanel();
         }
+
         $scope.outletCategory = v;
         const c = 'outlet-button-active';
         switch (v) {
@@ -123,6 +130,10 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', fu
         }
     }
 
+    $scope.showDropdown = function () {
+        $("#outlet-dropdown").css('display', 'block');
+    }
+
     $scope.openOutlet = function (i) {
         viewOutlet(i);
     }
@@ -132,8 +143,8 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', fu
 
         try {
             navigator.geolocation.getCurrentPosition(function (position) {
-                var lat = position.coords.latitude;
-                var lng = position.coords.longitude;
+                var lat = Math.round(position.coords.latitude * 1000000) / 1000000;
+                var lng = Math.round(position.coords.longitude * 1000000) / 1000000;
 
                 moveToLocation(lat, lng);
                 log($scope.outletTypes);
@@ -179,26 +190,27 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', fu
                 hideDlg();
                 $mdDialog.show({
                     scope: $scope.$new(),
-                    controller: function ($scope, $mdDialog) {
-                        $scope.capture = function (i) {
-                            captureImage(function (imageURI) {
-                                var image = document.getElementById('outletImg' + i.toString());
-                                image.src = imageURI;
-                                //var image = document.getElementById('outletImg' + i);
-                                //image.src = "data:image/jpeg;base64," + imageData;
-                            }, function (err) {
-                                showError(err);
-                            });
-                        }
+                    //controller: function ($scope, $mdDialog) {
+                    //    $scope.capture = function (i) {
+                    //        captureImage(function (imageURI) {
+                    //            var image = document.getElementById('outletImg' + i.toString());
+                    //            image.src = imageURI;
+                    //            //var image = document.getElementById('outletImg' + i);
+                    //            //image.src = "data:image/jpeg;base64," + imageData;
+                    //        }, function (err) {
+                    //            showError(err);
+                    //        });
+                    //    }
 
-                        $scope.saveUpdate = function () {
-                            $mdDialog.hide(true);
-                        };
+                    //    $scope.saveUpdate = function () {
+                    //        $mdDialog.hide(true);
+                    //    };
 
-                        $scope.cancelUpdate = function () {
-                            $mdDialog.cancel();
-                        };
-                    },
+                    //    $scope.cancelUpdate = function () {
+                    //        $mdDialog.cancel();
+                    //    };
+                    //},
+                    controller: newOutletController,
                     templateUrl: 'outletnew.html',
                     parent: angular.element(document.body),
                     clickOutsideToClose: false,
@@ -223,6 +235,10 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', fu
         } catch (err) {
             log(err);
         }
+    }
+
+    $scope.hideDropdown = function() {
+        $("#outlet-dropdown").css('display', 'none');
     }
 
     function loadOutletTypes(onSuccess, onError) {
@@ -320,8 +336,7 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', fu
 
     function getNearByOutletsOffline() {
         // hide panel
-        leftPanelStatus = 2;
-        $scope.viewLeftPanel();
+        $scope.closeLeftPanel();
         meter = $scope.config.distance;
         count = $scope.config.item_count;
         var saleLoc =  { Lat : curlat, Lng : curlng };
@@ -399,7 +414,7 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', fu
                 Math.sin(dLong / 2) * Math.sin(dLong / 2);
          var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         var d = R * c;
-        return d;
+        return Math.round(d * 100) / 100;
     }
 
     function calculateRad(x) {
@@ -523,7 +538,7 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', fu
             homeMarker = createMaker('', new google.maps.LatLng(curlat, curlng), 'pin-cur.png');
         else {         
             leftPanelStatus = 1;
-            $scope.viewLeftPanel();
+            $scope.showLeftPanel();
         }
     }
 
@@ -537,10 +552,10 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', fu
                     '<tr>' +
                         '<td><div class="title">Address:</div></td>' +
                         '<td colspan="5"><div class="content1">' + outlet.FullAddress + '</div></td>' +
-                        '<td ng-show="showFullOutlet"><div class="title1">Outlet type:</div></td>' +
-                        '<td ng-show="showFullOutlet"><div class="content2">' + outlet.OutletTypeName + '</div></td>' +
+                        '<td ng-show="viewOutletFull"><div class="title1">Outlet type:</div></td>' +
+                        '<td ng-show="viewOutletFull"><div class="content2">' + outlet.OutletTypeName + '</div></td>' +
                     '</tr>' +
-                    '<tr ng-show="showFullOutlet">' +
+                    '<tr ng-show="viewOutletFull">' +
                         '<td><div class="title">Distance:</div></td>' +
                         '<td><div class="content2">' + outlet.Distance + '</div></td>' +
                         '<td><div class="title">SR/DSM:</div></td>' +
@@ -670,20 +685,7 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', fu
         }, function () {
         });
     }
-
-    function captureImage(onSuccess, onError) {
-        try {
-
-            navigator.camera.getPicture(onSuccess, onError,
-                {
-                    quality: 50,
-                    destinationType: Camera.DestinationType.FILE_URI // DATA_URL for base64 => not recommend due to memory issue
-                });
-        } catch (err) {
-            showError(err);
-        }
-    }
-
+  
     function saveOutlet(outlet, onSuccess) {      
         if (isOnline()) {
             var url = baseURL + '/outlet/save';
@@ -748,3 +750,66 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', fu
         log(err);
     }
 }]);
+
+function newOutletController($scope, $mdDialog) {
+    $scope.capture = function (i) {
+        captureImage(function (imageURI) {
+            var image = document.getElementById('outletImg' + i.toString());
+            image.src = imageURI;
+            //var image = document.getElementById('outletImg' + i);
+            //image.src = "data:image/jpeg;base64," + imageData;
+        }, function (err) {
+            showError(err);
+        });
+    }
+
+    $scope.saveUpdate = function () {
+        if (isEmpty($scope.outlet.Name)) {
+            showError('Outlet name is empty!');
+            return;
+        }
+        if (isEmpty($scope.outlet.AddLine)) {
+            showError('House number is empty!');
+            return;
+        }
+        if (isEmpty($scope.outlet.AddLine2)) {
+            showError('Street is empty!');
+            return;
+        }
+        if (isEmpty($scope.outlet.District)) {
+            showError('District is empty!');
+            return;
+        }
+        if (isEmpty($scope.outlet.Phone)) {
+            showError('Phone is empty!');
+            return;
+        }
+        if (isEmpty($scope.outlet.TotalVolume)) {
+            showError('Total is empty!');
+            return;
+        }
+        if (isEmpty($scope.outlet.VBLVolume)) {
+            showError('VBL Volume is empty!');
+            return;
+        }
+
+        $mdDialog.hide(true);
+    };
+
+    $scope.cancelUpdate = function () {
+        $mdDialog.cancel();
+    };
+
+    function captureImage(onSuccess, onError) {
+        try {
+            navigator.camera.getPicture(onSuccess, onError,
+                {
+                    quality: 50,
+                    correctOrientation: true,
+                    destinationType: Camera.DestinationType.FILE_URI // DATA_URL for base64 => not recommend due to memory issue
+                });
+        } catch (err) {
+            showError(err);
+        }
+    }
+}

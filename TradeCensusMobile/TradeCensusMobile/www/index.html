@@ -84,45 +84,53 @@
                             <div class="md-block-item-value">{{outlet.FullAddress}}</div>
                         </div>
                         <div class="md-block-item">
+                            <div class="md-block-item-title">Outlet Type</div>
+                            <div class="md-block-item-value">{{outlet.OutletTypeName}}</div>
+                        </div>
+                        <div class="md-block-item">
                             <div class="md-block-item-title">Distance (m)</div>
                             <div class="md-block-item-value">{{outlet.Distance}}</div>
                         </div>
                     </div>
 
-                    <div layout-gt-sm="row">
+                    <div layout-gt-sm="row">                       
                         <div class="md-block-item">
-                            <div class="md-block-item-title">Outlet Type</div>
-                            <div class="md-block-item-value">{{outlet.OutletTypeName}}</div>
-                        </div>
-                        <div class="md-block-item">
-                            <div class="md-block-item-title">Telephone</div>
+                            <div class="md-block-item-title">Phone</div>
                             <div class="md-block-item-value">{{outlet.Phone}}</div>
                         </div>
                         <div class="md-block-item">
                             <div class="md-block-item-title">Last Contact</div>
-                            <div class="md-block-item-value">{{outlet.LastContact}}</div>
+                            <div class="md-block-item-value">{{outlet.LastContact ? outlet.LastContact : "N/A"}}</div>
                         </div>
                         <div class="md-block-item">
                             <div class="md-block-item-title">Last Visit</div>
-                            <div class="md-block-item-value">{{outlet.LastVisit}}</div>
+                            <div class="md-block-item-value">{{outlet.LastVisit ? outlet.LastVisit : "N/A"}}</div>
                         </div>
                         <div class="md-block-item">
                             <div class="md-block-item-title">Closed Date</div>
-                            <div class="md-block-item-value">{{outlet.CloseDate}}</div>
+                            <div class="md-block-item-value">{{outlet.CloseDate ? outlet.CloseDate : "N/A"}}</div>
                         </div>
-                    </div>
-
-                    <div layout-gt-sm="row">                        
                         <div class="md-block-item" ng-show="openedOptionVisible">
-                            <md-switch ng-model="outlet.IsOpened">{{outlet.IsOpened ? "Opened" : "Closed"}}</md-switch>
+                            <div class="md-block-item-title">{{outlet.IsOpened ? "Opened" : "Closed"}}</div>
+                            <md-switch ng-model="outlet.IsOpened" style="margin-bottom:4px;"></md-switch>
                         </div>
                         <div class="md-block-item" ng-show="trackedOptionVisible">
-                            <md-switch ng-model="outlet.IsTracked">{{outlet.IsTracked ? "Tracking" : "Non-Tracking"}}</md-switch>
+                            <div class="md-block-item-title">{{outlet.IsTracked ? "Tracking" : "Non-Tracking"}}</div>
+                            <md-switch ng-model="outlet.IsTracked" style="margin-bottom:4px;"></md-switch>
                         </div>
-                        <md-input-container class="md-block" flex ng-show="hasAuditRole">
+                        <div class="md-block-item" ng-show="hasAuditRole">
+                            <div class="md-block-item-title highlight-blue">AUDIT</div>
+                            <md-switch ng-model="outlet.AuditStatus" style="margin-bottom:4px;">
+                                {{outlet.AuditStatus == 0 ? "None" : (outlet.AuditStatus == 1 ? "Approved" : "Denied")}}
+                            </md-switch>
+                        </div>      
+                    </div>
+
+                    <div layout-gt-sm="row" ng-show="hasAuditRole">                                                                       
+                        <md-input-container class="md-block" flex>
                             <label>Comment</label>
-                            <textarea ng-model="outlet.Note" md-maxlength="150" rows="3" md-select-on-focus=""></textarea>
-                        </md-input-container>  
+                            <textarea ng-model="outlet.Note"rows="2" md-select-on-focus=""></textarea>
+                        </md-input-container>                                   
                     </div>
 
                     <div layout-gt-xs="row">
@@ -131,8 +139,8 @@
                         <img id="outletImg3" class="outletImage" ng-click="capture(3);" />
                     </div>
                     <div layout-gt-xs="row" layout-margin layout-align="center">
-                        <md-button class="md-raised md-primary" ng-click="saveUpdate()">{{hasAuditRole ? "Apcept" : "Save"}}</md-button>
-                        <md-button class="md-raised" ng-click="cancelUpdate()">{{hasAuditRole ? "Deny" : "Cancel"}}</md-button>
+                        <md-button class="md-raised md-primary" ng-click="saveUpdate()">Save</md-button>
+                        <md-button class="md-raised" ng-click="cancelUpdate()">Cancel</md-button>
                     </div>
                 </form>
             </md-content>
@@ -140,7 +148,7 @@
     </script>
 
     <script type="text/ng-template" id="outletnew.html">
-        <md-dialog aria-label="Mango (Fruit)" ng-cloak>
+        <md-dialog aria-label="New Outlet" ng-cloak>
             <md-toolbar>
                 <div class="md-toolbar-tools">
                     <div>CREATE NEW OUTLET</div>
@@ -149,13 +157,16 @@
                 </div>
             </md-toolbar>
             <md-content layout-padding="" class="popup-content">
-                <form name="userForm">
+                <form name="createOutletForm">
                     <div layout-gt-xs="row">
-                        <md-input-container class="md-block" flex>
+                        <md-input-container class="md-block">
                             <label>Name</label>
-                            <input ng-model="outlet.Name">
+                            <input ng-model="outlet.Name" name="name"  required="">
+                            <div ng-messages="createOutletForm.name.$error" role="alert">
+                                  <div ng-message="required">{{ resource.text_ValRequired }}</div>
+                            </div>
                         </md-input-container>
-                        <md-input-container class="md-block" flex-gt-sm="">
+                        <md-input-container class="md-block">
                             <label>Outlet Type</label>
                             <md-select ng-model="outlet.OTypeID">
                                 <md-option ng-repeat="o in outletTypes" value="{{o.id}}">
@@ -176,15 +187,24 @@
                     <div layout-gt-sm="row">
                         <md-input-container class="md-block">
                             <label>House No</label>
-                            <input ng-model="outlet.AddLine">
+                            <input ng-model="outlet.AddLine" name="houseno" required="">
+                            <div ng-messages="createOutletForm.houseno.$error" role="alert">
+                                <div ng-message="required">{{ resource.text_ValRequired }}</div>
+                            </div>
                         </md-input-container>
                         <md-input-container class="md-block">
                             <label>Street</label>
-                            <input ng-model="outlet.AddLine2">
+                            <input ng-model="outlet.AddLine2" name="street"  required="">
+                            <div ng-messages="createOutletForm.street.$error" role="alert">
+                                <div ng-message="required">{{ resource.text_ValRequired }}</div>
+                            </div>
                         </md-input-container>
                         <md-input-container class="md-block">
                             <label>District</label>
-                            <input ng-model="outlet.District">
+                            <input ng-model="outlet.District" name="district" required="">
+                            <div ng-messages="createOutletForm.district.$error" role="alert">
+                                <div ng-message="required">{{ resource.text_ValRequired }}</div>
+                            </div>
                         </md-input-container>
                         <md-input-container class="md-block">
                             <label>Province</label>
@@ -196,21 +216,30 @@
                     <div layout-gt-sm="row">
 
                         <md-input-container class="md-block">
-                            <label>TEL</label>
-                            <input ng-model="outlet.Phone">
+                            <label>Phone</label>
+                            <input ng-model="outlet.Phone" name="phone" required="">
+                            <div ng-messages="createOutletForm.phone.$error" role="alert">
+                                <div ng-message="required">{{ resource.text_ValRequired }}</div>
+                            </div>
                         </md-input-container>
 
                         <div class="md-block-item">
-                            <div class="md-block-item-title" style="color:red">Volume (crates/cartons.Avg/month)</div>
-                            <div class="md-block-item-value"></div>
+                            <div class="md-block-item-title" style="color:#103B68;font-weight:bold">Volume</div>
+                            <div class="md-block-item-title" style="color:#103B68;font-weight:bold"> (crates/cartons.Avg/month)</div>
                         </div>
                         <md-input-container class="md-block">
-                            <label style="color:red">TOTAL</label>
-                            <input ng-model="outlet.TotalVolume">
+                            <label style="color:#103B68">TOTAL</label>
+                            <input ng-model="outlet.TotalVolume" name="total" type="number" required="">
+                            <div ng-messages="createOutletForm.total.$error" role="alert">
+                                <div ng-message="required">{{ resource.text_ValRequired }}</div>
+                            </div>
                         </md-input-container>
                         <md-input-container class="md-block">
-                            <label style="color:red">VBL Product</label>
-                            <input ng-model="outlet.VBLVolume">
+                            <label style="color:#103B68">VBL Product</label>
+                            <input ng-model="outlet.VBLVolume" type="number" name="vblvolume" required="">
+                            <div ng-messages="createOutletForm.vblvolume.$error" role="alert">
+                                <div ng-message="required">{{ resource.text_ValRequired }}</div>
+                            </div>
                         </md-input-container>
                     </div>
 

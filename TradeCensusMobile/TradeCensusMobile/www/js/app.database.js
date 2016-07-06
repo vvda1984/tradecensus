@@ -79,8 +79,11 @@ function selectUserByID(userID, password, onSuccess, onError) {
 
 function insertProvinces(items, onSuccess, onError) {
     db.transaction(function (tx) {
-        for (var i in items) {
-            p = items[i];
+        provinces = [];
+        var len = items.length;
+        for (i = 0 ; i < len; i++) {
+            var p = items[i];
+            provinces[i] = p;
             var sql = "INSERT OR REPLACE INTO [province] VALUES (";           
             sql = sql.concat("'", p.ID, "', ");            
             sql = sql.concat("'", p.Name, "')");
@@ -93,9 +96,11 @@ function insertProvinces(items, onSuccess, onError) {
 
 function insertOutletTypes(items, onSuccess, onError) {
     db.transaction(function (tx) {
+        outletTypes = [];
         var len = items.length;
         for (i = 0 ; i < len; i++) {
-            p = items[i];
+            var p = items[i];
+            outletTypes[i] = p;
             var sql = "INSERT OR REPLACE INTO [outletType] VALUES (";
             sql = sql.concat("'", p.ID, "', ");
             sql = sql.concat("'", p.Name, "', ");
