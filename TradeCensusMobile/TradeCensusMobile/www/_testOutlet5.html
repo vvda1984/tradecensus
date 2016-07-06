@@ -75,132 +75,141 @@
                 //$('#expander-2').html('<');
             }
         }
+
+        function showDropdown() {
+            $("#outlet-dropdown").css('display', 'block');
+        }
+
+        function hideDropdown(){
+            $("#outlet-dropdown").css('display', 'none');
+        }
     </script>
 </head>
 <!--<body ng-app="TradeCensus" ng-controller="MainController">-->
 <body>
     <div id="view-home">
-        <div id="outletPanel" class="overlay">
-            <div class="header">{{outletHeader}}</div>
-            <div class="outlet-list">
-                <!--<div class="outlet-list-item" id="outletlist">
-        </div>-->
-                <div class="outlet-list-item" ng-repeat="outlet in outlets">
-                    <div class="outlet-list-item-header" ng-click="openOutlet($index)">{{outlet.Name}}</div>
-                    <table>
-                        <tr>
-                            <td><div class="title">Address:</div></td>
-                            <td colspan="5"><div class="content1">{{outlet.FullAddress}}</div></td>
-                            <td ng-show="showFullOutlet"><div class="title1">Outlet type:</div></td>
-                            <td ng-show="showFullOutlet"><div class="content2">{{outlet.OutletTypeName}}</div></td>
-                        </tr>
-                        <tr ng-show="showFullOutlet">
-                            <td><div class="title">Distance:</div></td>
-                            <td><div class="content2">{{outlet.Distance}}</div></td>
-                            <td><div class="title">SR/DSM:</div></td>
-                            <td><div class="content2">{{outlet.Name}}</div></td>
-                            <td><div class="title">Tel:</div></td>
-                            <td><div>{{outlet.Phone}}</div></td>
-                            <td><div class="title1">Last contact:</div></td>
-                            <td><div class="content2">{{outlet.LastContact}}</div></td>
-                        </tr>
-                    </table>
-                </div>
-                <div class="outlet-list-item" ng-repeat="outlet in outlets">
-                    <div class="outlet-list-item-header" ng-click="openOutlet($index)">{{outlet.Name}}</div>
-                    <table>
-                        <tr>
-                            <td><div class="title">Address:</div></td>
-                            <td colspan="5"><div class="content1">{{outlet.FullAddress}}</div></td>
-                            <td ng-show="showFullOutlet"><div class="title1">Outlet type:</div></td>
-                            <td ng-show="showFullOutlet"><div class="content2">{{outlet.OutletTypeName}}</div></td>
-                        </tr>
-                        <tr ng-show="showFullOutlet">
-                            <td><div class="title">Distance:</div></td>
-                            <td><div class="content2">{{outlet.Distance}}</div></td>
-                            <td><div class="title">SR/DSM:</div></td>
-                            <td><div class="content2">{{outlet.Name}}</div></td>
-                            <td><div class="title">Tel:</div></td>
-                            <td><div>{{outlet.Phone}}</div></td>
-                            <td><div class="title1">Last contact:</div></td>
-                            <td><div class="content2">{{outlet.LastContact}}</div></td>
-                        </tr>
-                    </table>
-                </div>
-                <div class="outlet-list-item" ng-repeat="outlet in outlets">
-                    <div class="outlet-list-item-header" ng-click="openOutlet($index)">{{outlet.Name}}</div>
-                    <table>
-                        <tr>
-                            <td><div class="title">Address:</div></td>
-                            <td colspan="5"><div class="content1">{{outlet.FullAddress}}</div></td>
-                            <td ng-show="showFullOutlet"><div class="title1">Outlet type:</div></td>
-                            <td ng-show="showFullOutlet"><div class="content2">{{outlet.OutletTypeName}}</div></td>
-                        </tr>
-                        <tr ng-show="showFullOutlet">
-                            <td><div class="title">Distance:</div></td>
-                            <td><div class="content2">{{outlet.Distance}}</div></td>
-                            <td><div class="title">SR/DSM:</div></td>
-                            <td><div class="content2">{{outlet.Name}}</div></td>
-                            <td><div class="title">Tel:</div></td>
-                            <td><div>{{outlet.Phone}}</div></td>
-                            <td><div class="title1">Last contact:</div></td>
-                            <td><div class="content2">{{outlet.LastContact}}</div></td>
-                        </tr>
-                    </table>
-                </div>
-                <div class="outlet-list-item" ng-repeat="outlet in outlets">
-                    <div class="outlet-list-item-header" ng-click="openOutlet($index)">{{outlet.Name}}</div>
-                    <table>
-                        <tr>
-                            <td><div class="title">Address:</div></td>
-                            <td colspan="5"><div class="content1">{{outlet.FullAddress}}</div></td>
-                            <td ng-show="showFullOutlet"><div class="title1">Outlet type:</div></td>
-                            <td ng-show="showFullOutlet"><div class="content2">{{outlet.OutletTypeName}}</div></td>
-                        </tr>
-                        <tr ng-show="showFullOutlet">
-                            <td><div class="title">Distance:</div></td>
-                            <td><div class="content2">{{outlet.Distance}}</div></td>
-                            <td><div class="title">SR/DSM:</div></td>
-                            <td><div class="content2">{{outlet.Name}}</div></td>
-                            <td><div class="title">Tel:</div></td>
-                            <td><div>{{outlet.Phone}}</div></td>
-                            <td><div class="title1">Last contact:</div></td>
-                            <td><div class="content2">{{outlet.LastContact}}</div></td>
-                        </tr>
-                    </table>
-                </div>
-                <div class="outlet-list-item" ng-repeat="outlet in outlets">
-                    <div class="outlet-list-item-header" ng-click="openOutlet($index)">{{outlet.Name}}</div>
-                    <table>
-                        <tr>
-                            <td><div class="title">Address:</div></td>
-                            <td colspan="5"><div class="content1">{{outlet.FullAddress}}</div></td>
-                            <td ng-show="showFullOutlet"><div class="title1">Outlet type:</div></td>
-                            <td ng-show="showFullOutlet"><div class="content2">{{outlet.OutletTypeName}}</div></td>
-                        </tr>
-                        <tr ng-show="showFullOutlet">
-                            <td><div class="title">Distance:</div></td>
-                            <td><div class="content2">{{outlet.Distance}}</div></td>
-                            <td><div class="title">SR/DSM:</div></td>
-                            <td><div class="content2">{{outlet.Name}}</div></td>
-                            <td><div class="title">Tel:</div></td>
-                            <td><div>{{outlet.Phone}}</div></td>
-                            <td><div class="title1">Last contact:</div></td>
-                            <td><div class="content2">{{outlet.LastContact}}</div></td>
-                        </tr>
-                    </table>
-                </div>
+        <div id="view-home-top-panel">
+            <div class="box">
+                <img src="assets/img/menu.svg" onclick="showDropdown()" />
+                <span onclick="showDropdown()">Near-by Outlets</span>                
+                <img src="assets/img/arrow-next.svg" onclick="viewLeftPanel()"/>
+            </div>  
+            <div class="top-panel-button blue">
+                <img src="assets/img/refresh.svg" />
+            </div>
+            <div class="top-panel-button blue">
+                <img src="assets/img/add.svg" />
+            </div>
+            <div id="outlet-dropdown" class="dropdown">             
+                <div class="dropdown-item" onclick="hideDropdown()"><span>Hello World!</span></div>
+                <div class="dropdown-item" onclick="hideDropdown()"><span>Hello World!</span></div>
+                <div class="dropdown-item" onclick="hideDropdown()"><span>Hello World!</span></div>
             </div>
         </div>
 
-        <div id="view-map">
+        <div id="outletPanel">           
+            <div class="outlet-list-panel">              
+                <div class="outlet-item" ng-repeat="outlet in outlets">          
+                    <div class="col1"> <div class="circle">1</div> </div>                                                
+                    <div class="col2">
+                        <span class="title" ng-click="openOutlet($index)">{{outlet.Name}}</span> 
+                        <span class="distance">200 m</span>                          
+                    </div>
+                    <div class="content">
+                        <span class="text">123 Nguyen Dinh Chieu - Quan 1 - Ho Chi Minh</span>
+                     </div>                   
+                </div>
+                <div class="outlet-item" ng-repeat="outlet in outlets">      
+                    <div class="col1"> <div class="circle">1</div> </div>
+                    <div class="col2">
+                        <span class="title" ng-click="openOutlet($index)">{{outlet.Name}}</span>
+                        <span class="distance">200 m</span>
+
+                        <div class="content" style="background:yellow">
+                            <div layout-gt-xs="row">
+                                <div class="md-block-item" flex>
+                                    <div class="md-block-item-title">Address</div>
+                                    <div class="md-block-item-value">{{outlet.FullAddress}}</div>
+                                </div>
+                                <div class="md-block-item">
+                                    <div class="md-block-item-title">Distance (m)</div>
+                                    <div class="md-block-item-value">{{outlet.Distance}}</div>
+                                </div>
+                            </div>
+
+                            <div layout-gt-sm="row">
+                                <div class="md-block-item">
+                                    <div class="md-block-item-title">Outlet Type</div>
+                                    <div class="md-block-item-value">{{outlet.OutletTypeName}}</div>
+                                </div>
+                                <div class="md-block-item">
+                                    <div class="md-block-item-title">Telephone</div>
+                                    <div class="md-block-item-value">{{outlet.Phone}}</div>
+                                </div>
+                                <div class="md-block-item">
+                                    <div class="md-block-item-title">Last Contact</div>
+                                    <div class="md-block-item-value">{{outlet.LastContact}}</div>
+                                </div>
+                                <div class="md-block-item">
+                                    <div class="md-block-item-title">Last Visit</div>
+                                    <div class="md-block-item-value">{{outlet.LastVisit}}</div>
+                                </div>
+                                <div class="md-block-item">
+                                    <div class="md-block-item-title">Closed Date</div>
+                                    <div class="md-block-item-value">{{outlet.CloseDate}}</div>
+                                </div>
+                            </div>
+
+                            <div layout-gt-sm="row">
+                                <div class="md-block-item" ng-show="openedOptionVisible">
+                                    <md-switch ng-model="outlet.IsOpened">{{outlet.IsOpened ? "Opened" : "Closed"}}</md-switch>
+                                </div>
+                                <div class="md-block-item" ng-show="trackedOptionVisible">
+                                    <md-switch ng-model="outlet.IsTracked">{{outlet.IsTracked ? "Tracking" : "Non-Tracking"}}</md-switch>
+                                </div>
+                                <md-input-container class="md-block" flex>
+                                    <label>Comment</label>
+                                    <textarea ng-model="outlet.Note" md-maxlength="150" rows="3" md-select-on-focus=""></textarea>
+                                </md-input-container>
+                            </div>                         
+                        </div>       
+                    </div>
+                </div>               
+                <!--<div class="outlet-item" ng-repeat="outlet in outlets">
+                    <div class="circle">1</div>
+                    <div class="content">
+                        <div class="outlet-list-item-header" ng-click="openOutlet($index)">{{outlet.Name}}</div>
+                        <table>
+                            <tr>
+                                <td><div class="title">Address:</div></td>
+                                <td colspan="5"><div class="content1">{{outlet.FullAddress}}</div></td>
+                                <td ng-show="showFullOutlet"><div class="title1">Outlet type:</div></td>
+                                <td ng-show="showFullOutlet"><div class="content2">{{outlet.OutletTypeName}}</div></td>
+                            </tr>
+                            <tr ng-show="showFullOutlet">
+                                <td><div class="title">Distance:</div></td>
+                                <td><div class="content2">{{outlet.Distance}}</div></td>
+                                <td><div class="title">SR/DSM:</div></td>
+                                <td><div class="content2">{{outlet.Name}}</div></td>
+                                <td><div class="title">Tel:</div></td>
+                                <td><div>{{outlet.Phone}}</div></td>
+                                <td><div class="title1">Last contact:</div></td>
+                                <td><div class="content2">{{outlet.LastContact}}</div></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>-->
+            </div>
+        </div>
+
+        <div id="view-map" onclick="hideDropdown();">
             <div id="map" class="view-map-content"></div>
         </div>
 
-        <a id="expander-1" class="view-button" onclick="viewLeftPanel()"> > </a>
+        <!--<a id="expander-1" class="view-button" onclick="viewLeftPanel()"> > </a>-->
         <!--<img src="assets/img/a-right.png"/>-->
 
-        <div id="view-home-content-bottom">
+        <!--<div id="view-home-content-bottom">
             <a id="btn-near-by" ng-click="changeOutletView(0)" class="outlet-button-active">Near-by Outlets</a>
             <a id="btn-new-outlet" ng-click="changeOutletView(1)">New Outlets</a>
             <a id="btn-mod-outlet" ng-click="changeOutletView(2)">Updated Outlets</a>
@@ -210,7 +219,7 @@
         <div id="view-home-content-top">
             <a id="btn-refresh" ng-show="btnRefreshVisible" ng-click="">Refresh</a>
             <a id="btn-add" ng-click="">Add Outlet</a>
-        </div>
+        </div>-->
     </div>
 </body>
 </html>
