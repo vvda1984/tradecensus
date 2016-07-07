@@ -6,7 +6,7 @@
             <img src="assets/img/arrow-left.svg" ng-click="closeLeftPanel()" />
             <img src="assets/img/arrow-right.svg" ng-click="showLeftPanel()" />
         </div>
-        <div class="top-panel-button blue" ng-click="refresh()">
+        <div class="top-panel-button blue" ng-show="allowRefresh" ng-click="refresh()">
             <img src="assets/img/refresh.svg" />            
         </div>
         <div class="top-panel-button blue" ng-click="createNewOutlet()">
@@ -21,7 +21,7 @@
     </div>
 
     <div id="outletPanel" ng-click="hideDropdown()">
-        <div class="outlet-list-panel">        
+        <div id="outlet-panel-near" class="outlet-list-panel">        
             <div class="outlet-item" ng-repeat="outlet in outlets">
                 <div class="outlet-item-col1"> <div class="circle">{{$index + 1}}</div> </div>
                 <div class="outlet-item-col2">
@@ -49,10 +49,11 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </div>    
+        </div>       
+    </div>   
+     
     <div id="view-map" ng-click="hideDropdown()">
-        <div id="map" class="view-map-content"></div>
+        <div id="map"></div>
     </div>    
 </div>
 

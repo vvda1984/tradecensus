@@ -4,6 +4,10 @@ html, body {
     padding: 0px;
 }
 
+*:focus {
+    outline: none;
+}
+
 .md-icon-button-primary {
     color: #3A678D;
 }
@@ -355,12 +359,12 @@ hr {
     background-color: rgba(255,255,255,0.8); /*rgba(0,0,0, 0.8);    */
     background-color: #EBEBEB;
     overflow-x: hidden;
-    /*transition: 0.5s;*/
+    transition: 0.5s;
 }
 
     #outletPanel .outlet-list-panel {
         margin-top: 60px;
-        margin-bottom: 12px;
+        margin-bottom: 12px;        
     }
 
         #outletPanel .outlet-list-panel .outlet-item {
@@ -821,4 +825,8 @@ hr {
 .highlight-blue{
     color: #103B68;
     font-weight:bold;
+}
+
+.hidden {
+    display:none;
 }

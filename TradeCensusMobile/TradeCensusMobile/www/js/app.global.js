@@ -3,8 +3,8 @@
 */
 function isOnline() {   
     return true;   
-    //var networkState = navigator.connection.type;
-    //return (networkState != 'Unknown connection' && networkState != 'no network connection')
+    var networkState = navigator.connection.type;
+    return (networkState != 'Unknown connection' && networkState != 'no network connection')
 }
 
 /** 
@@ -247,7 +247,7 @@ function loadDefaultConfig() {
         ip: '27.0.15.234',
         port: '3001',
         service_name: 'TradeCensusService.svc',
-        map_zoom: 18,
+        map_zoom: 16,
         distance: 1000,
         item_count: 20,        
         province_id: 50, // HCM

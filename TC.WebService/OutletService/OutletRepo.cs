@@ -94,7 +94,7 @@ namespace TradeCensus
 
                     if (distance <= meter)
                     {
-                        var o = new OutletModel
+                        var foundOutlet = new OutletModel
                         {
                             ID = outlet.ID,
                             Name = outlet.Name,
@@ -126,22 +126,27 @@ namespace TradeCensus
                             AuditStatus = outlet.AuditStatus,
                             CreateDate = outlet.CreateDate.ToString("yyyy-MM-dd HH:mm:ss"),
                             Distance = distance,
-                            OutletSource = (outlet.DEDISID > 0) || (!string.IsNullOrEmpty(outlet.DISAlias)) ? 1 : 0,
+                            OutletSource = 0,
                             StringImage1 = "",
                             StringImage2 = "",
                             StringImage3 = "",
                         };
-                        o.FullAddress = string.Format("{0} {1} {2} {3}", outlet.AddLine, outlet.AddLine2, outlet.District, o.ProvinceName);
-                        o.FullAddress = o.FullAddress.Trim().Replace("  ", " ");
+                        if (outlet.DEDISID > 0)
+                            foundOutlet.OutletSource = 1;
+                        else if (outlet.DISAlias != null)
+                            foundOutlet.OutletSource = string.IsNullOrEmpty(outlet.DISAlias.Trim()) ? 0 : 1;
+
+                        foundOutlet.FullAddress = string.Format("{0} {1} {2} {3}", outlet.AddLine, outlet.AddLine2, outlet.District, foundOutlet.ProvinceName);
+                        foundOutlet.FullAddress = foundOutlet.FullAddress.Trim().Replace("  ", " ");
 
                         var outletImg = outlet.OutletImages.FirstOrDefault();
                         if (outletImg != null)
                         {
-                            o.StringImage1 = outletImg.Image1;
-                            o.StringImage2 = outletImg.Image2;
-                            o.StringImage3 = outletImg.Image3;
+                            foundOutlet.StringImage1 = outletImg.Image1;
+                            foundOutlet.StringImage2 = outletImg.Image2;
+                            foundOutlet.StringImage3 = outletImg.Image3;
                         }
-                        res.Add(o);
+                        res.Add(foundOutlet);
                         found++;
                     }
 
