@@ -47,6 +47,52 @@ function buildURL(protocol, ip, port, serviceName) {
 * showLoading
 */
 function showDlg(title, message, allowClose) {
+    log("Show dlg msg: " + message);   
+    var cover = null;
+    if (allowClose) {
+        cover =
+            '<div id="loading-overlay">' +
+                '<div id="loading-window">' +
+                    '<div class="dialog">' +
+                        '<div class="content">' +
+                            '<div class="title">' + title + '</div><br>' +
+                            '<div>' + message + '</div>' +
+                        '</div>' +
+                        '<div class="button label-blue" onclick="hideDlg()">' +
+                           '<div class="center" fit>CLOSE</div>' +
+                            '<paper-ripple fit></paper-ripple>' +
+                        '</div>' +
+                        //'<div class="button">'+
+                        //    '<div class="center" fit>DECLINE</div>'+
+                        //    '<paper-ripple fit></paper-ripple>'+
+                        //'</div>'+                        
+                    '</div>' +
+                 '</div>' +
+            '</div>';
+    } else {
+        cover =
+            '<div id="loading-overlay">' +
+                '<div id="loading-window">' +
+                    '<div class="dialog">' +
+                        '<div class="loading">' +
+                            '<img src="assets/img/loader.gif" width="28" height="28" />' +
+                        '</div>' +
+                        '<div class="content">' +
+                            '<div class="title">' + title + '</div><br>' +
+                            '<div>' + message + '</div>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>' +
+            '</div>';
+    }
+
+    $(cover).appendTo('body');
+}
+
+/** 
+* showLoading
+*/
+function showDlg(title, message, allowClose) {
     log("show dlg");
     //var cover = allowClose
     //    ? '<div id="loading-overlay">' +
@@ -153,8 +199,6 @@ function handleError(err) {
     showDialog(err, 'Error', function () { });
 }
 
-
-
 /** 
 * Handle http error
 */
@@ -229,14 +273,13 @@ function cloneObj(i) {
 * Clone object
 */
 function guid() {
-    return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
-      s4() + '-' + s4() + s4() + s4();
+    return randomString4() + randomString4() + '-' + randomString4() + '-' + s4randomString4 + '-' + randomString4() + '-' + randomString4() + randomString4() + randomString4();
 }
 
 /**
-* Clone object
+* random text 4 characters
 */
-function s4() {
+function randomString4() {
     return Math.floor((1 + Math.random()) * 0x10000)
       .toString(16)
       .substring(1);
