@@ -44,5 +44,19 @@ namespace TradeCensus
         public int ID { get; set; }
         [DataMember]
         public string RowID { get; set; }
-    }    
+    }
+
+    [DataContract]
+    public class SaveImageResponse : Response
+    {
+        [DataMember]
+        public string ImageThumb { get; set; }
+    }
+
+    [DataContract]
+    public class GetImageResponse : Response
+    {
+        [DataMember]
+        public string Image { get; set; }
+    }
 }

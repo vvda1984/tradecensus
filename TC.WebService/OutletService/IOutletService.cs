@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.ServiceModel;
 
 namespace TradeCensus
 {
     [ServiceContract]
     public interface IOutletService
-    {     
+    {
         [OperationContract]
         OutletResponse GetOutletIDsByProvince(string provinceID);
 
@@ -20,5 +21,14 @@ namespace TradeCensus
 
         [OperationContract]
         SaveOutletResponse SaveOutlet(OutletModel item);
+
+        [OperationContract]
+        SaveOutletResponse SaveOutletText(string text);
+
+        [OperationContract]
+        SaveImageResponse SaveImage(Stream stream, string outletID, string index);
+
+        [OperationContract]
+        GetImageResponse GetImage(string outletID, string index);
     }
 }

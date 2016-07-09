@@ -1,5 +1,7 @@
 ﻿using System;
+using System.IO;
 using System.ServiceModel.Web;
+using Newtonsoft.Json.Linq;
 using TradeCensus.Shared;
 
 namespace TradeCensus
@@ -148,7 +150,7 @@ namespace TradeCensus
                 return resp;
             }
         }
-                
+        
         [WebInvoke(Method = "POST", UriTemplate = "outlet/save", ResponseFormat = WebMessageFormat.Json)]
         public SaveOutletResponse SaveOutlet(OutletModel item)
         {
@@ -159,6 +161,53 @@ namespace TradeCensus
                 {
                     resp.ID = item.ID;
                     resp.RowID = repo.SaveOutlet(item); ;
+                }
+                catch (Exception ex)
+                {
+                    resp.Status = Constants.ErrorCode;
+                    resp.ErrorMessage = ex.Message;
+                }
+                return resp;
+            }
+        }
+
+        [WebInvoke(Method = "POST", UriTemplate = "outlet/commit", ResponseFormat = WebMessageFormat.Json, BodyStyle = WebMessageBodyStyle.Wrapped)]
+        public SaveOutletResponse SaveOutletText(string text)
+        {
+            var resp = new SaveOutletResponse();
+            resp.ID = 1;
+            resp.RowID = "1234567890";
+            return resp;
+        }
+
+        [WebInvoke(Method = "POST", UriTemplate = "outlet/uploadimage/{outletID}/{index}", ResponseFormat = WebMessageFormat.Json)]
+        public SaveImageResponse SaveImage(Stream stream, string outletID, string index)
+        {
+            using (var repo = new OutletRepo())
+            {
+                var resp = new SaveImageResponse();
+                try
+                {
+                    resp.ImageThumb = repo.SaveImage(outletID, index, stream);
+                }
+                catch (Exception ex)
+                {
+                    resp.Status = Constants.ErrorCode;
+                    resp.ErrorMessage = ex.Message;
+                }
+                return resp;
+            }
+        }
+
+        [WebInvoke(Method = "POST", UriTemplate = "outlet/getimage/{outletID}/{index}", ResponseFormat = WebMessageFormat.Json)]
+        public GetImageResponse GetImage(string outletID, string index)
+        {
+            using (var repo = new OutletRepo())
+            {
+                var resp = new GetImageResponse();
+                try
+                {
+                    resp.Image = repo.GetImage(outletID, index);
                 }
                 catch (Exception ex)
                 {

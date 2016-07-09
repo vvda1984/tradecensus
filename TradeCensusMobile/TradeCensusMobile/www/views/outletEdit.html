@@ -63,9 +63,9 @@
             </div>
 
             <div layout-gt-xs="row">
-                <img id="outletImg1" class="outletImage" ng-click="capture(1);" />
-                <img id="outletImg2" class="outletImage" ng-click="capture(2);" />
-                <img id="outletImg3" class="outletImage" ng-click="capture(3);" />
+                <img id="outletImg1" class="outletImage" ng-click="capture(1);" src="{{image1URL}}" alt="Image 1"/>
+                <img id="outletImg2" class="outletImage" ng-click="capture(2);" src="{{image2URL}}" alt="Image 2"/>
+                <img id="outletImg3" class="outletImage" ng-click="capture(3);" src="{{image3URL}}" alt="Image 3"/>
             </div>
             <div layout-gt-xs="row" layout-margin layout-align="center">
                 <md-button class="md-raised md-primary" ng-click="saveUpdate()">Save</md-button>

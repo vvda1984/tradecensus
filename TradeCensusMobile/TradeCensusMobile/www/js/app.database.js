@@ -344,7 +344,7 @@ function insertOutlets(userID, outletTbl, outlets, onSuccess, onError) {
                         log('Try to sync outlet ' + existOutlet.ID.toString());
                         log(outlet);
                         log(existOutlet);
-                        if (existOutlet.AmendBy != outlet.AmendBy) { // some one else has updated this outlet
+                        if (outlet.AmendBy != userID) {
                             log('Check status of outlet ' + existOutlet.ID.toString());
                             if (existOutlet.PSynced) {
                                 // synced already, just overwrite by server value...
@@ -357,8 +357,6 @@ function insertOutlets(userID, outletTbl, outlets, onSuccess, onError) {
                                     updateOutlet(tx, outletTbl, outlet, 0, true);
                                 }
                             }
-                        } else {
-                            log('Outlet ' + existOutlet.ID.toString() + ' was not changed');
                         }
                     }
                 } else {

@@ -79,6 +79,10 @@
       <HintPath>..\packages\Microsoft.Diagnostics.Tracing.EventSource.Redist.1.1.28\lib\net40\Microsoft.Diagnostics.Tracing.EventSource.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net40\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.ComponentModel.DataAnnotations">
       <Private>True</Private>
     </Reference>
@@ -96,6 +100,7 @@
     <Reference Include="System.Security">
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.ServiceModel.Activation" />
     <Reference Include="System.Threading.Tasks, Version=2.6.10.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Bcl.1.1.10\lib\net40\System.Threading.Tasks.dll</HintPath>
       <Private>True</Private>
@@ -153,18 +158,19 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Global.asax" />
+    <Content Include="Model1.Context.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>TradeCensusModel.edmx</DependentUpon>
+      <LastGenOutput>Model1.Context.cs</LastGenOutput>
+    </Content>
+    <Content Include="Model1.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>TradeCensusModel.edmx</DependentUpon>
+      <LastGenOutput>Model1.cs</LastGenOutput>
+    </Content>
     <Content Include="scripts\ai.0.22.9-build00167.js" />
     <Content Include="scripts\ai.0.22.9-build00167.min.js" />
-    <Content Include="TraceCensusModel.Context.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <DependentUpon>TradeCensusModel.edmx</DependentUpon>
-      <LastGenOutput>TraceCensusModel.Context.cs</LastGenOutput>
-    </Content>
-    <Content Include="TraceCensusModel.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <DependentUpon>TradeCensusModel.edmx</DependentUpon>
-      <LastGenOutput>TraceCensusModel.cs</LastGenOutput>
-    </Content>
     <Content Include="TradeCensusService.svc" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
@@ -172,39 +178,57 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Area.cs">
-      <DependentUpon>TraceCensusModel.tt</DependentUpon>
+      <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="Config.cs">
-      <DependentUpon>TraceCensusModel.tt</DependentUpon>
+      <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="ConfigService\ConfigRepo.cs" />
     <Compile Include="ConfigService\IConfigService.cs" />
+    <Compile Include="Global.asax.cs">
+      <DependentUpon>Global.asax</DependentUpon>
+    </Compile>
     <Compile Include="ITradeCensusService.cs" />
+    <Compile Include="Model1.Context.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Model1.Context.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model1.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Model1.tt</DependentUpon>
+    </Compile>
+    <Compile Include="TradeCensusModel.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>TradeCensusModel.edmx</DependentUpon>
+    </Compile>
     <Compile Include="Outlet.cs">
-      <DependentUpon>TraceCensusModel.tt</DependentUpon>
+      <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="OutletImage.cs">
-      <DependentUpon>TraceCensusModel.tt</DependentUpon>
+      <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="OutletService\IOutletService.cs" />
     <Compile Include="OutletService\OutletModel.cs" />
     <Compile Include="OutletService\OutletRepo.cs" />
     <Compile Include="OutletType.cs">
-      <DependentUpon>TraceCensusModel.tt</DependentUpon>
+      <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="Person.cs">
-      <DependentUpon>TraceCensusModel.tt</DependentUpon>
+      <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="PersonRole.cs">
-      <DependentUpon>TraceCensusModel.tt</DependentUpon>
+      <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="PersonService\IPersonService.cs" />
     <Compile Include="PersonService\PersonModel.cs" />
     <Compile Include="PersonService\PersonRepo.cs" />
-    <Compile Include="Province.cs">
-      <DependentUpon>TraceCensusModel.tt</DependentUpon>
-    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Province.cs">
+      <DependentUpon>Model1.tt</DependentUpon>
+    </Compile>
     <Compile Include="ProvinceService\IProvinceService.cs" />
     <Compile Include="ProvinceService\ProvinceRepo.cs" />
     <Compile Include="Shared\BaseRepo.cs" />
@@ -216,35 +240,21 @@
     <Compile Include="Shared\ProvinceResponse.cs" />
     <Compile Include="Shared\Response.cs" />
     <Compile Include="SyncDetail.cs">
-      <DependentUpon>TraceCensusModel.tt</DependentUpon>
+      <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="SyncHistory.cs">
-      <DependentUpon>TraceCensusModel.tt</DependentUpon>
-    </Compile>
-    <Compile Include="TraceCensusModel.Context.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>TraceCensusModel.Context.tt</DependentUpon>
-    </Compile>
-    <Compile Include="TraceCensusModel.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>TraceCensusModel.tt</DependentUpon>
-    </Compile>
-    <Compile Include="TradeCensusModel.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>TradeCensusModel.edmx</DependentUpon>
+      <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="TradeCensusService.svc.cs">
       <DependentUpon>TradeCensusService.svc</DependentUpon>
     </Compile>
     <Compile Include="Zone.cs">
-      <DependentUpon>TraceCensusModel.tt</DependentUpon>
+      <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Images\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
@@ -289,7 +299,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>61560</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:61560/</IISUrl>
+          <IISUrl>http://localhost:33333/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

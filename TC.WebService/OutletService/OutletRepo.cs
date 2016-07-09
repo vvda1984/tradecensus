@@ -1,6 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Web;
 using TradeCensus.Shared;
 
 namespace TradeCensus
@@ -283,7 +288,114 @@ namespace TradeCensus
                 Lng = p.Lng + (dlng / Constants.EarthR) * (180 / Math.PI) / Math.Cos(p.Lat * Math.PI / 180)
             };
             return newP;
-        }        
+        }
+
+        public string SaveImage(string outletID, string index, Stream stream)
+        {
+            byte[] buffer = new byte[10000000];
+            stream.Read(buffer, 0, 10000000);
+            string path = AppDomain.CurrentDomain.BaseDirectory; //GetType().Assembly.Location; // ...\bin\...
+            path = Path.GetDirectoryName(path) + "\\Images";
+            EnsureDirExist(path);
+            string imagePath = Path.Combine(path, string.Format("{0}_{1}.png", outletID, index));
+
+            //using (MemoryStream f = new MemoryStream()) {            
+            using (FileStream f = new FileStream(imagePath, FileMode.OpenOrCreate))
+            {            
+                f.Write(buffer, 0, buffer.Length);
+                f.Close();                
+            }
+            stream.Close();
+
+            var id = int.Parse(outletID);
+            Outlet outlet = _entities.Outlets.FirstOrDefault(i => i.ID == id);
+            if (outlet != null)
+            {
+                OutletImage outletImage = null;
+                if (outlet.OutletImages.Count() > 0)
+                    outletImage = outlet.OutletImages.FirstOrDefault();
+                else
+                {
+                    outletImage = new OutletImage()
+                    {
+                        OutletID = outlet.ID,
+                    };
+                    outlet.OutletImages.Add(outletImage);
+                }
+                //string thumbString;
+                //using (Image image = new Bitmap(imagePath))
+                //{
+                //    using (Image thumb = image.GetThumbnailImage(100, 100, ThumbnailCallback, new IntPtr()))
+                //    {
+                //        using (MemoryStream ms = new MemoryStream())
+                //        {
+                //            thumb.Save(ms, ImageFormat.Png);
+
+                //            byte[] bf = new byte[ms.Length];
+                //            ms.Write(bf, 0, (int)ms.Length);
+                //            thumbString = Convert.ToBase64String(bf);
+                //        }
+                //    }
+                //}
+                if (index == "0")
+                {
+                    outletImage.ImageData1 = File.ReadAllBytes(imagePath);
+                    outletImage.Image1 = string.Format("/images/{0}_{1}.png", outletID, index);
+                }
+                else if (index == "1")
+                {
+                    outletImage.ImageData2 = File.ReadAllBytes(imagePath);
+                    outletImage.Image2 = string.Format("/images/{0}_{1}.png", outletID, index);
+                }
+                else if (index == "2")
+                {
+                    outletImage.ImageData3 = File.ReadAllBytes(imagePath);
+                    outletImage.Image3 = string.Format("/images/{0}_{1}.png", outletID, index);
+                }
+                _entities.SaveChanges();
+            }
+            return string.Format("/images/{0}_{1}.png", outletID, index);
+        }
+
+        public bool ThumbnailCallback()
+        {
+            return true;
+        }
+
+        private void EnsureDirExist(string path)
+        {
+            if (Directory.Exists(path)) return;
+
+            string parent = Path.GetDirectoryName(path);
+            EnsureDirExist(parent);
+            Directory.CreateDirectory(path);
+        }
+
+        public string GetImage(string outletID, string index)
+        {           
+            var id = int.Parse(outletID);
+            Outlet outlet = _entities.Outlets.FirstOrDefault(i => i.ID == id);
+            if (outlet != null)
+            {
+                OutletImage outletImage = outlet.OutletImages.FirstOrDefault();
+                if (outletImage != null)
+                {
+                    if (index == "0")
+                    {
+                        return outletImage.Image1;
+                    }
+                    else if (index == "1")
+                    {
+                        return outletImage.Image2;
+                    }
+                    else if (index == "2")
+                    {
+                        return outletImage.Image3;
+                    }
+                }
+            }
+            return "";
+        }
     }
 
     public class Point

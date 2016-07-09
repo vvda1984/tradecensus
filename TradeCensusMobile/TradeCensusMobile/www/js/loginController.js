@@ -52,8 +52,7 @@ app.controller('LoginController', ['$scope', '$http', function ($scope, $http) {
     };
    
     $scope.login = function () {
-        log($scope.user.id);
-
+        log($scope.user.id);        
         // validate user id
         if (isEmpty($scope.user.id)) {
             showError('User ID is empty!');
@@ -175,6 +174,7 @@ app.controller('LoginController', ['$scope', '$http', function ($scope, $http) {
             showError($scope.resource.text_UserTerminated);
             return;
         }
+        userID = $scope.user.id;
         $scope.user.password = '';
         $scope.user.firstName = user.FirstName;
         $scope.user.lastName = user.LastName;

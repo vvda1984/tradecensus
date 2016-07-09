@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<edmx:Edmx Version="2.0" xmlns:edmx="http://schemas.microsoft.com/ado/2008/10/edmx">
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
   <!-- EF Runtime content -->
   <edmx:Runtime>
     <!-- SSDL content -->
     <edmx:StorageModels>
-      <Schema Namespace="tradecensusModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2008" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/02/edm/ssdl">
+      <Schema Namespace="tradecensusModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
         <EntityType Name="Area">
           <Key>
             <PropertyRef Name="ID" />
@@ -76,6 +76,9 @@
           <Property Name="Image1" Type="nvarchar(max)" />
           <Property Name="Image2" Type="nvarchar(max)" />
           <Property Name="Image3" Type="nvarchar(max)" />
+          <Property Name="ImageData1" Type="image" />
+          <Property Name="ImageData2" Type="image" />
+          <Property Name="ImageData3" Type="image" />
         </EntityType>
         <EntityType Name="OutletType">
           <Key>
@@ -210,7 +213,7 @@
     </edmx:StorageModels>
     <!-- CSDL content -->
     <edmx:ConceptualModels>
-      <Schema Namespace="tradecensusModel" Alias="Self" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2008/09/edm">
+      <Schema Namespace="tradecensusModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
         <EntityType Name="Area">
           <Key>
             <PropertyRef Name="ID" />
@@ -283,6 +286,9 @@
           <Property Name="Image1" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="Image2" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="Image3" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="ImageData1" Type="Binary" MaxLength="Max" FixedLength="false" />
+          <Property Name="ImageData2" Type="Binary" MaxLength="Max" FixedLength="false" />
+          <Property Name="ImageData3" Type="Binary" MaxLength="Max" FixedLength="false" />
           <NavigationProperty Name="Outlet" Relationship="Self.FK_OutletImage_Outlet" FromRole="OutletImage" ToRole="Outlet" />
         </EntityType>
         <EntityType Name="OutletType">
@@ -420,7 +426,7 @@
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
     <edmx:Mappings>
-      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2008/09/mapping/cs">
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
         <EntityContainerMapping StorageEntityContainer="tradecensusModelStoreContainer" CdmEntityContainer="tradecensusEntities">
           <EntitySetMapping Name="Areas">
             <EntityTypeMapping TypeName="tradecensusModel.Area">
@@ -495,6 +501,9 @@
                 <ScalarProperty Name="Image1" ColumnName="Image1" />
                 <ScalarProperty Name="Image2" ColumnName="Image2" />
                 <ScalarProperty Name="Image3" ColumnName="Image3" />
+                <ScalarProperty Name="ImageData1" ColumnName="ImageData1" />
+                <ScalarProperty Name="ImageData2" ColumnName="ImageData2" />
+                <ScalarProperty Name="ImageData3" ColumnName="ImageData3" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -594,7 +603,7 @@
     </edmx:Mappings>
   </edmx:Runtime>
   <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
-  <Designer xmlns="http://schemas.microsoft.com/ado/2008/10/edmx">
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
     <Connection>
       <DesignerInfoPropertySet>
         <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
@@ -605,7 +614,7 @@
         <DesignerProperty Name="ValidateOnBuild" Value="true" />
         <DesignerProperty Name="EnablePluralization" Value="true" />
         <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
-        <DesignerProperty Name="UseLegacyProvider" Value="true" />
+        <DesignerProperty Name="UseLegacyProvider" Value="false" />
         <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
       </DesignerInfoPropertySet>
     </Options>

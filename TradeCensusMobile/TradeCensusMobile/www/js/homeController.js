@@ -628,43 +628,59 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
             if (isOnline()) {
                 var url = baseURL + '/outlet/save';
                 log('Call service api: ' + url);
-                var data = JSON.stringify(outlet);
-                log(data);
-
-                if (outlet.PRowID == null)
-                    outlet.PRowID = guid();
-                onSuccess(true);
-
-                //$http({
-                //    method: $scope.config.http_method,
-                //    data: JSON.stringify(outlet),
-                //    url: url,
-                //    headers: { 'Content-Type': 'application/json' }
-                //}).then(function (resp) {
-                //    log(resp);
-                //    var data = resp.data;                
-                //    if (data.Status == -1) { // error
-                //        handleError(data.ErrorMessage);
-                //    } else {
-                //        log('submit outlet successfully: ' + data.RowID);
-                //        outlet.PRowID = data.RowID;
-                //        onSuccess(true);
-                //    }
-                //}, handleHttpError);
+                //var data = JSON.stringify(outlet);
+                log(outlet);              
+                $http({
+                    method: $scope.config.http_method,                   
+                    data:outlet,
+                    url: url,
+                    headers: { 'Content-Type': 'application/json' }
+                }).then(function (resp) {
+                    log(resp);
+                    var data = resp.data;
+                    if (data.Status == -1) { // error
+                        handleError(data.ErrorMessage);
+                    } else {
+                        log('submit outlet successfully: ' + data.RowID);
+                        outlet.PRowID = data.RowID;
+                        onSuccess(true);
+                    }
+                }, function (err) {
+                    log('ERROR');
+                    log(err);
+                });
+                //handleHttpError
             } else {
                 onSuccess(false);
             }
-
-
-            //outlet.PState |= 2;
-            //outlet.AmendBy = $scope.user.id;
-
-            //saveOutletDB($scope.config.tbl_outlet, outlet, 2, function () {
-
-            //}, function (dberr) {
-
-            //});
         }
+
+        //function saveOutlet(outlet, onSuccess) {
+        //    if (isOnline()) {
+        //        var url = baseURL + '/outlet/save';
+        //        log('Call service api: ' + url);
+        //        var settings = {
+        //            "async": true,
+        //            "crossDomain": true,
+        //            "url": url,
+        //            "method": "POST",
+        //            "headers": {
+        //                "content-type": "application/json",
+        //                "cache-control": "no-cache",                       
+        //            },
+        //            "processData": false,
+        //            "data": "{\"Action\":0,\"AddLine\":\"1\",\"AddLine2\":\"Đồng Khởi\",\"AmendBy\":123456,\"AmendDate\":\"2016-11-21 00:00:00\",\"AreaID\":\"HRC\",\"AuditStatus\":0,\"CloseDate\":\"\",\"CreateDate\":\"2016-06-01 00:00:00\",\"Distance\":20.56,\"District\":\"Q.1\",\"FullAddress\":\"1 Đồng Khởi Q.1 Hồ Chí Minh\",\"ID\":65000077,\"InputBy\":11693,\"IsOpened\":true,\"IsTracked\":true,\"LastContact\":\"Mr minh\",\"LastVisit\":\"\",\"Latitude\":10.773778,\"Longitude\":106.705758,\"Name\":\"MAJESTIC HOTEL\",\"Note\":\"\",\"OTypeID\":\"HO\",\"OutletEmail\":null,\"OutletSource\":0,\"OutletTypeName\":\"Hotel\",\"PRowID\":\"84d7f047-57f5-4b2d-9ca9-0b02e6a1ffde\",\"PersonID\":12595,\"Phone\":\"838295517 \",\"ProvinceID\":\"50\",\"ProvinceName\":\"Hồ Chí Minh\",\"StringImage1\":\"\",\"StringImage2\":\"\",\"StringImage3\":\"\",\"TotalVolume\":0,\"Tracking\":1,\"VBLVolume\":0,\"PLastModTS\":0,\"$$hashKey\":\"object:25\"}"
+        //        }
+
+        //        $.ajax(settings).done(function (response) {
+        //            console.log('RESPONSE');
+        //            console.log(response);
+        //        });
+
+        //    } else {
+        //        onSuccess(false);
+        //    }            
+        //}
 
         function moveToLocation(lat, lng) {
             log('Move current location');

@@ -8,7 +8,7 @@ var isInitialize = false;
 var provinces = [];
 var outletTypes = [];
 var baseURL = '';
-var user = null;
+var userID = 0;
 const earthR = 6378137;
 
 // For todays date;
