@@ -1,49 +1,24 @@
 ﻿<!DOCTYPE html>
 <html>
+<head>
+    <style type="text/css">       
+    </style>
+</head>
 <body>
-
-<p id="demo">Click the button to get your position.</p>
-
-<button onclick="getLocation()">Try It</button>
-
-<div id="mapholder"></div>
-
-<script>
-var x = document.getElementById("demo");
-
-function getLocation() {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(showPosition, showError);
-    } else {
-        x.innerHTML = "Geolocation is not supported by this browser.";
-    }
-}
-
-function showPosition(position) {
-    var latlon = position.coords.latitude + "," + position.coords.longitude;
-
-    var img_url = "http://maps.googleapis.com/maps/api/staticmap?center="
-    +latlon+"&zoom=14&size=400x300&sensor=false";
-    document.getElementById("mapholder").innerHTML = "<img src='"+img_url+"'>";
-}
-
-function showError(error) {
-    switch(error.code) {
-        case error.PERMISSION_DENIED:
-            x.innerHTML = "User denied the request for Geolocation."
-            break;
-        case error.POSITION_UNAVAILABLE:
-            x.innerHTML = "Location information is unavailable."
-            break;
-        case error.TIMEOUT:
-            x.innerHTML = "The request to get user location timed out."
-            break;
-        case error.UNKNOWN_ERROR:
-            x.innerHTML = "An unknown error occurred."
-            break;
-    }
-}
-</script>
+    <div class="cntr">
+        <div class="row press">
+            <input type="checkbox" id="unchecked" class="cbx hidden" />
+            <label for="unchecked" class="lbl"></label>
+        </div>
+        <div class="row press">
+            <input type="checkbox" id="checked" class="cbx hidden" checked />
+            <label for="checked" class="lbl"></label>
+        </div>
+        <div class="row">
+            <input type="checkbox" id="unchecked_disabled" class="cbx hidden" disabled />
+            <label for="unchecked_disabled" class="lbl"></label>
+        </div>
+    </div>
 
 </body>
 </html>

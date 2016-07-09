@@ -314,43 +314,102 @@ function createOutletTables(outletSyncTbl, outletTbl, onDone) {
 
 function insertOutlets(userID, outletTbl, outlets, onSuccess, onError) {
     db.transaction(function (tx) {
-        //var len = outlets.length;
-        //for (i = 0 ; i < len; i++) {
-        //    try {
-        //        var outlet = outlets[i];
-        outlets.forEach(function (outlet, i) {
-            try {
-                log('Select existing outlet')
-                var sql = 'SELECT * FROM ' + outletTbl + ' WHERE PRowID = \'' + outlet.PRowID + '\'';
-                logSqlCommand(sql);
-                tx.executeSql(sql, [], function (tx1, dbrow) {
-                    var rowLen = dbrow.rows.length;
-                    if (rowLen) {
-                        log('Outlet existed');
+        var whereCon = '(';
+        for (i = 0 ; i < outlets.length; i++) {
+            if (i > 0) whereCon = whereCon.concat(', ');
 
-                        var existOutlet = dbrow.rows[0];
-                        if (existOutlet && (existOutlet.AmendBy != outlet.AmendBy || existOutlet.AmendDate != outlet.AmendDate)) {
-                            log('Outlet was MODIFIED in server');
-                            //if (existOutlet.state == 0) { // unchanged
-                            //    updateOutlet(tx, userID, outletTbl, outlet, 0, true);
-                            //}
-                            updateOutlet(tx, outletTbl, outlet, 0, true);
-                        } else {
-                            log('Outlet was NOT changed');
+            var outlet = outlets[i];
+            whereCon = whereCon.concat('"', outlet.PRowID, '"');
+        }
+        whereCon = whereCon.concat(')');
+        log('Select existing outlets')
+        //var sql = 'SELECT * FROM ' + outletTbl + ' WHERE PRowID = \'' + outlet.PRowID + '\'';
+        var sql = 'SELECT * FROM ' + outletTbl + ' WHERE PRowID IN ' + whereCon;
+        logSqlCommand(sql);
+        tx.executeSql(sql, [], function (tx1, dbrow) {
+            var rowLen = dbrow.rows.length;
+            log('found ' + rowLen.toString() + ' outlets');
+            for (var oi = 0 ; oi < outlets.length; oi++) {
+                var outlet = outlets[oi];
+                outlet.PLastModTS = 0;
+                if (rowLen) {
+                    var existOutlet = null;
+                    for (var j = 0 ; j < rowLen; j++) {
+                        if (outlet.PRowID == dbrow.rows[j].PRowID) {
+                            existOutlet = dbrow.rows[j];
+                            break;
                         }
-                    } else {
-                        addNewOutlet(tx1, outletTbl, outlet, false, false, false, true, false);
                     }
-                },
-                function (dberr) { log('select outlet error'); log(dberr.message); });
+                    if (existOutlet != null) {                        
+                        log('Try to sync outlet ' + existOutlet.ID.toString());
+                        log(outlet);
+                        log(existOutlet);
+                        if (existOutlet.AmendBy != outlet.AmendBy) { // some one else has updated this outlet
+                            log('Check status of outlet ' + existOutlet.ID.toString());
+                            if (existOutlet.PSynced) {
+                                // synced already, just overwrite by server value...
+                                updateOutlet(tx, outletTbl, outlet, 0, true);
+                            } else {
+                                // outlet wasn't synced, check amend date
+                                // this logic can be failed if timezone in server and client are different
+                                if (compareDate(outlet.AmendDate, existOutlet.AmendDate, 'yyyy-MM-dd HH:mm:ss') > 0) {
+                                    log('Server date > local date');
+                                    updateOutlet(tx, outletTbl, outlet, 0, true);
+                                }
+                            }
+                        } else {
+                            log('Outlet ' + existOutlet.ID.toString() + ' was not changed');
+                        }
+                    }
+                } else {
+                    log('Add outlet ' + outlet.ID.toString() + ' to DB');
+                    addNewOutlet(tx1, outletTbl, outlet, false, false, false, true, false);
+                }
             }
-            catch (err) {
-                log(err);
-            }
+            onSuccess();
+        },
+        function (dberr) {
+            log('select outlet error: ' + dberr.message);
+            onSuccess();
         });
+
         
-        //};
-        onSuccess();
+        //outlets.forEach(function (outlet, i) {
+        //    try {
+        //        log('Select existing outlets')
+        //        //var sql = 'SELECT * FROM ' + outletTbl + ' WHERE PRowID = \'' + outlet.PRowID + '\'';
+        //        var sql = 'SELECT * FROM ' + outletTbl + ' WHERE PRowID IN ' + whereCon;
+        //        logSqlCommand(sql);
+        //        tx.executeSql(sql, [], function (tx1, dbrow) {
+        //            var rowLen = dbrow.rows.length;
+        //            if (rowLen) {
+        //                log('Outlet existed');
+        //                var existOutlet = dbrow.rows[0];
+        //                if (existOutlet != null && (existOutlet.AmendBy != outlet.AmendBy)) { // some one else has updated this outlet
+        //                    log('Sync outlet ' + existOutlet.ID.toString());
+        //                    if (existOutlet.PSynced) {
+        //                        // synced already, just overwrite by server value...
+        //                        updateOutlet(tx, outletTbl, outlet, 0, true);
+        //                    } else {
+        //                        // outlet wasn't synced, check amend date
+        //                        // this logic can be failed if timezone in server and client are different
+        //                        if (compareDate(outlet.AmendDate, existOutlet.AmendDate, 'yyyy-MM-dd HH:mm:ss') > 0) {
+        //                            log('Server date > local date');
+        //                            updateOutlet(tx, outletTbl, outlet, 0, true);
+        //                        }
+        //                    }
+        //                }
+        //            } else {
+        //                addNewOutlet(tx1, outletTbl, outlet, false, false, false, true, false);
+        //            }
+        //        },
+        //        function (dberr) { log('select outlet error'); log(dberr.message); });
+        //    }
+        //    catch (err) {
+        //        log(err);
+        //    }
+        //});                
+        //onSuccess();
     }, onError);
 }
 
@@ -417,9 +476,10 @@ function addNewOutlet(tx, outletTbl, outlet, isAdd, isMod, isAud, synced, marked
 }
 
 function updateOutlet(tx, outletTbl, outlet, state, synced) {
-    log('update outlet');
+    log('update outlet ' + outlet.ID.toString() + '(' + outlet.PLastModTS + ')');
     var n = (new Date()).getTime();
     var marked = n < outlet.PLastModTS;
+    log(outlet);
 
     var sql = 'UPDATE ' + outletTbl + ' SET ';
     sql = sql.concat('AreaID="', outlet.AreaID, '", ');
@@ -472,7 +532,7 @@ function updateOutlet(tx, outletTbl, outlet, state, synced) {
         sql = sql.concat(' WHERE PRowID="', outlet.PRowID , '"');
     } else {
         sql = sql.concat(' WHERE ID=', outlet.ID.toString());
-    }
+    }    
     
     logSqlCommand(sql);
     tx.executeSql(sql, [],
@@ -505,7 +565,7 @@ function selectOutlets(outletTbl, state, onSuccess, onError) {
 
 function saveOutletDB(outletTbl, outlet, state, synced, onSuccess, onError) {
     db.transaction(function (tx) {
-        try {
+        try {            
             updateOutlet(tx, outletTbl, outlet, state, synced);
         } catch (err) {
             log(err);

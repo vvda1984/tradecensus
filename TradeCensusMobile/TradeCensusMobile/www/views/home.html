@@ -15,14 +15,14 @@
         <div id="outlet-dropdown" class="dropdown">
             <div class="dropdown-item" ng-click="changeOutletView(0)"><span>Near-by Outlets</span></div>
             <div class="dropdown-item" ng-click="changeOutletView(1)"><span>New Outlets</span></div>
-            <div class="dropdown-item" ng-click="changeOutletView(2)"><span>Modified Outlets</span></div>
+            <div class="dropdown-item" ng-click="changeOutletView(2)"><span>Updated Outlets</span></div>
             <div class="dropdown-item" ng-show="hasAuditRole" ng-click="changeOutletView(4)"><span>Auditted Outlets</span></div>
         </div>
     </div>
 
     <div id="outletPanel" ng-click="hideDropdown()">
         <div id="outlet-panel-near" class="outlet-list-panel">        
-            <div class="outlet-item" ng-repeat="outlet in outlets">
+            <div class="outlet-item" ng-repeat="outlet in outlets" ng-click="hideDropdown()">
                 <div class="outlet-item-col1"> <div class="circle">{{$index + 1}}</div> </div>
                 <div class="outlet-item-col2">
                     <span class="header" ng-click="openOutlet($index)">{{outlet.Name}}</span>
@@ -52,7 +52,7 @@
         </div>       
     </div>   
      
-    <div id="view-map" ng-click="hideDropdown()">
+    <div id="view-map">
         <div id="map"></div>
     </div>    
 </div>

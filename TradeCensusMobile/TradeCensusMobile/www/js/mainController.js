@@ -1,19 +1,4 @@
-﻿/// <reference path='app.global.js' />
-
-var db;                             // database instance
-var map = null;                     // google map
-//var isOnline = true;              // network status
-var isDev = false;                  // enable DEV mode
-var userOutletTable = 'outlet';     // outlet table name for current user
-var isLoadingDlgOpened = false;     // 
-var isInitialize = false;
-var provinces = [];
-var outletTypes = [];
-var baseURL = '';
-var user = null;
-const earthR = 6378137;
-
-$(document).ready(function () {
+﻿$(document).ready(function () {
     document.addEventListener("backbutton", onBackKeyDown, false);
     function onBackKeyDown(e) {
         e.preventDefault();

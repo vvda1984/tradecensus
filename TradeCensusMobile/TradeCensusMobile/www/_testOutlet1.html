@@ -66,7 +66,7 @@
                 AmendBy: 11693,
                 AmendDate: "2016-11-06 00:00:00",
                 AreaID: "HRC",
-                AuditStatus: 2,
+                AuditStatus: 0,
                 CloseDate: "",
                 CreateDate: "2016-06-01 00:00:00",
                 Distance: 611.42,
@@ -93,6 +93,7 @@
                 Tracking: 0,
                 IsOpened: false,
                 IsTracked: false,
+                IsAudit: false,                
             };
             //$scope.showAdvanced = function(evt) {
             //    $scope.data.dialogOpen = true;
@@ -225,18 +226,19 @@
                             <div class="md-block-item-value">{{outlet.CloseDate ? outlet.CloseDate : "N/A"}}</div>
                         </div>    
                         <div class="md-block-item" ng-show="openedOptionVisible">
-                            <div class="md-block-item-title">{{outlet.IsOpened ? "Opened" : "Closed"}}</div>                            
-                            <md-switch ng-model="outlet.IsOpened" style="margin-bottom:4px;"></md-switch>                            
+                            <div class="md-block-item-title" style="min-width:60px">{{outlet.IsOpened ? "Opened" : "Closed"}}</div>                            
+                            <md-checkbox md-no-ink="" aria-label="Is Opened" ng-model="outlet.IsOpened" class="md-primary">                                
+                            </md-checkbox>
                         </div>
                         <div class="md-block-item" ng-show="trackedOptionVisible">
-                            <div class="md-block-item-title">{{outlet.IsTracked ? "Tracking" : "Non-Tracking"}}</div>                            
-                            <md-switch ng-model="outlet.IsTracked" style="margin-bottom:4px;"></md-switch>                            
+                            <div class="md-block-item-title" style="min-width:80px">{{outlet.IsTracked ? "Tracking" : "Non-Tracking"}}</div>                                                        
+                            <md-checkbox md-no-ink="" aria-label="Is Tracked" ng-model="outlet.IsTracked" class="md-primary">
+                            </md-checkbox>
                         </div>
                         <div class="md-block-item">
-                            <div class="md-block-item-title">AUDIT OUTLET</div>
-                            <md-switch ng-model="outlet.AuditStatus" style="margin-bottom:4px;">
-                                {{outlet.AuditStatus ? "Approved" : "Denied")}}
-                            </md-switch>
+                            <!--<div class="md-block-item-title">AUDIT OUTLET</div>                            
+                            <md-checkbox md-no-ink="" aria-label="Is Audited" ng-model="outlet.IsAudit" class="md-primary">                                
+                            </md-checkbox>-->
                         </div>  
                     </div>
 

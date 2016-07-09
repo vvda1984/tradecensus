@@ -183,7 +183,7 @@ hr {
     position: fixed;
     top: 0;
     left: 0;
-    z-index: 0;
+    z-index: 1;
 }
 
 #map {
@@ -357,13 +357,14 @@ hr {
     z-index: 2;
     /*background-color: rgb(0,0,0);
     background-color: rgba(255,255,255,0.8); /*rgba(0,0,0, 0.8);    */
-    background-color: #EBEBEB;
+    /*background-color: #EBEBEB;*/
+    background:transparent;
     overflow-x: hidden;
     transition: 0.5s;
 }
 
     #outletPanel .outlet-list-panel {
-        margin-top: 60px;
+        margin-top: 54px;
         margin-bottom: 12px;        
     }
 
@@ -657,6 +658,10 @@ hr {
         color: rgba(0,0,0,1);
         display: inherit;
     }
+
+.md-scroll-mask {
+    position: initial;
+}
 /*********************************/
 
 /*************** MATERIAL THEME ******************/

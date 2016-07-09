@@ -10,8 +10,7 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
 
         var curIndex = 0;
         var curInfoWindow = null;
-        var markers = [];
-        var markerInfoWindows = [];
+        var markers = [];        
         var markerClusterer;
 
         var leftPanelStatus = 0;
@@ -40,40 +39,49 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
         $scope.outlets = [];
 
         $scope.refresh = function () {
-            //onGetLocationSuccess(null);
-            $scope.closeLeftPanel();
-            log('query location...');
-            try {
-                showDlg('Get near-by outlets', "Please wait...");
-                navigator.geolocation.getCurrentPosition(onGetLocationSuccess, onGetLocationError);
-            } catch (err) {
-                log(err);
+            $scope.closeLeftPanel();           
+            if($scope.outletCategory == 0) {
+                nearByOutlets = [];
             }
+            getOutlets();
+            //log('query location...');
+            //try {
+            //    showDlg('Get outlets', "Please wait...");
+            //    navigator.geolocation.getCurrentPosition(onGetLocationSuccess, onGetLocationError);
+            //} catch (err) {
+            //    log(err);
+            //}
         }
 
         $scope.closeLeftPanel = function () {
             leftPanelStatus = 0
             $scope.editOutletFull = false;
-            document.getElementById('outletPanel').style.width = '0%';
+            $("#outletPanel").css('width', '0%');
+            //document.getElementById('outletPanel').style.width = '0%';
         }
 
         $scope.showLeftPanel = function () {
-            if (leftPanelStatus >= 2) return;
+            log("Left panel state: " + leftPanelStatus.toString());
+            if (leftPanelStatus >= 2) {
+                return;
+            }
             leftPanelStatus++;
-
-            log("show left panel: " + leftPanelStatus.toString());
             if (leftPanelStatus == 0) {
                 $scope.editOutletFull = false;
-                document.getElementById('outletPanel').style.width = '0%';
+                $("#outletPanel").css('width', '0%');
+
+                //document.getElementById('outletPanel').style.width = '0%';
                 //$('#expander-2').html('>');
             } else if (leftPanelStatus == 1) {
                 $scope.editOutletFull = false;
-                document.getElementById('outletPanel').style.width = '40%';
+                $("#outletPanel").css('width', '40%');
+                //document.getElementById('outletPanel').style.width = '40%';
                 //$('#expander-2').html('>');
             } else {
                 $scope.editOutletFull = true;
                 log('view full outlet');
-                document.getElementById('outletPanel').style.width = '100%';
+                //document.getElementById('outletPanel').style.width = '100%';
+                $("#outletPanel").css('width', '100%');
                 //$('#expander-2').html('<');
             }
         }
@@ -82,60 +90,59 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
             $scope.hideDropdown();
             if ($scope.outletCategory === v) return;
             log('change view to ' + v.toString());
-
-            //if (isOnline()) {            
-            //    $scope.closeLeftPanel();
-            //}
-
             $scope.outletCategory = v;
-            const c = 'outlet-button-active';
-            switch (v) {
-                case 0:
-                    log('view near by outlets');
-                    $scope.outletHeader = 'Near-by Outlets';
-                    //$('#outlet-panel-near').css('display', 'inherit');
-                    //$('#outlet-panel-new').css('display', 'none');
-                    //$('#outlet-panel-update').css('display', 'none');
-                    //$('#outlet-panel-audit').css('display', 'none');
-                    $scope.allowRefresh = true;
-                    loadOutlets(nearByOutlets);
-                    break;
-                case 1:
-                    log('view new outlets');
-                    $scope.outletHeader = 'New Outlets';
-                    //$('#outlet-panel-near').css('display', 'none');
-                    //$('#outlet-panel-new').css('display', 'inherit');
-                    //$('#outlet-panel-update').css('display', 'none');
-                    //$('#outlet-panel-audit').css('display', 'none');
+            getOutlets();
 
-                    $scope.allowRefresh = false;
-                    getOutlets(1);
-                    break
-                case 2:
-                    log('view updated outlets');
-                    $scope.outletHeader = 'Updated Outlets';
-                    //$('#outlet-panel-near').css('display', 'none');
-                    //$('#outlet-panel-new').css('display', 'none');
-                    //$('#outlet-panel-update').css('display', 'inherit');
-                    //$('#outlet-panel-audit').css('display', 'none');
-                    $scope.allowRefresh = false;
-                    getOutlets(2);
-                    break;
-                case 4:
-                    log('view auditted outlets');
-                    $scope.outletHeader = 'Auditted Outlets';
-                    //$('#outlet-panel-near').css('display', 'none');
-                    //$('#outlet-panel-new').css('display', 'none');
-                    //$('#outlet-panel-update').css('display', 'none');
-                    //$('#outlet-panel-audit').css('display', 'inherit');
-                    $scope.allowRefresh = false;
-                    getOutlets(4);
-                    break;
-            }
+            //switch (v) {
+            //    case 0:
+            //        log('view near by outlets');
+            //        $scope.outletHeader = 'Near-by Outlets';
+            //        //$('#outlet-panel-near').css('display', 'inherit');
+            //        //$('#outlet-panel-new').css('display', 'none');
+            //        //$('#outlet-panel-update').css('display', 'none');
+            //        //$('#outlet-panel-audit').css('display', 'none');
+            //        $scope.allowRefresh = true;
+            //        loadOutlets(nearByOutlets);
+            //        break;
+            //    case 1:
+            //        log('view new outlets');
+            //        $scope.outletHeader = 'New Outlets';
+            //        //$('#outlet-panel-near').css('display', 'none');
+            //        //$('#outlet-panel-new').css('display', 'inherit');
+            //        //$('#outlet-panel-update').css('display', 'none');
+            //        //$('#outlet-panel-audit').css('display', 'none');
+            //        $scope.allowRefresh = false;
+            //        getOutletsFromLocal(1);
+            //        break
+            //    case 2:
+            //        log('view updated outlets');
+            //        $scope.outletHeader = 'Updated Outlets';
+            //        //$('#outlet-panel-near').css('display', 'none');
+            //        //$('#outlet-panel-new').css('display', 'none');
+            //        //$('#outlet-panel-update').css('display', 'inherit');
+            //        //$('#outlet-panel-audit').css('display', 'none');
+            //        $scope.allowRefresh = false;
+            //        getOutletsFromLocal(2);
+            //        break;
+            //    case 4:
+            //        log('view auditted outlets');
+            //        $scope.outletHeader = 'Auditted Outlets';
+            //        //$('#outlet-panel-near').css('display', 'none');
+            //        //$('#outlet-panel-new').css('display', 'none');
+            //        //$('#outlet-panel-update').css('display', 'none');
+            //        //$('#outlet-panel-audit').css('display', 'inherit');
+            //        $scope.allowRefresh = false;
+            //        getOutletsFromLocal(4);
+            //        break;
+            //}
         }
 
         $scope.showDropdown = function () {
             $("#outlet-dropdown").css('display', 'block');
+        }
+
+        $scope.hideDropdown = function () {
+            $("#outlet-dropdown").css('display', 'none');
         }
 
         $scope.openOutlet = function (i) {
@@ -219,68 +226,39 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
             } catch (err) {
                 log(err);
             }
-        }
+        }        
 
-        $scope.hideDropdown = function () {
-            $("#outlet-dropdown").css('display', 'none');
-        }
-
-        function loadOutletTypes(onSuccess, onError) {
-            if ($scope.outletTypes != null) {
-                onSuccess();
-            } else {
-                $scope.outletTypes = [];
-                selectOutletTypes(function (tx, dbrow) {
-                    var rowLen = dbrow.rows.length;
-                    log('found ' + rowLen.toString() + ' outlet types');
-                    if (rowLen) {
-                        for (i = 0; i < rowLen; i++) {
-                            $scope.outletTypes[i] = {
-                                id: dbrow.rows.item(i).ID,
-                                name: dbrow.rows.item(i).Name,
-                            }
-                        }
+        function getOutlets() {            
+            switch ($scope.outletCategory) {
+                case 0:
+                    log('view near-by outlets');
+                    $scope.outletHeader = 'Near-by Outlets';
+                    if (nearByOutlets.length > 0) {
+                        showDlg('Load near-by outlets', "Please wait...");
+                        loadOutlets(nearByOutlets);
+                    } else {
+                        showDlg('Get current location', "Please wait...");
+                        navigator.geolocation.getCurrentPosition(onGetLocationSuccess, onGetLocationError);
                     }
-
-                    onSuccess();
-                }, onError);
-            }
-        }
-
-        function initializeMap() {
-            try {
-                log('Check map...');
-                if (!isMapLoaded) {
-                    isMapLoaded = true;
-                    log('Initialize map...');
-                    if (!isOnline()) {
-                        log('App is offline...');
-                        return;
-                    }
-                    log('Load map...');
-                    map = new google.maps.Map(document.getElementById('map'), {
-                        zoom: $scope.config.map_zoom,
-                        center: { lat: curlat, lng: curlng },
-                        mapTypeId: google.maps.MapTypeId.ROADMAP,
-                        mapTypeControl: false,
-                        mapTypeControlOptions: {
-                            style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
-                            position: google.maps.ControlPosition.TOP_CENTER
-                        },
-                        streetViewControlOptions: {
-                            position: google.maps.ControlPosition.RIGHT_BOTTOM
-                        },
-                        zoomControl: true,
-                        zoomControlOptions: {
-                            position: google.maps.ControlPosition.RIGHT_BOTTOM
-                        },
-                        scaleControl: true,
-                        streetViewControl: true,
-                        fullscreenControl: false,
-                    });
-                }
-            } catch (err) {
-                log('Cannot initialize map');
+                    break;
+                case 1:
+                    log('view new outlets');
+                    $scope.outletHeader = 'New Outlets';
+                    showDlg('Load new outlets', "Please wait...");
+                    getOutletsFromLocal(1);
+                    break
+                case 2:
+                    log('view updated outlets');
+                    $scope.outletHeader = 'Updated Outlets';
+                    showDlg('Load updated outlets', "Please wait...");
+                    getOutletsFromLocal(2);
+                    break;
+                case 4:
+                    log('view auditted outlets');
+                    $scope.outletHeader = 'Auditted Outlets';
+                    showDlg('Load auditted outlets', "Please wait...");
+                    getOutletsFromLocal(4);
+                    break;
             }
         }
 
@@ -296,20 +274,23 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
         function onGetLocationSuccess(position) {
             curlat = position.coords.latitude;
             curlng = position.coords.longitude;
+            log('found location: lat=' + curlat.toString() + ',lng=' + curlng.toString());
 
+            // ANVO: DEBUG
             log('***set debug location...');
             curlat = 10.773598;
             curlng = 106.7058;
-            initializeMap();
+            //initializeMap();
 
             nearByOutlets = [];
 
+            showDlg('Load near-by outlets', "Please wait...");
             if (isOnline()) {
                 getNearByOutletsOnline();
             } else {
                 getNearByOutletsOffline();
             }
-        };
+        }
 
         function onGetLocationError(error) {
             hideDlg();
@@ -332,7 +313,7 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
                 function (dbres) {
                     var rowLen = dbres.rows.length;
                     log('Found ' + rowLen.toString() + ' outlets');
-                    if (rowLen) {                        
+                    if (rowLen) {
                         var found = 0;
                         for (i = 0; i < rowLen; i++) {
                             var outlet = dbres.rows.item(i);
@@ -424,14 +405,14 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
                         function (dberr) {
                             hideDlg();
                             log(dberr.message);
-                            showDlg('Error', dberr.message);
+                            showError(dberr.message);
                         });
                 }
             }, handleHttpError);
         }
 
-        function getOutlets(state) {
-            showDlg('Get new outlets', "Please wait...");
+        function getOutletsFromLocal(state) {
+            showDlg('Get outlets', "Please wait...");
             try {
                 selectOutlets($scope.config.tbl_outlet, state,
                     function (dbres) {
@@ -442,6 +423,7 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
                             var foundOutlets = [];
                             for (i = 0; i < rowLen; i++) {
                                 var outlet = dbres.rows.item(i);
+                                log(outlet);
 
                                 var provinceName = '';
                                 for (p = 0; p < $scope.provinces.length; p++)
@@ -460,6 +442,8 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
                                 outlet.FullAddress = outlet.AddLine + ' ' + outlet.AddLine2 + ' ' + outlet.District + ' ' + provinceName;
                                 outlet.OutletTypeName = outletTypeName;
                                 outlet.Distance = 0;
+                                outlet.IsOpened = isEmpty(outlet.CloseDate);
+                                outlet.IsTracked = outlet.Tracking == 1;                                
                                 foundOutlets[i] = outlet;
                             }
                             loadOutlets(foundOutlets);
@@ -468,77 +452,71 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
                         }
                     }, function (dberr) {
                         hideDlg();
-                        showError('Error', dberr.message);
+                        showError(dberr.message);
                     });
             } catch (err) {
                 log(err);
                 hideDlg();
-                showError('Error', err.message);
+                showError(err.message);
             }
         }
 
-        function loadOutlets(items) {
+        function loadOutlets(outlets) {
             curIndex = 0;
-
             if (map != null) {
-                clearMarkers();
-                log("load outlets to map");
-                for (var i = 0; i < items.length; i++) {
-                    var outlet = items[i];                    
-                    var markerImage = $scope.outletCategory == 1 ? 'pin-new.png' : getMarkerImageName(outlet);
-                    var marker = createMaker(outlet.Name, new google.maps.LatLng(outlet.Latitude, outlet.Longitude), markerImage);
-                    markers.push(marker);
-
-                    var infoWindow = new google.maps.InfoWindow({
-                        content: '<div class=\'view-marker\'>' + outlet.Name + '</div>',
-                    });
-                    infoWindow.open(map, marker);
-                    markerInfoWindows.push(infoWindow);
-
-                    marker.addListener('click', function () {
-                        editOutlet(markers.indexOf(marker));
-                    });
-                };
-
-                var options = {
-                    imagePath: 'assets/img/m'
-                };
-                markerClusterer = new MarkerClusterer(map, markers, options);
+                loadMarkers(outlets, function () {
+                    setOutletsToList(outlets);
+                });
+            } else {
+                setOutletsToList(outlets);
             }
+        }
 
+        function setOutletsToList(outlets) {
             $timeout(function () {
-                $scope.outlets = items;
-                //switch ($scope.outletCategory) {
-                //    case 0:
-                //        $scope.nearByOutlets = items;
-                //        break;
-                //    case 1:
-                //        $scope.newOutlets = items;
-                //        break
-                //    case 2:
-                //        $scope.updatedOutlets = items;
-                //        break;
-                //    case 4:
-                //        $scope.auditOutlets = items;
-                //        break;
-                //}
+                $scope.outlets = outlets;
+                $('.md-scroll-mask').remove();
+                hideDlg();
+            }, 100);
+        }
+
+        function loadMarkers(outlets, callback) {
+            log("Clear existing markers");
+            clearMarkers();
+
+            log("load outlets markers");
+            var bounds = new google.maps.LatLngBounds();
+            for (var i = 0; i < outlets.length; i++) {
+                var outlet = outlets[i];
+                var position = new google.maps.LatLng(outlet.Latitude, outlet.Longitude);
+                bounds.extend(position);
+
+                var iconUrl = $scope.outletCategory == 1 ? 'assets/img/pin-new.png' : getMarkerIcon(outlet);
+                var marker = new google.maps.Marker({
+                    position: position,
+                    title: outlet.Name,
+                    icon: iconUrl,
+                    map: map,
+                });
+                markers[i] = marker;
+
+                var infoWindow = new google.maps.InfoWindow({
+                    content: '<div class=\'view-marker\'>' + outlet.Name + '</div>',
+                });
+                infoWindow.open(map, marker);
+                //marker.addListener('click', function () {
+                //    editOutlet(markers.indexOf(marker));
+                //});
+            };
+            map.fitBounds(bounds);
+            var options = { imagePath: 'assets/img/m' };
+            markerClusterer = new MarkerClusterer(map, markers, options);
+
+            var mapeventListener = google.maps.event.addListener(map, 'bounds_changed', function (event) {
+                log('map bounds_changed');
+                callback();
+                google.maps.event.removeListener(mapeventListener);
             });
-
-            //$scope.outlets = items;
-            //loadOutletsToListView(items);
-            try {
-                //$scope.$apply();
-            } catch (err) {
-                log(err);
-            }
-
-            log('create home marker');
-            if (isOnline())
-                homeMarker = createMaker('', new google.maps.LatLng(curlat, curlng), 'pin-cur.png');
-            else {
-                leftPanelStatus = 1;
-                $scope.showLeftPanel();
-            }
         }
 
         function loadOutletsToListView(items) {
@@ -577,62 +555,25 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
             for (var i = 0; i < markers.length; i++) {
                 markers[i].setMap(null);
             }
-            markers.length = 0;
-            markerInfoWindows.length = 0;
+            markers = [];            
             curInfoWindow = null;
         }
 
         function createMaker(title, latlng, iconName) {
             var iconUrl = 'assets/img/' + iconName;
-            return marker = new google.maps.Marker({
-                position: latlng,
-                map: map,
-                title: title,
-                icon: iconUrl,
-            });
-        }
-
-        function createOutletMaker(i, title, latlng, iconName) {
-            var infowindow = new google.maps.InfoWindow({
-                content: '<a onclick="editOutlet(' + i.toString() + ')">' + title + '</a>',
-            });
-
-            var iconUrl = 'assets/img/' + iconName;
             var marker = new google.maps.Marker({
                 position: latlng,
-                map: map,
+                //map: map,
                 title: title,
                 icon: iconUrl,
             });
-            marker.addListener('click', function () {
-                if (curInfowindow != null && curInfowindow != infowindow) {
-                    curInfowindow.close();
-                }
-                infowindow.open(map, marker);
-                curInfowindow = infowindow;
-            });
+            marker.setMap(map);
             return marker;
         }
 
         function editOutlet(i) {
             log(i);
-            var outlet = $scope.outlets[i];
-            //switch ($scope.outletCategory) {
-            //    case 0:
-            //        outlet = $scope.nearByOutlets[i];
-            //        break;
-            //    case 1:
-            //        outlet = $scope.newOutlets[i];
-            //        break
-            //    case 2:
-            //        outlet = $scope.updatedOutlets[i];
-            //        break;
-            //    case 4:
-            //        outlet = $scope.auditOutlets[i];
-            //        break;
-            //}
-
-            var clonedOutlet = cloneObj(outlet);
+            var clonedOutlet = cloneObj($scope.outlets[i]);
             $scope.outlet = clonedOutlet;
 
             $mdDialog.show({
@@ -644,44 +585,39 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
                 fullscreen: false,
             })
             .then(function (answer) {
-                if (answer) {
-                    if ($scope.outlet.IsTracked)
-                        $scope.outlet.Tracking = 1;
-
-                    if ($scope.outlet.IsOpened)
-                        $scope.outlet.CloseDate = '';
-
+                if (answer) {                   
+                    if ($scope.outlet.IsTracked) $scope.outlet.Tracking = 1;
+                    if ($scope.outlet.IsOpened) $scope.outlet.CloseDate = '';
                     $scope.outlet.AmendBy = $scope.user.id;
-                    
+
                     if ($scope.outletCategory != 1) { // new outlet
-                        var markerImage = getMarkerImageName($scope.outlet);
-                        if (!isEmpty(markerImage)) {
-                            var iconUrl = 'assets/img/' + markerImage;
-                            log('change marker ' + i.toString() + ' icon: ' + iconUrl);
-                            markers[i].setIcon(iconUrl);
-                        }
+                        var iconUrl = getMarkerIcon($scope.outlet);                        
+                        log('change marker ' + i.toString() + ' icon: ' + iconUrl);
+                        markers[i].setIcon(iconUrl);
                     }
 
                     log('save outlet')
                     showDlg('Saving Outlet', 'Please wait...');
                     saveOutlet($scope.outlet, function (synced) {
-                        outlet.AmendBy = $scope.outlet.AmendBy;
-                        outlet.CloseDate = $scope.outlet.CloseDate;
-                        outlet.Tracking = $scope.outlet.Tracking;
-                        outlet.PState = $scope.outlet.PState;
-                        outlet.IsOpened = $scope.outlet.IsOpened;
-                        outlet.IsTracked = $scope.outlet.IsTracked;
-                        outlet.PRowID = $scope.outlet.PRowID;
-                        outlet.StringImage1 = $scope.outlet.StringImage1;
-                        outlet.StringImage2 = $scope.outlet.StringImage2;
-                        outlet.StringImage3 = $scope.outlet.StringImage3;
+                        $scope.outlets[i].AmendBy = $scope.outlet.AmendBy;
+                        $scope.outlets[i].AmendDate = new Date().today() + " " + new Date().timeNow();
+                        $scope.outlets[i].CloseDate = $scope.outlet.CloseDate;
+                        $scope.outlets[i].Tracking = $scope.outlet.Tracking;
+                        $scope.outlets[i].PState = $scope.outlet.PState;
+                        $scope.outlets[i].IsOpened = $scope.outlet.IsOpened;
+                        $scope.outlets[i].IsTracked = $scope.outlet.IsTracked;
+                        $scope.outlets[i].PRowID = $scope.outlet.PRowID;
+                        $scope.outlets[i].StringImage1 = $scope.outlet.StringImage1;
+                        $scope.outlets[i].StringImage2 = $scope.outlet.StringImage2;
+                        $scope.outlets[i].StringImage3 = $scope.outlet.StringImage3;
 
-                        saveOutletDB($scope.config.tbl_outlet, outlet, 2, synced, function () {
-                            hideDlg();
-                        }, function (dberr) {
-                            hideDlg();
-                            showError(dberr.message);
-                        });
+                        saveOutletDB($scope.config.tbl_outlet, $scope.outlets[i], 2, synced,
+                            function () {
+                                hideDlg();
+                            }, function (dberr) {
+                                hideDlg();
+                                showError(dberr.message);
+                            });
                     });
                 }
             }, function () {
@@ -745,37 +681,89 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
             //map.panTo(center);
         }
 
-        function getMarkerImageName(outlet) {
-            switch (outlet.OutletSource) {
-                case 0: //SR
-                    if (outlet.AuditStatus == 2) {
-                        return 'pin-sr-error.png';
-                    } 
-                    if (!isEmpty(outlet.CloseDate)) {
-                        return 'pin-sr-close.png';
-                    } 
-                    if (outlet.Tracking) {
-                        return 'pin-sr-track.png';
-                    }
-                    return 'pin-sr-nontrack.png';
-                    break;
-                case 1: // DIS
-                    if (outlet.AuditStatus == 2) {
-                        return 'pin-dis-error.png';
-                    } 
-                    if (!isEmpty(outlet.CloseDate)) {
-                        return 'pin-dis-close.png';
-                    } 
-                    return 'pin-dis-open.png';
-                    break;
+        function getMarkerIcon(outlet) {
+            if (outlet != null) {
+                switch (outlet.OutletSource) {
+                    case 0: //SR
+                        if (outlet.AuditStatus == 2) {
+                            return 'assets/img/pin-sr-error.png';
+                        }
+                        if (!isEmpty(outlet.CloseDate)) {
+                            return 'assets/img/pin-sr-close.png';
+                        }
+                        if (outlet.Tracking) {
+                            return 'assets/img/pin-sr-track.png';
+                        }
+                        return 'assets/img/pin-sr-nontrack.png';
+                        break;
+                    case 1: // DIS
+                        if (outlet.AuditStatus == 2) {
+                            return 'assets/img/pin-dis-error.png';
+                        }
+                        if (!isEmpty(outlet.CloseDate)) {
+                            return 'assets/img/pin-dis-close.png';
+                        }
+                        return 'assets/img/pin-dis-open.png';
+                        break;
+                }
             }
-            return '';                          
+            return 'assets/img/pin-cur';
+        }
+
+        function initializeMap(callback) {
+            try {               
+                if (isOnline() && !isMapLoaded) {
+                    isMapLoaded = true;
+                    log('Create map...');
+                    map = new google.maps.Map(document.getElementById('map'), {
+                        zoom: $scope.config.map_zoom,
+                        center: { lat: curlat, lng: curlng },
+                        mapTypeId: google.maps.MapTypeId.ROADMAP,
+                        mapTypeControl: false,
+                        mapTypeControlOptions: {
+                            style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+                            position: google.maps.ControlPosition.TOP_CENTER
+                        },
+                        streetViewControlOptions: {
+                            position: google.maps.ControlPosition.RIGHT_BOTTOM
+                        },
+                        zoomControl: true,
+                        zoomControlOptions: {
+                            position: google.maps.ControlPosition.RIGHT_BOTTOM
+                        },
+                        scaleControl: true,
+                        streetViewControl: true,
+                        fullscreenControl: false,
+                    });
+
+                    google.maps.event.addListener(map, 'click', function (event) {
+                        log('map clicked');                        
+                        $scope.hideDropdown();
+                    });
+
+                    var idleListener = google.maps.event.addListener(map, 'idle', function (event) {
+                        log('map idled');
+                        google.maps.event.removeListener(idleListener);
+                        callback();                        
+                    });
+                } else {
+                    callback();
+                }
+            } catch (err) {
+                log('Cannot initialize map');
+            }            
         }
 
         try {
+            //Load map async...
+            //jQuery(function ($) {            
+            //    var script = document.createElement('script');
+            //    script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyDpKidHSrPMfErXLJSts9R6pam7iUOr_W0&callback=initializeMap";
+            //    document.body.appendChild(script);
+            //});
+
             log('Refresh view to get near-by...');
-            //initializeMap();
-            $scope.refresh();
+            initializeMap(function () { $scope.refresh() });
         } catch (err) {
             log(err);
         }

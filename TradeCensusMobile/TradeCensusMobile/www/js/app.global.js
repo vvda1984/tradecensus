@@ -1,4 +1,27 @@
-﻿/** 
+﻿var db;                             // database instance
+var map = null;                     // google map
+//var isOnline = true;              // network status
+var isDev = false;                  // enable DEV mode
+var userOutletTable = 'outlet';     // outlet table name for current user
+var isDlgOpened = false;     // 
+var isInitialize = false;
+var provinces = [];
+var outletTypes = [];
+var baseURL = '';
+var user = null;
+const earthR = 6378137;
+
+// For todays date;
+Date.prototype.today = function () {
+    return this.getFullYear() + '-' + (((this.getMonth() + 1) < 10) ? "0" : "") + (this.getMonth() + 1) + '-' + ((this.getDate() < 10) ? "0" : "") + this.getDate();
+}
+
+// For the time now
+Date.prototype.timeNow = function () {
+    return ((this.getHours() < 10) ? "0" : "") + this.getHours() + ":" + ((this.getMinutes() < 10) ? "0" : "") + this.getMinutes() + ":" + ((this.getSeconds() < 10) ? "0" : "") + this.getSeconds();
+}
+
+/** 
 * checkConnection
 */
 function isOnline() {   
@@ -46,7 +69,7 @@ function buildURL(protocol, ip, port, serviceName) {
 /** 
 * showLoading
 */
-function showDlg(title, message, allowClose) {
+function showDlg1(title, message, allowClose) {
     log("Show dlg msg: " + message);   
     var cover = null;
     if (allowClose) {
@@ -94,89 +117,67 @@ function showDlg(title, message, allowClose) {
 */
 function showDlg(title, message, allowClose) {
     log("show dlg");
-    //var cover = allowClose
-    //    ? '<div id="loading-overlay">' +
-    //        '<div id="loading-window">' +
-    //            '<div id="loading-content">' +
-    //                '<div id="loading-content-header">' +
-    //                    '<h2 id="loading-content-title">' + title + '</h2>' +
-    //                '</div>' +
-    //                '<span id="loading-content-message">' + message + '</span>' +
-    //                '<div id="loading-content-footer">' +
-    //                    '<a onclick="hideDlg()">CLOSE</a>' +
-    //                '</div>' +
-    //            '</div>' +
-    //        '</div>' +
-    //     '</div>'
-    //    : '<div id="loading-overlay">' +
-    //        '<div id="loading-window">' +
-    //            '<div id="loading-content">' +
-    //                '<div id="loading-content-header">' +
-    //                    '<h2 id="loading-content-title">' + title + '</h2>' +
-    //                '</div>' +
-    //                '<span id="loading-content-message">' + message + '</span>' +
-    //                '<div id="loading-content-footer">' +                       
-    //                '</div>' +
-    //            '</div>' +
-    //        '</div>' +
-    //     '</div>';
-    ////log(cover);
-    
-    var cover = null;
-    if (allowClose) {
-        cover =
-            '<div id="loading-overlay">' +
-                '<div id="loading-window">' +
-                    '<div class="dialog">' +
-                        '<div class="content">' +
-                            '<div class="title">' + title + '</div><br>' +
-                            '<div>' + message + '</div>' +
-                        '</div>' +
-                        '<div class="button label-blue" onclick="hideDlg()">' +
-                           '<div class="center" fit>CLOSE</div>' +
-                            '<paper-ripple fit></paper-ripple>' +
-                        '</div>' +
-                        //'<div class="button">'+
-                        //    '<div class="center" fit>DECLINE</div>'+
-                        //    '<paper-ripple fit></paper-ripple>'+
-                        //'</div>'+                        
-                    '</div>' +
-                 '</div>' +
-            '</div>';
-    } else {
-        cover =
-            '<div id="loading-overlay">' +
-                '<div id="loading-window">' +
-                    '<div class="dialog">' +
-                        '<div class="loading">' +
-                            '<img src="assets/img/loader.gif" width="28" height="28" />' +
-                        '</div>' +
-                        '<div class="content">' +
-                            '<div class="title">' + title + '</div><br>' +
-                            '<div>' + message + '</div>' +
-                        '</div>' +
-                    '</div>' +
-                '</div>' +
-            '</div>';
-    }
 
-    $(cover).appendTo('body');
+    if (isDlgOpened) {
+        $('#dlg-title').html(title);
+        $('#dlg-message').html(message);
+    } else {
+        var cover = null;
+        if (allowClose) {
+            cover =
+                '<div id="loading-overlay">' +
+                    '<div id="loading-window">' +
+                        '<div class="dialog">' +
+                            '<div class="content">' +
+                                '<div id="dlg-title" class="title">' + title + '</div><br>' +
+                                '<div id="dlg-message">' + message + '</div>' +
+                            '</div>' +
+                            '<div class="button label-blue" onclick="hideDlg()">' +
+                               '<div class="center" fit>CLOSE</div>' +
+                                '<paper-ripple fit></paper-ripple>' +
+                            '</div>' +
+                            //'<div class="button">'+
+                            //    '<div class="center" fit>DECLINE</div>'+
+                            //    '<paper-ripple fit></paper-ripple>'+
+                            //'</div>'+                        
+                        '</div>' +
+                     '</div>' +
+                '</div>';
+        } else {
+            cover =
+                '<div id="loading-overlay">' +
+                    '<div id="loading-window">' +
+                        '<div class="dialog">' +
+                            '<div class="loading">' +
+                                '<img src="assets/img/loader.gif" width="28" height="28" />' +
+                            '</div>' +
+                            '<div class="content">' +
+                                '<div id="dlg-title" class="title">' + title + '</div><br>' +
+                                '<div id="dlg-message">' + message + '</div>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
+        }
+        isDlgOpened = true;
+        $(cover).appendTo('body');
+    }
 }
 
 /**
 * Set loading message
 */
 function setDlgMsg(message) {
-    $('#loading-content-message').html(message);
+    $('#dlg-message').html(message);
 }
 
 /** 
 * hideLoading
 */
-function hideDlg() {
-    log("hide dlg");
+function hideDlg() {    
     try {
         $('#loading-overlay').remove();
+        isDlgOpened = false;
     }
     catch (err) {        
     }
@@ -294,4 +295,20 @@ function validateEmpty(name, value){
         return false;
     }
     return true;
+}
+
+function compareDate(date1, date2, dateformat) {    
+    if (date1 != null && date2 == null) return -1;
+    if (date1 == null && date2 != null) return 1;
+    if (date1 == date2) return 0;
+
+    var d1 = getDateFromFormat(date1, dateformat);
+    var d2 = getDateFromFormat(date2, dateformat);
+    if (d1 == 0 || d2 == 0) {
+        return 0; // invalid set they equal...
+    }
+    else if (d1 > d2) {
+        return 1;
+    }
+    return -1;
 }
