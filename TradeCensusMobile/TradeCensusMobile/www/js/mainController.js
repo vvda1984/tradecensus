@@ -26,8 +26,8 @@ var app = angular
         $scope.resource = loadResources();
 
         $scope.user = {
-            id: 123456, // dev
-            password: '1',
+            id: 000000, // dev
+            password: '',
             firstName: '',
             lastName: '',
             isTerminate: false,

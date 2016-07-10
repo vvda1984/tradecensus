@@ -350,9 +350,9 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
             log('found location: lat=' + curlat.toString() + ',lng=' + curlng.toString());
 
             // ANVO: DEBUG
-            log('***set debug location...');
-            curlat = 10.773598;
-            curlng = 106.7058;
+            //log('***set debug location...');
+            //curlat = 10.773598;
+            //curlng = 106.7058;
             //initializeMap();
 
             nearByOutlets = [];
@@ -762,7 +762,7 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
             options.params = {
                 outletid: item.OutletID.toString(),
                 index: (i + 1).toString(),
-                userid: $scope.user.toString(),
+                userid: $scope.user.id.toString(),
             };
                   
             //var url = baseURL + '/outlet/uploadimage/' + options.fileKey + '/' + item.OutletID.toString() + '/' + (i + 1).toString();

@@ -3,7 +3,7 @@
 */
 function initalizeDB(onSuccess) {
     //db = window.sqlitePlugin.openDatabase({ name: "td-v01.db", location: 'default' });
-    db = window.openDatabase("Database", "2.0", "td-v01.db", 200000);
+    db = window.openDatabase("Database", "2.0", "td-v02.db", 200000);
     db.transaction(function (tx) {
         //if (resetDB) {
         //    tx.executeSql('DROP TABLE IF EXISTS person');
@@ -347,7 +347,7 @@ function insertOutlets(userID, outletTbl, outlets, onSuccess, onError) {
                 if (rowLen) {
                     var existOutlet = null;
                     for (var j = 0 ; j < rowLen; j++) {
-                        if (outlet.PRowID == dbres.rows[j].PRowID) {
+                        if (dbres.rows[j] != null && outlet.PRowID == dbres.rows[j].PRowID) {
                             existOutlet = dbres.rows[j];
                             break;
                         }
