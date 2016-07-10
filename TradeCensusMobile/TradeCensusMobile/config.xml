@@ -118,4 +118,5 @@
   <plugin name="cordova-plugin-dialogs" version="1.2.1" />
   <plugin name="com.filfatstudios.spinnerdialog" version="1.0.2" />
   <plugin name="cordova-plugin-network-information" version="1.2.1" />
+  <plugin name="cordova-plugin-file-transfer" version="1.5.1" />
 </widget>

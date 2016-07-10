@@ -1,12 +1,15 @@
 ﻿using System;
 using System.IO;
+using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
+using System.Web;
 using Newtonsoft.Json.Linq;
 using TradeCensus.Shared;
 
 namespace TradeCensus
 {
     //http://localhost:33333/TradeCensusService.svc/outlet/saveoutlets
+    [AspNetCompatibilityRequirements(RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed)]
     public partial class TradeCensusService : ITradeCensusService
     {             
         //[WebGet(UriTemplate = "login/{id}/{pass}", ResponseFormat = WebMessageFormat.Json)]
@@ -180,15 +183,22 @@ namespace TradeCensus
             return resp;
         }
 
-        [WebInvoke(Method = "POST", UriTemplate = "outlet/uploadimage/{outletID}/{index}", ResponseFormat = WebMessageFormat.Json)]
-        public SaveImageResponse SaveImage(Stream stream, string outletID, string index)
+        //public SaveImageResponse SaveImage(string fileKey, string outletID, string index, Stream stream)
+        [WebInvoke(Method = "POST", UriTemplate = "outlet/uploadimage", ResponseFormat = WebMessageFormat.Json, BodyStyle = WebMessageBodyStyle.Wrapped)]
+        public SaveImageResponse SaveImage()
         {
             using (var repo = new OutletRepo())
             {
                 var resp = new SaveImageResponse();
                 try
-                {
-                    resp.ImageThumb = repo.SaveImage(outletID, index, stream);
+                {                   
+                    HttpPostedFile file = HttpContext.Current.Request.Files["orderfile"];
+                    if (file == null)
+                        throw new Exception("File not found!");
+                    string outletid = HttpContext.Current.Request.Params["outletid"];
+                    string index = HttpContext.Current.Request.Params["index"];
+                    string userid = HttpContext.Current.Request.Params["userid"];
+                    resp.ImageThumb = repo.SaveImage(userid, outletid, index, file);
                 }
                 catch (Exception ex)
                 {

@@ -292,12 +292,12 @@ namespace TradeCensus
 
         public string SaveImage(string outletID, string index, Stream stream)
         {
-            byte[] buffer = new byte[10000000];
-            stream.Read(buffer, 0, 10000000);
+            byte[] buffer = new byte[1000000];
+            stream.Read(buffer, 0, 1000000);
             string path = AppDomain.CurrentDomain.BaseDirectory; //GetType().Assembly.Location; // ...\bin\...
             path = Path.GetDirectoryName(path) + "\\Images";
             EnsureDirExist(path);
-            string imagePath = Path.Combine(path, string.Format("{0}_{1}.png", outletID, index));
+            string imagePath = Path.Combine(path, string.Format("{0}_{1}.jpg", outletID, index));
 
             //using (MemoryStream f = new MemoryStream()) {            
             using (FileStream f = new FileStream(imagePath, FileMode.OpenOrCreate))
@@ -329,7 +329,7 @@ namespace TradeCensus
                 //    {
                 //        using (MemoryStream ms = new MemoryStream())
                 //        {
-                //            thumb.Save(ms, ImageFormat.Png);
+                //            thumb.Save(ms, ImageFormat.jpg);
 
                 //            byte[] bf = new byte[ms.Length];
                 //            ms.Write(bf, 0, (int)ms.Length);
@@ -352,6 +352,51 @@ namespace TradeCensus
                     outletImage.ImageData3 = File.ReadAllBytes(imagePath);
                     outletImage.Image3 = string.Format("/images/{0}_{1}.png", outletID, index);
                 }
+                _entities.SaveChanges();
+            }
+            return string.Format("/images/{0}_{1}.png", outletID, index);
+        }
+
+        public string SaveImage(string userID, string outletID, string index,  HttpPostedFile file)
+        {           
+            string path = AppDomain.CurrentDomain.BaseDirectory; //GetType().Assembly.Location; // ...\bin\...
+            path = Path.GetDirectoryName(path) + "\\Images";
+            EnsureDirExist(path);
+            string imagePath = Path.Combine(path, string.Format("{0}_{1}.jpg", outletID, index));
+
+            file.SaveAs(imagePath);
+          
+            var id = int.Parse(outletID);
+            var amendby = int.Parse(userID);
+            Outlet outlet = _entities.Outlets.FirstOrDefault(i => i.ID == id);
+            if (outlet != null)
+            {
+                OutletImage outletImage = null;
+                if (outlet.OutletImages.Count() > 0)
+                    outletImage = outlet.OutletImages.FirstOrDefault();
+                else
+                {
+                    outletImage = new OutletImage() { OutletID = outlet.ID, };
+                    outlet.OutletImages.Add(outletImage);
+                }
+                           
+                if (index == "0")
+                {
+                    outletImage.ImageData1 = File.ReadAllBytes(imagePath);
+                    outletImage.Image1 = string.Format("/images/{0}_{1}.png", outletID, index);
+                }
+                else if (index == "1")
+                {
+                    outletImage.ImageData2 = File.ReadAllBytes(imagePath);
+                    outletImage.Image2 = string.Format("/images/{0}_{1}.png", outletID, index);
+                }
+                else if (index == "2")
+                {
+                    outletImage.ImageData3 = File.ReadAllBytes(imagePath);
+                    outletImage.Image3 = string.Format("/images/{0}_{1}.png", outletID, index);
+                }
+                outlet.AmendBy = amendby;
+                outlet.AmendDate = DateTime.Now;
                 _entities.SaveChanges();
             }
             return string.Format("/images/{0}_{1}.png", outletID, index);

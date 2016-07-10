@@ -96,3 +96,13 @@ CREATE TABLE IF NOT EXISTS [outlet] (
 	[PLastModTS] int,
 	[PMarked] bit
 )
+
+CREATE TABLE IF NOT EXISTS [outletimage] (
+   [ID] text PRIMARY KEY NOT NULL, 
+   [OutletID] int NOT NULL, 
+   [ImageIndex] int NOT NULL, 
+   [ImagePath] text NOT NULL, 
+   [Uploaded] int NOT NULL, 
+   [CreatedDate] text NOT NULL, 
+   [CreatedBy] int NOT NULL   
+)

@@ -26,7 +26,8 @@ namespace TradeCensus
         SaveOutletResponse SaveOutletText(string text);
 
         [OperationContract]
-        SaveImageResponse SaveImage(Stream stream, string outletID, string index);
+        //SaveImageResponse SaveImage(string fileKey, string outletID, string index, Stream stream);
+        SaveImageResponse SaveImage();
 
         [OperationContract]
         GetImageResponse GetImage(string outletID, string index);

@@ -1,13 +1,59 @@
 ﻿function newOutletController($scope, $mdDialog) {
+    $scope.allowCapture = true;
+    $scope.showImage1 = false;
+    $scope.showImage2 = false;
+    $scope.showImage3 = false;
+    $scope.outlet.modifiedImage1 = false;
+    $scope.outlet.modifiedImage2 = false;
+    $scope.outlet.modifiedImage3 = false;
+    
     $scope.capture = function (i) {
-        captureImage(function (imageURI) {
-            var image = document.getElementById('outletImg' + i.toString());
-            image.src = imageURI;
-            //var image = document.getElementById('outletImg' + i);
-            //image.src = "data:image/jpeg;base64," + imageData;
-        }, function (err) {
-            showError(err);
-        });
+        if (i == 1) {
+            if (!isEmpty($scope.outlet.StringImage1)) {
+                openImgViewer($scope.outlet.Name, $scope.image1URL);
+            }
+        } else if (i == 2) {
+            if (!isEmpty($scope.outlet.StringImage2)) {
+                openImgViewer($scope.outlet.Name, $scope.image2URL);
+            }
+        } else if (i == 3) {
+            if (!isEmpty($scope.outlet.StringImage3)) {
+                openImgViewer($scope.outlet.Name, $scope.image3URL);
+            }
+        } else {
+            captureImage(function (imageURI) {
+                if (isEmpty($scope.outlet.StringImage1)) {
+                    $scope.outlet.StringImage1 = imageURI;
+                    $scope.outlet.modifiedImage1 = true;
+                    $scope.image1URL = getImageURL($scope.outlet.StringImage1);
+                    var image = document.getElementById('outletImg1');
+                    image.src = imageURI;
+                } else if (isEmpty($scope.outlet.StringImage2)) {
+                    $scope.outlet.StringImage2 = imageURI;
+                    $scope.outlet.modifiedImage2 = true;
+                    $scope.image2URL = getImageURL($scope.outlet.StringImage2);
+                    var image = document.getElementById('outletImg2');
+                    image.src = imageURI;
+                } else if (isEmpty($scope.outlet.StringImage3)) {
+                    $scope.outlet.StringImage3 = imageURI;
+                    $scope.outlet.modifiedImage3 = true;
+                    $scope.image3URL = getImageURL($scope.outlet.StringImage3);
+                    var image = document.getElementById('outletImg3');
+                    image.src = imageURI;
+                }
+                $scope.allowCapture =
+                          isEmpty($scope.outlet.StringImage1) ||
+                          isEmpty($scope.outlet.StringImage2) ||
+                          isEmpty($scope.outlet.StringImage3);
+
+                //var image = document.getElementById('outletImg' + i.toString());
+                //image.src = imageURI;
+                //var image = document.getElementById('outletImg' + i);
+                //image.src = "data:image/jpeg;base64," + imageData;            
+            }, function (err) {
+                showError(err);
+            });
+        }
     }
 
     $scope.saveUpdate = function () {

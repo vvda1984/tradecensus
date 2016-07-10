@@ -9,7 +9,7 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
         log($scope.config.province_id);
 
         var curIndex = 0;
-        var curInfoWindow = null;
+        //var curInfoWindow = null;
         var markers = [];        
         var markerClusterer;
 
@@ -20,7 +20,7 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
 
         $scope.editOutletFull = false;
         $scope.allowRefresh = true;
-        $scope.hasAuditRole = $scope.user.hasAuditRole;
+        //$scope.hasAuditRole = $scope.user.hasAuditRole;
         $scope.outletHeader = 'Near-by Outlets';
         $scope.outletCategory = 0; // 0: near-by; 1: new: 2: updated 4: audit
         //$scope.nearByOutlets = [];
@@ -28,7 +28,7 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
         //$scope.updatedOutlets = [];
         //$scope.auditOutlets = [];
         var nearByOutlets = [];
-        $scope.outlets = [];
+        $scope.outlets = [];        
 
         var homeMarker = null;
 
@@ -62,23 +62,25 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
 
         $scope.showLeftPanel = function () {
             log("Left panel state: " + leftPanelStatus.toString());
+            $scope.hideDropdown();
+
             if (leftPanelStatus >= 2) {
                 return;
             }
             leftPanelStatus++;
             if (leftPanelStatus == 0) {
-                $scope.editOutletFull = false;
+                $scope.viewOutletFull = false;
                 $("#outletPanel").css('width', '0%');
 
                 //document.getElementById('outletPanel').style.width = '0%';
                 //$('#expander-2').html('>');
             } else if (leftPanelStatus == 1) {
-                $scope.editOutletFull = false;
+                $scope.viewOutletFull = false;
                 $("#outletPanel").css('width', '40%');
                 //document.getElementById('outletPanel').style.width = '40%';
                 //$('#expander-2').html('>');
             } else {
-                $scope.editOutletFull = true;
+                $scope.viewOutletFull = true;
                 log('view full outlet');
                 //document.getElementById('outletPanel').style.width = '100%';
                 $("#outletPanel").css('width', '100%');
@@ -150,6 +152,7 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
         }
 
         $scope.createNewOutlet = function () {
+            log('create new outlet');
             showDlg('Get current location', "Please wait...");
 
             try {
@@ -166,7 +169,7 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
                         AmendBy: 11693,
                         AmendDate: "",
                         AreaID: $scope.user.areaID,
-                        AuditStatus: 0,
+                        AuditStatus: -1,
                         CloseDate: "",
                         CreateDate: "",
                         Distance: 0,
@@ -196,7 +199,7 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
                         StringImage3: "",
                         TotalVolume: 0,
                         Tracking: 0,
-                        VBLVolume: 0
+                        VBLVolume: 0,
                     };
                     hideDlg();
                     $mdDialog.show({
@@ -222,11 +225,81 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
                         }
                     }, function () {
                     });
-                }, onGetLocationError);
+                }, function () {
+                    showError('Cannot get current location!');
+                });
             } catch (err) {
                 log(err);
             }
-        }        
+        }
+
+        $scope.syncOutlets = function () {
+            if (!isOnline()) {
+                showError('Please check network connection!');
+                return;
+            }
+            showDlg('Synchronize Outlets', 'Please wait...');
+            selectUnsyncedOutlets($scope.config.tbl_outlet,
+                function (dbres) {
+                    log('Number of unsynced outlets: ' + dbres.rows.length.toString());
+                    if (dbres.rows.length == 0) {
+                        showDlg('Info', 'All outlets have been synced!');
+                        return;
+                    }
+                    var i;
+                    unsyncedOutlets = [];
+                    for (i = 0; i < dbres.rows.length; i++) {
+                        unsyncedOutlets[i] = dbres.rows[0];
+                    }
+                    trySyncOutlets(unsyncedOutlets, 0, function () {
+                        showInfo('Synchronize completed!');
+                        $scope.showSyncButton = false;
+                    });
+                }, handleDBError);
+        }
+
+        function trySyncOutlets(unsyncedOutlets, i, onSuccess) {
+            var item = unsyncedOutlets[i];
+            log('try sync outlet: ' + item.ID.toString());
+            setDlgMsg('Sync outlet ' + item.Name + ' (' + (i + 1).toString() + '/' + unsyncedOutlets.length.toString() + ')');
+            submitOutlet(item, function (status) {
+                if (status) {
+                    log('Sync outlet data: ' + item.ID.toString() + ' completed');
+                    selectUnsyncedOutletImage($scope.user.id, item.ID, function (tx, dbres) {
+                        if (dbres.rows.length > 0) {                            
+                            uploadItems = [];
+                            for (i = 0; i < dbres.rows.length; i++) {
+                                uploadItems[i] = dbres.rows[0];
+                            }
+                            tryUploadImages(uploadItems, 0,
+                                 function () {
+                                     setOutletSyncStatus(tx, $scope.config.tbl_outlet, item.ID, 1, function (tx1) {
+                                         if ((i + 1) < unsyncedOutlets.length) {
+                                             trySyncOutlets(unsyncedOutlets, i + 1);
+                                         } else {
+                                             onSuccess();
+                                         }
+                                     }, handleDBError);
+                                 },
+                                 function () {
+                                     showError('Sync error, please try again!');
+                                 });
+                        } else {
+                            setOutletSyncStatus(tx, $scope.config.tbl_outlet, item.ID, 1, function (tx1) {
+                                if ((i + 1) < unsyncedOutlets.length) {
+                                    trySyncOutlets(unsyncedOutlets, i + 1);
+                                } else {
+                                    onSuccess();
+                                }
+                            }, handleDBError);
+                        }
+                    }, handleDBError);
+                } else {
+                    showError('Sync error, please try again!');
+                }
+            });
+                      
+        }
 
         function getOutlets() {            
             switch ($scope.outletCategory) {
@@ -443,7 +516,8 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
                                 outlet.OutletTypeName = outletTypeName;
                                 outlet.Distance = 0;
                                 outlet.IsOpened = isEmpty(outlet.CloseDate);
-                                outlet.IsTracked = outlet.Tracking == 1;                                
+                                outlet.IsTracked = outlet.Tracking == 1;
+                                outlet.IsAuditApproved = outlet.AuditStatus == 1;
                                 foundOutlets[i] = outlet;
                             }
                             loadOutlets(foundOutlets);
@@ -489,24 +563,8 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
             for (var i = 0; i < outlets.length; i++) {
                 var outlet = outlets[i];
                 var position = new google.maps.LatLng(outlet.Latitude, outlet.Longitude);
-                bounds.extend(position);
-
-                var iconUrl = $scope.outletCategory == 1 ? 'assets/img/pin-new.png' : getMarkerIcon(outlet);
-                var marker = new google.maps.Marker({
-                    position: position,
-                    title: outlet.Name,
-                    icon: iconUrl,
-                    map: map,
-                });
-                markers[i] = marker;
-
-                var infoWindow = new google.maps.InfoWindow({
-                    content: '<div class=\'view-marker\'>' + outlet.Name + '</div>',
-                });
-                infoWindow.open(map, marker);
-                //marker.addListener('click', function () {
-                //    editOutlet(markers.indexOf(marker));
-                //});
+                bounds.extend(position);               
+                createMaker(outlet, position, i);
             };
             map.fitBounds(bounds);
             var options = { imagePath: 'assets/img/m' };
@@ -555,19 +613,29 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
             for (var i = 0; i < markers.length; i++) {
                 markers[i].setMap(null);
             }
-            markers = [];            
-            curInfoWindow = null;
+            markers = [];
+           // curInfoWindow = null;
         }
 
-        function createMaker(title, latlng, iconName) {
-            var iconUrl = 'assets/img/' + iconName;
+        function createMaker(outlet, position, i) {
+            var iconUrl = $scope.outletCategory == 1 ? 'assets/img/pin-new.png' : getMarkerIcon(outlet);
             var marker = new google.maps.Marker({
-                position: latlng,
-                //map: map,
-                title: title,
+                position: position,
+                title: outlet.Name,
                 icon: iconUrl,
+                map: map,
+            });         
+            markers[i] = marker;
+
+            var infoWindow = new google.maps.InfoWindow({
+                content: '<div class=\'view-marker\'>' + outlet.Name + '</div>',
+                closeBoxURL: '',                
             });
-            marker.setMap(map);
+            infoWindow.open(map, marker);
+            marker.addListener('click', function () {
+                editOutlet(markers.indexOf(marker));
+            });
+
             return marker;
         }
 
@@ -600,7 +668,7 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
                     showDlg('Saving Outlet', 'Please wait...');
                     saveOutlet($scope.outlet, function (synced) {
                         $scope.outlets[i].AmendBy = $scope.outlet.AmendBy;
-                        $scope.outlets[i].AmendDate = new Date().today() + " " + new Date().timeNow();
+                        //$scope.outlets[i].AmendDate = new Date().today() + " " + new Date().timeNow();
                         $scope.outlets[i].CloseDate = $scope.outlet.CloseDate;
                         $scope.outlets[i].Tracking = $scope.outlet.Tracking;
                         $scope.outlets[i].PState = $scope.outlet.PState;
@@ -625,14 +693,40 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
         }
 
         function saveOutlet(outlet, onSuccess) {
+            if (outlet.modifiedImage1 || outlet.modifiedImage2 || outlet.modifiedImage3) {
+                log('Save image to database before start uploading');
+                insertOutletImages($scope.user.id, outlet, function (uploadItems) {
+                    submitOutlet(outlet, function (status) {
+                        if (!status) { // save failed
+                            onSuccess(status);
+                        } else {
+                            tryUploadImages(uploadItems, 0,
+                                function () {
+                                    onSuccess(true);
+                                },
+                                function () { 
+                                    onSuccess(false);
+                                });
+                        }
+                    });
+                }, function (err) {
+                    log(err);
+                    showError(err);
+                });
+            }
+            else
+                submitOutlet(outlet, onSuccess);
+        }
+
+        function submitOutlet(outlet, callback) {
             if (isOnline()) {
                 var url = baseURL + '/outlet/save';
                 log('Call service api: ' + url);
                 //var data = JSON.stringify(outlet);
-                log(outlet);              
+                log(outlet);
                 $http({
-                    method: $scope.config.http_method,                   
-                    data:outlet,
+                    method: $scope.config.http_method,
+                    data: outlet,
                     url: url,
                     headers: { 'Content-Type': 'application/json' }
                 }).then(function (resp) {
@@ -643,7 +737,7 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
                     } else {
                         log('submit outlet successfully: ' + data.RowID);
                         outlet.PRowID = data.RowID;
-                        onSuccess(true);
+                        callback(true);
                     }
                 }, function (err) {
                     log('ERROR');
@@ -651,36 +745,67 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
                 });
                 //handleHttpError
             } else {
-                onSuccess(false);
+                callback(false);
             }
         }
-
-        //function saveOutlet(outlet, onSuccess) {
-        //    if (isOnline()) {
-        //        var url = baseURL + '/outlet/save';
-        //        log('Call service api: ' + url);
-        //        var settings = {
-        //            "async": true,
-        //            "crossDomain": true,
-        //            "url": url,
-        //            "method": "POST",
-        //            "headers": {
-        //                "content-type": "application/json",
-        //                "cache-control": "no-cache",                       
-        //            },
-        //            "processData": false,
-        //            "data": "{\"Action\":0,\"AddLine\":\"1\",\"AddLine2\":\"Đồng Khởi\",\"AmendBy\":123456,\"AmendDate\":\"2016-11-21 00:00:00\",\"AreaID\":\"HRC\",\"AuditStatus\":0,\"CloseDate\":\"\",\"CreateDate\":\"2016-06-01 00:00:00\",\"Distance\":20.56,\"District\":\"Q.1\",\"FullAddress\":\"1 Đồng Khởi Q.1 Hồ Chí Minh\",\"ID\":65000077,\"InputBy\":11693,\"IsOpened\":true,\"IsTracked\":true,\"LastContact\":\"Mr minh\",\"LastVisit\":\"\",\"Latitude\":10.773778,\"Longitude\":106.705758,\"Name\":\"MAJESTIC HOTEL\",\"Note\":\"\",\"OTypeID\":\"HO\",\"OutletEmail\":null,\"OutletSource\":0,\"OutletTypeName\":\"Hotel\",\"PRowID\":\"84d7f047-57f5-4b2d-9ca9-0b02e6a1ffde\",\"PersonID\":12595,\"Phone\":\"838295517 \",\"ProvinceID\":\"50\",\"ProvinceName\":\"Hồ Chí Minh\",\"StringImage1\":\"\",\"StringImage2\":\"\",\"StringImage3\":\"\",\"TotalVolume\":0,\"Tracking\":1,\"VBLVolume\":0,\"PLastModTS\":0,\"$$hashKey\":\"object:25\"}"
-        //        }
-
-        //        $.ajax(settings).done(function (response) {
-        //            console.log('RESPONSE');
-        //            console.log(response);
-        //        });
-
-        //    } else {
-        //        onSuccess(false);
-        //    }            
-        //}
+       
+        function tryUploadImages(uploadItems, i, onSuccess, onError) {
+            showDlg('Uploading image (' + (i + 1).toString() + '/' + uploadItems.length.toString() + ')', 'Please wait...');
+            var item = uploadItems[i];
+                 
+            var fileURL = item.ImagePath;
+            // TODO: check file existing...
+            var options = new FileUploadOptions();
+            options.fileKey = 'orderfile';
+            options.fileName = 'orderfile'; //fileURL.substr(fileURL.lastIndexOf('/') + 1);
+            options.mimeType = "image/jpeg";
+            options.params = {
+                outletid: item.OutletID.toString(),
+                index: (i + 1).toString(),
+                userid: $scope.user.toString(),
+            };
+                  
+            //var url = baseURL + '/outlet/uploadimage/' + options.fileKey + '/' + item.OutletID.toString() + '/' + (i + 1).toString();
+            var url = baseURL + '/outlet/uploadimage';
+            var ft = new FileTransfer();
+            ft.upload(fileURL, url, 
+            function (res) {
+                log(res);
+                log('upload file success');
+                removeUploadingInfo(item.ID, function () {
+                    if (i + 1 < uploadItems.length) {
+                        tryUploadImages(uploadItems, i + 1, onSuccess, onError);
+                    } else {
+                        onSuccess();
+                    }
+                }, function (dberr) {
+                    log(dberr.message);
+                    showError('An error has occurred: Code = " + error.code');
+                    onError();
+                });
+                //{"SaveImageResult":{"ErrorMessage":null,"Status":0,"ImageThumb":"\/images\/65000117_1.png"}}
+                //if (res.response.SaveImageResult.Status == 0) {
+                //    log('upload file success');
+                //    removeUploadingInfo(item.ID, function () {
+                //        if (i + 1 < uploadItems.length) {
+                //            tryUploadImages(uploadItems, i + 1, onSuccess, onError);
+                //        } else {
+                //            onSuccess();
+                //        }
+                //    }, function (dberr) {
+                //        log(dberr.message);
+                //        showError('An error has occurred: Code = " + error.code');
+                //        onError();
+                //    });
+                //} else {
+                //    showError('An error has occurred: ' + errorres.response.ErrorMessage);
+                //    onError();
+                //}                           
+            }, function (error) {
+                showError('An error has occurred: Code = " + error.code');
+                onError();
+            }, options);
+        }
 
         function moveToLocation(lat, lng) {
             log('Move current location');
@@ -767,7 +892,25 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
                 }
             } catch (err) {
                 log('Cannot initialize map');
+                callback();
             }            
+        }
+
+        function setSyncStatus(callback) {
+            if (isOnline()) {
+                selectUnsyncedOutlets($scope.config.tbl_outlet,
+                    function (dbres) {
+                        log('Number of unsynced outlets: ' + dbres.rows.length.toString());
+                        $scope.showSyncButton = dbres.rows.length > 0;
+                        callback();
+                    }, function (dberr) {
+                        $scope.showSyncButton = false;
+                        log(dberr.message);
+                        callback();
+                    });
+            } else {
+                callback();
+            }
         }
 
         try {
@@ -779,7 +922,11 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
             //});
 
             log('Refresh view to get near-by...');
-            initializeMap(function () { $scope.refresh() });
+            initializeMap(function () {
+                setSyncStatus(function () {
+                    $scope.refresh();
+                });
+            });
         } catch (err) {
             log(err);
         }

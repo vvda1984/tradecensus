@@ -1,4 +1,5 @@
-﻿var db;                             // database instance
+﻿var resetDB = false;                 // force reset database - testing only
+var db;                             // database instance
 var map = null;                     // google map
 //var isOnline = true;              // network status
 var isDev = false;                  // enable DEV mode
@@ -116,7 +117,7 @@ function showDlg1(title, message, allowClose) {
 * showLoading
 */
 function showDlg(title, message, allowClose) {
-    log("show dlg");
+    log("show dlg: " + message);
 
     if (isDlgOpened) {
         $('#dlg-title').html(title);
@@ -126,7 +127,7 @@ function showDlg(title, message, allowClose) {
         if (allowClose) {
             cover =
                 '<div id="loading-overlay">' +
-                    '<div id="loading-window">' +
+                    '<div class="loading-window">' +
                         '<div class="dialog">' +
                             '<div class="content">' +
                                 '<div id="dlg-title" class="title">' + title + '</div><br>' +
@@ -146,7 +147,7 @@ function showDlg(title, message, allowClose) {
         } else {
             cover =
                 '<div id="loading-overlay">' +
-                    '<div id="loading-window">' +
+                    '<div class="loading-window">' +
                         '<div class="dialog">' +
                             '<div class="loading">' +
                                 '<img src="assets/img/loader.gif" width="28" height="28" />' +
@@ -192,6 +193,12 @@ function showError(message) {
     showDlg("Error", message, true);
 }
 
+function showInfo(message) {
+    //navigator.notification.alert(message, function () { }, "Error", 'Close');
+    hideDlg();
+    showDlg("Info", message, true);
+}
+
 /** 
 * handleError
 */
@@ -207,6 +214,13 @@ function handleHttpError(err) {
     hideDlg();
     var msg = err.statusText == '' ? $scope.resource.text_ConnectionTimeout : err.statusText;
     showError(msg);
+}
+
+/** 
+* Handle http error
+*/
+function handleDBError(tx, err) {
+    showError(err.message);
 }
 
 /** 
@@ -247,6 +261,8 @@ function loadDefaultConfig() {
         protocol: 'http',
         ip: '27.0.15.234',
         port: '3001',
+        //ip: '192.168.1.101', //'27.0.15.234',        
+        //port: '33334',//'3001',
         service_name: 'TradeCensusService.svc',
         map_zoom: 16,
         distance: 1000,
@@ -297,6 +313,9 @@ function validateEmpty(name, value){
     return true;
 }
 
+/**
+* compareDate
+*/
 function compareDate(date1, date2, dateformat) {    
     if (date1 != null && date2 == null) return -1;
     if (date1 == null && date2 != null) return 1;
@@ -311,4 +330,46 @@ function compareDate(date1, date2, dateformat) {
         return 1;
     }
     return -1;
+}
+
+/** 
+* showLoading
+*/
+function openImgViewer(title, url) {
+    log('Open image: ' + url + ' ' + title);
+    var dlg =
+        '<div id="image-overlay">' +
+            '<div class="loading-window">' +
+                '<div class="dialog" style="margin-left:20%;margin-right:20%;">' +
+                    '<div class="content">' +
+                        '<div class="title">' + title + '</div><br>' +
+                        '<div><img class="outlet-image-large" src="' + url + '"/></div>' +
+                    '</div>' +
+                    '<div class="button label-blue" onclick="closeImgViewer()">' +
+                        '<div class="center" fit>CLOSE</div>' +
+                        '<paper-ripple fit></paper-ripple>' +
+                    '</div>' +                  
+                    //'<div class="button label-blue">' +
+                    //    '<div class="center" fit>CAPTURE</div>' +
+                    //    '<paper-ripple fit></paper-ripple>' +
+                    //'</div>' +
+                '</div>' +
+            '</div>' +
+        '</div>';
+    try {      
+        $(dlg).appendTo('body');
+    } catch (err) {
+        log(err);
+    }
+}
+
+/** 
+* hideLoading
+*/
+function closeImgViewer() {
+    try {
+        $('#image-overlay').remove();
+    }
+    catch (err) {
+    }
 }

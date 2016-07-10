@@ -1,32 +1,73 @@
 ﻿function editOutletController($scope, $mdDialog) {
     log('view outlet ' + $scope.outlet.ID.toString());
+    $scope.needAudit = $scope.user.hasAuditRole &&
+                       $scope.outlet.AuditStatus == -1 &&
+                       $scope.outlet.InputBy != $scope.user.id;
 
-    log('StringImage1: ' + $scope.outlet.StringImage1);
-    $scope.image1URL = getImageURL($scope.outlet.StringImage1);
-    $scope.image2URL = getImageURL($scope.outlet.StringImage2);
-    $scope.image3URL = getImageURL($scope.outlet.StringImage3);
+    $scope.allowCapture = isEmpty($scope.outlet.StringImage1) ||
+                          isEmpty($scope.outlet.StringImage2) ||
+                          isEmpty($scope.outlet.StringImage3);    
 
-    log('URL 1' + $scope.image1URL);
-    log('URL 2' + $scope.image2URL);
-    log('URL 3' + $scope.image3URL);
+    $scope.outlet.modifiedImage1 = false;
+    $scope.outlet.modifiedImage2 = false;
+    $scope.outlet.modifiedImage3 = false;
+
+    if (!isEmpty($scope.outlet.StringImage1)) {        
+        $scope.image1URL = getImageURL($scope.outlet.StringImage1);      
+    } 
+    if (!isEmpty($scope.outlet.StringImage2)) {
+        $scope.image2URL = getImageURL($scope.outlet.StringImage1);        
+    }
+    if (!isEmpty($scope.outlet.StringImage3)) {
+        $scope.image3URL = getImageURL($scope.outlet.StringImage1);
+    }
 
     $scope.capture = function (i) {
-        captureImage(function (imageURI) {
-            if (i == 1) {
-                $scope.image1URL = imageURI;
-            } else if (i == 2) {
-                $scope.image2URL = imageURI;
-            } else if (i == 3) {
-                $scope.image3URL = imageURI;
+        if (i == 1) {
+            if (!isEmpty($scope.outlet.StringImage1)) {                
+                openImgViewer($scope.outlet.Name, $scope.image1URL);
+            }            
+        } else if (i == 2) {
+            if (!isEmpty($scope.outlet.StringImage2)) {
+                openImgViewer($scope.outlet.Name, $scope.image2URL);
+            }                        
+        } else if (i == 3) {
+            if (!isEmpty($scope.outlet.StringImage3)) {
+                openImgViewer($scope.outlet.Name, $scope.image3URL);
             }
+        } else {
+            captureImage(function (imageURI) {
+                if (isEmpty($scope.outlet.StringImage1)) {
+                    $scope.outlet.StringImage1 = imageURI;
+                    $scope.outlet.modifiedImage1 = true;
+                    $scope.image1URL = getImageURL($scope.outlet.StringImage1);
+                    var image = document.getElementById('outletImg1');
+                    image.src = imageURI;
+                } else if (isEmpty($scope.outlet.StringImage2)) {
+                    $scope.outlet.StringImage2 = imageURI;
+                    $scope.outlet.modifiedImage2 = true;
+                    $scope.image2URL = getImageURL($scope.outlet.StringImage2);
+                    var image = document.getElementById('outletImg2');
+                    image.src = imageURI;
+                } else if (isEmpty($scope.outlet.StringImage3)) {
+                    $scope.outlet.StringImage3 = imageURI;
+                    $scope.outlet.modifiedImage3 = true;
+                    $scope.image3URL = getImageURL($scope.outlet.StringImage3);
+                    var image = document.getElementById('outletImg3');
+                    image.src = imageURI;
+                }
+                $scope.allowCapture = isEmpty($scope.outlet.StringImage1) ||
+                          isEmpty($scope.outlet.StringImage2) ||
+                          isEmpty($scope.outlet.StringImage3);
 
-            //var image = document.getElementById('outletImg' + i.toString());
-            //image.src = imageURI;
-            //var image = document.getElementById('outletImg' + i);
-            //image.src = "data:image/jpeg;base64," + imageData;
-        }, function (err) {
-            showError(err);
-        });
+                //var image = document.getElementById('outletImg' + i.toString());
+                //image.src = imageURI;
+                //var image = document.getElementById('outletImg' + i);
+                //image.src = "data:image/jpeg;base64," + imageData;            
+            }, function (err) {
+                showError(err);
+            });
+        }
     }
     $scope.openedOptionVisible = !$scope.outlet.IsOpened;
     $scope.trackedOptionVisible = !$scope.outlet.IsTracked;
@@ -55,7 +96,7 @@
         log(stringImage);
         if (!isEmpty(stringImage)) {
             var imageUrl = stringImage;
-            if (stringImage.startsWith('/images')) {
+            if (stringImage.lastIndexOf('/images') > 0) {
                 imageUrl = buildURL($scope.config.protocol, $scope.config.ip, $scope.config.port, imageUrl);
             }
             return imageUrl;

@@ -4,11 +4,14 @@
 function initalizeDB(onSuccess) {
     //db = window.sqlitePlugin.openDatabase({ name: "td-v01.db", location: 'default' });
     db = window.openDatabase("Database", "2.0", "td-v01.db", 200000);
-    db.transaction(function (tx)     {
-        //tx.executeSql('DROP TABLE IF EXISTS person');
-        //tx.executeSql('DROP TABLE IF EXISTS config');
-        //tx.executeSql('DROP TABLE IF EXISTS province');
-        //tx.executeSql('DROP TABLE IF EXISTS outletType');        
+    db.transaction(function (tx) {
+        //if (resetDB) {
+        //    tx.executeSql('DROP TABLE IF EXISTS person');
+        //    tx.executeSql('DROP TABLE IF EXISTS config');
+        //    tx.executeSql('DROP TABLE IF EXISTS province');
+        //    tx.executeSql('DROP TABLE IF EXISTS outletType');        
+        //    tx.executeSql('DROP TABLE IF EXISTS outletImage');        
+        //}
 
         log("ensure table [person] exist");
         tx.executeSql('CREATE TABLE IF NOT EXISTS [person] ( [ID] integer PRIMARY KEY NOT NULL, [FirstName] text, [LastName] text, [IsTerminate] text NOT NULL,	[HasAuditRole] text NOT NULL COLLATE NOCASE, [PosID] text NOT NULL COLLATE NOCASE, [ZoneID] text NOT NULL COLLATE NOCASE, [AreaID] text NOT NULL COLLATE NOCASE, [ProvinceID] text NOT NULL COLLATE NOCASE, [Email] text, [EmailTo] text, [HouseNo] text, [Street] text, [District] text, [HomeAddress] text, [WorkAddress] text, [Phone] text, [OfflinePassword] text NOT NULL)');
@@ -21,6 +24,9 @@ function initalizeDB(onSuccess) {
        
         log("ensure table [outletType] exist");
         tx.executeSql('CREATE TABLE IF NOT EXISTS [outletType] ( [ID] text PRIMARY KEY NOT NULL, [Name] text COLLATE NOCASE, [OGroupID] text COLLATE NOCASE, [KPIType] int NOT NULL)');
+
+        log("ensure table [outletImage] exist");
+        tx.executeSql('CREATE TABLE IF NOT EXISTS [outletImage] ( [ID] text PRIMARY KEY NOT NULL, [OutletID] int NOT NULL, [ImageIndex] int NOT NULL, [ImagePath] text NOT NULL, [Uploaded] int NOT NULL, [CreatedDate] text NOT NULL, [CreatedBy] int NOT NULL )');
 
         //log("ensure table [outletSync] exist");
         //tx.executeSql('CREATE TABLE IF NOT EXISTS [outletSync] ( [ID] text PRIMARY KEY NOT NULL, [PersonID] integer NOT NULL, [LastSyncTS] text NOT NULL)');
@@ -212,8 +218,11 @@ function initializeProvinces(tx1, onSuccess) {
             log('initialize provinces completed...');
             onSuccess();
         }
-        else
+        else {
+            log('provinces was ready...');
             onSuccess();
+        }
+            
     }, function (dberr) {
         onSuccess();
     });
@@ -245,8 +254,10 @@ function selectOutletTypes(onSuccess, onError) {
 
 function createOutletTables(outletSyncTbl, outletTbl, onDone) {
     db.transaction(function (tx) {
-        //tx.executeSql('DROP TABLE IF EXISTS ' + outletSyncTbl);
-        //tx.executeSql('DROP TABLE IF EXISTS ' + outletTbl);
+        //if (resetDB) {
+        //    tx.executeSql('DROP TABLE IF EXISTS ' + outletSyncTbl);
+        //    tx.executeSql('DROP TABLE IF EXISTS ' + outletTbl);
+        //}
 
         log('ensure table [' + outletSyncTbl + ' exist');
         var sql = ('CREATE TABLE IF NOT EXISTS [' + outletSyncTbl + '](' +
@@ -319,6 +330,7 @@ function insertOutlets(userID, outletTbl, outlets, onSuccess, onError) {
             if (i > 0) whereCon = whereCon.concat(', ');
 
             var outlet = outlets[i];
+            outlet.IsAuditApproved = outlet.AuditStatus == 1;
             whereCon = whereCon.concat('"', outlet.PRowID, '"');
         }
         whereCon = whereCon.concat(')');
@@ -326,8 +338,8 @@ function insertOutlets(userID, outletTbl, outlets, onSuccess, onError) {
         //var sql = 'SELECT * FROM ' + outletTbl + ' WHERE PRowID = \'' + outlet.PRowID + '\'';
         var sql = 'SELECT * FROM ' + outletTbl + ' WHERE PRowID IN ' + whereCon;
         logSqlCommand(sql);
-        tx.executeSql(sql, [], function (tx1, dbrow) {
-            var rowLen = dbrow.rows.length;
+        tx.executeSql(sql, [], function (tx1, dbres) {
+            var rowLen = dbres.rows.length;
             log('found ' + rowLen.toString() + ' outlets');
             for (var oi = 0 ; oi < outlets.length; oi++) {
                 var outlet = outlets[oi];
@@ -335,8 +347,8 @@ function insertOutlets(userID, outletTbl, outlets, onSuccess, onError) {
                 if (rowLen) {
                     var existOutlet = null;
                     for (var j = 0 ; j < rowLen; j++) {
-                        if (outlet.PRowID == dbrow.rows[j].PRowID) {
-                            existOutlet = dbrow.rows[j];
+                        if (outlet.PRowID == dbres.rows[j].PRowID) {
+                            existOutlet = dbres.rows[j];
                             break;
                         }
                     }
@@ -344,18 +356,16 @@ function insertOutlets(userID, outletTbl, outlets, onSuccess, onError) {
                         log('Try to sync outlet ' + existOutlet.ID.toString());
                         log(outlet);
                         log(existOutlet);
-                        if (outlet.AmendBy != userID) {
-                            log('Check status of outlet ' + existOutlet.ID.toString());
-                            if (existOutlet.PSynced) {
-                                // synced already, just overwrite by server value...
+                        log('Check status of outlet ' + existOutlet.ID.toString());
+                        if (existOutlet.PSynced) {
+                            // synced already, just overwrite by server value...
+                            updateOutlet(tx, outletTbl, outlet, 0, true);
+                        } else {
+                            // outlet wasn't synced, check amend date
+                            // this logic can be failed if timezone in server and client are different
+                            if (compareDate(outlet.AmendDate, existOutlet.AmendDate, 'yyyy-MM-dd HH:mm:ss') > 0) {
+                                log('Server date > local date');
                                 updateOutlet(tx, outletTbl, outlet, 0, true);
-                            } else {
-                                // outlet wasn't synced, check amend date
-                                // this logic can be failed if timezone in server and client are different
-                                if (compareDate(outlet.AmendDate, existOutlet.AmendDate, 'yyyy-MM-dd HH:mm:ss') > 0) {
-                                    log('Server date > local date');
-                                    updateOutlet(tx, outletTbl, outlet, 0, true);
-                                }
                             }
                         }
                     }
@@ -593,5 +603,98 @@ function selectOutletsDistance(outletTbl, latMin, latMax, lngMin, lngMax, onSucc
         tx.executeSql(sql, [], function (tx1, dbres) {
             onSuccess(dbres);
         }, onError);
+    }, onError);
+}
+
+function setOutletSyncStatus(tx, outletTbl, outletID, synced, onSuccess, onError) {
+    log('update outlet ' + outlet.ID.toString() + '(' + outlet.PLastModTS + ')');
+    var n = (new Date()).getTime();
+    var marked = n < outlet.PLastModTS;
+    log(outlet);
+
+    var sql = 'UPDATE ' + outletTbl + ' SET ';
+    sql = sql.concat('PSynced=', synced ? '1' : '0', ', ');
+    sql = sql.concat(' WHERE ID=', outletID.toString());
+
+    logSqlCommand(sql);
+    tx.executeSql(sql, [], onSuccess, onError);
+}
+
+function insertImageUploadingInfo(tx, userID, outletID, index, imagePath, now) {
+    var id = outletID.toString() + '_' + index.toString();
+    var sql = 'INSERT OR REPLACE INTO [outletImage] VALUES (' +
+        '"' + id + '", ' +
+        outletID.toString() + ', ' +
+        index.toString() + ', ' +
+        '0, ' +
+        '"' + imagePath + '", ' +
+        '"' + now + '", ' +
+        userID.toString() + ')';
+    log(sql);
+    tx.executeSql(sql, [], function () { log('store upload info of image1'); }, function (dberr) { log(dberr.message); });
+    return {
+        ID: id,
+        OutletID: outletID,
+        ImageIndex: index,
+        ImagePath: imagePath,
+        Uploaded: 0,
+        CreatedDate: now,
+        CreatedBy: userID,
+    };
+}
+
+function removeUploadingInfo(id, onSuccess, onError) {
+    db.transaction(function (tx) {
+        try {
+            var sql = 'DELETE FROM outletImage WHERE ID = "' + id + '"';
+            log(sql);
+            tx.executeSql(sql, [], onSuccess, onError);
+        } catch (err) {
+            onError(err);
+        }
+    }, onError);    
+}
+
+function insertOutletImages(userID, outlet, onSuccess, onError) {
+    db.transaction(function (tx) {        
+        try {
+            var uploadItems = [];
+            var now = new Date().today() + ' ' + new Date().timeNow();        
+            if (outlet.modifiedImage1) {                
+                uploadItems.push(insertImageUploadingInfo(tx, userID, outlet.ID, 1, outlet.StringImage1, now))
+            }
+            if (outlet.modifiedImage2) {
+                uploadItems.push(insertImageUploadingInfo(tx, userID, outlet.ID, 2, outlet.StringImage2, now));
+            }
+            if (outlet.modifiedImage3) {
+                uploadItems.push(insertImageUploadingInfo(tx, userID, outlet.ID, 3, outlet.StringImage3, now));                
+            }
+            onSuccess(uploadItems);
+        }catch(err){
+            onError(err);
+        }
+    }, onError);
+}
+
+function selectUnsyncedOutlets(outletTbl, onSuccess, onError) {
+    db.transaction(function (tx) {
+        log('Select existing outlet')
+        var sql = 'SELECT * FROM ' + outletTbl + ' WHERE PSynced = 0';
+        logSqlCommand(sql);
+        tx.executeSql(sql, [], function (tx1, dbres) {
+            onSuccess(dbres);
+        }, onError);
+    }, onError);
+}
+
+function selectUnsyncedOutletImage(userID, outletID, onSuccess, onError) {
+    db.transaction(function (tx) {
+        log('Select existing outlet')
+        var sql = 'SELECT * FROM outletImage WHERE' +
+                  ' OutletID = ' + outletID.toString() +
+                  ' AND CreatedBy = ' + userID.toString() +
+                  ' AND Uploaded = 0';
+        logSqlCommand(sql);
+        tx.executeSql(sql, [], onSuccess, onError);
     }, onError);
 }
