@@ -16,10 +16,10 @@
         $scope.image1URL = getImageURL($scope.outlet.StringImage1);      
     } 
     if (!isEmpty($scope.outlet.StringImage2)) {
-        $scope.image2URL = getImageURL($scope.outlet.StringImage1);        
+        $scope.image2URL = getImageURL($scope.outlet.StringImage2);        
     }
     if (!isEmpty($scope.outlet.StringImage3)) {
-        $scope.image3URL = getImageURL($scope.outlet.StringImage1);
+        $scope.image3URL = getImageURL($scope.outlet.StringImage3);
     }
 
     $scope.capture = function (i) {
@@ -96,7 +96,7 @@
         log(stringImage);
         if (!isEmpty(stringImage)) {
             var imageUrl = stringImage;
-            if (stringImage.lastIndexOf('/images') > 0) {
+            if (stringImage.indexOf('/images') > -1) {
                 imageUrl = buildURL($scope.config.protocol, $scope.config.ip, $scope.config.port, imageUrl);
             }
             return imageUrl;

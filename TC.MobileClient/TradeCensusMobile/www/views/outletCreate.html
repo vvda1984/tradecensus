@@ -68,28 +68,28 @@
                 <md-input-container class="md-block">
                     <label>Phone</label>
                     <input ng-model="outlet.Phone" name="phone" required="">
-                    <div ng-messages="createOutletForm.phone.$error" role="alert">
+                    <!--<div ng-messages="createOutletForm.phone.$error" role="alert">
                         <div ng-message="required">{{ resource.text_ValRequired }}</div>
-                    </div>
+                    </div>-->
                 </md-input-container>
 
                 <div class="md-block-item">
-                    <div class="md-block-item-title" style="color:#103B68;font-weight:bold">Volume</div>
-                    <div class="md-block-item-title" style="color:#103B68;font-weight:bold"> (crates/cartons.Avg/month)</div>
-                </div>
+                    <div class="md-block-item-title" style="color:red">Volume</div>
+                    <div class="md-block-item-value" style="color:red">(crates/cartons.Avg/month)</div>
+                </div>            
                 <md-input-container class="md-block">
                     <label style="color:#103B68">TOTAL</label>
                     <input ng-model="outlet.TotalVolume" name="total" type="number" required="">
-                    <div ng-messages="createOutletForm.total.$error" role="alert">
+                    <!--<div ng-messages="createOutletForm.total.$error" role="alert">
                         <div ng-message="required">{{ resource.text_ValRequired }}</div>
-                    </div>
+                    </div>-->
                 </md-input-container>
                 <md-input-container class="md-block">
                     <label style="color:#103B68">VBL Product</label>
                     <input ng-model="outlet.VBLVolume" type="number" name="vblvolume" required="">
-                    <div ng-messages="createOutletForm.vblvolume.$error" role="alert">
+                    <!--<div ng-messages="createOutletForm.vblvolume.$error" role="alert">
                         <div ng-message="required">{{ resource.text_ValRequired }}</div>
-                    </div>
+                    </div>-->
                 </md-input-container>
             </div>
 

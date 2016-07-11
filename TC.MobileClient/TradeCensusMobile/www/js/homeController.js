@@ -28,7 +28,8 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
         //$scope.updatedOutlets = [];
         //$scope.auditOutlets = [];
         var nearByOutlets = [];
-        $scope.outlets = [];        
+        $scope.outlets = [];
+        $scope.showNoOutletFound = true;
 
         var homeMarker = null;
 
@@ -64,7 +65,10 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
             log("Left panel state: " + leftPanelStatus.toString());
             $scope.hideDropdown();
 
-            if (leftPanelStatus >= 2) {
+            if (leftPanelStatus == 1 && $scope.outlets.length == 0) {
+                return;
+            }
+            if (leftPanelStatus >= 2 ) {
                 return;
             }
             leftPanelStatus++;
@@ -548,6 +552,7 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
 
         function setOutletsToList(outlets) {
             $timeout(function () {
+                $scope.showNoOutletFound = outlets.length == 0;
                 $scope.outlets = outlets;
                 $('.md-scroll-mask').remove();
                 hideDlg();
@@ -566,6 +571,14 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
                 bounds.extend(position);               
                 createMaker(outlet, position, i);
             };
+            var homePosition = new google.maps.LatLng(curlat, curlng);
+            homeMarker = new google.maps.Marker({
+                position: homePosition,
+                icon: 'assets/img/pin-cur.png',
+                map: map,
+            });
+            bounds.extend(homePosition);
+
             map.fitBounds(bounds);
             var options = { imagePath: 'assets/img/m' };
             markerClusterer = new MarkerClusterer(map, markers, options);

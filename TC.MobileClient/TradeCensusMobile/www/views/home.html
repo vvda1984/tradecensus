@@ -25,7 +25,8 @@
 
     <div id="outletPanel" ng-click="hideDropdown()">
         <div id="outlet-panel-near" class="outlet-list-panel">        
-            <div class="outlet-item" ng-repeat="outlet in outlets" ng-click="hideDropdown()">
+            <span ng-show="showNoOutletFound">No outlet found</span>
+            <div style="margin-left:8px;" class="outlet-item" ng-repeat="outlet in outlets" ng-click="hideDropdown()">
                 <div class="outlet-item-col1"> <div class="circle">{{$index + 1}}</div> </div>
                 <div class="outlet-item-col2">
                     <span class="header" ng-click="openOutlet($index)">{{outlet.Name}}</span>

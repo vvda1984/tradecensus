@@ -6,14 +6,14 @@ by editing this MSBuild file. In order to learn more about this please visit htt
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <TimeStampOfAssociatedLegacyPublishXmlFile />
-    <_PublishTargetUrl>E:\Personal\Work\Mobiles.TradeCensus\webservice</_PublishTargetUrl>
+    <_PublishTargetUrl>D:\Work\Mobile.TradeCensus\_publish</_PublishTargetUrl>
   </PropertyGroup>
   <ItemGroup>
     <File Include="ApplicationInsights.config">
-      <publishTime>07/04/2016 13:50:01</publishTime>
+      <publishTime>07/11/2016 21:48:46</publishTime>
     </File>
     <File Include="bin/ApplicationInsights.config">
-      <publishTime>07/04/2016 13:50:01</publishTime>
+      <publishTime>07/11/2016 21:48:46</publishTime>
     </File>
     <File Include="bin/EntityFramework.dll">
       <publishTime>12/19/2014 03:42:58</publishTime>
@@ -40,28 +40,31 @@ by editing this MSBuild file. In order to learn more about this please visit htt
       <publishTime>06/06/2016 10:42:24</publishTime>
     </File>
     <File Include="bin/Microsoft.CSharp.dll">
-      <publishTime>03/19/2010 10:31:26</publishTime>
+      <publishTime>03/18/2010 19:31:26</publishTime>
     </File>
     <File Include="bin/Microsoft.Diagnostics.Tracing.EventSource.dll">
       <publishTime>12/01/2015 14:31:46</publishTime>
     </File>
+    <File Include="bin/Newtonsoft.Json.dll">
+      <publishTime>06/13/2016 23:06:14</publishTime>
+    </File>
     <File Include="bin/System.ComponentModel.DataAnnotations.dll">
-      <publishTime>03/19/2010 10:31:26</publishTime>
+      <publishTime>03/18/2010 19:31:26</publishTime>
     </File>
     <File Include="bin/System.Configuration.dll">
-      <publishTime>03/19/2010 10:31:26</publishTime>
+      <publishTime>03/18/2010 19:31:26</publishTime>
     </File>
     <File Include="bin/System.Data.dll">
-      <publishTime>03/19/2010 10:31:26</publishTime>
+      <publishTime>03/18/2010 19:31:26</publishTime>
     </File>
     <File Include="bin/System.dll">
-      <publishTime>03/19/2010 10:31:26</publishTime>
+      <publishTime>03/18/2010 19:31:26</publishTime>
     </File>
     <File Include="bin/System.Drawing.dll">
-      <publishTime>03/19/2010 10:31:26</publishTime>
+      <publishTime>03/18/2010 19:31:26</publishTime>
     </File>
     <File Include="bin/System.EnterpriseServices.dll">
-      <publishTime>03/19/2010 10:31:26</publishTime>
+      <publishTime>03/18/2010 19:31:26</publishTime>
     </File>
     <File Include="bin/System.IO.dll">
       <publishTime>02/18/2015 17:07:08</publishTime>
@@ -73,64 +76,67 @@ by editing this MSBuild file. In order to learn more about this please visit htt
       <publishTime>02/18/2015 17:07:08</publishTime>
     </File>
     <File Include="bin/System.Runtime.Serialization.dll">
-      <publishTime>03/19/2010 10:31:26</publishTime>
+      <publishTime>03/18/2010 19:31:26</publishTime>
     </File>
     <File Include="bin/System.Security.dll">
-      <publishTime>03/19/2010 10:31:26</publishTime>
+      <publishTime>03/18/2010 19:31:26</publishTime>
     </File>
     <File Include="bin/System.ServiceModel.dll">
-      <publishTime>03/19/2010 10:31:26</publishTime>
+      <publishTime>03/18/2010 19:31:26</publishTime>
     </File>
     <File Include="bin/System.ServiceModel.Web.dll">
-      <publishTime>03/19/2010 10:31:26</publishTime>
+      <publishTime>03/18/2010 19:31:26</publishTime>
     </File>
     <File Include="bin/System.Threading.Tasks.dll">
       <publishTime>02/18/2015 17:07:08</publishTime>
     </File>
     <File Include="bin/System.Web.ApplicationServices.dll">
-      <publishTime>03/19/2010 10:31:26</publishTime>
+      <publishTime>03/18/2010 19:31:26</publishTime>
     </File>
     <File Include="bin/System.Web.dll">
-      <publishTime>03/19/2010 10:31:26</publishTime>
+      <publishTime>03/18/2010 19:31:26</publishTime>
     </File>
     <File Include="bin/System.Web.DynamicData.dll">
-      <publishTime>03/19/2010 10:31:26</publishTime>
+      <publishTime>03/18/2010 19:31:26</publishTime>
     </File>
     <File Include="bin/System.Web.Entity.dll">
-      <publishTime>03/19/2010 10:31:26</publishTime>
+      <publishTime>03/18/2010 19:31:26</publishTime>
     </File>
     <File Include="bin/System.Web.Extensions.dll">
       <publishTime>03/19/2010 10:31:26</publishTime>
     </File>
     <File Include="bin/System.Web.Services.dll">
-      <publishTime>03/19/2010 10:31:26</publishTime>
+      <publishTime>03/18/2010 19:31:26</publishTime>
     </File>
     <File Include="bin/System.Xml.dll">
-      <publishTime>03/19/2010 10:31:26</publishTime>
+      <publishTime>03/18/2010 19:31:26</publishTime>
     </File>
     <File Include="bin/System.Xml.Linq.dll">
       <publishTime>03/19/2010 10:31:26</publishTime>
     </File>
     <File Include="bin/TradeCensus.dll">
-      <publishTime>07/06/2016 10:02:05</publishTime>
+      <publishTime>07/11/2016 23:55:41</publishTime>
+    </File>
+    <File Include="Global.asax">
+      <publishTime>07/11/2016 21:48:46</publishTime>
     </File>
     <File Include="packages.config">
-      <publishTime>07/04/2016 13:50:01</publishTime>
+      <publishTime>07/11/2016 21:48:46</publishTime>
     </File>
     <File Include="scripts/ai.0.22.9-build00167.js">
-      <publishTime>07/04/2016 11:07:52</publishTime>
+      <publishTime>07/11/2016 21:48:46</publishTime>
     </File>
     <File Include="scripts/ai.0.22.9-build00167.min.js">
-      <publishTime>07/04/2016 11:07:52</publishTime>
+      <publishTime>07/11/2016 21:48:46</publishTime>
     </File>
     <File Include="TradeCensusModel.edmx.diagram">
-      <publishTime>07/04/2016 11:10:45</publishTime>
+      <publishTime>07/11/2016 21:48:46</publishTime>
     </File>
     <File Include="TradeCensusService.svc">
-      <publishTime>07/04/2016 11:11:24</publishTime>
+      <publishTime>07/11/2016 21:48:46</publishTime>
     </File>
     <File Include="Web.config">
-      <publishTime>07/06/2016 10:02:06</publishTime>
+      <publishTime>07/11/2016 23:55:42</publishTime>
     </File>
   </ItemGroup>
 </Project>

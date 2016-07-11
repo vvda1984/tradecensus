@@ -5,13 +5,13 @@ function initalizeDB(onSuccess) {
     //db = window.sqlitePlugin.openDatabase({ name: "td-v01.db", location: 'default' });
     db = window.openDatabase("Database", "2.0", "td-v02.db", 200000);
     db.transaction(function (tx) {
-        //if (resetDB) {
-        //    tx.executeSql('DROP TABLE IF EXISTS person');
-        //    tx.executeSql('DROP TABLE IF EXISTS config');
-        //    tx.executeSql('DROP TABLE IF EXISTS province');
-        //    tx.executeSql('DROP TABLE IF EXISTS outletType');        
-        //    tx.executeSql('DROP TABLE IF EXISTS outletImage');        
-        //}
+        if (resetDB) {
+            tx.executeSql('DROP TABLE IF EXISTS person');
+            tx.executeSql('DROP TABLE IF EXISTS config');
+            tx.executeSql('DROP TABLE IF EXISTS province');
+            tx.executeSql('DROP TABLE IF EXISTS outletType');        
+            tx.executeSql('DROP TABLE IF EXISTS outletImage');        
+        }
 
         log("ensure table [person] exist");
         tx.executeSql('CREATE TABLE IF NOT EXISTS [person] ( [ID] integer PRIMARY KEY NOT NULL, [FirstName] text, [LastName] text, [IsTerminate] text NOT NULL,	[HasAuditRole] text NOT NULL COLLATE NOCASE, [PosID] text NOT NULL COLLATE NOCASE, [ZoneID] text NOT NULL COLLATE NOCASE, [AreaID] text NOT NULL COLLATE NOCASE, [ProvinceID] text NOT NULL COLLATE NOCASE, [Email] text, [EmailTo] text, [HouseNo] text, [Street] text, [District] text, [HomeAddress] text, [WorkAddress] text, [Phone] text, [OfflinePassword] text NOT NULL)');
@@ -254,10 +254,10 @@ function selectOutletTypes(onSuccess, onError) {
 
 function createOutletTables(outletSyncTbl, outletTbl, onDone) {
     db.transaction(function (tx) {
-        //if (resetDB) {
-        //    tx.executeSql('DROP TABLE IF EXISTS ' + outletSyncTbl);
-        //    tx.executeSql('DROP TABLE IF EXISTS ' + outletTbl);
-        //}
+        if (resetDB) {
+            tx.executeSql('DROP TABLE IF EXISTS ' + outletSyncTbl);
+            tx.executeSql('DROP TABLE IF EXISTS ' + outletTbl);
+        }
 
         log('ensure table [' + outletSyncTbl + ' exist');
         var sql = ('CREATE TABLE IF NOT EXISTS [' + outletSyncTbl + '](' +
@@ -324,6 +324,10 @@ function createOutletTables(outletSyncTbl, outletTbl, onDone) {
 }
 
 function insertOutlets(userID, outletTbl, outlets, onSuccess, onError) {
+    if (outlets.length == 0) {
+        onSuccess();
+        return;
+    }
     db.transaction(function (tx) {
         var whereCon = '(';
         for (i = 0 ; i < outlets.length; i++) {

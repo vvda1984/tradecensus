@@ -58,7 +58,7 @@
     "cordova-plugin-dialogs": {
         "source": {
             "type": "registry",
-            "id": "cordova-plugin-dialogs"
+            "id": "cordova-plugin-dialogs@1.2.1"
         },
         "is_top_level": true,
         "variables": {}
@@ -75,7 +75,7 @@
     "cordova-plugin-network-information": {
         "source": {
             "type": "registry",
-            "id": "cordova-plugin-network-information"
+            "id": "cordova-plugin-network-information@1.2.1"
         },
         "is_top_level": true,
         "variables": {}
@@ -83,7 +83,7 @@
     "cordova-plugin-file-transfer": {
         "source": {
             "type": "registry",
-            "id": "cordova-plugin-file-transfer"
+            "id": "cordova-plugin-file-transfer@1.5.1"
         },
         "is_top_level": true,
         "variables": {}

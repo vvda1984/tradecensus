@@ -340,21 +340,21 @@ namespace TradeCensus
                 if (index == "0")
                 {
                     outletImage.ImageData1 = File.ReadAllBytes(imagePath);
-                    outletImage.Image1 = string.Format("/images/{0}_{1}.png", outletID, index);
+                    outletImage.Image1 = string.Format("/images/{0}_{1}.jpg", outletID, index);
                 }
                 else if (index == "1")
                 {
                     outletImage.ImageData2 = File.ReadAllBytes(imagePath);
-                    outletImage.Image2 = string.Format("/images/{0}_{1}.png", outletID, index);
+                    outletImage.Image2 = string.Format("/images/{0}_{1}.jpg", outletID, index);
                 }
                 else if (index == "2")
                 {
                     outletImage.ImageData3 = File.ReadAllBytes(imagePath);
-                    outletImage.Image3 = string.Format("/images/{0}_{1}.png", outletID, index);
+                    outletImage.Image3 = string.Format("/images/{0}_{1}.jpg", outletID, index);
                 }
                 _entities.SaveChanges();
             }
-            return string.Format("/images/{0}_{1}.png", outletID, index);
+            return string.Format("/images/{0}_{1}.jpg", outletID, index);
         }
 
         public string SaveImage(string userID, string outletID, string index,  HttpPostedFile file)
@@ -383,23 +383,23 @@ namespace TradeCensus
                 if (index == "0")
                 {
                     outletImage.ImageData1 = File.ReadAllBytes(imagePath);
-                    outletImage.Image1 = string.Format("/images/{0}_{1}.png", outletID, index);
+                    outletImage.Image1 = string.Format("/images/{0}_{1}.jpg", outletID, index);
                 }
                 else if (index == "1")
                 {
                     outletImage.ImageData2 = File.ReadAllBytes(imagePath);
-                    outletImage.Image2 = string.Format("/images/{0}_{1}.png", outletID, index);
+                    outletImage.Image2 = string.Format("/images/{0}_{1}.jpg", outletID, index);
                 }
                 else if (index == "2")
                 {
                     outletImage.ImageData3 = File.ReadAllBytes(imagePath);
-                    outletImage.Image3 = string.Format("/images/{0}_{1}.png", outletID, index);
+                    outletImage.Image3 = string.Format("/images/{0}_{1}.jpg", outletID, index);
                 }
                 outlet.AmendBy = amendby;
                 outlet.AmendDate = DateTime.Now;
                 _entities.SaveChanges();
             }
-            return string.Format("/images/{0}_{1}.png", outletID, index);
+            return string.Format("/images/{0}_{1}.jpg", outletID, index);
         }
 
         public bool ThumbnailCallback()

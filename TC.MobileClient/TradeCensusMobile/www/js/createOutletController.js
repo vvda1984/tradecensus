@@ -105,4 +105,16 @@
             showError(err);
         }
     }
+
+    function getImageURL(stringImage) {
+        log(stringImage);
+        if (!isEmpty(stringImage)) {
+            var imageUrl = stringImage;
+            if (stringImage.indexOf('/images') > -1) {
+                imageUrl = buildURL($scope.config.protocol, $scope.config.ip, $scope.config.port, imageUrl);
+            }
+            return imageUrl;
+        }
+        return '';
+    }
 }
