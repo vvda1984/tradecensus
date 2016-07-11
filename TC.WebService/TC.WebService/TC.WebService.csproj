@@ -174,7 +174,6 @@
     <Compile Include="Area.cs">
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
-    <Compile Include="Class1.cs" />
     <Compile Include="Config.cs">
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
@@ -243,6 +242,7 @@
     <Compile Include="TradeCensusService.svc.cs">
       <DependentUpon>TradeCensusService.svc</DependentUpon>
     </Compile>
+    <Compile Include="WcfReadEntityBodyModeWorkaroundModule .cs" />
     <Compile Include="Zone.cs">
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
