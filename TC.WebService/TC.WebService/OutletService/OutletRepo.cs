@@ -11,7 +11,12 @@ using TradeCensus.Shared;
 namespace TradeCensus
 {
     public class OutletRepo : BaseRepo
-    {        
+    {
+        const byte ActionAdd = 0;
+        const byte ActionUpdate = 1;
+        const byte ActionUpdateImage = 2;
+        const byte ActionAudit = 3;
+
         public OutletRepo() : base("Outlet")
         {            
         }
@@ -170,8 +175,13 @@ namespace TradeCensus
             if (existingOutlet == null)
                 existingOutlet = _entities.Outlets.FirstOrDefault(i => i.ID == outlet.ID);
 
+            string note = "";
+            byte action = ActionUpdate;
+
             if (existingOutlet == null)
             {
+                note = "Add new outlet";
+                action = ActionAdd;
                 existingOutlet = new Outlet
                 {
                     ID = outlet.ID,
@@ -201,6 +211,16 @@ namespace TradeCensus
                 };
                 _entities.Outlets.Add(existingOutlet);
             }
+            else
+            {
+                if (existingOutlet.AuditStatus != outlet.AuditStatus)
+                {
+                    action = ActionAudit;
+                    note = "Audit outlet";
+                }
+                else
+                    note = "Update outlet";
+            }
 
             existingOutlet.AreaID = outlet.AreaID;
             existingOutlet.Name = outlet.Name;
@@ -226,6 +246,8 @@ namespace TradeCensus
             existingOutlet.VBLVolume = outlet.VBLVolume;
             if (!string.IsNullOrEmpty(outlet.PRowID))
                 existingOutlet.PRowID = new Guid(outlet.PRowID);
+
+            TrackOutletChanged(existingOutlet.PRowID, outlet.AmendBy, note, 0, action);
 
             _entities.SaveChanges();
 
@@ -290,73 +312,6 @@ namespace TradeCensus
             return newP;
         }
 
-        public string SaveImage(string outletID, string index, Stream stream)
-        {
-            byte[] buffer = new byte[1000000];
-            stream.Read(buffer, 0, 1000000);
-            string path = AppDomain.CurrentDomain.BaseDirectory; //GetType().Assembly.Location; // ...\bin\...
-            path = Path.GetDirectoryName(path) + "\\Images";
-            EnsureDirExist(path);
-            string imagePath = Path.Combine(path, string.Format("{0}_{1}.jpg", outletID, index));
-
-            //using (MemoryStream f = new MemoryStream()) {            
-            using (FileStream f = new FileStream(imagePath, FileMode.OpenOrCreate))
-            {            
-                f.Write(buffer, 0, buffer.Length);
-                f.Close();                
-            }
-            stream.Close();
-
-            var id = int.Parse(outletID);
-            Outlet outlet = _entities.Outlets.FirstOrDefault(i => i.ID == id);
-            if (outlet != null)
-            {
-                OutletImage outletImage = null;
-                if (outlet.OutletImages.Count() > 0)
-                    outletImage = outlet.OutletImages.FirstOrDefault();
-                else
-                {
-                    outletImage = new OutletImage()
-                    {
-                        OutletID = outlet.ID,
-                    };
-                    outlet.OutletImages.Add(outletImage);
-                }
-                //string thumbString;
-                //using (Image image = new Bitmap(imagePath))
-                //{
-                //    using (Image thumb = image.GetThumbnailImage(100, 100, ThumbnailCallback, new IntPtr()))
-                //    {
-                //        using (MemoryStream ms = new MemoryStream())
-                //        {
-                //            thumb.Save(ms, ImageFormat.jpg);
-
-                //            byte[] bf = new byte[ms.Length];
-                //            ms.Write(bf, 0, (int)ms.Length);
-                //            thumbString = Convert.ToBase64String(bf);
-                //        }
-                //    }
-                //}
-                if (index == "0")
-                {
-                    outletImage.ImageData1 = File.ReadAllBytes(imagePath);
-                    outletImage.Image1 = string.Format("/images/{0}_{1}.jpg", outletID, index);
-                }
-                else if (index == "1")
-                {
-                    outletImage.ImageData2 = File.ReadAllBytes(imagePath);
-                    outletImage.Image2 = string.Format("/images/{0}_{1}.jpg", outletID, index);
-                }
-                else if (index == "2")
-                {
-                    outletImage.ImageData3 = File.ReadAllBytes(imagePath);
-                    outletImage.Image3 = string.Format("/images/{0}_{1}.jpg", outletID, index);
-                }
-                _entities.SaveChanges();
-            }
-            return string.Format("/images/{0}_{1}.jpg", outletID, index);
-        }
-
         public string SaveImage(string userID, string outletID, string index,  HttpPostedFile file)
         {           
             string path = AppDomain.CurrentDomain.BaseDirectory; //GetType().Assembly.Location; // ...\bin\...
@@ -397,6 +352,9 @@ namespace TradeCensus
                 }
                 outlet.AmendBy = amendby;
                 outlet.AmendDate = DateTime.Now;
+
+                TrackOutletChanged(outlet.PRowID, amendby, "Save image", 0, ActionUpdateImage);
+
                 _entities.SaveChanges();
             }
             return string.Format("/images/{0}_{1}.jpg", outletID, index);
@@ -440,6 +398,26 @@ namespace TradeCensus
                 }
             }
             return "";
+        }
+
+        private void TrackOutletChanged(Guid rowID, int userID,  string note, byte status, byte action)
+        {
+            SyncHistory hist = new SyncHistory()
+            {
+                TableName = "Outlet",
+                SyncDateTime = DateTime.Now,
+                SyncBy = userID,
+                Note = note,
+                Status = status,
+            };
+            _entities.SyncHistories.Add(hist);
+            var detail = new SyncDetail()
+            {
+                Action = action,
+                RowID = rowID,
+                SyncHistory = hist,
+            };
+            hist.SyncDetails.Add(detail);
         }
     }
 

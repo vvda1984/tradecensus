@@ -1,10 +1,10 @@
 <div id="view-home">
     <div id="view-home-top-panel">
         <div class="box">
-            <img src="assets/img/menu.svg" ng-click="showLeftPanel()" />
+            <img src="assets/img/menu.svg" ng-show="showCollapseExpend" ng-click="showLeftPanel()" />
             <span ng-click="showDropdown()">{{outletHeader}}</span>
-            <img src="assets/img/arrow-left.svg" ng-click="closeLeftPanel()" />
-            <img src="assets/img/arrow-right.svg" ng-click="showLeftPanel()" />            
+            <img src="assets/img/arrow-left.svg" ng-show="showCollapseExpend" ng-click="closeLeftPanel()" />
+            <img src="assets/img/arrow-right.svg" ng-show="showCollapseExpend" ng-click="showLeftPanel()" />            
         </div>
         <div class="top-panel-button blue" ng-show="allowRefresh" ng-click="refresh()">
             <img src="assets/img/refresh.svg" />            

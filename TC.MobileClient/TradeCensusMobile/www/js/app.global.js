@@ -1,4 +1,4 @@
-﻿var resetDB = false;                 // force reset database - testing only
+﻿var resetDB = false;                // force reset database - testing only
 var db;                             // database instance
 var map = null;                     // google map
 //var isOnline = true;              // network status
@@ -10,7 +10,10 @@ var provinces = [];
 var outletTypes = [];
 var baseURL = '';
 var userID = 0;
+var modeOnline = true;
 const earthR = 6378137;
+var onImageViewerClose;
+var newImageFile;
 
 // For todays date;
 Date.prototype.today = function () {
@@ -25,8 +28,11 @@ Date.prototype.timeNow = function () {
 /** 
 * checkConnection
 */
-function isOnline() {   
-    return true;   
+function isOnline() {
+    if (!modeOnline) return false;
+    // ANVO: DEBUG
+    if (isDev)
+        return true;   
     var networkState = navigator.connection.type;
     return (networkState != 'Unknown connection' && networkState != 'no network connection')
 }
@@ -258,11 +264,14 @@ function loadResources() {
 function loadDefaultConfig() {
     // Load database...
     return {
+        cluster_size: 50,
+        cluster_max_zoom: 16,
+        mode_online : true,
         protocol: 'http',
-        ip: '27.0.15.234',
-        port: '3001',
-        //ip: '192.168.1.101', //'27.0.15.234',        
-        //port: '33334',//'3001',
+        //ip: '27.0.15.234',
+        //port: '3001',
+        ip: '192.168.1.102', //'27.0.15.234',        
+        port: '33334',//'3001',
         service_name: 'TradeCensusService.svc',
         map_zoom: 16,
         distance: 1000,
@@ -335,7 +344,9 @@ function compareDate(date1, date2, dateformat) {
 /** 
 * showLoading
 */
-function openImgViewer(title, url) {
+function openImgViewer(title, url, callback) {
+    newImageFile = null;
+    onImageViewerClose = callback;
     log('Open image: ' + url + ' ' + title);
     var dlg =
         '<div id="image-overlay">' +
@@ -343,16 +354,16 @@ function openImgViewer(title, url) {
                 '<div class="dialog" style="margin-left:20%;margin-right:20%;">' +
                     '<div class="content">' +
                         '<div class="title">' + title + '</div><br>' +
-                        '<div><img class="outlet-image-large" src="' + url + '"/></div>' +
+                        '<div><img id="curOutletImage" class="outlet-image-large" src="' + url + '"/></div>' +
                     '</div>' +
                     '<div class="button label-blue" onclick="closeImgViewer()">' +
                         '<div class="center" fit>CLOSE</div>' +
                         '<paper-ripple fit></paper-ripple>' +
                     '</div>' +                  
-                    //'<div class="button label-blue">' +
-                    //    '<div class="center" fit>CAPTURE</div>' +
-                    //    '<paper-ripple fit></paper-ripple>' +
-                    //'</div>' +
+                    '<div class="button label-blue">' +
+                        '<div class="center" fit onclick="replaceImage()">CAPTURE</div>' +
+                        '<paper-ripple fit></paper-ripple>' +
+                    '</div>' +
                 '</div>' +
             '</div>' +
         '</div>';
@@ -369,7 +380,36 @@ function openImgViewer(title, url) {
 function closeImgViewer() {
     try {
         $('#image-overlay').remove();
+        if (onImageViewerClose != null) {
+            onImageViewerClose(newImageFile);
+        }
     }
     catch (err) {
+    }
+}
+
+/** 
+* hideLoading
+*/
+function replaceImage() {
+    captureImage(function (imageURI) {
+        var image = document.getElementById('curOutletImage');
+        image.src = imageURI;
+        newImageFile = imageURI;
+    }, function (err) {
+        //showError(err);
+    });
+}
+
+function captureImage(onSuccess, onError) {
+    try {
+        navigator.camera.getPicture(onSuccess, onError,
+            {
+                quality: 50,
+                correctOrientation: true,
+                destinationType: Camera.DestinationType.FILE_URI // DATA_URL for base64 => not recommend due to memory issue
+            });
+    } catch (err) {
+        showError(err);
     }
 }

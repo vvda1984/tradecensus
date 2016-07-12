@@ -55,14 +55,18 @@
 
                 </md-input-container>
 
-                <md-input-container class="md-block" flex-gt-sm="" style="margin-bottom:0px;">
+                <md-input-container class="md-block" flex-gt-sm="">
                     <label>{{ resource.text_EnterProvince }}</label>
                     <md-select ng-model="config.province_id">
                         <md-option ng-repeat="p in provinces" value="{{p.id}}">
                             {{p.name}}
                         </md-option>
                     </md-select>
-                </md-input-container>              
+                </md-input-container>    
+                <div class="md-block-item" style="margin-bottom:0px;">
+                    <div class="md-block-item-title">Mode</div>                  
+                    <md-switch ng-model="config.mode_online">{{config.mode_online ? "Online" : "Offline"}}</md-switch>
+                </div>                                         
             </form>
         </md-content>
     </div>

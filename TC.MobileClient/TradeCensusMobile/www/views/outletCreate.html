@@ -1,8 +1,9 @@
 ﻿<md-dialog aria-label="New Outlet" ng-cloak>
     <md-toolbar>
-        <div class="md-toolbar-tools">
-            <div>CREATE NEW OUTLET</div>
+        <div class="md-toolbar-tools" id="toolbar">
+            <div>{{createNew ? "CREATE NEW OUTLET" : "EDIT OUTLET"}} </div>
             <span flex=""></span>
+            <div>Location: {{outlet.Latitude}}, {{outlet.Longitude}} &nbsp;&nbsp; </div>
             <div>Code: {{outlet.ID}}</div>
         </div>
     </md-toolbar>
@@ -19,18 +20,26 @@
                 <md-input-container class="md-block">
                     <label>Outlet Type</label>
                     <md-select ng-model="outlet.OTypeID">
-                        <md-option ng-repeat="o in outletTypes" value="{{o.id}}">
-                            {{o.name}}
+                        <md-option ng-repeat="o in outletTypes" value="{{o.ID}}">
+                            {{o.Name}}
                         </md-option>
                     </md-select>
                 </md-input-container>
-                <md-input-container class="md-block">
+                <!--<md-input-container class="md-block">
                     <label>Latitude</label>
                     <input ng-model="outlet.Latitude" disabled="">
                 </md-input-container>
                 <md-input-container class="md-block">
                     <label>Longitude</label>
                     <input ng-model="outlet.Longitude" disabled="">
+                </md-input-container>-->
+
+                <md-input-container class="md-block">
+                    <label>Phone</label>
+                    <input ng-model="outlet.Phone" name="phone" required="">
+                    <!--<div ng-messages="createOutletForm.phone.$error" role="alert">
+                        <div ng-message="required">{{ resource.text_ValRequired }}</div>
+                    </div>-->
                 </md-input-container>
             </div>
 
@@ -64,15 +73,6 @@
             </div>
 
             <div layout-gt-sm="row">
-
-                <md-input-container class="md-block">
-                    <label>Phone</label>
-                    <input ng-model="outlet.Phone" name="phone" required="">
-                    <!--<div ng-messages="createOutletForm.phone.$error" role="alert">
-                        <div ng-message="required">{{ resource.text_ValRequired }}</div>
-                    </div>-->
-                </md-input-container>
-
                 <div class="md-block-item">
                     <div class="md-block-item-title" style="color:red">Volume</div>
                     <div class="md-block-item-value" style="color:red">(crates/cartons.Avg/month)</div>
@@ -99,10 +99,17 @@
                 <img id="outletImg3" class="outlet-image" ng-click="capture(3);" src="{{image3URL}}" alt="Outlet Image" />
 
                 <img id="captureButton" ng-show="allowCapture" ng-click="capture(0)" src="assets/img/camera.svg" />
+
+                <div class="md-block-item" style="margin-left:24px;">
+                    <div class="md-block-item-title" style="min-width:80px">Is Draft</div>
+                    <md-checkbox md-no-ink="" aria-label="Is IsDraft" ng-model="outlet.IsDraft" class="md-primary">
+                    </md-checkbox>
+                </div>
             </div>
-            <div layout-gt-xs="row" layout-margin layout-align="center">
+            <div layout-gt-xs="row" layout-margin layout-align="center">     
                 <md-button class="md-raised md-primary" ng-click="saveUpdate()">Save</md-button>
                 <md-button class="md-raised" ng-click="cancelUpdate()">Cancel</md-button>
+                <md-button class="md-raised" ng-click="deleteOutlet()" ng-show="showDraft">Delete</md-button>
             </div>
         </form>
     </md-content>

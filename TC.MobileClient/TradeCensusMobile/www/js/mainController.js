@@ -26,7 +26,7 @@ var app = angular
         $scope.resource = loadResources();
 
         $scope.user = {
-            id: 100000, // dev
+            id: 123456, // dev
             password: '',
             firstName: '',
             lastName: '',
@@ -104,8 +104,8 @@ var app = angular
                     if (rowLen) {
                         for (i = 0; i < rowLen; i++) {
                             outletTypes[i] = {
-                                id: dbrow.rows.item(i).ID,
-                                name: dbrow.rows.item(i).Name,
+                                ID: dbrow.rows.item(i).ID,
+                                Name: dbrow.rows.item(i).Name,
                             }
                         }
                     }

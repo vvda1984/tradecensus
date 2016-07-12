@@ -9,6 +9,7 @@ app.controller("ConfigController", ["$scope", function ($scope) {
     var province_id = $scope.config.province_id;
     var distance = $scope.config.distance;
     var item_count = $scope.config.item_count;
+    var online = $scope.config.mode_online;
     $scope.provinces = provinces;
     log($scope.provinces.length);
 
@@ -46,8 +47,10 @@ app.controller("ConfigController", ["$scope", function ($scope) {
         $scope.config.ip = ip;
         $scope.config.port = port;
         $scope.config.province_id = province_id;
+        $scope.config.mode_online = online;
         $scope.distance = distance;
         $scope.item_count = item_count;
+     
         $scope.changeView("login");
     }
 }]);

@@ -198,7 +198,7 @@ app.controller('LoginController', ['$scope', '$http', function ($scope, $http) {
 
         log('create outlet tables');
         createOutletTables($scope.config.tbl_outletSync, $scope.config.tbl_outlet, function () {
-            if (isOnline() && !isDev) {
+            if (isOnline()) {
                 showDlg('Downloading Settings', 'Please wait...');
                 downloadServerConfig(function () {
                     hideDlg();

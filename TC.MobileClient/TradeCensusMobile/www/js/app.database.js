@@ -3,7 +3,7 @@
 */
 function initalizeDB(onSuccess) {
     //db = window.sqlitePlugin.openDatabase({ name: "td-v01.db", location: 'default' });
-    db = window.openDatabase("Database", "2.0", "td-v02.db", 200000);
+    db = window.openDatabase("Database", "2.0", "td-v03.db", 200000);
     db.transaction(function (tx) {
         if (resetDB) {
             tx.executeSql('DROP TABLE IF EXISTS person');
@@ -315,6 +315,7 @@ function createOutletTables(outletSyncTbl, outletTbl, onDone) {
                         '[PIsMod] bit,' +
                         '[PIsAud] bit,' +
 	                    '[PSynced] bit,' +
+                        '[PStatus] int,' +
 	                    '[PLastModTS] int,' +
 	                    '[PMarked] bit)');
         logSqlCommand(sql);
@@ -348,6 +349,7 @@ function insertOutlets(userID, outletTbl, outlets, onSuccess, onError) {
             for (var oi = 0 ; oi < outlets.length; oi++) {
                 var outlet = outlets[oi];
                 outlet.PLastModTS = 0;
+                outlet.PStatus = 0;
                 if (rowLen) {
                     var existOutlet = null;
                     for (var j = 0 ; j < rowLen; j++) {
@@ -385,7 +387,6 @@ function insertOutlets(userID, outletTbl, outlets, onSuccess, onError) {
             onSuccess();
         });
 
-        
         //outlets.forEach(function (outlet, i) {
         //    try {
         //        log('Select existing outlets')
@@ -474,6 +475,7 @@ function addNewOutlet(tx, outletTbl, outlet, isAdd, isMod, isAud, synced, marked
     sql = sql.concat(isMod ? '1' : '0', ', ');              //'[PIsMod] bit,' ,
     sql = sql.concat(isAud ? '1' : '0', ', ');              //'[PIsAud] bit,' ,
     sql = sql.concat(synced ? '1' : '0', ', ');             //'[PSynced] bit,' ,
+    sql = sql.concat(outlet.PStatus.toString(), ', ');      //'[PStatus] int,' +
     sql = sql.concat(n.toString(), ', ');                   //'[PLastModTS] int,' ,
     sql = sql.concat(marked ? '1' : '0', ')');              //'[PMarked] bit)');
     logSqlCommand(sql);
@@ -538,6 +540,7 @@ function updateOutlet(tx, outletTbl, outlet, state, synced) {
     if (state == 2) sql = sql.concat('PIsMod=1, ');
     if (state == 4) sql = sql.concat('PIsAud=1, ');
     sql = sql.concat('PSynced=', synced ? '1' : '0', ', ');
+    sql = sql.concat('PStatus=', outlet.PStatus.toString() + ', ');
     sql = sql.concat('PLastModTS=', n.toString(), ', ');
     sql = sql.concat('PMarked=', marked ? '1' : '0');
     if (outlet.PRowID != null && outlet.PRowID.length > 0) {
@@ -597,9 +600,20 @@ function addOutletDB(outletTbl, outlet, synced, onSuccess, onError) {
     }, onError);
 }
 
+function deteleOutletDB(outletTbl, outlet, onSuccess, onError) {
+    db.transaction(function (tx) {
+        log('Delete outlet ' + outlet.ID);
+        var sql = 'DELETE FROM ' + outletTbl + ' WHERE'
+        sql = sql.concat(' ID = ', outlet.ID);        
+        logSqlCommand(sql);
+        tx.executeSql(sql, [], function (tx1) { onSuccess(dbres);
+        }, onError);
+    }, onError);
+}
+
 function selectOutletsDistance(outletTbl, latMin, latMax, lngMin, lngMax, onSuccess, onError) {
     db.transaction(function (tx) {
-        log('Select existing outlet')
+        log('Select existing outlet');
         var sql = 'SELECT * FROM ' + outletTbl + ' WHERE'
         sql = sql.concat(' Latitude >= ', latMin.toString(), ' AND Latitude <= ', latMax.toString());
         sql = sql.concat(' AND Longitude >= ', lngMin.toString(), ' AND Longitude <= ', lngMax.toString());
@@ -683,7 +697,7 @@ function insertOutletImages(userID, outlet, onSuccess, onError) {
 function selectUnsyncedOutlets(outletTbl, onSuccess, onError) {
     db.transaction(function (tx) {
         log('Select existing outlet')
-        var sql = 'SELECT * FROM ' + outletTbl + ' WHERE PSynced = 0';
+        var sql = 'SELECT * FROM ' + outletTbl + ' WHERE PSynced = 0 AND PStatus = 0';
         logSqlCommand(sql);
         tx.executeSql(sql, [], function (tx1, dbres) {
             onSuccess(dbres);

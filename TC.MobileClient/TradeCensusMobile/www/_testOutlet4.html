@@ -94,6 +94,7 @@
                 Tracking: 0,
                 IsOpened: false,
                 IsTracked: false,
+                IsDraft: false,
             };
             //$scope.showAdvanced = function(evt) {
             //    $scope.data.dialogOpen = true;
@@ -120,6 +121,8 @@
                     targetEvent: ev,
                     scope: $scope.$new(),
                     controller: function ($scope, $mdDialog) {
+                        $scope.position = $scope.outlet.Latitude.toString() + ', ' + $scope.outlet.Longitude.toString();
+
                         $scope.hasAuditRole = true;
                         $scope.openedOptionVisible = !$scope.outlet.IsOpened;
                         $scope.trackedOptionVisible = !$scope.outlet.IsTracked;
@@ -189,7 +192,8 @@
                 <div class="md-toolbar-tools">
                     <div>CREATE NEW OUTLET</div>
                     <span flex=""></span>
-                    <div>Code: {{outlet.ID}}</div>                    
+                    <div>Location: {{outlet.Latitude}}, {{outlet.Longitude}} &nbsp;&nbsp; </div>
+                    <div>Code: {{outlet.ID}}</div>
                 </div>
             </md-toolbar>
             <md-content layout-padding="" class="popup-content">
@@ -217,23 +221,22 @@
                             <input ng-model="outlet.Longitude">
                         </md-input-container>-->
 
+                        <!--<md-input-container class="md-block">
+                            <label>Latitude, Longitude</label>
+                            <input ng-model="position" disabled="">
+                        </md-input-container>-->
                         <md-input-container class="md-block">
-                            <label>Latitude</label>
-                            <input ng-model="outlet.Latitude" disabled="">
-                        </md-input-container>
-                        <md-input-container class="md-block">
-                            <label>Longitude</label>
-                            <input ng-model="outlet.Longitude" disabled="">
-                        </md-input-container>  
+                            <label>TEL</label>
+                            <input ng-model="outlet.AddLine">
+                        </md-input-container>    
                         
-                        <!--<div class="md-block-item">
-                            <div class="md-block-item-title">Latitude</div>
-                            <div class="md-block-item-value">{{outlet.Latitude}}</div>
-                        </div>
+
                         <div class="md-block-item">
-                            <div class="md-block-item-title">Longitude</div>
-                            <div class="md-block-item-value">{{outlet.Longitude}}</div>
-                        </div>-->           
+                            
+                            <md-checkbox md-no-ink="" aria-label="Is Opened" ng-model="outlet.IsDraft" class="md-primary">
+                            </md-checkbox>
+                            <label>IsDraft</label>
+                        </div>     
                     </div>
 
                     <div layout-gt-sm="row">
@@ -257,12 +260,6 @@
                     </div>
                     
                     <div layout-gt-sm="row">
-
-                        <md-input-container class="md-block">
-                            <label>TEL</label>
-                            <input ng-model="outlet.AddLine">
-                        </md-input-container>      
-
                         <div class="md-block-item">
                             <div class="md-block-item-title" style="color:red">Volume</div>
                             <div class="md-block-item-value" style="color:red">(crates/cartons.Avg/month)</div>
@@ -278,11 +275,18 @@
                     </div>
 
                     <div layout-gt-xs="row">
-                        <img id="outletImg1" class="outletImage" />
-                        <img id="outletImg2" class="outletImage" />
-                        <img id="outletImg3" class="outletImage" />
+                        <img id="outletImg1" class="outlet-image" ng-click="capture(1);" src="{{image1URL}}" alt="Outlet Image" />
+                        <img id="outletImg2" class="outlet-image" ng-click="capture(2);" src="{{image2URL}}" alt="Outlet Image" />
+                        <img id="outletImg3" class="outlet-image" ng-click="capture(3);" src="{{image3URL}}" alt="Outlet Image" />
+
+                        <img id="captureButton" ng-show="allowCapture" ng-click="capture(0)" src="assets/img/camera.svg" />
                     </div>
-                    <div layout-gt-xs="row" layout-margin layout-align="center">    
+                   
+                    <div layout-gt-sm="row" layout-margin layout-align="center">                          
+                        <md-checkbox  md-no-ink="" aria-label="Is Opened" ng-model="outlet.IsDraft" class="md-primary">
+                        </md-checkbox>
+                        <label style="margin-right:12px;padding-top:12px">Is Draft</label>
+
                         <md-button class="md-raised md-primary" ng-click="saveUpdate()">Save</md-button>
                         <md-button class="md-raised" ng-click="cancelUpdate()">Cancel</md-button>
                     </div>

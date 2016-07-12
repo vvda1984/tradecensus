@@ -1,13 +1,14 @@
 ﻿function editOutletController($scope, $mdDialog) {
     log('view outlet ' + $scope.outlet.ID.toString());
     $scope.needAudit = $scope.user.hasAuditRole &&
-                       $scope.outlet.AuditStatus == -1 &&
+                       ($scope.outlet.AuditStatus <= 0 || $scope.outlet.AuditStatus == 255) &&
                        $scope.outlet.InputBy != $scope.user.id;
 
     $scope.allowCapture = isEmpty($scope.outlet.StringImage1) ||
                           isEmpty($scope.outlet.StringImage2) ||
                           isEmpty($scope.outlet.StringImage3);    
 
+    $scope.showDraft = $scope.outlet.IsDraft;
     $scope.outlet.modifiedImage1 = false;
     $scope.outlet.modifiedImage2 = false;
     $scope.outlet.modifiedImage3 = false;
@@ -24,16 +25,40 @@
 
     $scope.capture = function (i) {
         if (i == 1) {
-            if (!isEmpty($scope.outlet.StringImage1)) {                
-                openImgViewer($scope.outlet.Name, $scope.image1URL);
-            }            
+            if (!isEmpty($scope.outlet.StringImage1)) {
+                openImgViewer($scope.outlet.Name, $scope.image1URL, function (imageURI) {
+                    if (imageURI != null) {
+                        $scope.outlet.image1URL = imageURI;
+                        $scope.outlet.modifiedImage1 = true;
+                        $scope.image1URL = getImageURL($scope.outlet.StringImage1);
+                        var image = document.getElementById('outletImg1');
+                        image.src = imageURI;
+                    }
+                });
+            }
         } else if (i == 2) {
             if (!isEmpty($scope.outlet.StringImage2)) {
-                openImgViewer($scope.outlet.Name, $scope.image2URL);
+                openImgViewer($scope.outlet.Name, $scope.image2URL, function (imageURI) {
+                    if (imageURI != null) {
+                        $scope.outlet.image2URL = imageURI;
+                        $scope.outlet.modifiedImage2 = true;
+                        $scope.image2URL = getImageURL($scope.outlet.StringImage2);
+                        var image = document.getElementById('outletImg2');
+                        image.src = imageURI;
+                    }
+                });
             }                        
         } else if (i == 3) {
             if (!isEmpty($scope.outlet.StringImage3)) {
-                openImgViewer($scope.outlet.Name, $scope.image3URL);
+                openImgViewer($scope.outlet.Name, $scope.image3URL, function (imageURI) {
+                    if (imageURI != null) {
+                        $scope.outlet.image3URL = imageURI;
+                        $scope.outlet.modifiedImage3 = true;
+                        $scope.image3URL = getImageURL($scope.outlet.StringImage3);
+                        var image = document.getElementById('outletImg3');
+                        image.src = imageURI;
+                    }
+                });
             }
         } else {
             captureImage(function (imageURI) {
@@ -65,7 +90,7 @@
                 //var image = document.getElementById('outletImg' + i);
                 //image.src = "data:image/jpeg;base64," + imageData;            
             }, function (err) {
-                showError(err);
+                //showError(err);
             });
         }
     }

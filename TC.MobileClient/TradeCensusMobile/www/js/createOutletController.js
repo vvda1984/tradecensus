@@ -1,4 +1,5 @@
 ﻿function newOutletController($scope, $mdDialog) {
+    //log($scope.outletTypes);
     $scope.allowCapture = true;
     $scope.showImage1 = false;
     $scope.showImage2 = false;
@@ -6,6 +7,9 @@
     $scope.outlet.modifiedImage1 = false;
     $scope.outlet.modifiedImage2 = false;
     $scope.outlet.modifiedImage3 = false;
+    $scope.createNew = $scope.outlet.PStatus == 0;
+    $scope.showDraft = $scope.outlet.PStatus != 0;
+    $scope.isDeleted = false;
     
     $scope.capture = function (i) {
         if (i == 1) {
@@ -51,10 +55,16 @@
                 //var image = document.getElementById('outletImg' + i);
                 //image.src = "data:image/jpeg;base64," + imageData;            
             }, function (err) {
-                showError(err);
+                //showError(err);
             });
         }
     }
+
+    $scope.deleteOutlet = function () {
+        log("delete pressed");
+        $scope.isDeleted = true;
+        $mdDialog.hide(true);
+    };
 
     $scope.saveUpdate = function () {
         if (isEmpty($scope.outlet.Name)) {
