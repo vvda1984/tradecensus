@@ -2,51 +2,7 @@
 
 app.controller('LoginController', ['$scope', '$http', function ($scope, $http) {
     console.log('Enter Login Controller');
-    //if (!isInitialize) {
-    //    isInitialize = true;
-    //    showDlg('Read settings', 'Please wait...');
-    //    selectConfigs(function (tx2, dbres2) {
-    //        var rowLen = dbres2.rows.length;
-    //        console.log('Config len: ' + rowLen.toString());
-    //        if (rowLen) {
-    //            for (i = 0; i < rowLen; i++) {
-    //                var name = dbres2.rows.item(i).Name;
-    //                var value = dbres2.rows.item(i).Value;
-    //                if (name == 'protocol') {
-    //                    $scope.config.protocol = value;
-    //                } else if (name == 'ip') {
-    //                    log('set ip: ' + value);
-    //                    $scope.config.ip = value;
-    //                } else if (name == 'port') {
-    //                    $scope.config.port = value;
-    //                } else if (name == 'service_name') {
-    //                    $scope.config.service_name = value;
-    //                } else if (name == 'item_count') {
-    //                    $scope.config.item_count = value;
-    //                } else if (name == 'distance') {
-    //                    $scope.config.distance = value;
-    //                } else if (name == 'province_id') {
-    //                    $scope.config.province_id = value;
-    //                } else if (name == 'calc_distance_algorithm') {
-    //                    $scope.config.calc_distance_algorithm = value;
-    //                } else if (name == 'tbl_area_ver') {
-    //                    $scope.config.tbl_area_ver = value;
-    //                } else if (name == 'tbl_outlettype_ver') {
-    //                    $scope.config.tbl_outlettype_ver = value;
-    //                } else if (name == 'tbl_province_ver') {
-    //                    $scope.config.tbl_province_ver = value;
-    //                } else if (name == 'tbl_zone_ver') {
-    //                    $scope.config.tbl_zone_ver = value;
-    //                }
-    //            }
-    //        }
-    //        hideDlg();
-    //        baseURL = buildURL($scope.config.protocol, $scope.config.ip, $scope.config.port, $scope.config.service_name);
-    //    }, function (dberr) {
-    //        showDlg(dberr.message, 'DB Error');
-    //    });
-    //}
-
+  
     $scope.exit = function () {
         navigator.app.exitApp();
     };
@@ -91,7 +47,7 @@ app.controller('LoginController', ['$scope', '$http', function ($scope, $http) {
         //}
 
         showDlg('Login', 'Please wait...');
-        var isConnected = isOnline();
+        var isConnected = $scope.isOnline();
         log('Newwork status: ' + isConnected);
         if (isConnected) {
             loginOnline(loginSuccess, loginError);
@@ -112,6 +68,8 @@ app.controller('LoginController', ['$scope', '$http', function ($scope, $http) {
             url: url
         }).then(function (resp) {
             hideDlg();
+            log('login resp: ');
+            log(resp);
             var data = resp.data;
             if (data.Status == -1) { // error
                 onError(data.ErrorMessage);
@@ -198,7 +156,7 @@ app.controller('LoginController', ['$scope', '$http', function ($scope, $http) {
 
         log('create outlet tables');
         createOutletTables($scope.config.tbl_outletSync, $scope.config.tbl_outlet, function () {
-            if (isOnline()) {
+            if ($scope.isOnline()) {
                 showDlg('Downloading Settings', 'Please wait...');
                 downloadServerConfig(function () {
                     hideDlg();

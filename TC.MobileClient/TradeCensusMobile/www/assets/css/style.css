@@ -652,6 +652,7 @@ background-color: rgba(255,255,255,0.8); /*rgba(0,0,0, 0.8);    */
         margin-top: 54px;
         margin-right:8px;
         margin-bottom: 12px;
+        border:1px solid #DDDDDD;
     }
         #home-right-panel .config-panel .bottom {
             /*height: 54px;*/

@@ -18,7 +18,7 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
         var curlat = 10.773598;
         var curlng = 106.7058;
         var isMapLoaded = false;
-        var hasNetwork = null;
+        var hasNetwork = null;        
        
         $scope.editOutletFull = false;
         $scope.allowRefresh = true;
@@ -44,20 +44,15 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
         $scope.outlets = [];
 
         $scope.refresh = function () {
-            updateViewWhenNetworkStatusChanged(isOnline());
-            $scope.closeLeftPanel();           
-            if($scope.outletCategory == 0) {
-                nearByOutlets = [];
-            }
-            getOutlets();
-
-            //log('query location...');
-            //try {
-            //    showDlg('Get outlets', "Please wait...");
-            //    navigator.geolocation.getCurrentPosition(onGetLocationSuccess, onGetLocationError);
-            //} catch (err) {
-            //    log(err);
-            //}
+            hasNetwork = $scope.isOnline();          
+            setSyncStatus(function () {
+                updateViewWhenNetworkStatusChanged(function () {
+                    if ($scope.outletCategory == 0) {
+                        nearByOutlets = [];
+                    }
+                    getOutlets();
+                });               
+            });            
         }
         
         $scope.closeLeftPanel = function () {
@@ -83,6 +78,7 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
                 $scope.showExpandButton = $scope.outlets.length > 0 && hasNetwork != null && hasNetwork;
             } else if (leftPanelStatus == 0) {
                 $scope.showExpandButton = false;
+                $scope.showCollapseButton = false;
             }
             changeLeftPanelView();
         }
@@ -141,7 +137,7 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
                     }
                     curlat = lat;
                     curlng = lng;                                       
-                    if (isOnline()) {
+                    if (hasNetwork) {
                         adjustCurrentLocation(lat, lng);
 
                         log('try reverse the address');
@@ -189,7 +185,7 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
         }
 
         $scope.syncOutlets = function () {
-            if (!isOnline()) {
+            if (!hasNetwork) {
                 showError('Please check network connection!');
                 return;
             }
@@ -213,22 +209,21 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
                 }, handleDBError);
         }
 
-        function updateViewWhenNetworkStatusChanged(isConnected) {
-            var isChanged = hasNetwork != isConnected;
-            hasNetwork = isConnected;
-            if (isChanged) {
-                if (hasNetwork) {
-                    $scope.showListButton = true;
-                    $scope.showCollapseButton = false;
-                    $scope.showExpandButton = false;
-                    $scope.closeLeftPanel();
-                } else {
-                    $scope.showListButton = false;
-                    $scope.showCollapseButton = false;
-                    $scope.showExpandButton = false;
-                    $scope.showLeftPanelFull();
-                }
-            }
+        function updateViewWhenNetworkStatusChanged(callback) {
+            log('update view when base on network: ' + hasNetwork.toString());
+            if (hasNetwork) {
+                $scope.showListButton = true;
+                $scope.showCollapseButton = false;
+                $scope.showExpandButton = false;
+                $scope.closeLeftPanel();
+                initializeMap(callback);
+            } else {
+                $scope.showListButton = false;
+                $scope.showCollapseButton = false;
+                $scope.showExpandButton = false;
+                $scope.showLeftPanelFull();
+                callback();
+            }            
         }
 
         function changeLeftPanelView() {
@@ -444,7 +439,7 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
             nearByOutlets = [];
 
             showDlg('Load near-by outlets', "Please wait...");
-            if (isOnline()) {
+            if (hasNetwork) {
                 getNearByOutletsOnline();
             } else {
                 getNearByOutletsOffline();
@@ -484,7 +479,7 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
 
         function getNearByOutletsOffline() {
             // hide panel
-            $scope.closeLeftPanel();
+            //$scope.closeLeftPanel();
             meter = $scope.config.distance;
             count = $scope.config.item_count;
             var saleLoc = { Lat: curlat, Lng: curlng };
@@ -598,7 +593,7 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
         function getOutletsFromLocal(state) {
             showDlg('Get outlets', "Please wait...");
             try {
-                selectOutlets($scope.config.tbl_outlet, state,
+                selectOutlets($scope.config.tbl_outlet, state, $scope.config.province_id,
                     function (dbres) {
                         hideDlg();
                         var rowLen = dbres.rows.length;
@@ -671,11 +666,11 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
             clearMarkers();
 
             log("load outlets markers");
-            var bounds = new google.maps.LatLngBounds();
+            //var bounds = new google.maps.LatLngBounds();
             for (var i = 0; i < outlets.length; i++) {
                 var outlet = outlets[i];
                 var position = new google.maps.LatLng(outlet.Latitude, outlet.Longitude);
-                bounds.extend(position);               
+                //bounds.extend(position);               
                 createMaker(outlet, position, i, $scope.outletCategory == 1);
             };
             var homePosition = new google.maps.LatLng(curlat, curlng);
@@ -684,15 +679,16 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
                 icon: 'assets/img/pin-cur.png',
                 map: map,
             });
-            bounds.extend(homePosition);
+            // bounds.extend(homePosition);
 
-            map.fitBounds(bounds);
+            //map.fitBounds(bounds);
             var options = {
                 gridSize: $scope.config.cluster_size,
                 maxZoom: $scope.config.cluster_max_zoom,
                 imagePath: 'assets/img/m'
             };
             markerClusterer = new MarkerClusterer(map, markers, options);
+            //adjustCurrentLocation(la)
 
             var mapeventListener = google.maps.event.addListener(map, 'bounds_changed', function (event) {
                 log('map bounds_changed');
@@ -869,7 +865,7 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
         }
 
         function submitOutlet(outlet, callback) {
-            if (isOnline()) {
+            if (hasNetwork) {
                 var url = baseURL + '/outlet/save';
                 log('Call service api: ' + url);
                 //var data = JSON.stringify(outlet);
@@ -885,7 +881,7 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
                     if (data.Status == -1) { // error
                         handleError(data.ErrorMessage);
                     } else {
-                        log('submit outlet successfully: ' + data.RowID);
+                        log('submit outlet successfully: ' + data.RowID + ', ' + data.ID);
                         outlet.PRowID = data.RowID;
                         callback(true);
                     }
@@ -1003,7 +999,7 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
 
         function initializeMap(callback) {
             try {               
-                if (isOnline() && !isMapLoaded) {
+                if (hasNetwork && !isMapLoaded) {
                     isMapLoaded = true;
                     log('Create map...');
                     map = new google.maps.Map(document.getElementById('map'), {
@@ -1047,7 +1043,7 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
         }
 
         function setSyncStatus(callback) {
-            if (isOnline()) {
+            if (hasNetwork) {
                 selectUnsyncedOutlets($scope.config.tbl_outlet,
                     function (dbres) {
                         log('Number of unsynced outlets: ' + dbres.rows.length.toString());
@@ -1059,6 +1055,7 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
                         callback();
                     });
             } else {
+                $scope.showSyncButton = false;
                 callback();
             }
         }
@@ -1070,13 +1067,9 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
             //    script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyDpKidHSrPMfErXLJSts9R6pam7iUOr_W0&callback=initializeMap";
             //    document.body.appendChild(script);
             //});
-            updateViewWhenNetworkStatusChanged(isOnline());
+            //updateViewWhenNetworkStatusChanged(hasNetwork);
             log('Refresh view to get near-by...');
-            initializeMap(function () {
-                setSyncStatus(function () {
-                    $scope.refresh();
-                });
-            });
+            initializeMap(function () { $scope.refresh(); });
         } catch (err) {
             showError(err);
             log(err);

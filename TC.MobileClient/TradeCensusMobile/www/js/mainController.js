@@ -187,6 +187,13 @@ var app = angular
                 if (!$scope.$$phase) $scope.$apply();
             } catch (err) {
             }
-        };
-        //$location.path('/login');
+        };    
+        $scope.isOnline = function() {
+            if (!$scope.config.mode_online) return false;
+            // ANVO: DEBUG
+            if (isDev)
+                return true;
+            var networkState = navigator.connection.type;
+            return (networkState != 'Unknown connection' && networkState != 'no network connection')
+        }
     }]);

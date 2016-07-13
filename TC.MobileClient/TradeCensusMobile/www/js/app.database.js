@@ -560,10 +560,10 @@ function updateOutlet(tx, outletTbl, outlet, state, synced) {
        });
 }
 
-function selectOutlets(outletTbl, state, onSuccess, onError) {
+function selectOutlets(outletTbl, state, provinceID, onSuccess, onError) {
     db.transaction(function (tx) {
         log('Select existing outlet')
-        var sql = 'SELECT * FROM ' + outletTbl + ' WHERE '
+        var sql = 'SELECT * FROM ' + outletTbl + ' WHERE provinceID = "' + provinceID + '" ';
         if (state == 1) {
             sql = sql.concat('PIsAdd = 1');
         } else if (state == 2) {
@@ -623,14 +623,11 @@ function selectOutletsDistance(outletTbl, latMin, latMax, lngMin, lngMax, onSucc
     }, onError);
 }
 
-function setOutletSyncStatus(tx, outletTbl, outletID, synced, onSuccess, onError) {
-    log('update outlet ' + outlet.ID.toString() + '(' + outlet.PLastModTS + ')');
+function setOutletSyncStatus(tx, outletTbl, outletID, synced, onSuccess, onError) {    
     var n = (new Date()).getTime();
-    var marked = n < outlet.PLastModTS;
-    log(outlet);
-
     var sql = 'UPDATE ' + outletTbl + ' SET ';
     sql = sql.concat('PSynced=', synced ? '1' : '0', ', ');
+    sql = sql.concat('PLastModTS=', n.toString(), ' ');
     sql = sql.concat(' WHERE ID=', outletID.toString());
 
     logSqlCommand(sql);
