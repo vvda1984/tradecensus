@@ -1,72 +1,76 @@
 <div id="view-setting" class="main-view">
     <div class="toolbar">
-        <h3 class="md-toolbar-tools">Settings</h3> 
+        <h3 class="md-toolbar-tools">Settings</h3>
     </div>
     <!--<md-toolbar>
-        <h3 class="md-toolbar-tools">Settings</h3> 
+        <h3 class="md-toolbar-tools">Settings</h3>
     </md-toolbar>-->
 
     <div id="config-form">
         <md-content layout-padding="" class="md-content-white">
             <form name="configForm">
-                <md-input-container class="md-block" flex-gt-sm="" style="margin-bottom:38px;">
-                    <label>{{ resource.text_EnterProtocol }}</label>
-                    <md-select ng-model="config.protocol">
-                        <md-option value="http">
-                            HTTP
-                        </md-option>
-                        <md-option value="https">
-                            HTTPS
-                        </md-option>
-                    </md-select>
-                </md-input-container>
+                <div layout-gt-sm="row">
+                    <md-input-container class="md-block" flex-gt-sm="" style="margin-bottom:24px;">
+                        <label>{{ resource.text_EnterProtocol }}</label>
+                        <md-select ng-model="config.protocol">
+                            <md-option value="http">
+                                HTTP
+                            </md-option>
+                            <md-option value="https">
+                                HTTPS
+                            </md-option>
+                        </md-select>
+                    </md-input-container>
+                    <md-input-container class="md-block" flex-gt-sm="">
+                        <label>{{ resource.text_EnterIPAddress }}</label>
+                        <input required="" name="ipAddress" ng-model="config.ip">
+                        <!--<div ng-messages="configForm.ipAddress.$error" role="alert">
+                            <div ng-message="required">{{ resource.text_ValRequired }}</div>
+                        </div>-->
+                    </md-input-container>
 
-                <md-input-container class="md-block">
-                    <label>{{ resource.text_EnterIPAddress }}</label>
-                    <input required="" name="ipAddress" ng-model="config.ip">
-                    <!--<div ng-messages="configForm.ipAddress.$error" role="alert">
-                        <div ng-message="required">{{ resource.text_ValRequired }}</div>
-                    </div>-->
-                </md-input-container>
+                    <md-input-container class="md-block" flex-gt-sm="">
+                        <label>{{ resource.text_EnterPort }}</label>
+                        <input required="" name="ipAddress" ng-model="config.port">
+                        <!--<div ng-messages="configForm.ipAddress.$error" role="alert">
+                             <div ng-message="required">{{ resource.text_ValRequired }}</div>
+                        </div>-->
+                    </md-input-container>
+                </div>
+                <div layout-gt-sm="row">
+                    <md-input-container class="md-block" flex-gt-sm="">
+                        <label>{{ resource.text_Distance }}</label>
+                        <input type="number" required="" name="distance" ng-model="config.distance">
+                        <!--<div ng-messages="configForm.ipAddress.$error" role="alert">
+                             <div ng-message="required">{{ resource.text_ValRequired }}</div>
+                        </div>-->
 
-                <md-input-container class="md-block">
-                    <label>{{ resource.text_EnterPort }}</label>
-                    <input required="" name="ipAddress" ng-model="config.port">
-                    <!--<div ng-messages="configForm.ipAddress.$error" role="alert">
-                         <div ng-message="required">{{ resource.text_ValRequired }}</div>
-                    </div>-->
-                </md-input-container>
+                    </md-input-container>
+                </div>
+                <div layout-gt-sm="row">
+                    <md-input-container class="md-block" flex-gt-sm="">
+                        <label>{{ resource.text_ItemCount }}</label>
+                        <input type="number" required="" name="item_count" ng-model="config.item_count">
+                        <!--<div ng-messages="configForm.ipAddress.$error" role="alert">
+                             <div ng-message="required">{{ resource.text_ValRequired }}</div>
+                        </div>-->
 
-                <md-input-container class="md-block">
-                    <label>{{ resource.text_Distance }}</label>
-                    <input type="number" required="" name="distance" ng-model="config.distance">
-                    <!--<div ng-messages="configForm.ipAddress.$error" role="alert">
-                         <div ng-message="required">{{ resource.text_ValRequired }}</div>
-                    </div>-->
+                    </md-input-container>
+                </div>
 
-                </md-input-container>
 
-                <md-input-container class="md-block">
-                    <label>{{ resource.text_ItemCount }}</label>
-                    <input type="number" required="" name="item_count" ng-model="config.item_count">
-                    <!--<div ng-messages="configForm.ipAddress.$error" role="alert">
-                     <div ng-message="required">{{ resource.text_ValRequired }}</div>
-                </div>-->
-
-                </md-input-container>
-
-                <md-input-container class="md-block" flex-gt-sm="">
+                <md-input-container class="md-block" flex-gt-sm="" style="margin-bottom:20px;">
                     <label>{{ resource.text_EnterProvince }}</label>
                     <md-select ng-model="config.province_id">
                         <md-option ng-repeat="p in provinces" value="{{p.id}}">
                             {{p.name}}
                         </md-option>
                     </md-select>
-                </md-input-container>    
+                </md-input-container>
                 <div class="md-block-item" style="margin-bottom:0px;">
-                    <div class="md-block-item-title">Mode</div>                  
-                    <md-switch ng-model="config.mode_online">{{config.mode_online ? "Online" : "Offline"}}</md-switch>
-                </div>                                         
+                    <div class="md-block-item-title">Mode</div>
+                    <md-switch class="md-primary" ng-model="config.mode_online">{{config.mode_online ? "Online" : "Offline"}}</md-switch>
+                </div>
             </form>
         </md-content>
     </div>
@@ -74,5 +78,5 @@
     <div class="action-buttons">
         <md-button class="md-raised md-primary" ng-click="saveConfig()">{{ resource.text_OK }}</md-button>
         <md-button class="md-raised" ng-click="cancel()">{{ resource.text_Cancel }}</md-button>
-    </div>	
+    </div>
 </div>

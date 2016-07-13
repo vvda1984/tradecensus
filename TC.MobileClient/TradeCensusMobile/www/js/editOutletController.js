@@ -27,8 +27,9 @@
         if (i == 1) {
             if (!isEmpty($scope.outlet.StringImage1)) {
                 openImgViewer($scope.outlet.Name, $scope.image1URL, function (imageURI) {
+                    log('Update imageURI 1: ' + imageURI);
                     if (imageURI != null) {
-                        $scope.outlet.image1URL = imageURI;
+                        $scope.outlet.StringImage1 = imageURI;
                         $scope.outlet.modifiedImage1 = true;
                         $scope.image1URL = getImageURL($scope.outlet.StringImage1);
                         var image = document.getElementById('outletImg1');
@@ -39,8 +40,9 @@
         } else if (i == 2) {
             if (!isEmpty($scope.outlet.StringImage2)) {
                 openImgViewer($scope.outlet.Name, $scope.image2URL, function (imageURI) {
+                    log('Update imageURI 2: ' + imageURI);
                     if (imageURI != null) {
-                        $scope.outlet.image2URL = imageURI;
+                        $scope.outlet.StringImage2 = imageURI;
                         $scope.outlet.modifiedImage2 = true;
                         $scope.image2URL = getImageURL($scope.outlet.StringImage2);
                         var image = document.getElementById('outletImg2');
@@ -51,8 +53,9 @@
         } else if (i == 3) {
             if (!isEmpty($scope.outlet.StringImage3)) {
                 openImgViewer($scope.outlet.Name, $scope.image3URL, function (imageURI) {
+                    log('Update imageURI 3: ' + imageURI);
                     if (imageURI != null) {
-                        $scope.outlet.image3URL = imageURI;
+                        $scope.outlet.StringImage3 = imageURI;
                         $scope.outlet.modifiedImage3 = true;
                         $scope.image3URL = getImageURL($scope.outlet.StringImage3);
                         var image = document.getElementById('outletImg3');

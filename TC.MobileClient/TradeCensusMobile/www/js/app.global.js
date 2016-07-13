@@ -2,7 +2,7 @@
 var db;                             // database instance
 var map = null;                     // google map
 //var isOnline = true;              // network status
-var isDev = false;                  // enable DEV mode
+var isDev = true;                   // enable DEV mode
 var userOutletTable = 'outlet';     // outlet table name for current user
 var isDlgOpened = false;     // 
 var isInitialize = false;
@@ -265,7 +265,7 @@ function loadDefaultConfig() {
     // Load database...
     return {
         cluster_size: 50,
-        cluster_max_zoom: 16,
+        cluster_max_zoom: 15.5,
         mode_online : true,
         protocol: 'http',
         //ip: '27.0.15.234',
@@ -395,6 +395,7 @@ function replaceImage() {
     captureImage(function (imageURI) {
         var image = document.getElementById('curOutletImage');
         image.src = imageURI;
+        log('set new image path: ' + imageURI);
         newImageFile = imageURI;
     }, function (err) {
         //showError(err);
@@ -402,14 +403,18 @@ function replaceImage() {
 }
 
 function captureImage(onSuccess, onError) {
-    try {
-        navigator.camera.getPicture(onSuccess, onError,
-            {
-                quality: 50,
-                correctOrientation: true,
-                destinationType: Camera.DestinationType.FILE_URI // DATA_URL for base64 => not recommend due to memory issue
-            });
-    } catch (err) {
-        showError(err);
+    if (isDev) {
+        onSuccess("test url");
+    } else {
+        try {
+            navigator.camera.getPicture(onSuccess, onError,
+                {
+                    quality: 50,
+                    correctOrientation: true,
+                    destinationType: Camera.DestinationType.FILE_URI // DATA_URL for base64 => not recommend due to memory issue
+                });
+        } catch (err) {
+            showError(err);
+        }
     }
 }

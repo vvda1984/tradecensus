@@ -238,7 +238,7 @@ hr {
     top: 0;
     right: 4px;
     display: inline;
-    z-index: 3;
+    z-index: 4;
 }
 
     #view-home-content-top a {
@@ -359,7 +359,7 @@ hr {
         top: 0;
         left: 0;
         z-index: 3;
-        padding: 8px;        
+        padding: 8px;
     }
 
 
@@ -379,21 +379,21 @@ hr {
 }*/
 
 #outletPanel {
-    height: 100%;
+    max-height: 100%;
     width: 0;
     position: fixed;
     z-index: 2;
     /*background-color: rgb(0,0,0);
     background-color: rgba(255,255,255,0.8); /*rgba(0,0,0, 0.8);    */
     /*background-color: #EBEBEB;*/
-    background:transparent;
+    background: transparent;
     overflow-x: hidden;
     transition: 0.5s;
 }
 
     #outletPanel .outlet-list-panel {
         margin-top: 54px;
-        margin-bottom: 12px;        
+        margin-bottom: 12px;
     }
 
         #outletPanel .outlet-list-panel .outlet-item {
@@ -432,13 +432,13 @@ hr {
     .content .value {
         font-size: 16px;
         margin-right: 16px;
-        padding-right: 8px;        
+        padding-right: 8px;
     }
 
-    .content table{
-        margin:-2px;
-        padding:0px;
-    }    
+    .content table {
+        margin: -2px;
+        padding: 0px;
+    }
 
 .outlet-item .header {
     color: #4285F4;
@@ -470,23 +470,30 @@ hr {
 }
 
 .view-marker {
-    font-weight:bold;
-    color:#103B68;    
+    font-weight: bold;
+    color: #103B68;
 }
 /*.gm-style-iw + div {
     display: none;   
     width: 0px;
 }*/
 
+.outlet-image-container {
+    border: 0.5px solid #DDDDDD;
+    border-radius: 0px;
+    margin-right:12px;
+}
+
 .outlet-image {
-    height: 76px;
-    width: 120px;   
-    margin: 8px;
+    min-height:80px;
+    min-width:128px;
+    height: 100%;
+    width: 100%;
 }
 
 .outlet-image-large {
     max-height: 400px;
-    max-width: 600px;    
+    max-width: 600px;
 }
 
 .blue {
@@ -526,6 +533,7 @@ hr {
         box-shadow: 0 1px 2px rgba(0,0,0,0.2);
         height: 42px;
         width: 42px;
+        /*border-radius: 21px;*/
         display: inline-block;
         margin-left: 8px;
     }
@@ -540,9 +548,9 @@ hr {
     #view-home-top-panel span {
         display: inline-block;
         vertical-align: middle;
-        margin-left: -4px;
+        margin-left: 12px;
         margin-right: 12px;
-        width: 126px;
+        /*width: 126px;*/
         font-weight: 500;
     }
 
@@ -571,7 +579,7 @@ hr {
         }
 
         #view-home-top-panel .dropdown > :first-child {
-             border-top: 0px;
+            border-top: 0px;
         }
 
         #view-home-top-panel .dropdown .dropdown-item span {
@@ -588,6 +596,71 @@ hr {
 #outlet-dropdown {
     display: none;
 }
+
+#view-home-top-panel-right {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 4;
+    border: 0px;
+    display: inline-block;
+}
+
+    #view-home-top-panel-right .box {
+        border: 0px;
+        background: #fff;
+        border-radius: 2px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        height: 42px;
+        display: inline-block;
+        height: 42px;
+    }
+
+    #view-home-top-panel-right .top-panel-button {
+        border: 0px;
+        border-radius: 2px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        height: 42px;
+        width: 42px;
+        /*border-radius: 21px;*/
+        display: inline-block;
+        margin-left: 8px;
+    }
+    #view-home-top-panel-right img {
+        height: 24px;
+        width: 24px;
+        margin: 9px;
+        vertical-align: middle;
+    }
+
+#home-right-panel {
+    position: fixed;
+    max-height: 100%;
+    width: 32%;
+    margin-right: -32%;
+    right: 0;
+    z-index: 3;
+    /*background-color: rgb(0,0,0);
+background-color: rgba(255,255,255,0.8); /*rgba(0,0,0, 0.8);    */
+    /*background-color: #EBEBEB;*/
+    background: transparent;
+    overflow-x: hidden;
+    transition: 0.5s;
+}
+
+    #home-right-panel .config-panel {     
+        margin-top: 54px;
+        margin-right:8px;
+        margin-bottom: 12px;
+    }
+        #home-right-panel .config-panel .bottom {
+            /*height: 54px;*/
+            /*border-bottom: 1px solid #EBEBEB;*/
+            text-align: center;
+            line-height: 34px;
+            background: transparent;
+            margin-bottom:12px;
+        }
 
 /*************** ANGULAR MATERIAL CUSTOMIZE ******************/
 
@@ -788,19 +861,34 @@ hr {
 
 /*********************************/
 
-.highlight-red{
+.highlight-red {
     color: red;
-    font-weight:bold;
+    font-weight: bold;
 }
-.highlight-blue{
+
+.highlight-blue {
     color: #103B68;
-    font-weight:bold;
+    font-weight: bold;
 }
 
 .hidden {
-    display:none;
+    display: none;
 }
 
-#captureButton{
-    margin-left:24px;
+#captureButton {
+    margin-left: 24px;
+}
+
+.span-title {
+    color: rgb(128, 128, 128);
+    margin: 4px 0;
+    font-size: 13px;
+}
+
+.span-value {
+    margin-top:8px;
+    color: rgba(0,0,0,1);
+        /*height:48px;
+        border-bottom:1px solid #DDDDDD;*/
+    min-width:92px;
 }

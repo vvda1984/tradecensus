@@ -606,8 +606,7 @@ function deteleOutletDB(outletTbl, outlet, onSuccess, onError) {
         var sql = 'DELETE FROM ' + outletTbl + ' WHERE'
         sql = sql.concat(' ID = ', outlet.ID);        
         logSqlCommand(sql);
-        tx.executeSql(sql, [], function (tx1) { onSuccess(dbres);
-        }, onError);
+        tx.executeSql(sql, [], onSuccess, onError);
     }, onError);
 }
 

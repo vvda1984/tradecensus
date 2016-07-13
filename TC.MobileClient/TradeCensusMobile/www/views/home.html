@@ -1,13 +1,20 @@
 <div id="view-home">
     <div id="view-home-top-panel">
-        <div class="box">
-            <img src="assets/img/menu.svg" ng-show="showCollapseExpend" ng-click="showLeftPanel()" />
-            <span ng-click="showDropdown()">{{outletHeader}}</span>
-            <img src="assets/img/arrow-left.svg" ng-show="showCollapseExpend" ng-click="closeLeftPanel()" />
-            <img src="assets/img/arrow-right.svg" ng-show="showCollapseExpend" ng-click="showLeftPanel()" />            
+        <div class="box" ng-show="showListButton" ng-click="showhideLeftPanel()">
+            <img src="assets/img/menu.svg" />
+        </div>
+        <div class="box" ng-show="showCollapseButton" ng-click="closeLeftPanel()">
+            <img src="assets/img/arrow-left.svg" />
+        </div>
+        <div class="box" ng-show="showExpandButton" ng-click="showLeftPanelFull()">
+            <img src="assets/img/arrow-right.svg" />
+        </div>
+        <div class="box" ng-click="showDropdown()">
+            <span>{{outletHeader}}</span>
+            <img src="assets/img/arrow-down.svg" />
         </div>
         <div class="top-panel-button blue" ng-show="allowRefresh" ng-click="refresh()">
-            <img src="assets/img/refresh.svg" />            
+            <img src="assets/img/refresh.svg" />
         </div>
         <div class="top-panel-button blue" ng-click="createNewOutlet()">
             <img src="assets/img/add.svg" />
@@ -24,9 +31,9 @@
     </div>
 
     <div id="outletPanel" ng-click="hideDropdown()">
-        <div id="outlet-panel-near" class="outlet-list-panel">        
-            <span ng-show="showNoOutletFound">No outlet found</span>
-            <div style="margin-left:8px;" class="outlet-item" ng-repeat="outlet in outlets" ng-click="hideDropdown()">
+        <div id="outlet-panel-near" class="outlet-list-panel">
+            <span style="margin-left:8px;" ng-show="showNoOutletFound">No outlet found</span>
+            <div class="outlet-item" ng-repeat="outlet in outlets" ng-click="hideDropdown()">
                 <div class="outlet-item-col1"> <div class="circle">{{$index + 1}}</div> </div>
                 <div class="outlet-item-col2">
                     <span class="header" ng-click="openOutlet($index)">{{outlet.Name}}</span>
@@ -53,11 +60,60 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div id="view-home-top-panel-right">
+        <!--<div class="box" ng-show="showSetingExpand" ng-click="showhideRightPanel()">
+            <img src="assets/img/arrow-left.svg" />
+        </div>
+        <div class="box" ng-show="showSetingCollapse" ng-click="showhideRightPanel()">
+            <img src="assets/img/arrow-right.svg" />
+        </div>-->
+        <div class="box" ng-click="showhideRightPanel()">
+            <img src="assets/img/setting-white.svg" />
         </div>       
-    </div>   
-     
+    </div>
+
+    <div id="home-right-panel" ng-click="hideDropdown()">
+        <div id="config-form" class="config-panel">            
+            <md-content layout-padding="" class="md-content-white">
+                <form name="configForm">                   
+                    <md-input-container class="md-block">
+                        <label>{{ resource.text_Distance }}</label>
+                        <input type="number" required="" name="distance" ng-model="config.distance">
+                        <!--<div ng-messages="configForm.ipAddress.$error" role="alert">
+                             <div ng-message="required">{{ resource.text_ValRequired }}</div>
+                        </div>-->
+
+                    </md-input-container>
+
+                    <md-input-container class="md-block">
+                        <label>{{ resource.text_ItemCount }}</label>
+                        <input type="number" required="" name="item_count" ng-model="config.item_count">
+                        <!--<div ng-messages="configForm.ipAddress.$error" role="alert">
+                             <div ng-message="required">{{ resource.text_ValRequired }}</div>
+                        </div>-->
+
+                    </md-input-container>
+                  
+                    <div class="md-block-item" style="margin-bottom:0px;">
+                        <div class="md-block-item-title">Mode</div>
+                        <md-switch class="md-primary" ng-model="config.mode_online">{{config.mode_online ? "Online" : "Offline"}}</md-switch>
+                    </div>                  
+                </form>
+            </md-content>
+            <div class="bottom">
+                <!--<span>{{user.firstName}} {{user.lastName}}</span>-->
+                <div class="button label-blue" ng-click="changeView('login')">
+                    <div class="center" fit>LOGOUT</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="view-map">
         <div id="map"></div>
-    </div>    
+    </div>
 </div>
 
