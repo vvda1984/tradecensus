@@ -3,8 +3,14 @@ var db;                             // database instance
 var map = null;                     // google map
 //var isOnline = true;              // network status
 var isDev = true;                   // enable DEV mode
+const devCurLat = 10.800779;
+const devCurLng = 106.647360;
+const devNewDetlta = 0.00001;
+var devNewLat = devCurLat + devNewDetlta;
+var devNewLng = devCurLng + devNewDetlta;
+
 var userOutletTable = 'outlet';     // outlet table name for current user
-var isDlgOpened = false;     // 
+var isDlgOpened = false;            // 
 var isInitialize = false;
 var provinces = [];
 var outletTypes = [];
@@ -268,10 +274,10 @@ function loadDefaultConfig() {
         cluster_max_zoom: 15.5,
         mode_online : true,
         protocol: 'http',
-        //ip: '27.0.15.234',
-        //port: '3001',
-        ip: '192.168.1.102', //'27.0.15.234',        
-        port: '33334',//'3001',
+        ip: '27.0.15.234',
+        port: '3001',
+        //ip: '192.168.1.102', //'27.0.15.234',        
+        //port: '33334',//'3001',
         service_name: 'TradeCensusService.svc',
         map_zoom: 16,
         distance: 1000,

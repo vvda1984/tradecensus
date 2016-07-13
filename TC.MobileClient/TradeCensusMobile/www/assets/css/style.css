@@ -482,11 +482,13 @@ hr {
     border: 0.5px solid #DDDDDD;
     border-radius: 0px;
     margin-right:12px;
+    height:80px;
+    width:128px;
 }
 
 .outlet-image {
     min-height:80px;
-    min-width:128px;
+    min-width:128px;    
     height: 100%;
     width: 100%;
 }

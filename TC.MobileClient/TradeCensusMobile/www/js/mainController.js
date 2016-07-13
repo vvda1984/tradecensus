@@ -5,6 +5,40 @@
     }
 });
 
+//(function (global) {
+//    "use strict";
+ 
+//    function onDeviceReady() {
+//        document.addEventListener("backbutton", function (e) { e.preventDefault(); }, false);        
+//        document.addEventListener("online", onOnline, false);
+//        document.addEventListener("resume", onResume, false);
+//        loadMapsApi();
+//    }
+ 
+//    function onOnline () {
+//        loadMapsApi();
+//    }
+ 
+//    function onResume () {
+//        loadMapsApi();
+//    }
+ 
+//    function loadMapsApi () {
+//        if(navigator.connection.type === Connection.NONE || google.maps) {
+//            return;
+//        }
+//        $.getScript('https://maps.googleapis.com/maps/api/js?key=AIzaSyDpKidHSrPMfErXLJSts9R6pam7iUOr_W0');
+//    }
+ 
+//    global.onMapsApiLoaded = function () {
+//        // Maps API loaded and ready to be used.
+//         map = new google.maps.Map(document.getElementById("map"), {});
+//    };
+ 
+//    document.addEventListener("deviceready", onDeviceReady, false);
+//})(window);
+
+
 var app = angular
     .module('TradeCensus', ['ngRoute', 'ngMaterial', 'ngMessages'])
     .config(['$routeProvider', function ($routeProvider) {
@@ -26,7 +60,7 @@ var app = angular
         $scope.resource = loadResources();
 
         $scope.user = {
-            id: 123456, // dev
+            id: null, // dev
             password: '',
             firstName: '',
             lastName: '',

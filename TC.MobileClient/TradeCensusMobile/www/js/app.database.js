@@ -3,7 +3,7 @@
 */
 function initalizeDB(onSuccess) {
     //db = window.sqlitePlugin.openDatabase({ name: "td-v01.db", location: 'default' });
-    db = window.openDatabase("Database", "2.0", "td-v03.db", 200000);
+    db = window.openDatabase("Database", "2.0", "td-v04.db", 200000);
     db.transaction(function (tx) {
         if (resetDB) {
             tx.executeSql('DROP TABLE IF EXISTS person');
@@ -563,7 +563,7 @@ function updateOutlet(tx, outletTbl, outlet, state, synced) {
 function selectOutlets(outletTbl, state, provinceID, onSuccess, onError) {
     db.transaction(function (tx) {
         log('Select existing outlet')
-        var sql = 'SELECT * FROM ' + outletTbl + ' WHERE provinceID = "' + provinceID + '" ';
+        var sql = 'SELECT * FROM ' + outletTbl + ' WHERE provinceID = "' + provinceID + '" AND  ';
         if (state == 1) {
             sql = sql.concat('PIsAdd = 1');
         } else if (state == 2) {

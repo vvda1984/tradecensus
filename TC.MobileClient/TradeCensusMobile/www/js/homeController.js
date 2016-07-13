@@ -132,8 +132,8 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
 
                     // AnVO: DEBUG
                     if (isDev) {
-                        lat = 10.777858;
-                        lng = 106.702386;
+                        lat = devNewLat + devNewDetlta;
+                        lng = devNewLng + devNewDetlta;
                     }
                     curlat = lat;
                     curlng = lng;                                       
@@ -272,7 +272,7 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
                 Longitude: lng,
                 Name: "",
                 Note: null,
-                OTypeID: $scope.outletTypes[0].id,
+                OTypeID: $scope.outletTypes[0].ID,
                 OutletEmail: null,
                 OutletSource: 1,
                 OutletTypeName: $scope.outletTypes[0].name,
@@ -308,10 +308,10 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
                     showDlg('Saving Outlet', 'Please wait...');
                     if ($scope.outlet.IsDraft) {
                         addOutletDB($scope.config.tbl_outlet, $scope.outlet, false, function () {
-                            $scope.refresh();
-                            //addOutletRequiredFields($scope.outlet);
-                            //$scope.outlets[$scope.outlets.length] = $scope.outlet;
-                            //createMaker($scope.outlet, new google.maps.LatLng($scope.outlet.Latitude, $scope.outlet.Longitude), markers.length, true);
+                            if ($scope.outletCategory == 1)
+                                $scope.refresh();
+                            else
+                                $scope.changeOutletView(1);
                             hideDlg();
                         }, function (dberr) {
                             hideDlg();
@@ -322,7 +322,11 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
                            function (synced) {
                                addOutletDB($scope.config.tbl_outlet, $scope.outlet, synced,
                                    function () {
-                                       $scope.refresh();
+                                       if ($scope.outletCategory == 1)
+                                           $scope.refresh();
+                                       else
+                                           $scope.changeOutletView(1);
+                                       //$scope.refresh();
                                        //addOutletRequiredFields($scope.outlet);
                                        //$scope.outlets[$scope.outlets.length] = $scope.outlet;
                                        //createMaker($scope.outlet, new google.maps.LatLng($scope.outlet.Latitude, $scope.outlet.Longitude), markers.length, true);
@@ -431,8 +435,8 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
             // ANVO: DEBUG
             if (isDev) {
                 log('***set debug location...');
-                curlat = 10.770889;
-                curlng = 106.705359;
+                curlat = devCurLat;
+                curlng = devCurLng;
                 //initializeMap();lat = ;              
             }
 
@@ -643,7 +647,7 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
 
         function loadOutlets(outlets) {
             curIndex = 0;
-            if (map != null) {
+            if (map != null && hasNetwork) {
                 loadMarkers(outlets, function () {
                     setOutletsToList(outlets);
                 });
@@ -662,15 +666,16 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
         }
 
         function loadMarkers(outlets, callback) {
+            //showDlg("Load Markers...", "Please wait");
             log("Clear existing markers");
             clearMarkers();
 
-            log("load outlets markers");
-            //var bounds = new google.maps.LatLngBounds();
+            log("load outlets markers: " + outlets.length.toString());
+            var bounds = new google.maps.LatLngBounds();
             for (var i = 0; i < outlets.length; i++) {
                 var outlet = outlets[i];
                 var position = new google.maps.LatLng(outlet.Latitude, outlet.Longitude);
-                //bounds.extend(position);               
+                bounds.extend(position);               
                 createMaker(outlet, position, i, $scope.outletCategory == 1);
             };
             var homePosition = new google.maps.LatLng(curlat, curlng);
@@ -679,9 +684,9 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
                 icon: 'assets/img/pin-cur.png',
                 map: map,
             });
-            // bounds.extend(homePosition);
+            bounds.extend(homePosition);
 
-            //map.fitBounds(bounds);
+            map.fitBounds(bounds);
             var options = {
                 gridSize: $scope.config.cluster_size,
                 maxZoom: $scope.config.cluster_max_zoom,
@@ -692,8 +697,8 @@ app.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$
 
             var mapeventListener = google.maps.event.addListener(map, 'bounds_changed', function (event) {
                 log('map bounds_changed');
-                callback();
                 google.maps.event.removeListener(mapeventListener);
+                callback();                
             });
         }
 
