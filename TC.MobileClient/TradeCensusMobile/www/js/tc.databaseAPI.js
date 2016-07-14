@@ -40,7 +40,7 @@ function logSqlCommand(sql) {
     log("SQL: " + sql);
 }
 
-function insertPerson(person, password, onSuccess, onError) {
+function insertUserDB(person, password, onSuccess, onError) {
     db.transaction(function (tx) {
         var sql = "INSERT OR REPLACE INTO [person] VALUES (";
         sql = sql.concat(person.ID.toString(), ", ");
@@ -66,6 +66,12 @@ function insertPerson(person, password, onSuccess, onError) {
     });
 }
 
+function selectSettingDB(tx, onSuccess, onError) {
+    var sql = "SELECT * FROM config";
+    logSqlCommand(sql);
+    tx.executeSql(sql, [], onSuccess, onError);
+}
+
 function selectConfigs(onSuccess, onError) {
     db.transaction(function (tx) {
         var sql = "SELECT * FROM config";
@@ -74,7 +80,7 @@ function selectConfigs(onSuccess, onError) {
     });   
 }
 
-function selectUserByID(userID, password, onSuccess, onError) {
+function selectUserDB(userID, password, onSuccess, onError) {
     db.transaction(function (tx) {
         var sql = "SELECT * FROM person WHERE ";
         sql = sql.concat("id=", userID.toString(), " AND OfflinePassword='" + hashString(password), "'");
@@ -119,6 +125,24 @@ function insertOutletTypes(items, onSuccess, onError) {
         };
         onSuccess();
     });
+}
+
+function insertSettingDB(config, onSuccess, onError) {
+    db.transaction(function (tx) {        
+        insertConfigRow(tx, "protocol", config.protocol);
+        insertConfigRow(tx, "ip", config.ip, onError);
+        insertConfigRow(tx, "port", config.port);
+        insertConfigRow(tx, "service_name", config.service_name);
+        insertConfigRow(tx, "item_count", config.item_count);
+        insertConfigRow(tx, "distance", config.distance);
+        insertConfigRow(tx, "province_id", config.province_id);
+        insertConfigRow(tx, "calc_distance_algorithm", config.calc_distance_algorithm);
+        insertConfigRow(tx, "tbl_area_ver", config.tbl_area_ver);
+        insertConfigRow(tx, "tbl_outlettype_ver", config.tbl_outlettype_ver);
+        insertConfigRow(tx, "tbl_province_ver", config.tbl_province_ver);
+        insertConfigRow(tx, "tbl_zone_ver", config.tbl_zone_ver);
+        onSuccess();
+    }, onError);
 }
 
 function insertConfig(config, onSuccess, onError) {
@@ -236,12 +260,24 @@ function initializeProvinceRow(tx, name, value) {
     tx.executeSql(sql);
 }
 
+function selectProvincesDB(tx, onSuccess, onError) {
+    var sql = "SELECT * FROM province";
+    logSqlCommand(sql);
+    tx.executeSql(sql, [], onSuccess, onError);
+}
+
 function selectProvinces(onSuccess, onError) {
     db.transaction(function (tx) {
         var sql = "SELECT * FROM province";
         logSqlCommand(sql);
         tx.executeSql(sql, [], onSuccess, onError);
     });   
+}
+
+function selectOutletTypesDB(tx, onSuccess, onError) {
+    var sql = "SELECT * FROM outletType";
+    logSqlCommand(sql);
+    tx.executeSql(sql, [], onSuccess, onError);
 }
 
 function selectOutletTypes(onSuccess, onError) {
@@ -252,7 +288,7 @@ function selectOutletTypes(onSuccess, onError) {
     });
 }
 
-function createOutletTables(outletSyncTbl, outletTbl, onDone) {
+function ensureUserOutletDBExist(outletSyncTbl, outletTbl, onDone) {
     db.transaction(function (tx) {
         if (resetDB) {
             tx.executeSql('DROP TABLE IF EXISTS ' + outletSyncTbl);
@@ -324,7 +360,7 @@ function createOutletTables(outletSyncTbl, outletTbl, onDone) {
     });
 }
 
-function insertOutlets(userID, outletTbl, outlets, onSuccess, onError) {
+function insertOutletsDB(userID, outletTbl, outlets, onSuccess, onError) {
     if (outlets.length == 0) {
         onSuccess();
         return;
@@ -353,8 +389,9 @@ function insertOutlets(userID, outletTbl, outlets, onSuccess, onError) {
                 if (rowLen) {
                     var existOutlet = null;
                     for (var j = 0 ; j < rowLen; j++) {
-                        if (dbres.rows[j] != null && outlet.PRowID == dbres.rows[j].PRowID) {
-                            existOutlet = dbres.rows[j];
+                        var item = dbres.rows.item(j);
+                        if (item != null && outlet.PRowID == item.PRowID) {
+                            existOutlet = item;
                             break;
                         }
                     }
@@ -543,11 +580,13 @@ function updateOutlet(tx, outletTbl, outlet, state, synced) {
     sql = sql.concat('PStatus=', outlet.PStatus.toString() + ', ');
     sql = sql.concat('PLastModTS=', n.toString(), ', ');
     sql = sql.concat('PMarked=', marked ? '1' : '0');
+	sql = sql.concat(' WHERE ID=', outlet.ID.toString());
+	/*
     if (outlet.PRowID != null && outlet.PRowID.length > 0) {
         sql = sql.concat(' WHERE PRowID="', outlet.PRowID , '"');
     } else {
         sql = sql.concat(' WHERE ID=', outlet.ID.toString());
-    }    
+    } */   
     
     logSqlCommand(sql);
     tx.executeSql(sql, [],
@@ -558,24 +597,6 @@ function updateOutlet(tx, outletTbl, outlet, state, synced) {
            log('Update outlet error ' + outlet.ID.toString());
            log(dberr.message);
        });
-}
-
-function selectOutlets(outletTbl, state, provinceID, onSuccess, onError) {
-    db.transaction(function (tx) {
-        log('Select existing outlet')
-        var sql = 'SELECT * FROM ' + outletTbl + ' WHERE provinceID = "' + provinceID + '" AND  ';
-        if (state == 1) {
-            sql = sql.concat('PIsAdd = 1');
-        } else if (state == 2) {
-            sql = sql.concat('PIsMod = 1');
-        } else if (state == 4) {
-            sql = sql.concat('PIsAud = 1');
-        }
-        logSqlCommand(sql);
-        tx.executeSql(sql, [], function (tx1, dbres) {
-            onSuccess(dbres);
-        }, onError);
-    }, onError);
 }
 
 function saveOutletDB(outletTbl, outlet, state, synced, onSuccess, onError) {
@@ -610,7 +631,29 @@ function deteleOutletDB(outletTbl, outlet, onSuccess, onError) {
     }, onError);
 }
 
-function selectOutletsDistance(outletTbl, latMin, latMax, lngMin, lngMax, onSuccess, onError) {
+function selectOutletsDB(outletTbl, latMin, latMax, lngMin, lngMax, view, onSuccess, onError) {
+    db.transaction(function (tx) {
+        log('Select outlets by view: ' + view.toString());
+        var sql = 'SELECT * FROM ' + outletTbl + ' WHERE '; //' WHERE provinceID = "' + provinceID + '" AND  ';
+
+        if (view == 1) {
+            sql = sql.concat('PIsAdd = 1 ');
+        } else if (view == 2) {
+            sql = sql.concat('PIsMod = 1 ');
+        } else if (view == 4) {
+            sql = sql.concat('PIsAud = 1 ');
+        }
+        sql = sql.concat(' AND Latitude >= ', latMin.toString(), ' AND Latitude <= ', latMax.toString());
+        sql = sql.concat(' AND Longitude >= ', lngMin.toString(), ' AND Longitude <= ', lngMax.toString());
+
+        logSqlCommand(sql);
+        tx.executeSql(sql, [], function (tx1, dbres) {
+            onSuccess(dbres);
+        }, onError);
+    }, onError);
+}
+
+function selectOutletsInRangeDB(outletTbl, latMin, latMax, lngMin, lngMax, onSuccess, onError) {
     db.transaction(function (tx) {
         log('Select existing outlet');
         var sql = 'SELECT * FROM ' + outletTbl + ' WHERE'

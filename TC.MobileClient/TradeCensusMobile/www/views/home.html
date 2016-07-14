@@ -6,7 +6,7 @@
         <div class="box" ng-show="showCollapseButton" ng-click="closeLeftPanel()">
             <img src="assets/img/arrow-left.svg" />
         </div>
-        <div class="box" ng-show="showExpandButton" ng-click="showLeftPanelFull()">
+        <div class="box" ng-show="showExpandButton" ng-click="showLeftPanel()">
             <img src="assets/img/arrow-right.svg" />
         </div>
         <div class="box" ng-click="showDropdown()">
@@ -34,10 +34,17 @@
         <div id="outlet-panel-near" class="outlet-list-panel">
             <span style="margin-left:8px;" ng-show="showNoOutletFound">No outlet found</span>
             <div class="outlet-item" ng-repeat="outlet in outlets" ng-click="hideDropdown()">
-                <div class="outlet-item-col1"> <div class="circle">{{$index + 1}}</div> </div>
-                <div class="outlet-item-col2">
+                <div class="outlet-item-col1"> <div class="{{outlet.IsDraft ? 'circle-gray' : 'circle'}}">{{$index + 1}}</div> </div>
+                <div class="outlet-item-col2" >
                     <span class="header" ng-click="openOutlet($index)">{{outlet.Name}}</span>
-                    <span class="distance">{{outlet.Distance}} m</span>
+                    <div class="header-right" style="background-size:yellow;">
+                        <span class="distance">
+                            {{outlet.Distance}} m
+                        </span>
+                        <img class="imgDelete" ng-show="outlet.IsDraft"
+                             src="assets/img/delete.svg" ng-click="deleteOutlet($index)" />
+                    </div>
+                   
                     <div class="content">
                         <table>
                             <tr>
@@ -70,12 +77,12 @@
         <div class="box" ng-show="showSetingCollapse" ng-click="showhideRightPanel()">
             <img src="assets/img/arrow-right.svg" />
         </div>-->
-        <div class="box" ng-click="showhideRightPanel()">
+        <div class="box" ng-click="showRightPanel()">
             <img src="assets/img/setting-white.svg" />
         </div>       
     </div>
 
-    <div id="home-right-panel" ng-click="hideDropdown()">
+    <div id="home-right-panel">
         <div id="config-form" class="config-panel">            
             <md-content layout-padding="" class="md-content-white">
                 <form name="configForm">                   

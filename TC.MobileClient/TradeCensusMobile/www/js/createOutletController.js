@@ -1,5 +1,6 @@
 ﻿function newOutletController($scope, $mdDialog) {
     //log($scope.outletTypes);
+    $scope.outletTypes = outletTypes;
     $scope.allowCapture = true;
     $scope.showImage1 = false;
     $scope.showImage2 = false;
@@ -99,8 +100,10 @@
 
     $scope.deleteOutlet = function () {
         log("delete pressed");
-        $scope.isDeleted = true;
-        $mdDialog.hide(2);
+        showConfirm('Delete Outlet', 'Are you sure you want to delete outlet ' + $scope.outlet.Name, function () {
+            $scope.outlet.isDeleted = true;
+            $mdDialog.hide(true);
+        }, function () { });                
     };
 
     $scope.saveUpdate = function () {
@@ -133,7 +136,7 @@
         //    return;
         //}
 
-        $mdDialog.hide(1);
+        $mdDialog.hide(true);
     };
 
     $scope.cancelUpdate = function () {

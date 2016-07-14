@@ -1,7 +1,11 @@
-﻿
-console.log("Add ConfigController");
-app.controller("ConfigController", ["$scope", function ($scope) {
-    console.log("Enter config page");
+﻿/// <reference path="app.global.js" />
+
+function configController($scope) {
+    log("Enter config page");
+   
+    $scope.resource = resource;
+    $scope.config = config;
+    $scope.provinces = provinces;
 
     var protocol = $scope.config.protocol;
     var ip = $scope.config.ip;
@@ -10,9 +14,7 @@ app.controller("ConfigController", ["$scope", function ($scope) {
     var distance = $scope.config.distance;
     var item_count = $scope.config.item_count;
     var online = $scope.config.mode_online;
-    $scope.provinces = provinces;
-    log($scope.provinces.length);
-
+       
     $scope.saveConfig = function () {
         if (isEmpty($scope.config.ip)) {
             showError('IP is empty!');
@@ -34,26 +36,37 @@ app.controller("ConfigController", ["$scope", function ($scope) {
             return;
         }
 
-        log("save config");        
-        insertConfig($scope.config, function () {
-            $scope.changeView("login");            
+        //config.protocol = $scope.config.protocol;
+        //config.ip = $scope.config.ip;
+        //config.port = $scope.config.port;
+        //config.province_id = $scope.config.province_id;
+        //config.mode_online = $scope.config.mode_online;
+        //config.distance = $scope.distance;
+        //config.item_count = $scope.item_count;
+
+        showDlg("Update Settings", 'Please wait...');
+        insertSettingDB(config, function () {
+            hideDlg();
             baseURL = buildURL($scope.config.protocol, $scope.config.ip, $scope.config.port, $scope.config.service_name);
-            log('Update baseURL: ' + baseURL);
-        }, handleError);
+            log('Change baseURL: ' + baseURL);
+            $scope.changeView("login");
+        }, function (dberr) {
+            showError(dberr.message);
+        });
     }
 
     $scope.cancel = function () {
-        $scope.config.protocol = protocol;
-        $scope.config.ip = ip;
-        $scope.config.port = port;
-        $scope.config.province_id = province_id;
-        $scope.config.mode_online = online;
-        $scope.distance = distance;
-        $scope.item_count = item_count;
+        config.protocol = protocol;
+        config.ip = ip;
+        config.port = port;
+        config.province_id = province_id;
+        config.mode_online = online;
+        config.distance = distance;
+        config.item_count = item_count;
      
         $scope.changeView("login");
     }
-}]);
+}
 
 //function configDialogController($scope, $mdDialog){
 //    log("Enter config page");

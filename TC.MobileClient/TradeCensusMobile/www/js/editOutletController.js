@@ -1,6 +1,6 @@
 ﻿function editOutletController($scope, $mdDialog) {
     log('view outlet ' + $scope.outlet.ID.toString());
-    $scope.needAudit = $scope.user.hasAuditRole &&
+    $scope.needAudit = user.hasAuditRole &&
                        ($scope.outlet.AuditStatus <= 0 || $scope.outlet.AuditStatus == 255) &&
                        $scope.outlet.InputBy != $scope.user.id;
 
@@ -12,6 +12,7 @@
     $scope.outlet.modifiedImage1 = false;
     $scope.outlet.modifiedImage2 = false;
     $scope.outlet.modifiedImage3 = false;
+    $scope.isDeleted = false;
 
     if (!isEmpty($scope.outlet.StringImage1)) {        
         $scope.image1URL = getImageURL($scope.outlet.StringImage1);      
@@ -109,12 +110,16 @@
 
     function captureImage(onSuccess, onError) {
         try {
+			if(isDev){
+				onSuccess('D:\\Untitled.png ');
+			}else{
             navigator.camera.getPicture(onSuccess, onError,
                 {
                     quality: 50,
                     correctOrientation: true,
                     destinationType: Camera.DestinationType.FILE_URI // DATA_URL for base64 => not recommend due to memory issue
                 });
+			}
         } catch (err) {
             showError(err);
         }
