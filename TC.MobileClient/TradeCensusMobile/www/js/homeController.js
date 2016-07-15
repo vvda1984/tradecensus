@@ -92,6 +92,10 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             $("#home-right-panel").css('margin-right', '-100%');
 			$("#config-form").css('width', '0%');
             righPanelStatus = 0;        
+			if(networkReady() && !isMapReady){
+				loadMapApi();
+				initializeView();
+			}
         }
     }
 
@@ -376,6 +380,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                 } else {
                     nearByOutlets = data.Items;
                     nearByOutlets.sort(function (a, b) { return a.Distance - b.Distance });
+					log('Found near by outlet:' + nearByOutlets.length.toString());
                     insertOutletsDB(user.id, config.tbl_outlet, nearByOutlets,
                         function () {
                             callback(nearByOutlets);

@@ -385,7 +385,7 @@ function insertOutletsDB(userID, outletTbl, outlets, onSuccess, onError) {
         logSqlCommand(sql);
         tx.executeSql(sql, [], function (tx1, dbres) {
             var rowLen = dbres.rows.length;
-            log('found ' + rowLen.toString() + ' outlets');
+            log('Found local outlets: ' + rowLen.toString());
             for (var oi = 0 ; oi < outlets.length; oi++) {
                 var outlet = outlets[oi];
                 outlet.PLastModTS = 0;
@@ -393,17 +393,14 @@ function insertOutletsDB(userID, outletTbl, outlets, onSuccess, onError) {
                 if (rowLen) {
                     var existOutlet = null;
                     for (var j = 0 ; j < rowLen; j++) {
-                        var item = dbres.rows.item(j);
+                        var item = dbres.rows[j];
                         if (item != null && outlet.PRowID == item.PRowID) {
                             existOutlet = item;
                             break;
                         }
                     }
-                    if (existOutlet != null) {                        
-                        log('Try to sync outlet ' + existOutlet.ID.toString());
-                        log(outlet);
-                        log(existOutlet);
-                        log('Check status of outlet ' + existOutlet.ID.toString());
+                    if (existOutlet != null) {
+                        log('Check status of outlet ' + existOutlet.ID.toString() + ': isSynced = ' + existOutlet.PSynced.toString());
                         if (existOutlet.PSynced) {
                             // synced already, just overwrite by server value...
                             updateOutlet(tx, outletTbl, outlet, 0, true);
@@ -415,7 +412,9 @@ function insertOutletsDB(userID, outletTbl, outlets, onSuccess, onError) {
                                 updateOutlet(tx, outletTbl, outlet, 0, true);
                             }
                         }
-                    }
+                    } else{
+						 addNewOutlet(tx1, outletTbl, outlet, false, false, false, true, false);
+					}
                 } else {
                     log('Add outlet ' + outlet.ID.toString() + ' to DB');
                     addNewOutlet(tx1, outletTbl, outlet, false, false, false, true, false);
