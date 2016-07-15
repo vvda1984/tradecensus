@@ -232,7 +232,7 @@ function replaceImage() {
 }
 
 function deleteImage() {
-    showConfirm('Delete Image?', "Are you sure you want to delte image?", function () {
+    showConfirm('Delete Image?', "Are you sure you want to delete image?", function () {
         try {
             $('#image-overlay').remove();
             if (onImageViewerClose != null) {

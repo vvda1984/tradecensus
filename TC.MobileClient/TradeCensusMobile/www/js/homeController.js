@@ -21,7 +21,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     $scope.config = config;
     $scope.editOutletFull = false;
     $scope.allowRefresh = true;
-    //$scope.hasAuditRole = user.hasAuditRole;
+    $scope.hasAuditRole = user.hasAuditRole;
     $scope.outletHeader = 'Near-by Outlets';         
     $scope.showNoOutletFound = true; 
     $scope.showSyncButton = false;   
@@ -534,6 +534,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                     if (!status) { // save failed
                         onSuccess(status);
                     } else {
+						if(uploadItems.length > 0){						
                         tryUploadImages(uploadItems, 0,
                             function () {
                                 onSuccess(true);
@@ -541,6 +542,9 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                             function () {
                                 onSuccess(false);
                             });
+						} else{
+							onSuccess(true);
+						}
                     }
                 });
             }, function (err) {
@@ -587,7 +591,23 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         showDlg('Uploading image (' + (i + 1).toString() + '/' + uploadItems.length.toString() + ')', 'Please wait...');
         var item = uploadItems[i];
 
+		log(item);
         var fileURL = item.ImagePath;
+		if(isEmpty(fileURL)){
+			removeUploadingInfo(item.ID, function () {
+                if (i + 1 < uploadItems.length) {
+                    tryUploadImages(uploadItems, i + 1, onSuccess, onError);
+                } else {
+                    onSuccess();
+                }
+            }, function (dberr) {
+                log(dberr.message);
+                showError('An error has occurred: Code = " + error.code');
+                onError();
+            });
+			return;
+		}
+		
         // TODO: check file existing...
         var options = new FileUploadOptions();
         options.fileKey = 'orderfile';

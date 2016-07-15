@@ -720,13 +720,13 @@ function insertOutletImages(userID, outlet, onSuccess, onError) {
         try {
             var uploadItems = [];
             var now = new Date().today() + ' ' + new Date().timeNow();        
-            if (outlet.modifiedImage1) {                
+            if (outlet.modifiedImage1 && !isEmpty(outlet.StringImage1)) {                
                 uploadItems.push(insertImageUploadingInfo(tx, userID, outlet.ID, 1, outlet.StringImage1, now))
             }
-            if (outlet.modifiedImage2) {
+            if (outlet.modifiedImage2 && !isEmpty(outlet.StringImage2)) {
                 uploadItems.push(insertImageUploadingInfo(tx, userID, outlet.ID, 2, outlet.StringImage2, now));
             }
-            if (outlet.modifiedImage3) {
+            if (outlet.modifiedImage3 && !isEmpty(outlet.StringImage3)) {
                 uploadItems.push(insertImageUploadingInfo(tx, userID, outlet.ID, 3, outlet.StringImage3, now));                
             }
             onSuccess(uploadItems);
