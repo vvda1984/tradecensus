@@ -105,7 +105,7 @@ function initializeOutlet(outlet) {
     outlet.IsTracked = outlet.Tracking == 1;
     outlet.IsAuditApproved = outlet.AuditStatus == 1;
     outlet.IsDraft = outlet.PStatus == 1;
-	outlet.IsSynced = (outlet.PSynced) && (outlet.PSynced == 1);    
+	outlet.IsSynced = (outlet.PSynced) && (outlet.PSynced == 1);  
 }
 
 function queryOutlets(view, callback) {
