@@ -10,10 +10,9 @@ var isDev = true;                   // enable DEV mode
 var userOutletTable = 'outlet';     // outlet table name for current user
 var isDlgOpened = false;            // 
 var isInitialize = false;
-
+var enableSync = false;
 var onImageViewerClose;
 var newImageFile;
-
 var user = newUser();
 var userID = 0;
 var resource = newResource();
@@ -238,6 +237,12 @@ function loadSettings(tx, callback) {
                     config.tbl_zone_ver = value;
                 } else if (name == 'map_api_key') {
                     config.map_api_key = value;
+                } else if (name == 'sync_time') {
+                    config.sync_time = parseInt(value);
+                } else if (name == 'cluster_size') {
+                    config.cluster_size = parseInt(value);
+                } else if (name == 'cluster_max_zoom') {
+                    config.cluster_max_zoom = parseFloat(value);
                 }
             }
         }     
@@ -250,19 +255,5 @@ function loadSettings(tx, callback) {
 
 function initializeApp() {
     log('Initialize angular app.');    
-    hideDlg();
-    syncProgress();
+    hideDlg();    
 };
-
-function syncProgress() {
-    setTimeout(function () {
-        syncOutlet(function () { syncProgress(); });
-    }, config.sync_time);
-}
-
-function syncOutlet(callback) {
-    log('*** BEGIN SYNC');
-
-    log('*** SYNC COMPLETED');
-    callback();
-}

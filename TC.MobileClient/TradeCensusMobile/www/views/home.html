@@ -36,22 +36,21 @@
             <div class="outlet-item" ng-repeat="outlet in outlets" ng-click="hideDropdown()">
                 <div class="outlet-item-col1"> <div class="{{outlet.IsDraft ? 'circle-gray' : 'circle'}}">{{$index + 1}}</div> </div>
                 <div class="outlet-item-col2" >
-                    <span class="header" ng-click="openOutlet($index)">{{outlet.Name}}</span>
+                    <span class="header" ng-click="openOutlet($index)">{{outlet.Name}}</span>					
                     <div class="header-right" style="background-size:yellow;">
                         <span class="distance">
                             {{outlet.Distance}} m
                         </span>
-                        <img class="imgDelete" ng-show="outlet.IsDraft"
-                             src="assets/img/delete.svg" ng-click="deleteOutlet($index)" />
                     </div>
-                   
+				   <img class="imgDelete" ng-show="outlet.IsDraft"
+						 src="assets/img/delete.svg" ng-click="deleteOutlet($index)" />
                     <div class="content">
                         <table>
                             <tr>
                                 <td class="title" ng-show="viewOutletFull">Address:</td>
                                 <td class="value" colspan="5">{{outlet.FullAddress}}</td>
                                 <td class="title" ng-show="viewOutletFull">Outlet type:</td>
-                                <td class="value" ng-show="viewOutletFull">{{outlet.OutletTypeName}}</td>
+                                <td class="value" ng-show="viewOutletFull">{{outlet.OutletTypeName}}</td>									
                             </tr>
                             <tr ng-show="viewOutletFull">
                                 <td class="title">Distance:</td>

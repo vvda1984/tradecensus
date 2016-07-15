@@ -111,6 +111,7 @@ function loginController($scope, $http) {
             showError($scope.resource.text_UserTerminated);
             return;
         }
+		
         userID = $scope.user.id;
         $scope.password = '';
         $scope.user.firstName = user.FirstName;
@@ -132,6 +133,7 @@ function loginController($scope, $http) {
         config.tbl_outletSync = 'outletSync' + $scope.user.id;
         config.tbl_outlet = 'outlet' + $scope.user.id;
         log($scope.user.hasAuditRole);
+		enableSync = true;
 
         log('create outlet tables');
         ensureUserOutletDBExist(config.tbl_outletSync, config.tbl_outlet, function () {

@@ -456,9 +456,11 @@ hr {
 }
 
 .outlet-item .imgDelete {
-  margin-left:8px;
-  width:24px;
-  height:24px;
+	 float: right;
+	 right:4px;
+	 top: 36px; 
+    width:24px;
+   height:24px;
 }
 
 /*.title {
@@ -683,7 +685,7 @@ hr {
         right: 0;
         border:1px solid #DDDDDD;
         background:#fff;
-        width: 30%;
+        width: 0%;
     }
         #home-right-panel .config-panel .bottom {
             /*height: 54px;*/

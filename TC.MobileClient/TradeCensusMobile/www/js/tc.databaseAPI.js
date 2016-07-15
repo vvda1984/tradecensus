@@ -141,6 +141,10 @@ function insertSettingDB(config, onSuccess, onError) {
         insertConfigRow(tx, "tbl_outlettype_ver", config.tbl_outlettype_ver);
         insertConfigRow(tx, "tbl_province_ver", config.tbl_province_ver);
         insertConfigRow(tx, "tbl_zone_ver", config.tbl_zone_ver);
+		insertConfigRow(tx, "map_api_key", config.map_api_key);
+		insertConfigRow(tx, "sync_time", config.sync_time);
+		insertConfigRow(tx, "cluster_size", config.cluster_size);
+		insertConfigRow(tx, "cluster_max_zoom", config.cluster_max_zoom);		
         onSuccess();
     }, onError);
 }

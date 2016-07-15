@@ -84,10 +84,13 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         if (righPanelStatus == 0) {
 			log('show right panel');
 			$("#home-right-panel").css('margin-right', '0');
+			$("#config-form").css('width', '30%');
+			
 			righPanelStatus = 1;
         } else {
             log('hide right panel');
             $("#home-right-panel").css('margin-right', '-100%');
+			$("#config-form").css('width', '0%');
             righPanelStatus = 0;        
         }
     }
@@ -194,7 +197,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             function (dbres) {
                 log('Number of unsynced outlets: ' + dbres.rows.length.toString());
                 if (dbres.rows.length == 0) {
-                    showDlg('Info', 'All outlets have been synced!');
+                    showInfo('All outlets have been synced!');
                     return;
                 }
                 var i;
@@ -205,7 +208,9 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                 trySyncOutlets(unsyncedOutlets, 0, function () {
                     showInfo('Synchronize completed!');
                     $scope.showSyncButton = false;
-                });
+                }, function(err){
+					 showError(err);
+				});
             }, handleDBError);
     }
 
@@ -287,49 +292,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         }, function () {
         });
     }
-
-    function trySyncOutlets(unsyncedOutlets, i, onSuccess) {
-        var item = unsyncedOutlets[i];
-        log('try sync outlet: ' + item.ID.toString());
-        setDlgMsg('Sync outlet ' + item.Name + ' (' + (i + 1).toString() + '/' + unsyncedOutlets.length.toString() + ')');
-        submitOutlet(item, function (status) {
-            if (status) {
-                log('Sync outlet data: ' + item.ID.toString() + ' completed');
-                selectUnsyncedOutletImage(user.id, item.ID, function (tx, dbres) {
-                    if (dbres.rows.length > 0) {
-                        uploadItems = [];
-                        for (i = 0; i < dbres.rows.length; i++) {
-                            uploadItems[i] = dbres.rows[0];
-                        }
-                        tryUploadImages(uploadItems, 0,
-                             function () {
-                                 setOutletSyncStatus(tx, config.tbl_outlet, item.ID, 1, function (tx1) {
-                                     if ((i + 1) < unsyncedOutlets.length) {
-                                         trySyncOutlets(unsyncedOutlets, i + 1);
-                                     } else {
-                                         onSuccess();
-                                     }
-                                 }, handleDBError);
-                             },
-                             function () {
-                                 showError('Sync error, please try again!');
-                             });
-                    } else {
-                        setOutletSyncStatus(tx, config.tbl_outlet, item.ID, 1, function (tx1) {
-                            if ((i + 1) < unsyncedOutlets.length) {
-                                trySyncOutlets(unsyncedOutlets, i + 1);
-                            } else {
-                                onSuccess();
-                            }
-                        }, handleDBError);
-                    }
-                }, handleDBError);
-            } else {
-                showError('Sync error, please try again!');
-            }
-        });
-    }
-
+    
     function getOutletsByView(view) {
         $scope.outlets.length = 0;
         switch (view) {
@@ -635,9 +598,9 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         var url = baseURL + '/outlet/uploadimage';
         var ft = new FileTransfer();
         ft.upload(fileURL, url,
-        function (res) {
-            log(res);
+        function (res) {            
             log('upload file success');
+			log(res);
             removeUploadingInfo(item.ID, function () {
                 if (i + 1 < uploadItems.length) {
                     tryUploadImages(uploadItems, i + 1, onSuccess, onError);
@@ -671,25 +634,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             showError('An error has occurred: Code = " + error.code');
             onError();
         }, options);
-    }   
-   
-    function setSyncStatus(callback) {
-        if (networkReady()) {
-            selectUnsyncedOutlets(config.tbl_outlet,
-                function (dbres) {
-                    log('Number of unsynced outlets: ' + dbres.rows.length.toString());
-                    $scope.showSyncButton = dbres.rows.length > 0;
-                    callback();
-                }, function (dberr) {
-                    $scope.showSyncButton = false;
-                    log(dberr.message);
-                    callback();
-                });
-        } else {
-            $scope.showSyncButton = false;
-            callback();
-        }
-    }    
+    }       
 
     //******************************************
     try {
@@ -697,18 +642,107 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         //    document.addEventListener("online", loadMapApi, false);
         //    document.addEventListener("resume", loadMapApi, false);
         //}        
-        editOutletCallback = function (i) { editOutlet(i); };
+		
+		startSyncProgress();
+        editOutletCallback = function (i) { 
+			editOutlet(i); 
+		};
         loadMapCallback = function () {
             log('refresh');           
             $scope.refresh();
         };
         initializeView();
-        loadMapApi();
+        loadMapApi();		
     } catch (err) {
         showError(err);
         log(err);
     }
     //******************************************
+	
+	function startSyncProgress() {
+		setTimeout(function () {
+			syncOutletMethod(function () { startSyncProgress(); });
+		}, config.sync_time);
+	}
 
-    
+	function syncOutletMethod(callback) {
+		log('*** BEGIN SYNC');
+		if(!enableSync || !networkReady()) {
+			log(dberr);
+			log('*** SYNC Ignored: sycn is disabled or no connection');
+			callback();
+			return;
+		}
+					
+		selectUnsyncedOutlets(config.tbl_outlet,
+			function (dbres) {
+				log('Found unsynced outlets: ' + dbres.rows.length.toString());
+				if (dbres.rows.length == 0) {
+					log('*** SYNC Ignored: no updated outlet');
+					callback();
+					return;
+				}
+				unsyncedOutlets = [];
+				var i;			
+				for (i = 0; i < dbres.rows.length; i++) {
+					unsyncedOutlets[i] = dbres.rows[0];
+				}
+				trySyncOutlets(unsyncedOutlets, 0, function () {
+					log('*** SYNC COMPLETED');									
+					callback();
+				}, function(err){
+					log('*** SYNC Error: ' + err);									
+					callback();
+				});
+			}, function(dberr){
+				log(dberr);
+				log('*** SYNC Error: Query unsynced outlet error');									
+				callback();
+			});		 
+	}
+	
+	function trySyncOutlets(unsyncedOutlets, index, onSuccess, onError) {
+        var item = unsyncedOutlets[index];        
+        log('Sync outlet ' + item.Name + ' (' + (index + 1).toString() + '/' + unsyncedOutlets.length.toString() + ')');
+        submitOutlet(item, function (status) {
+            if (status) {
+                log('Sync outlet data: ' + item.ID.toString() + ' completed');
+                selectUnsyncedOutletImage(user.id, item.ID, function (tx, dbres) {					
+                    if (dbres.rows.length > 0) {
+                        var uploadItems = [];
+                        for (var i = 0; i < dbres.rows.length; i++) {
+                            uploadItems[i] = dbres.rows[i];
+                        }
+                        tryUploadImages(uploadItems, 0,
+                             function () {
+                                 setOutletSyncStatus(tx, config.tbl_outlet, item.ID, 1, function (tx1) {
+                                     if ((index + 1) < unsyncedOutlets.length) {
+                                         trySyncOutlets(unsyncedOutlets, index + 1, onSuccess, onSuccess);
+                                     } else {
+                                         onSuccess();
+                                     }
+                                 }, handleDBError);
+                             },
+                             function () {
+								 onError('Sync error, please try again!');                                 
+                             });
+                    } else {
+                        setOutletSyncStatus(tx, config.tbl_outlet, item.ID, 1, function (tx1) {
+                            if ((index + 1) < unsyncedOutlets.length) {
+                                trySyncOutlets(unsyncedOutlets, index + 1, onSuccess, onError);
+                            } else {
+                                onSuccess();
+                            }
+                        }, function(dberr){
+							onError(dberr.message);
+						});
+                    }									
+                }, function(dberr){
+					onError(dberr.message);
+				});
+            } else {				
+                onError('Sync error, please try again!');
+            }
+        });
+    }
 };

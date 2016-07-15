@@ -17,16 +17,18 @@ function newMarker(marker, name, outlet) {
     };
 }
 
-function loadMapApi() {
-    if (loadedMapAPI) {
+function loadMapApi() { 
+    if (!networkReady()) {
+		initializeMap()
+        return;
+    }
+	
+	if (loadedMapAPI) {
         initializeMap()
         return;
     }
     loadedMapAPI = true;
 
-    if (!networkReady()) {
-        return;
-    }
 
     var url = 'https://maps.googleapis.com/maps/api/js?=v=3.exp&sensor=false&key=' + config.map_api_key + '&callback=initializeMap';
     log('Load map API: ' + url);
@@ -166,6 +168,7 @@ function getMarkerIcon(outlet) {
 }
 
 function panTo(lat, lng) {
+	if(!isMapReady) return;
     log('Pan to: ' + lat.toString() + ', ' + lng.toString());
     var position = new google.maps.LatLng(lat, lng);
     //map.panTo(position);
