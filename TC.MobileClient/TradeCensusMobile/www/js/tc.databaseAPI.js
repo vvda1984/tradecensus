@@ -37,7 +37,7 @@ function initalizeDB(onSuccess) {
 }
 
 function logSqlCommand(sql) {
-    log("SQL: " + sql);
+    //log("SQL: " + sql);
 }
 
 function insertUserDB(person, password, onSuccess, onError) {
@@ -371,10 +371,13 @@ function insertOutletsDB(userID, outletTbl, outlets, onSuccess, onError) {
     }
     db.transaction(function (tx) {
         var whereCon = '(';
-        for (i = 0 ; i < outlets.length; i++) {
+        for (i = 0 ; i < outlets.length; i++) {        
             if (i > 0) whereCon = whereCon.concat(', ');
 
             var outlet = outlets[i];
+            outlet.PStatus = 0; // no draft
+	        outlet.PSynced = 1; // synced
+            initializeOutlet(outlet);
             outlet.IsAuditApproved = outlet.AuditStatus == 1;
             whereCon = whereCon.concat('"', outlet.PRowID, '"');
         }
@@ -401,15 +404,19 @@ function insertOutletsDB(userID, outletTbl, outlets, onSuccess, onError) {
                     }
                     if (existOutlet != null) {
                         log('Check status of outlet ' + existOutlet.ID.toString() + ': isSynced = ' + existOutlet.PSynced.toString());
-                        if (existOutlet.PSynced) {
-                            // synced already, just overwrite by server value...
-                            updateOutlet(tx, outletTbl, outlet, 0, true);
-                        } else {
-                            // outlet wasn't synced, check amend date
-                            // this logic can be failed if timezone in server and client are different
-                            if (compareDate(outlet.AmendDate, existOutlet.AmendDate, 'yyyy-MM-dd HH:mm:ss') > 0) {
-                                log('Server date > local date');
+                        if(outlet.AmendDate === existOutlet.AmendDate){
+                            // outlet wasn't changed
+                        }else{
+                            if (existOutlet.PSynced) {
+                                // synced already, just overwrite by server value...
                                 updateOutlet(tx, outletTbl, outlet, 0, true);
+                            } else {
+                                // outlet wasn't synced, check amend date
+                                // this logic can be failed if timezone in server and client are different
+                                if (compareDate(outlet.AmendDate, existOutlet.AmendDate, 'yyyy-MM-dd HH:mm:ss') > 0) {
+                                    log('Server date > local date');
+                                    updateOutlet(tx, outletTbl, outlet, 0, true);                                    
+                                }                            
                             }
                         }
                     } else{

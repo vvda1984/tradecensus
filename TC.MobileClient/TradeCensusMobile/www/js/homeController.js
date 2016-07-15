@@ -15,8 +15,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     //$scope.nearByOutlets = [];
     //$scope.newOutlets = [];
     //$scope.updatedOutlets = [];
-    //$scope.auditOutlets = [];
-     
+    //$scope.auditOutlets = [];        
     $scope.resource = resource;
     $scope.config = config;
     $scope.editOutletFull = false;
@@ -29,8 +28,12 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     $scope.showListButton = true;
     $scope.showCollapseButton = false;
     $scope.showExpandButton = false;
-
-    var homeMarker = null;
+  
+    $scope.currentPage = 0;
+    $scope.pageSize = config.page_size;
+    $scope.numberOfPages=function(){
+        return Math.ceil($scope.outlets.length/$scope.pageSize);                
+    }
 
     $scope.refresh = function () {
         if (curOutletView == 0) {
@@ -46,6 +49,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         $scope.showCollapseButton = false;
         $scope.showExpandButton = false;      
         $scope.viewOutletFull = false;
+        $scope.showNaviBar = false;
         $("#outletPanel").css('width', '0%');
     }
 
@@ -56,6 +60,8 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         $scope.showExpandButton = false;        
         $scope.showCollapseButton = networkReady();
         $scope.viewOutletFull = true;
+        $scope.showNaviBar = $scope.outlets.length > $scope.pageSize;
+        //$("#outletPanel").css('height', $scope.showNaviBar ? '92%' : '100%');
         $("#outletPanel").css('width', '100%');
     }
 
@@ -63,20 +69,23 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         $scope.hideDropdown();
         log("Left panel state: " + leftPanelStatus.toString());
         if (leftPanelStatus > 1) return;
-        
-       
+               
         if (leftPanelStatus == 0) {
             leftPanelStatus = 1;           
             $scope.showExpandButton = true;
             $scope.showCollapseButton = false;
             $scope.viewOutletFull = false;            
+            $scope.showNaviBar = $scope.outlets.length > $scope.pageSize;                                                    
+            //$("#outletPanel").css('height', $scope.showNaviBar ? '92%' : '100%');
             $("#outletPanel").css('width', '40%');
         } else if (leftPanelStatus == 1){
             leftPanelStatus = 0;           
             $scope.showExpandButton = false;
             $scope.showCollapseButton = false;
-            $scope.viewOutletFull = false;
+            $scope.viewOutletFull = false;      
+            $scope.showNaviBar = false;      
             $("#outletPanel").css('width', '0%');
+            //$("#outletPanel").css('height', '100%');
         }       
     }
 
@@ -93,9 +102,9 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 			$("#config-form").css('width', '0%');
             righPanelStatus = 0;        
 			if(networkReady() && !isMapReady){
-				loadMapApi();
-				initializeView();
+				loadMapApi();			
 			}
+            initializeView();
         }
     }
 
@@ -115,7 +124,14 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     }
 
     $scope.openOutlet = function (i) {
-        editOutlet(i);
+        //editOutlet(i, true);
+        var marker = markers[i];
+        try{
+            google.maps.event.trigger(marker, 'click');
+        }catch(ex){
+            log(ex);
+        };                           
+        panTo(marker.position.lat(), marker.position.lng());
     }
 
     $scope.changeOutletView = function (v) {
@@ -123,6 +139,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         if (curOutletView === v) return;
         log('change view to ' + v.toString());
         //curOutletView = v;
+        $scope.currentPage = 0;     
         getOutletsByView(v);
     }
 
@@ -135,18 +152,8 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         try {
             getCurPosition(function (lat, lng) {
                 lat = Math.round(lat * 100000000) / 100000000;
-                lng = Math.round(lng * 100000000) / 100000000;
-              
-                // AnVO: DEBUG
-                if (isDev) {
-                    lat = devNewLat + devNewDetlta;
-                    lng = devNewLng + devNewDetlta;
-                }
-                curlat = lat;
-                curlng = lng;
+                lng = Math.round(lng * 100000000) / 100000000;                             
                 if (networkReady()) {
-                    panTo(lat, lng);
-
                     log('try reverse the address');
                     var geocoder = new google.maps.Geocoder();
                     geocoder.geocode({
@@ -309,15 +316,9 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                     loadOutlets(nearByOutlets);
                 } else {
                     showDlg('Get current location', "Please wait...");
-                    getCurPosition(function (lat, lng) {
-                        var isPosChanged = lat != curlat || lng != curlng;
-                        curlat = lat;
-                        curlng = lng;
+                    getCurPosition(function (lat, lng) {                       
                         curOutletView = view;
-                        $scope.outletHeader = 'Near-by Outlets';
-                        if (isPosChanged) {
-                            panTo(curlat, curlng);                           
-                        }
+                        $scope.outletHeader = 'Near-by Outlets';                        
                         nearByOutlets = [];
                         if (networkReady()) {
                             getNearByOutletsOnline(function (foundOutlets) {
@@ -371,8 +372,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         $http({
             method: config.http_method,
             url: url
-        }).then(function (resp) {
-            hideDlg();
+        }).then(function (resp) {            
             try {
                 var data = resp.data;
                 if (data.Status == -1) { // error
@@ -380,14 +380,16 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                 } else {
                     nearByOutlets = data.Items;
                     nearByOutlets.sort(function (a, b) { return a.Distance - b.Distance });
-					log('Found near by outlet:' + nearByOutlets.length.toString());
+					showDlg('Get near-by outlets', 'Found ' + nearByOutlets.length.toString() + ' outlet(s)... loading outlets');
+                    //syncNearByOutlets();
+                    //callback(nearByOutlets);                    
                     insertOutletsDB(user.id, config.tbl_outlet, nearByOutlets,
                         function () {
                             callback(nearByOutlets);
                         },
                         function (dberr) {
                             showError(dberr.message);
-                        });
+                        });                    
                 }
             } catch (err) {
                 showError(dberr.message);
@@ -406,10 +408,10 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         } else{
             setOutletsToList(outlets);
         }
-    }
+    }     
 
     function setOutletsToList(outlets) {
-        $timeout(function () {
+        $timeout(function () {            
             $scope.showNoOutletFound = outlets.length == 0;
             for(var i = 0; i< outlets.length; i++){
                 $scope.outlets[i] = outlets[i];               
@@ -419,10 +421,17 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         }, 100);
     }   
 
-    function editOutlet(i) {
+    function editOutlet(i, isPanTo) {
         log(i);
-        marker = markers[i]       
-        panTo(marker.position.lat(), marker.position.lng());     
+        if(isPanTo){            
+            marker = markers[i];
+            try{
+                google.maps.event.trigger(marker, 'click');
+            }catch(ex){
+                log(ex);
+            };                           
+            panTo(marker.position.lat(), marker.position.lng());
+        }     
         //ou $scope.outlets[i]
         var clonedOutlet = cloneObj($scope.outlets[i]);
         $scope.outlet = clonedOutlet;
@@ -450,6 +459,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                 $scope.outlet.AmendBy = user.id;
                 
                 var isUnDraft = $scope.outlet.IsDraft != $scope.outlets[i].IsDraft;
+                var isAuditChanged = $scope.outlet.AuditStatus != $scope.outlets[i].AuditStatus;
 
                 //$scope.outlets[i].Action: 0,
                 $scope.outlets[i].AddLine = $scope.outlet.AddLine;
@@ -501,7 +511,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                     log('save outlet to server')
                     saveOutlet($scope.outlet, function (synced) {
                         log('save outlet to local db')
-                        saveOutletDB(config.tbl_outlet, $scope.outlets[i], isEditDraft ? 1 : 2, synced,
+                        saveOutletDB(config.tbl_outlet, $scope.outlets[i], isEditDraft ? 1 : (isAuditChanged ? 4 : 2), synced,
                             function () {
                                 hideDlg();
                             }, function (dberr) {
@@ -561,7 +571,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             var url = baseURL + '/outlet/save';
             log('Call service api: ' + url);
             //var data = JSON.stringify(outlet);
-            log(outlet);
+            //log(outlet);
             $http({
                 method: config.http_method,
                 data: outlet,
@@ -667,62 +677,56 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         //    document.addEventListener("online", loadMapApi, false);
         //    document.addEventListener("resume", loadMapApi, false);
         //}        
-		
-		startSyncProgress();
-        editOutletCallback = function (i) { 
-			editOutlet(i); 
-		};
-        loadMapCallback = function () {
-            log('refresh');           
-            $scope.refresh();
-        };
+		syncExecuter = syncOutletMethod;
         initializeView();
-        loadMapApi();		
+        editOutletCallback = function (i) { editOutlet(i, false);};   
+        loadMapCallback = function () {          
+            if (networkReady()) {
+                if(isMapReady)
+                {
+                    log('Move to current location');
+                    moveToCurrentLocation();
+                }
+                getNearByOutletsOnline(function (foundOutlets) {
+                    loadOutlets(foundOutlets);
+                });
+            } else {
+                queryNearbyOutlets(function (foundOutlets) {
+                    loadOutlets(foundOutlets);
+                });
+            }
+            loadMapCallback = null;
+        };     
+        getCurPosition(function (lat, lng) {            
+            loadMapApi();
+        }, function (err) {
+            log(err);
+            //showError('Cannot get current location!');
+            loadMapApi();
+        });		                               		
     } catch (err) {
         showError(err);
         log(err);
     }
-    //******************************************
-	
-	function startSyncProgress() {
-		setTimeout(function () {
-			syncOutletMethod(function () { startSyncProgress(); });
-		}, config.sync_time);
-	}
 
-	function syncOutletMethod(callback) {
-		log('*** BEGIN SYNC');
-		if(!enableSync || !networkReady()) {
-			log(dberr);
-			log('*** SYNC Ignored: sycn is disabled or no connection');
-			callback();
-			return;
-		}
-					
+    //******************************************
+	function syncOutletMethod(onSuccess, onError) {
+		log('Select unsynced outlets');			
 		selectUnsyncedOutlets(config.tbl_outlet,
 			function (dbres) {
 				log('Found unsynced outlets: ' + dbres.rows.length.toString());
-				if (dbres.rows.length == 0) {
-					log('*** SYNC Ignored: no updated outlet');
-					callback();
+			    if (dbres.rows.length == 0) {					
+					onSuccess();
 					return;
 				}
-				unsyncedOutlets = [];
-				var i;			
-				for (i = 0; i < dbres.rows.length; i++) {
+				unsyncedOutlets = [];							
+				for (var i = 0; i < dbres.rows.length; i++) {
 					unsyncedOutlets[i] = dbres.rows[0];
 				}
-				trySyncOutlets(unsyncedOutlets, 0, function () {
-					log('*** SYNC COMPLETED');									
-					callback();
-				}, function(err){
-					log('*** SYNC Error: ' + err);									
-					callback();
-				});
+				trySyncOutlets(unsyncedOutlets, 0, onSuccess, onError);
 			}, function(dberr){
-				log(dberr);
-				log('*** SYNC Error: Query unsynced outlet error');									
-				callback();
+                onError('Query unsynced outlet error');
+				log(dberr);				
 			});		 
 	}
 	

@@ -1,11 +1,7 @@
-﻿/// <reference path="app.database.js" />
-/// <reference path="app.global.js" />
-
+﻿
 var resetDB = false;                // force reset database - testing only
 var db;                             // database instance
-//var map = null;                     // google map
-//var isOnline = true;              // network status
-var isDev = true;                   // enable DEV mode
+var isDev = false;                   // enable DEV mode
 
 var userOutletTable = 'outlet';     // outlet table name for current user
 var isDlgOpened = false;            // 
@@ -29,7 +25,13 @@ var app = angular.module('TradeCensus', ['ngRoute', 'ngMaterial', 'ngMessages'])
 .controller('MainController', ['$scope', '$route', '$location', mainController])
 .controller('LoginController', ['$scope', '$http', loginController])
 .controller('ConfigController', ['$scope', configController])
-.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$timeout', homeController]);
+.controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$timeout', homeController])
+.filter('startFrom', function() {
+    return function(input, start) {
+        start = +start; //parse to int
+        return input.slice(start);
+    }
+});
 
 (function (global) {
     "use strict";
@@ -78,6 +80,7 @@ function newResource() {
 
 function newConfig() {
     return {
+        page_size: 20,
         cluster_size: 50,
         cluster_max_zoom: 15.5,
         mode_online: true,
@@ -256,4 +259,38 @@ function loadSettings(tx, callback) {
 function initializeApp() {
     log('Initialize angular app.');    
     hideDlg();    
+    startSyncProgress();
 };
+
+//******************************************
+var syncExecuter;
+function startSyncProgress() {
+    setTimeout(function () {
+        runSync(function () { startSyncProgress(); });
+    }, config.sync_time);
+}
+
+function runSync(callback) {
+    log('*** BEGIN SYNC');
+    if(syncExecuter == null){
+        log('*** SYNC Ignored: sycn exe was not set');
+    }
+
+    if(!enableSync || !networkReady()) {
+        log('*** SYNC Ignored: sycn is disabled or no connection');
+        callback();
+        return;
+    }
+    try{
+        syncExecuter(function(){
+            log('*** SYNC COMPLETED');									
+            callback();
+        }, function(err){
+            log('*** SYNC ERROR: ' + err);									
+            callback();
+        });
+    }catch(ex){
+        log('*** SYNC ERROR: ' + ex);									
+        callback();
+    }
+}

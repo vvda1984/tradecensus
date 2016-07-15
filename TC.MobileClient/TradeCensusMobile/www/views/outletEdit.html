@@ -57,9 +57,10 @@
             <div layout-gt-sm="row" ng-show="needAudit">
                 <div class="md-block-item">
                     <div class="md-block-item-title" style="min-width:80px">Audit Status</div>
-                    <md-checkbox md-no-ink="" aria-label="Is Audit" ng-model="outlet.IsAuditApproved" class="md-primary">
-                        <div class="md-block-item-title" style="min-width:80px">{{outlet.IsAuditApproved ? "Approve" : "Deny"}}</div>
-                    </md-checkbox>
+                      <md-radio-group ng-model="outlet.AuditStatus">
+                        <md-radio-button value="1" class="md-primary">Approve</md-radio-button>
+                        <md-radio-button value="2" class="md-primary">Deny </md-radio-button>                        
+                    </md-radio-group>                    
                 </div>
                 <md-input-container class="md-block" flex-gt-sm="">
                     <label>Comment</label>

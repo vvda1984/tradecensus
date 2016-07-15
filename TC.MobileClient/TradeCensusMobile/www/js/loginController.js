@@ -1,13 +1,11 @@
-﻿/// <reference path="app.global.js" />
+﻿
 
 function loginController($scope, $http) {
     log('Enter Login Controller');
-
+    
     $scope.resource = resource;
-
     $scope.user = user;
-
-    $scope.password = '';
+    $scope.password = '';    
 
     $scope.exit = function () {
         navigator.app.exitApp();
@@ -29,13 +27,13 @@ function loginController($scope, $http) {
 
         showDlg('Login', 'Please wait...');    
         if (networkReady()) {
-            loginOnline(loginSuccess, loginError);
+            loginOnline(0, loginSuccess, loginError);
         } else {
             loginOffline(loginSuccess, loginError);
         }
     };
    
-    function loginOnline(onSuccess, onError) {
+    function loginOnline(retry, onSuccess, onError) {
         log('Login online');
         var url = baseURL + '/login/' + $scope.user.id + '/' + $scope.password;
         log('Call service api: ' + url);
@@ -64,9 +62,17 @@ function loginController($scope, $http) {
                 log(ex);
                 onError(ex.message);
             }
-        }, function (err) {
+        }, function (err) {            
+            log('HTTP error!');
             log(err);
-            onError(err.statusText == '' ? $scope.resource.text_ConnectionTimeout : err.statusText);
+            if(retry == 0){   
+                loginOnline(1, onSuccess, onError);             
+            }
+            try{
+                onError(err.statusText == '' ? $scope.resource.text_ConnectionTimeout : err.statusText);
+            }catch(ex){
+                onError(err);
+            }
         });
     }
   

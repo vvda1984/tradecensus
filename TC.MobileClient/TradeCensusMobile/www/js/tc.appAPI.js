@@ -41,34 +41,6 @@ function logx(logname, message) {
 }
 
 /** 
-* log
-*/
-function getCurPosition(onSuccess, onError) {
-    log('Get current location...');
-    try {       
-        navigator.geolocation.getCurrentPosition(function (position) {
-            var foundLat = position.coords.latitude;
-            var foundLng = position.coords.longitude;
-
-            if (isDev) {
-                log('***set debug location...');
-                foundLat = devCurLat;
-                foundLng = devCurLng;
-                //initializeMap();lat = ;              
-            }
-
-            log('found location: lat=' + foundLat.toString() + ',lng=' + foundLng.toString());
-            onSuccess(foundLat, foundLng);
-        },
-        onError,
-        { maximumAge: 3000, timeout: 5000, enableHighAccuracy: true });
-    } catch (err) {
-        log(err);
-        onError(err.message);
-    }
-}
-
-/** 
 * hashString
 */
 function hashString(text) {
@@ -109,6 +81,8 @@ function handleError(err) {
 * Handle http error
 */
 function handleHttpError(err) {
+    log('HTTP error...');
+    log(err);
     hideDlg();
     var msg = err.statusText == '' ? $scope.resource.text_ConnectionTimeout : err.statusText;
     showError(msg);
