@@ -235,11 +235,11 @@ function loadMarkers(isNew, outlets, callback) {
     //adjustCurrentLocation(la)
     callback();
 
-    //var mapeventListener = google.maps.event.addListener(map, 'bounds_changed', function (event) {
-    //    log('map bounds_changed');
-    //    google.maps.event.removeListener(mapeventListener);
-    //    callback();
-    //});
+    var mapidleListener = google.maps.event.addListener(map, 'idle', function (event) {
+        log('map idled');
+        google.maps.event.removeListener(mapidleListener);
+        moveToCurrentLocation();
+    });
 }
 
 function editSelectedOutlet(i) {

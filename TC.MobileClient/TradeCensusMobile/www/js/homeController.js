@@ -57,7 +57,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         $scope.hideDropdown();
         leftPanelStatus = 2;
         $scope.showListButton = false;
-        $scope.showExpandButton = false;        
+        $scope.showExpandButton = false;
         $scope.showCollapseButton = networkReady();
         $scope.viewOutletFull = true;
         $scope.showNaviBar = $scope.outlets.length > $scope.pageSize;
@@ -72,7 +72,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                
         if (leftPanelStatus == 0) {
             leftPanelStatus = 1;           
-            $scope.showExpandButton = true;
+            $scope.showExpandButton = $scope.outlets.length > 0;
             $scope.showCollapseButton = false;
             $scope.viewOutletFull = false;            
             $scope.showNaviBar = $scope.outlets.length > $scope.pageSize;                                                    
@@ -489,6 +489,10 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                 $scope.outlets[i].Tracking = $scope.outlet.Tracking;
                 $scope.outlets[i].VBLVolume = $scope.outlet.VBLVolume;
                 $scope.outlets[i].PStatus = $scope.outlet.PStatus;
+                
+                $scope.outlets[i].modifiedImage1 = $scope.outlet.modifiedImage1;
+                $scope.outlets[i].modifiedImage2 = $scope.outlet.modifiedImage2;
+                $scope.outlets[i].modifiedImage3 = $scope.outlet.modifiedImage3;
 
                 if (curOutletView != 1) { // new outlet
                     var iconUrl = getMarkerIcon($scope.outlet);
@@ -625,7 +629,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         options.mimeType = "image/jpeg";
         options.params = {
             outletid: item.OutletID.toString(),
-            index: (i + 1).toString(),
+            index: item.ImageIndex.toString(),
             userid: user.id.toString(),
         };
 
