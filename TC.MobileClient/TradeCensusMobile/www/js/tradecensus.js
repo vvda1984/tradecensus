@@ -1,7 +1,7 @@
 ﻿
 var resetDB = false;                // force reset database - testing only
 var db;                             // database instance
-var isDev = false;                   // enable DEV mode
+var isDev = true;                   // enable DEV mode
 
 var userOutletTable = 'outlet';     // outlet table name for current user
 var isDlgOpened = false;            // 
@@ -22,6 +22,9 @@ var isRegisterNetworkChanged = false;
 
 var app = angular.module('TradeCensus', ['ngRoute', 'ngMaterial', 'ngMessages'])
 .config(['$routeProvider', appRouter])
+.config(['$mdThemingProvider', function($mdThemingProvider) {
+    $mdThemingProvider.theme('default').primaryPalette('blue');      
+}])
 .controller('MainController', ['$scope', '$route', '$location', mainController])
 .controller('LoginController', ['$scope', '$http', loginController])
 .controller('ConfigController', ['$scope', configController])
@@ -68,7 +71,7 @@ function newResource() {
         text_EnterIPAddress: 'Enter IP Address',
         text_EnterPort: 'Enter Port',
         text_EnterPassword: 'Enter Password',
-        text_EnterProvince: 'Enter Province',
+        text_EnterProvince: 'Select Province',
         text_ValRequired: 'Required.',
         text_ValLength10: 'Has to be less than 10 characters long.',
         text_UserTerminated: 'User has been terminated',

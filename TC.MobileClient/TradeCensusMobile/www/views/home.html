@@ -33,7 +33,7 @@
     <div id="outletPanel" ng-click="hideDropdown()">
 		<div class="outlet-list-panel">
 				<span style="margin-left:8px;" ng-show="showNoOutletFound">No outlet found</span>
-				<div class="outlet-item" ng-repeat="outlet in outlets | startFrom:currentPage*pageSize | limitTo:pageSize" ng-click="hideDropdown()">
+				<div class="outlet-item" ng-repeat="outlet in outlets |  startFrom:currentPage*pageSize | limitTo:pageSize " ng-click="hideDropdown()">
 					<div class="outlet-item-col1"> <div class="{{outlet.IsDraft ? 'circle-gray' : (outlet.IsSynced ? 'circle' : 'circle-org')}}">{{$index + 1 + (currentPage) * pageSize}}</div> </div>
 					<div class="outlet-item-col2" >
 						<span class="header" ng-click="openOutlet($index)">{{outlet.Name}}</span>					
@@ -73,36 +73,33 @@
     <div id="view-home-top-panel-right">
         <!--<div class="box" ng-show="showSetingExpand" ng-click="showhideRightPanel()">
             <img src="assets/img/arrow-left.svg" />
-        </div>
-        <div class="box" ng-show="showSetingCollapse" ng-click="showhideRightPanel()">
-            <img src="assets/img/arrow-right.svg" />
         </div>-->
-        <div class="box" ng-click="showRightPanel()">
+        <div class="box" ng-show="showSettingCollapse" ng-click="showRightPanel()">
+            <img src="assets/img/arrow-right.svg" />
+        </div>
+        <div class="box" ng-show="showSettingExpand" ng-click="showRightPanel()">
             <img src="assets/img/setting-white.svg" />
         </div>       
     </div>
 
     <div id="home-right-panel">
-		<div id=home-right-panel-overlay" ng-click="showRightPanel()"></div>
+		<div class=hidden-overlay" ng-click="showRightPanel()"></div>
         <div id="config-form" class="config-panel">            
             <md-content layout-padding="" class="md-content-white">
                 <form name="configForm">                   
-                    <md-input-container class="md-block">
+                    <md-input-container class="md-block" style="margin-bottom:4px;">
                         <label>{{ resource.text_Distance }}</label>
-                        <input type="number" required="" name="distance" ng-model="config.distance">
-                        <!--<div ng-messages="configForm.ipAddress.$error" role="alert">
-                             <div ng-message="required">{{ resource.text_ValRequired }}</div>
-                        </div>-->
-
+                        <input type="number" required="" name="distance" ng-model="config.distance">                    
                     </md-input-container>
 
-                    <md-input-container class="md-block">
+                    <md-input-container class="md-block" style="margin-bottom:4px;">
                         <label>{{ resource.text_ItemCount }}</label>
-                        <input type="number" required="" name="item_count" ng-model="config.item_count">
-                        <!--<div ng-messages="configForm.ipAddress.$error" role="alert">
-                             <div ng-message="required">{{ resource.text_ValRequired }}</div>
-                        </div>-->
+                        <input type="number" required="" name="item_count" ng-model="config.item_count">                   
+                    </md-input-container>
 
+                     <md-input-container class="md-block" style="margin-bottom:4px;">
+                        <label>Outlet Page Size</label>
+                        <input type="number" required="" name="page_size" ng-model="config.page_size">                  
                     </md-input-container>
                   
                     <div class="md-block-item" style="margin-bottom:0px;">
@@ -114,7 +111,10 @@
             <div class="bottom">
                 <!--<span>{{user.firstName}} {{user.lastName}}</span>-->
                 <div class="button label-blue" ng-click="changeView('login')">
-                    <div class="center" fit>LOGOUT</div>
+                    <div class="center" fit> 
+                        <img src="assets/img/logout.svg" class="image-icon">
+                        <span class="span-button-text">LOGOUT<span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -133,7 +133,12 @@
         </div>
         <button ng-disabled="currentPage >= outlets.length/pageSize - 1" ng-click="currentPage=currentPage+1">
             <img src="assets/img/arrow-right.svg" />
-        </button>            
+        </button>      
+         <div class="searchbox">
+            <input class="search" placeholder="Search" ng-model="searchName" ng-change="searchChanged()">
+            <img src="assets/img/search.svg" class="search-img" ng-show="showSearchImg" />
+            <img src="assets/img/clear.svg" class="search-img" ng-show="showClearSearchImg" ng-click='clearSearch()'/>
+        </div>      
     </div>     
 </div>
 

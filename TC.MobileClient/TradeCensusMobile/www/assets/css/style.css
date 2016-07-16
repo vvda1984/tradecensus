@@ -408,6 +408,7 @@ hr {
 .outlet-item-col1 {
     float: left;
     width: 32px;
+    font-size: 14px;
 }
 
 .outlet-item-col2 {
@@ -450,7 +451,7 @@ hr {
     }
 
 .outlet-item .header {
-    color: #4285F4;
+    color: #2196F3;
     font-size: 20px;
 }
 
@@ -478,7 +479,7 @@ hr {
 }*/
 
 .circle {
-    background: #4285f4;
+    background: #2196F3;
     width: 24px;
     height: 24px;
     line-height: 24px;
@@ -536,7 +537,7 @@ hr {
 }
 
 .blue {
-    background: #4285f4;
+    background: #2196F3;
 }
 
 .blue-dark {
@@ -673,17 +674,14 @@ hr {
     }
 	
 #home-right-panel {
-    position: fixed;
-    max-height: 100%;
-    /*width: 32%;
-    margin-right: -32%;*/
+    position: absolute;
+    max-height: 100%; 
     right: 0;
     z-index: 3;
     /*background-color: rgb(0,0,0);
     background-color: rgba(255,255,255,0.8); /*rgba(0,0,0, 0.8);    */
     /*background-color: #EBEBEB;*/
-    /*background: transparent;*/
-    background-color: rgb(0,0,0);
+    /*background: transparent;*/    
     background-color: rgba(0,0,0, 0.7);
     width: 100%;
     height: 100%;
@@ -691,12 +689,9 @@ hr {
     overflow-x: hidden;
     transition: 0.1s;
 }
-	#home-right-panel-overlay {	
-		width: 100%;
-		height: 100%;	
-	}
 
-    #home-right-panel .config-panel {     
+    #home-right-panel .config-panel {
+        z-index: 4;     
         margin-top: 54px;
         margin-right:8px;
         margin-bottom: 12px;
@@ -727,14 +722,14 @@ hr {
     border-radius: 2px;
     box-shadow: 0 1px 2px rgba(0,0,0,0.2); 
 }
-     #home-bottom .contentbox {
+    #home-bottom .contentbox {
         border: 0px;
-        display: inline-block;        
+        display: inline-block;         
     }
 
     #home-bottom button {
         border: 0px;      
-         background: #fff; 
+        background: #fff; 
         display: inline-block;
         height: 42px;        
         width: 42px;
@@ -746,6 +741,26 @@ hr {
         height: 24px;
         width: 24px;
         margin: 9px;
+        vertical-align: middle;
+    }
+    #home-bottom .searchbox {
+        border: 0px;
+        display: inline-block;                       
+    }
+
+    #home-bottom .searchbox .search {           
+        min-width:90px; 
+        border:1px; 
+        padding:8px 4px 8px 16px;          
+        margin-right:8px;
+        background:#EFEFEF;
+        border-radius: 16px;             
+    }
+    
+    #home-bottom .searchbox .search-img {
+        height: 24px;
+        width: 24px;
+        margin: -42px;
         vertical-align: middle;
     }
 		
@@ -974,8 +989,19 @@ hr {
 
 .span-value {
     margin-top:8px;
-    color: rgba(0,0,0,1);
-        /*height:48px;
-        border-bottom:1px solid #DDDDDD;*/
+    color: rgba(0,0,0,1); 
     min-width:92px;
+}
+.span-button-text{  
+    text-align: center;
+    vertical-align: center;
+    line-height: 42px;    
+    padding: 4px;    
+}
+
+.image-icon {
+    margin:0px;
+    padding: 0px;
+    height: 24px;
+    width: 24px;
 }

@@ -11,11 +11,13 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     var leftPanelStatus = 0;
     var righPanelStatus = 0;
     var nearByOutlets = [];
+    var curOutlets = [];
     var curOutletView = 0; // 0: near-by; 1: new: 2: updated 4: audit
     //$scope.nearByOutlets = [];
     //$scope.newOutlets = [];
     //$scope.updatedOutlets = [];
-    //$scope.auditOutlets = [];        
+    //$scope.auditOutlets = [];
+  
     $scope.resource = resource;
     $scope.config = config;
     $scope.editOutletFull = false;
@@ -28,7 +30,40 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     $scope.showListButton = true;
     $scope.showCollapseButton = false;
     $scope.showExpandButton = false;
+    $scope.showSettingCollapse = false;
+    $scope.showSettingExpand = true;
+    $scope.showSearchImg = true;
+    $scope.showClearSearchImg = false;
   
+    $scope.clearSearch = function(){
+        $scope.searchName = '';
+        $scope.searchChanged();
+    };
+
+    $scope.searchChanged = function(){
+        if(isEmpty($scope.searchName)){
+            $scope.showSearchImg = true;
+            $scope.showClearSearchImg = false;
+            if(curOutlets.length == 0) return;
+            $scope.outlets.length = 0;
+            for(var i = 0; i< curOutlets.length; i++){
+                $scope.outlets[i] = curOutlets[i];
+            }
+        } else{
+            $scope.showSearchImg = false;
+            $scope.showClearSearchImg = true;
+            if(curOutlets.length == 0) return;
+            $scope.outlets.length = 0;
+            var foundIndex = 0;
+            for(var i = 0; i< curOutlets.length; i++){
+                if(curOutlets[i].Name.toUpperCase().indexOf($scope.searchName.toUpperCase()) > -1){
+                    $scope.outlets[foundIndex] = curOutlets[i];
+                    foundIndex++;
+                }                
+            }
+        }        
+    }
+
     $scope.currentPage = 0;
     $scope.pageSize = config.page_size;
     $scope.numberOfPages=function(){
@@ -94,13 +129,17 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 			log('show right panel');
 			$("#home-right-panel").css('margin-right', '0');
 			$("#config-form").css('width', '30%');
-			
+			$scope.showSettingCollapse = true;
+            $scope.showSettingExpand = false;
 			righPanelStatus = 1;
         } else {
             log('hide right panel');
             $("#home-right-panel").css('margin-right', '-100%');
 			$("#config-form").css('width', '0%');
-            righPanelStatus = 0;        
+            righPanelStatus = 0;  
+            $scope.showSettingCollapse = false;
+            $scope.showSettingExpand = true;
+            insertConfig($scope.config, function(){log('Updated config')}, function(err){log(err);});
 			if(networkReady() && !isMapReady){
 				loadMapApi();			
 			}
@@ -411,10 +450,14 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     }     
 
     function setOutletsToList(outlets) {
-        $timeout(function () {            
+        $timeout(function () {          
+            $scope.showNaviBar = leftPanelStatus > 0 && outlets.length > $scope.config.page_size;
             $scope.showNoOutletFound = outlets.length == 0;
+            curOutlets.length = 0;
+            $scope.searchName = '';
             for(var i = 0; i< outlets.length; i++){
-                $scope.outlets[i] = outlets[i];               
+                $scope.outlets[i] = outlets[i];
+                curOutlets[i] = outlets[i];
             }            
             $('.md-scroll-mask').remove();
             hideDlg();
@@ -433,7 +476,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             panTo(marker.position.lat(), marker.position.lng());
         }     
         //ou $scope.outlets[i]
-        var clonedOutlet = cloneObj($scope.outlets[i]);
+        var clonedOutlet = cloneObj($scope.outlets[i]); //cloneObj($scope.outlets[i]);
         $scope.outlet = clonedOutlet;
         initializeOutlet($scope.outlet);        
         log('draft: ' + $scope.outlet.IsDraft);
@@ -681,6 +724,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         //    document.addEventListener("online", loadMapApi, false);
         //    document.addEventListener("resume", loadMapApi, false);
         //}        
+        mapClickedCallback = function(){ $scope.hideDropdown();};
 		syncExecuter = syncOutletMethod;
         initializeView();
         editOutletCallback = function (i) { editOutlet(i, false);};   

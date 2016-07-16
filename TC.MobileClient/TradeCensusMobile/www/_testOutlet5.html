@@ -246,16 +246,21 @@
             <div id="map" class="view-map-content"></div>
         </div>
 
-        <!--<a id="expander-1" class="view-button" onclick="showLeftPanel()"> > </a>-->
-        <!--<img src="assets/img/a-right.png"/>-->
-       <div id="view-home-botom-panel">
-            <button class="box" ng-click="showRightPanel()">                
+         <div id="home-bottom" ng-show="showNaviBar">
+            <button ng-disabled="currentPage == 0" ng-click="currentPage=currentPage-1">                
                 <img src="assets/img/arrow-left.svg" />
-            </button>     
-            <span>0 / 0</span>
-            <button class="box" ng-click="showRightPanel()">
+            </button> 
+            <div class="contentbox">  
+                1 / 1
+            </div>
+            <button ng-disabled="currentPage >= outlets.length/pageSize - 1" ng-click="currentPage=currentPage+1">
                 <img src="assets/img/arrow-right.svg" />
-            </button>              
+            </button>            
+            <div class="searchbox">
+                <input class="search" placeholder="Search" ng-model="searchName" ng-change="searchChanged()">
+                <img src="assets/img/search.svg" class="search-img" ng-show="showSearchImg" />
+                <img src="assets/img/clear.svg" class="search-img" ng-show="showClearSearchImg" ng-click='clearSearch()'/>
+            </div>   
         </div>     
     </div>
 </body>

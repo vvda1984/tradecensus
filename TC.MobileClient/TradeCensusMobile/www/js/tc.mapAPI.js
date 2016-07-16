@@ -7,6 +7,7 @@ var mapClicked = null;
 var markerClicked = null;
 var loadMapCallback = null;
 var editOutletCallback = null;
+var mapClickedCallback = null;
 var homeMarker = null;
 
 function loadMapApi() { 
@@ -67,6 +68,13 @@ function initializeMap() {
             if (mapClicked != null)
                 mapClicked();
         });
+
+        google.maps.event.addListener(map, 'bounds_changed', function (event) {
+            log('map bounds_changed');
+            if(mapClickedCallback)
+              mapClickedCallback();         
+        });
+
 
         /*
         google.maps.event.addListener(map, 'bounds_changed', function (event) {
