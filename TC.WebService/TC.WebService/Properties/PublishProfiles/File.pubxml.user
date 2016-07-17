@@ -81,6 +81,9 @@ by editing this MSBuild file. In order to learn more about this please visit htt
     <File Include="bin/System.Security.dll">
       <publishTime>03/18/2010 19:31:26</publishTime>
     </File>
+    <File Include="bin/System.ServiceModel.Activation.dll">
+      <publishTime>03/18/2010 19:31:26</publishTime>
+    </File>
     <File Include="bin/System.ServiceModel.dll">
       <publishTime>03/18/2010 19:31:26</publishTime>
     </File>
@@ -115,7 +118,7 @@ by editing this MSBuild file. In order to learn more about this please visit htt
       <publishTime>03/19/2010 10:31:26</publishTime>
     </File>
     <File Include="bin/TradeCensus.dll">
-      <publishTime>07/11/2016 23:55:41</publishTime>
+      <publishTime>07/16/2016 02:21:35</publishTime>
     </File>
     <File Include="Global.asax">
       <publishTime>07/11/2016 21:48:46</publishTime>

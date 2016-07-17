@@ -247,8 +247,28 @@ namespace TradeCensus
             if (!string.IsNullOrEmpty(outlet.PRowID))
                 existingOutlet.PRowID = new Guid(outlet.PRowID);
 
-            TrackOutletChanged(existingOutlet.PRowID, outlet.AmendBy, note, 0, action);
+            if(existingOutlet.OutletImages.Count() > 0)
+            {
+                var outletImage = existingOutlet.OutletImages.FirstOrDefault();
+                if (string.IsNullOrEmpty(outlet.StringImage1))
+                {
+                    outletImage.Image1 = "";
+                    outletImage.ImageData1 = null;
+                }
+                if (string.IsNullOrEmpty(outlet.StringImage2))
+                {
+                    outletImage.Image2 = "";
+                    outletImage.ImageData2 = null;
+                }
+                if (string.IsNullOrEmpty(outlet.StringImage3))
+                {
+                    outletImage.Image3 = "";
+                    outletImage.ImageData3 = null;
+                }
+            }
+            
 
+            TrackOutletChanged(existingOutlet.PRowID, outlet.AmendBy, note, 0, action);
             _entities.SaveChanges();
 
             return existingOutlet.PRowID.ToString();
@@ -335,20 +355,20 @@ namespace TradeCensus
                     outlet.OutletImages.Add(outletImage);
                 }
                            
-                if (index == "0")
+                if (index == "1")
                 {
                     outletImage.ImageData1 = File.ReadAllBytes(imagePath);
-                    outletImage.Image1 = string.Format("/images/{0}_{1}.jpg", outletID, index);
-                }
-                else if (index == "1")
-                {
-                    outletImage.ImageData2 = File.ReadAllBytes(imagePath);
-                    outletImage.Image2 = string.Format("/images/{0}_{1}.jpg", outletID, index);
+                    outletImage.Image1 = string.Format("/images/{0}_1.jpg", outletID);
                 }
                 else if (index == "2")
                 {
+                    outletImage.ImageData2 = File.ReadAllBytes(imagePath);
+                    outletImage.Image2 = string.Format("/images/{0}_2.jpg", outletID);
+                }
+                else if (index == "3")
+                {
                     outletImage.ImageData3 = File.ReadAllBytes(imagePath);
-                    outletImage.Image3 = string.Format("/images/{0}_{1}.jpg", outletID, index);
+                    outletImage.Image3 = string.Format("/images/{0}_3.jpg", outletID);
                 }
                 outlet.AmendBy = amendby;
                 outlet.AmendDate = DateTime.Now;
