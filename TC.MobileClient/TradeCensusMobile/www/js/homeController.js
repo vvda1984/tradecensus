@@ -502,7 +502,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                 log('delete outlet ' + $scope.outlet.ID);
                 deleteDraftOutlet($scope.outlet);
             } else {
-               if ($scope.outlet.IsTracked) $scope.outlet.Tracking = 1;
+                if ($scope.outlet.IsTracked) $scope.outlet.Tracking = 1;
                 if ($scope.outlet.IsOpened) $scope.outlet.CloseDate = '';
                 $scope.outlet.PStatus = ($scope.outlet.IsDraft) ? 1 : 0;
                 $scope.outlet.AmendBy = user.id;

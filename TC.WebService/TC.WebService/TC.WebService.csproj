@@ -165,6 +165,7 @@
       <DependentUpon>TradeCensusModel.edmx</DependentUpon>
       <LastGenOutput>Model1.cs</LastGenOutput>
     </Content>
+    <Content Include="ReleaseNote.txt" />
     <Content Include="scripts\ai.0.22.9-build00167.js" />
     <Content Include="scripts\ai.0.22.9-build00167.min.js" />
     <Content Include="TradeCensusService.svc" />

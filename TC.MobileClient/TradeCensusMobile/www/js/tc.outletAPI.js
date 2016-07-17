@@ -83,37 +83,37 @@ function newOutlet() {
 }
 
 function initializeOutlet(outlet) {
-    if(outlet.ProvinceName == null || isEmpty(outlet.ProvinceName)){
+    if (outlet.ProvinceName == null || isEmpty(outlet.ProvinceName)) {
         var provinceName = '';
         for (p = 0; p < provinces.length; p++)
-            if (provinces[p].id === outlet.ProvinceID) {
-                provinceName = provinces[p].name;
+            if (provinces[p].ID === outlet.ProvinceID) {
+                provinceName = provinces[p].Name;
                 break;
             }
-         outlet.ProvinceName = provinceName;
+        outlet.ProvinceName = provinceName;
     }
 
-    if(outlet.OutletTypeName == null || isEmpty(outlet.OutletTypeName)){
+    if (outlet.OutletTypeName == null || isEmpty(outlet.OutletTypeName)) {
         var outletTypeName = '';
         for (p = 0; p < outletTypes.length; p++)
-        if (outletTypes[p].id === outlet.OTypeID) {
-            outletTypeName = outletTypes[p].name;
-            break;
-        }
+            if (outletTypes[p].ID === outlet.OTypeID) {
+                outletTypeName = outletTypes[p].Name;
+                break;
+            }
         outlet.OutletTypeName = outletTypeName;
     }
 
-    if(outlet.Distance == null)
+    if (outlet.Distance == null)
         outlet.Distance = 0;
-    
-    if(outlet.FullAddress == null || isEmpty(outlet.FullAddress))   
+
+    if (outlet.FullAddress == null || isEmpty(outlet.FullAddress))
         outlet.FullAddress = outlet.AddLine + ' ' + outlet.AddLine2 + ' ' + outlet.District + ' ' + provinceName;
 
     outlet.IsOpened = isEmpty(outlet.CloseDate);
     outlet.IsTracked = outlet.Tracking == 1;
     //outlet.IsAuditApproved = outlet.AuditStatus == 1;
     outlet.IsDraft = outlet.PStatus == 1;
-	outlet.IsSynced = (outlet.PSynced) && (outlet.PSynced == 1);  
+    outlet.IsSynced = (outlet.PSynced) && (outlet.PSynced == 1);
 }
 
 function queryOutlets(view, callback) {
