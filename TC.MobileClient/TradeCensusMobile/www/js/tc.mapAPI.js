@@ -9,6 +9,7 @@ var loadMapCallback = null;
 var editOutletCallback = null;
 var mapClickedCallback = null;
 var homeMarker = null;
+var curInfoWin = null;
 
 function loadMapApi() { 
     if (!networkReady()) {
@@ -147,17 +148,26 @@ function createMaker(outlet, position, i, isNew, bounds) {
     marker.isLoadedToMap = true;
 
     markers[i] = marker;
-    var index = markers.indexOf(marker);
-        //var index = markers.length-1;
+    //var index = markers.indexOf(marker);
+    //var index = markers.length-1;
+    //var infoWindow = new google.maps.InfoWindow({
+    //    content: '<div class=\'view-marker\' onclick="javascript:editOutletCallback(' + index.toString() + ')">' + outlet.Name + '</div>',
+    //    closeBoxURL: '',
+    //});
+    //infoWindow.open(map, marker);
+  
+    marker.addListener('click', function () {
+        //editSelectedOutlet(markers.indexOf(marker));
+        var index = markers.indexOf(marker);
+        var outlet = curOutlets[index];
         var infoWindow = new google.maps.InfoWindow({
             content: '<div class=\'view-marker\' onclick="javascript:editOutletCallback(' + index.toString() + ')">' + outlet.Name + '</div>',
             closeBoxURL: '',
         });
+        if(curInfoWin != null)
+            curInfoWin.close();
         infoWindow.open(map, marker);
-  
-    marker.addListener('click', function () {        
-        editSelectedOutlet(markers.indexOf(marker));
-        //editOutlet(markers.indexOf(marker));
+        curInfoWin = infoWindow;
     });
 
     return marker;
@@ -194,8 +204,21 @@ function panTo(lat, lng) {
 	if(!isMapReady) return;
     log('Pan to: ' + lat.toString() + ', ' + lng.toString());
     var position = new google.maps.LatLng(lat, lng);
-    //map.panTo(position);
     map.setCenter(position);
+}
+
+function panToOutlet(lat, lng, index, outlet) {
+	if(!isMapReady) return;
+    panTo(lat, lng);
+        
+    var infoWindow = new google.maps.InfoWindow({
+        content: '<div class=\'view-marker\' onclick="javascript:editOutletCallback(' + index.toString() + ')">' + outlet.Name + '</div>',
+        closeBoxURL: '',
+    });
+    if(curInfoWin != null)
+        curInfoWin.close();
+    infoWindow.open(map, marker);
+    curInfoWin = infoWindow;
 }
 
 function moveToCurrentLocation(){

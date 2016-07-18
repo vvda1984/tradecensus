@@ -1,10 +1,10 @@
 ﻿/// <reference path="tc.databaseAPI.js" />
 
 const earthR = 6378137;
-
 var curlat = 10.773598;
 var curlng = 106.7058;
 var nearByOutlets = [];
+var curOutlets = [];
 
 function calcRetangleBoundary(dlat, dlng, p) {
     var np = {
@@ -158,6 +158,8 @@ function queryOutlets(view, callback) {
                         if (distance <= meter) {
                             log('Add outlet ' + outlet.ID.toString() + ' to list');
                             initializeOutlet(outlet);
+                            outlet.positionIndex = foundOutlets.length;
+                            log('Set ' + outlet.Name + ': ' + outlet.positionIndex.toString());                            
                             foundOutlets[found] = outlet;
                             found++;
                         }

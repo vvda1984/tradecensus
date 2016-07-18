@@ -1,7 +1,7 @@
 ﻿
 var resetDB = false;                // force reset database - testing only
 var db;                             // database instance
-var isDev = true;                   // enable DEV mode
+var isDev = false;                   // enable DEV mode
 
 var userOutletTable = 'outlet';     // outlet table name for current user
 var isDlgOpened = false;            // 
