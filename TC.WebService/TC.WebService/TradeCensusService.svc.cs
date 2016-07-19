@@ -13,18 +13,15 @@ namespace TradeCensus
     public partial class TradeCensusService : ITradeCensusService
     {             
         //[WebGet(UriTemplate = "login/{id}/{pass}", ResponseFormat = WebMessageFormat.Json)]
-        [WebInvoke(Method = "POST", UriTemplate = "login/{id}/{pass}", ResponseFormat = WebMessageFormat.Json)]
-        public LoginResponse Login(string id, string pass)
+        [WebInvoke(Method = "POST", UriTemplate = "login/{username}/{pass}", ResponseFormat = WebMessageFormat.Json)]
+        public LoginResponse Login(string username, string pass)
         {
-#if DEBUG
-            //Thread.Sleep(3000);
-#endif
             using(var repo = new PersonRepo())
             {
                 LoginResponse resp = new LoginResponse();
                 try
                 {
-                    resp.People = repo.Get(id, pass);
+                    resp.People = repo.Login(username, pass);
                 }
                 catch (Exception ex)
                 {
@@ -135,15 +132,19 @@ namespace TradeCensus
             }
         }
 
-        [WebInvoke(Method = "POST", UriTemplate = "outlet/getoutlets/{lat}/{lng}/{meter}/{count}", ResponseFormat = WebMessageFormat.Json)]
-        public GetOutletListResponse GetOutletLists(string lat, string lng, string meter, string count)
+        [WebInvoke(Method = "POST", UriTemplate = "outlet/getoutlets/{personID}/{lat}/{lng}/{meter}/{count}", ResponseFormat = WebMessageFormat.Json)]
+        public GetOutletListResponse GetNearbyOutlets(string personID, string lat, string lng, string meter, string count)
         {            
             using (var repo = new OutletRepo())
             {
                 var resp = new GetOutletListResponse();
                 try
                 {
-                    resp.Items = repo.GetOutletByLocation(Convert.ToDouble(lat), Convert.ToDouble(lng), Convert.ToDouble(meter), Convert.ToInt32(count));
+                    resp.Items = repo.GetOutletByLocation(int.Parse(personID),
+                                                        Convert.ToDouble(lat),
+                                                        Convert.ToDouble(lng),
+                                                        Convert.ToDouble(meter),
+                                                        Convert.ToInt32(count));
                 }
                 catch (Exception ex)
                 {
@@ -173,16 +174,7 @@ namespace TradeCensus
                 return resp;
             }
         }
-
-        [WebInvoke(Method = "POST", UriTemplate = "outlet/commit", ResponseFormat = WebMessageFormat.Json, BodyStyle = WebMessageBodyStyle.Wrapped)]
-        public SaveOutletResponse SaveOutletText(string text)
-        {
-            var resp = new SaveOutletResponse();
-            resp.ID = 1;
-            resp.RowID = "1234567890";
-            return resp;
-        }
-
+        
         //public SaveImageResponse SaveImage(string fileKey, string outletID, string index, Stream stream)
         [WebInvoke(Method = "POST", UriTemplate = "outlet/uploadimage", ResponseFormat = WebMessageFormat.Json, BodyStyle = WebMessageBodyStyle.Wrapped)]
         public SaveImageResponse SaveImage()

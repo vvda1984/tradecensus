@@ -1,5 +1,5 @@
 ﻿using System;
-using TradeCensus;
+using System.Linq;
 using TradeCensusService.Shared;
 
 namespace TradeCensus.Shared
@@ -9,8 +9,8 @@ namespace TradeCensus.Shared
         protected tradecensusEntities _entities;
         protected Logger _logger;
         protected bool _isDataChanged;
-        protected string _name;
-                
+        protected string _name;     
+
         protected BaseRepo(string name)
         {            
             _entities = new tradecensusEntities(); // throw error
@@ -37,6 +37,31 @@ namespace TradeCensus.Shared
         protected void Log(string message, params object[] args)
         {
             _logger.Write(message, args);
+        }
+        protected int ToInt(string value)
+        {
+            try
+            {
+                return int.Parse(value);
+            }
+            catch
+            {
+                throw new InvalidOperationException(string.Format("Cannot convert '{0}' to number", value));
+            }
+        }
+        protected string GetSetting(string key, string defaultValue)
+        {
+            string value;
+            try
+            {
+                value = _entities.Configs.FirstOrDefault(i => i.Name == key).Value;
+            }
+            catch
+            {
+                Log("Missing setting '{0}', use default: {1}", key, defaultValue);
+                value = defaultValue;
+            }
+            return value;
         }
     }
 }

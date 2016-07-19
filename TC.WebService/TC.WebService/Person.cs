@@ -39,6 +39,5 @@ namespace TradeCensus
         public int AmendBy { get; set; }
         public System.DateTime AmendDate { get; set; }
         public Nullable<bool> IsDefaultSA { get; set; }
-        public string Password { get; set; }
     }
 }

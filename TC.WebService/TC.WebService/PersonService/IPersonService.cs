@@ -7,6 +7,6 @@ namespace TradeCensus
     public interface IPersonService
     {     
         [OperationContract]       
-        LoginResponse Login(string id, string pass);
+        LoginResponse Login(string username, string pass);
     }
 }

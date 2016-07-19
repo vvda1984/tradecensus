@@ -17,16 +17,12 @@ namespace TradeCensus
         GetOutletTypeResponse GetOutlets();
 
         [OperationContract]
-        GetOutletListResponse GetOutletLists(string lat, string lng, string meter, string count);
+        GetOutletListResponse GetNearbyOutlets(string personID, string lat, string lng, string meter, string count);
 
         [OperationContract]
         SaveOutletResponse SaveOutlet(OutletModel item);
-
-        [OperationContract]
-        SaveOutletResponse SaveOutletText(string text);
-
-        [OperationContract]
-        //SaveImageResponse SaveImage(string fileKey, string outletID, string index, Stream stream);
+        
+        [OperationContract]        
         SaveImageResponse SaveImage();
 
         [OperationContract]

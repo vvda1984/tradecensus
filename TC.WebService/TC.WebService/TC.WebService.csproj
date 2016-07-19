@@ -155,19 +155,19 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Global.asax" />
-    <Content Include="Model1.Context.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <DependentUpon>TradeCensusModel.edmx</DependentUpon>
-      <LastGenOutput>Model1.Context.cs</LastGenOutput>
-    </Content>
-    <Content Include="Model1.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <DependentUpon>TradeCensusModel.edmx</DependentUpon>
-      <LastGenOutput>Model1.cs</LastGenOutput>
-    </Content>
     <Content Include="ReleaseNote.txt" />
     <Content Include="scripts\ai.0.22.9-build00167.js" />
     <Content Include="scripts\ai.0.22.9-build00167.min.js" />
+    <Content Include="TradeCensusModel.Context.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>TradeCensusModel.edmx</DependentUpon>
+      <LastGenOutput>TradeCensusModel.Context.cs</LastGenOutput>
+    </Content>
+    <Content Include="TradeCensusModel.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>TradeCensusModel.edmx</DependentUpon>
+      <LastGenOutput>TradeCensusModel.cs</LastGenOutput>
+    </Content>
     <Content Include="TradeCensusService.svc" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
@@ -175,10 +175,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Area.cs">
-      <DependentUpon>Model1.tt</DependentUpon>
+      <DependentUpon>TradeCensusModel.tt</DependentUpon>
     </Compile>
     <Compile Include="Config.cs">
-      <DependentUpon>Model1.tt</DependentUpon>
+      <DependentUpon>TradeCensusModel.tt</DependentUpon>
     </Compile>
     <Compile Include="ConfigService\ConfigRepo.cs" />
     <Compile Include="ConfigService\IConfigService.cs" />
@@ -186,45 +186,33 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="ITradeCensusService.cs" />
-    <Compile Include="Model1.Context.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Model1.Context.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Model1.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Model1.tt</DependentUpon>
-    </Compile>
-    <Compile Include="TradeCensusModel.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>TradeCensusModel.edmx</DependentUpon>
-    </Compile>
     <Compile Include="Outlet.cs">
-      <DependentUpon>Model1.tt</DependentUpon>
+      <DependentUpon>TradeCensusModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="OutletHistory.cs">
+      <DependentUpon>TradeCensusModel.tt</DependentUpon>
     </Compile>
     <Compile Include="OutletImage.cs">
-      <DependentUpon>Model1.tt</DependentUpon>
+      <DependentUpon>TradeCensusModel.tt</DependentUpon>
     </Compile>
     <Compile Include="OutletService\IOutletService.cs" />
     <Compile Include="OutletService\OutletModel.cs" />
     <Compile Include="OutletService\OutletRepo.cs" />
     <Compile Include="OutletType.cs">
-      <DependentUpon>Model1.tt</DependentUpon>
+      <DependentUpon>TradeCensusModel.tt</DependentUpon>
     </Compile>
     <Compile Include="Person.cs">
-      <DependentUpon>Model1.tt</DependentUpon>
+      <DependentUpon>TradeCensusModel.tt</DependentUpon>
     </Compile>
     <Compile Include="PersonRole.cs">
-      <DependentUpon>Model1.tt</DependentUpon>
+      <DependentUpon>TradeCensusModel.tt</DependentUpon>
     </Compile>
     <Compile Include="PersonService\IPersonService.cs" />
     <Compile Include="PersonService\PersonModel.cs" />
     <Compile Include="PersonService\PersonRepo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Province.cs">
-      <DependentUpon>Model1.tt</DependentUpon>
+      <DependentUpon>TradeCensusModel.tt</DependentUpon>
     </Compile>
     <Compile Include="ProvinceService\IProvinceService.cs" />
     <Compile Include="ProvinceService\ProvinceRepo.cs" />
@@ -237,17 +225,32 @@
     <Compile Include="Shared\ProvinceResponse.cs" />
     <Compile Include="Shared\Response.cs" />
     <Compile Include="SyncDetail.cs">
-      <DependentUpon>Model1.tt</DependentUpon>
+      <DependentUpon>TradeCensusModel.tt</DependentUpon>
     </Compile>
     <Compile Include="SyncHistory.cs">
-      <DependentUpon>Model1.tt</DependentUpon>
+      <DependentUpon>TradeCensusModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="TradeCensusModel.Context.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>TradeCensusModel.Context.tt</DependentUpon>
+    </Compile>
+    <Compile Include="TradeCensusModel.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>TradeCensusModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="TradeCensusModel.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>TradeCensusModel.edmx</DependentUpon>
     </Compile>
     <Compile Include="TradeCensusService.svc.cs">
       <DependentUpon>TradeCensusService.svc</DependentUpon>
     </Compile>
     <Compile Include="WcfReadEntityBodyModeWorkaroundModule .cs" />
     <Compile Include="Zone.cs">
-      <DependentUpon>Model1.tt</DependentUpon>
+      <DependentUpon>TradeCensusModel.tt</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -260,6 +263,7 @@
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="Properties\PublishProfiles\File.pubxml" />
     <EntityDeploy Include="TradeCensusModel.edmx">
       <Generator>EntityModelCodeGenerator</Generator>
       <LastGenOutput>TradeCensusModel.Designer.cs</LastGenOutput>
@@ -267,7 +271,6 @@
     <Content Include="TradeCensusModel.edmx.diagram">
       <DependentUpon>TradeCensusModel.edmx</DependentUpon>
     </Content>
-    <None Include="Properties\PublishProfiles\File.pubxml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

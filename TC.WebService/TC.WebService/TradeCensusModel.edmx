@@ -4,7 +4,7 @@
   <edmx:Runtime>
     <!-- SSDL content -->
     <edmx:StorageModels>
-      <Schema Namespace="tradecensusModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+    <Schema Namespace="tradecensusModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
         <EntityType Name="Area">
           <Key>
             <PropertyRef Name="ID" />
@@ -67,6 +67,18 @@
           <Property Name="DEDISID" Type="int" Nullable="false" />
           <Property Name="LegalName" Type="nvarchar" MaxLength="50" />
         </EntityType>
+        <EntityType Name="OutletHistory">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="OutletID" Type="int" Nullable="false" />
+          <Property Name="Action" Type="int" Nullable="false" />
+          <Property Name="Note" Type="nvarchar" MaxLength="255" Nullable="false" />
+          <Property Name="PersonID" Type="int" Nullable="false" />
+          <Property Name="InputBy" Type="int" Nullable="false" />
+          <Property Name="InputDate" Type="datetime" Nullable="false" />
+        </EntityType>
         <EntityType Name="OutletImage">
           <Key>
             <PropertyRef Name="ID" />
@@ -118,7 +130,6 @@
           <Property Name="AmendBy" Type="int" Nullable="false" />
           <Property Name="AmendDate" Type="datetime" Nullable="false" />
           <Property Name="IsDefaultSA" Type="bit" />
-          <Property Name="Password" Type="nvarchar" MaxLength="100" Nullable="false" />
         </EntityType>
         <EntityType Name="PersonRole">
           <Key>
@@ -126,7 +137,13 @@
           </Key>
           <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="PersonID" Type="int" Nullable="false" />
-          <Property Name="IsAudit" Type="tinyint" Nullable="false" />
+          <Property Name="Role" Type="int" Nullable="false" />
+          <Property Name="Username" Type="nvarchar" MaxLength="255" Nullable="false" />
+          <Property Name="Password" Type="nvarchar" MaxLength="255" Nullable="false" />
+          <Property Name="InputDate" Type="datetime" Nullable="false" />
+          <Property Name="InputBy" Type="int" Nullable="false" />
+          <Property Name="AmendDate" Type="datetime" Nullable="false" />
+          <Property Name="AmendBy" Type="int" Nullable="false" />
         </EntityType>
         <EntityType Name="Province">
           <Key>
@@ -192,6 +209,7 @@
           <EntitySet Name="Area" EntityType="Self.Area" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Config" EntityType="Self.Config" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Outlet" EntityType="Self.Outlet" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="OutletHistory" EntityType="Self.OutletHistory" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="OutletImage" EntityType="Self.OutletImage" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="OutletType" EntityType="Self.OutletType" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Person" EntityType="Self.Person" Schema="dbo" store:Type="Tables" />
@@ -209,8 +227,7 @@
             <End Role="SyncDetail" EntitySet="SyncDetail" />
           </AssociationSet>
         </EntityContainer>
-      </Schema>
-    </edmx:StorageModels>
+      </Schema></edmx:StorageModels>
     <!-- CSDL content -->
     <edmx:ConceptualModels>
       <Schema Namespace="tradecensusModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
@@ -329,7 +346,6 @@
           <Property Name="AmendBy" Type="Int32" Nullable="false" />
           <Property Name="AmendDate" Type="DateTime" Nullable="false" Precision="3" />
           <Property Name="IsDefaultSA" Type="Boolean" />
-          <Property Name="Password" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
         </EntityType>
         <EntityType Name="PersonRole">
           <Key>
@@ -337,7 +353,13 @@
           </Key>
           <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="PersonID" Type="Int32" Nullable="false" />
-          <Property Name="IsAudit" Type="Byte" Nullable="false" />
+          <Property Name="Role" Type="Int32" Nullable="false" />
+          <Property Name="Username" Type="String" MaxLength="255" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="Password" Type="String" MaxLength="255" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="InputDate" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="InputBy" Type="Int32" Nullable="false" />
+          <Property Name="AmendDate" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="AmendBy" Type="Int32" Nullable="false" />
         </EntityType>
         <EntityType Name="Province">
           <Key>
@@ -421,7 +443,20 @@
             <End Role="SyncHistory" EntitySet="SyncHistories" />
             <End Role="SyncDetail" EntitySet="SyncDetails" />
           </AssociationSet>
+          <EntitySet Name="OutletHistories" EntityType="tradecensusModel.OutletHistory" />
         </EntityContainer>
+        <EntityType Name="OutletHistory">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="OutletID" Type="Int32" Nullable="false" />
+          <Property Name="Action" Type="Int32" Nullable="false" />
+          <Property Name="Note" Type="String" Nullable="false" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="PersonID" Type="Int32" Nullable="false" />
+          <Property Name="InputBy" Type="Int32" Nullable="false" />
+          <Property Name="InputDate" Type="DateTime" Nullable="false" Precision="3" />
+        </EntityType>
       </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -545,7 +580,6 @@
                 <ScalarProperty Name="AmendBy" ColumnName="AmendBy" />
                 <ScalarProperty Name="AmendDate" ColumnName="AmendDate" />
                 <ScalarProperty Name="IsDefaultSA" ColumnName="IsDefaultSA" />
-                <ScalarProperty Name="Password" ColumnName="Password" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -554,7 +588,13 @@
               <MappingFragment StoreEntitySet="PersonRole">
                 <ScalarProperty Name="ID" ColumnName="ID" />
                 <ScalarProperty Name="PersonID" ColumnName="PersonID" />
-                <ScalarProperty Name="IsAudit" ColumnName="IsAudit" />
+                <ScalarProperty Name="Role" ColumnName="Role" />
+                <ScalarProperty Name="Username" ColumnName="Username" />
+                <ScalarProperty Name="Password" ColumnName="Password" />
+                <ScalarProperty Name="InputDate" ColumnName="InputDate" />
+                <ScalarProperty Name="InputBy" ColumnName="InputBy" />
+                <ScalarProperty Name="AmendDate" ColumnName="AmendDate" />
+                <ScalarProperty Name="AmendBy" ColumnName="AmendBy" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -595,6 +635,19 @@
                 <ScalarProperty Name="Name" ColumnName="Name" />
                 <ScalarProperty Name="RegionID" ColumnName="RegionID" />
                 <ScalarProperty Name="ZoneCode" ColumnName="ZoneCode" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="OutletHistories">
+            <EntityTypeMapping TypeName="tradecensusModel.OutletHistory">
+              <MappingFragment StoreEntitySet="OutletHistory">
+                <ScalarProperty Name="InputDate" ColumnName="InputDate" />
+                <ScalarProperty Name="InputBy" ColumnName="InputBy" />
+                <ScalarProperty Name="PersonID" ColumnName="PersonID" />
+                <ScalarProperty Name="Note" ColumnName="Note" />
+                <ScalarProperty Name="Action" ColumnName="Action" />
+                <ScalarProperty Name="OutletID" ColumnName="OutletID" />
+                <ScalarProperty Name="ID" ColumnName="ID" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

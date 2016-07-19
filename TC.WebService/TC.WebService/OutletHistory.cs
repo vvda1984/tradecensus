@@ -12,16 +12,14 @@ namespace TradeCensus
     using System;
     using System.Collections.Generic;
     
-    public partial class PersonRole
+    public partial class OutletHistory
     {
         public int ID { get; set; }
+        public int OutletID { get; set; }
+        public int Action { get; set; }
+        public string Note { get; set; }
         public int PersonID { get; set; }
-        public int Role { get; set; }
-        public string Username { get; set; }
-        public string Password { get; set; }
-        public System.DateTime InputDate { get; set; }
         public int InputBy { get; set; }
-        public System.DateTime AmendDate { get; set; }
-        public int AmendBy { get; set; }
+        public System.DateTime InputDate { get; set; }
     }
 }

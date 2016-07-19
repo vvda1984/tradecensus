@@ -70,39 +70,47 @@ namespace TradeCensus
             return _entities.OutletTypes.ToList();
         }
 
-        public List<OutletModel> GetOutletByLocation(double lat, double lng, double meter, int count)
+        public List<OutletModel> GetOutletByLocation(int personID, double lat, double lng, double meter, int count)
         {
-            string value = "circle";
-            try { value = _entities.Configs.FirstOrDefault(i => i.Name == "calc_distance_algorithm").Value; }
-            catch
-            {
-                Log("Missing calc_distance_algorithm, use default (circle)");
-                value = "circle";
-            }
-            Log("Distance method: {0}", value);
-            var saleLoc = new Point { Lat = lat, Lng = lng };
+            var user = _entities.PersonRoles.FirstOrDefault(i => i.PersonID == personID);
+            if (user == null)
+                throw new Exception(string.Format("User {0} doesn't exist", personID));
 
-            Point tl = CalcRetangleBoundary(meter, 0 - meter, saleLoc);
-            Point tr = CalcRetangleBoundary(meter, meter, saleLoc);
-            Point bl = CalcRetangleBoundary(0 - meter, 0 - meter, saleLoc);
-            Point br = CalcRetangleBoundary(0 - meter, meter, saleLoc);
+            string method = GetSetting("calc_distance_algorithm", "circle");
+            bool isAudit = user.Role == Constants.RoleAudit;
+
+            Log("Calculate distance method: {0}", method);
+            var curLocation = new Point { Lat = lat, Lng = lng };
+            Point tl = DistanceHelper.CalcShiftedPoint(meter, 0 - meter, curLocation);
+            Point tr = DistanceHelper.CalcShiftedPoint(meter, meter, curLocation);
+            Point bl = DistanceHelper.CalcShiftedPoint(0 - meter, 0 - meter, curLocation);
+            Point br = DistanceHelper.CalcShiftedPoint(0 - meter, meter, curLocation);
 
             List<OutletModel> res = new List<OutletModel>();
-            var query = from i in _entities.Outlets
-                        where i.Latitude >= bl.Lat && i.Latitude <= tl.Lat &&
-                              i.Longitude >= bl.Lng && i.Longitude <= br.Lng
-                        select i;
+            var query = isAudit ?
+                (from i in _entities.Outlets
+                 where i.Latitude >= bl.Lat && i.Latitude <= tl.Lat &&
+                       i.Longitude >= bl.Lng && i.Longitude <= br.Lng
+                 select i) :
+                (from i in _entities.Outlets
+                 where i.Latitude >= bl.Lat && i.Latitude <= tl.Lat &&
+                     i.Longitude >= bl.Lng && i.Longitude <= br.Lng &&
+                     i.AuditStatus == Constants.AuditStatusAccept
+                 select i);
             if (query.Any())
             {
                 var arr = query.ToArray();
                 int found = 0;
                 foreach (var outlet in arr)
                 {                    
-                    double distance = int.MaxValue;
-                    if (value == "circle")
-                        distance = CalcDistanceCircle(saleLoc, new Point { Lat = outlet.Latitude, Lng = outlet.Longitude }, meter);
+                    double distance = DistanceHelper.CalcDistance(curLocation, new Point { Lat = outlet.Latitude, Lng = outlet.Longitude });
 
-                    if (distance <= meter)
+                    //value == "circle"
+                    bool isMatched = string.Compare(method, "squard", StringComparison.OrdinalIgnoreCase) == 0;
+                    if (string.Compare(method, "circle", StringComparison.OrdinalIgnoreCase) == 0)
+                        isMatched = distance <= meter;
+
+                    if (isMatched)
                     {
                         var foundOutlet = new OutletModel
                         {
@@ -129,7 +137,8 @@ namespace TradeCensus
                             Tracking = outlet.Tracking,
                             IsTracked = outlet.Tracking == 1,
                             PRowID = outlet.PRowID.ToString(),
-                            Action = 0,
+                            PAction = 0,
+                            PNote = "",
                             InputBy = outlet.InputBy,                            
                             AmendBy = outlet.AmendBy,
                             AmendDate = outlet.AmendDate.ToString("yyyy-MM-dd HH:mm:ss"),
@@ -159,7 +168,6 @@ namespace TradeCensus
                         res.Add(foundOutlet);
                         found++;
                     }
-
                     if (found >= count) break;
                 }
             }
@@ -267,8 +275,8 @@ namespace TradeCensus
                 }
             }
             
-
             TrackOutletChanged(existingOutlet.PRowID, outlet.AmendBy, note, 0, action);
+            AppendOutletHistory(outlet.AmendBy, outlet.ID, outlet.PAction, outlet.PNote);
             _entities.SaveChanges();
 
             return existingOutlet.PRowID.ToString();
@@ -290,49 +298,8 @@ namespace TradeCensus
         {
 
         }
-
-        private double CalcDistanceCircle(Point saleLoc, Point outletLoc, double meter)
-        {
-            var R = 6378137; // Earth’s mean radius in meter
-            var dLat = CalculateRad(outletLoc.Lat - saleLoc.Lat);
-            var dLong = CalculateRad(outletLoc.Lng - saleLoc.Lng);
-            var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) + Math.Cos(CalculateRad(saleLoc.Lat)) * Math.Cos(CalculateRad(outletLoc.Lat)) *
-                    Math.Sin(dLong / 2) * Math.Sin(dLong / 2);
-            var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
-            var d = R * c;
-            return Math.Round(d, 2);
-        }
-
-        private static double CalculateRad(double x)
-        {
-            return x * Math.PI / 180;
-        }
-
-        //private double InDistanceSquare(Point saleLoc, Point outletLoc, double meter)
-        //{
-        //    var o1 = outletLoc.Lng + (meter * 0.0001) / 11.32;
-        //    var o3 = outletLoc.Lng - (meter * 0.0001) / 11.32;
-        //    var o2 = outletLoc.Lat + (meter * 0.0001) / 11.32;
-        //    var o4 = outletLoc.Lat - (meter * 0.0001) / 11.32;
-
-        //    if (saleLoc.Lat <= 0 && saleLoc.Lng >= 0) return saleLoc.Lat >= o4 && saleLoc.Lng <= o1;
-        //    if (saleLoc.Lat >= 0 && saleLoc.Lng >= 0) return saleLoc.Lat <= o2 && saleLoc.Lng <= o1;
-        //    if (saleLoc.Lat >= 0 && saleLoc.Lng <= 0) return saleLoc.Lat <= o2 && saleLoc.Lng >= o3;
-        //    if (saleLoc.Lat <= 0 && saleLoc.Lng <= 0) return saleLoc.Lat >= o4 && saleLoc.Lng >= o3;
-        //    return false;
-        //}    
         
-        private Point CalcRetangleBoundary(double dlat, double dlng, Point p)
-        {
-            Point newP = new Point
-            {
-                Lat = p.Lat + (dlat / Constants.EarthR) * (180 / Math.PI),
-                Lng = p.Lng + (dlng / Constants.EarthR) * (180 / Math.PI) / Math.Cos(p.Lat * Math.PI / 180)
-            };
-            return newP;
-        }
-
-        public string SaveImage(string userID, string outletID, string index,  HttpPostedFile file)
+        public string SaveImage(string personID, string outletID, string index,  HttpPostedFile file)
         {           
             string path = AppDomain.CurrentDomain.BaseDirectory; //GetType().Assembly.Location; // ...\bin\...
             path = Path.GetDirectoryName(path) + "\\Images";
@@ -342,7 +309,7 @@ namespace TradeCensus
             file.SaveAs(imagePath);
           
             var id = int.Parse(outletID);
-            var amendby = int.Parse(userID);
+            var amendby = int.Parse(personID);
             Outlet outlet = _entities.Outlets.FirstOrDefault(i => i.ID == id);
             if (outlet != null)
             {
@@ -379,12 +346,7 @@ namespace TradeCensus
             }
             return string.Format("/images/{0}_{1}.jpg", outletID, index);
         }
-
-        public bool ThumbnailCallback()
-        {
-            return true;
-        }
-
+      
         private void EnsureDirExist(string path)
         {
             if (Directory.Exists(path)) return;
@@ -420,13 +382,13 @@ namespace TradeCensus
             return "";
         }
 
-        private void TrackOutletChanged(Guid rowID, int userID,  string note, byte status, byte action)
+        private void TrackOutletChanged(Guid rowID, int personID,  string note, byte status, byte action)
         {
             SyncHistory hist = new SyncHistory()
             {
                 TableName = "Outlet",
                 SyncDateTime = DateTime.Now,
-                SyncBy = userID,
+                SyncBy = personID,
                 Note = note,
                 Status = status,
             };
@@ -439,11 +401,69 @@ namespace TradeCensus
             };
             hist.SyncDetails.Add(detail);
         }
+
+        private void AppendOutletHistory(int personID, int outletID, int action, string note)
+        {
+            var hist = new OutletHistory {
+                OutletID = outletID,
+                PersonID = personID,
+                Action = action,
+                Note = string.IsNullOrEmpty(note) ? "" : note,
+                InputBy = personID,
+                InputDate = DateTime.Now,
+            };
+            _entities.OutletHistories.Add(hist);
+        }
     }
 
     public class Point
     {
         public double Lat { get; set; }
         public double Lng { get; set; }
+    }
+
+    public class DistanceHelper
+    {
+        public static double CalcDistance(Point p1, Point p2)
+        {
+            var R = 6378137; // Earth’s mean radius in meter
+            var dLat = CalcRad(p2.Lat - p1.Lat);
+            var dLong = CalcRad(p2.Lng - p1.Lng);
+            var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) + Math.Cos(CalcRad(p1.Lat)) * Math.Cos(CalcRad(p2.Lat)) *
+                    Math.Sin(dLong / 2) * Math.Sin(dLong / 2);
+            var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+            var d = R * c;
+            return Math.Round(d, 2);
+        }
+
+        public static double CalcRad(double x)
+        {
+            return x * Math.PI / 180;
+        }
+
+        //private double InDistanceSquare(Point saleLoc, Point outletLoc, double meter)
+        //{
+        //    var o1 = outletLoc.Lng + (meter * 0.0001) / 11.32;
+        //    var o3 = outletLoc.Lng - (meter * 0.0001) / 11.32;
+        //    var o2 = outletLoc.Lat + (meter * 0.0001) / 11.32;
+        //    var o4 = outletLoc.Lat - (meter * 0.0001) / 11.32;
+
+        //    if (saleLoc.Lat <= 0 && saleLoc.Lng >= 0) return saleLoc.Lat >= o4 && saleLoc.Lng <= o1;
+        //    if (saleLoc.Lat >= 0 && saleLoc.Lng >= 0) return saleLoc.Lat <= o2 && saleLoc.Lng <= o1;
+        //    if (saleLoc.Lat >= 0 && saleLoc.Lng <= 0) return saleLoc.Lat <= o2 && saleLoc.Lng >= o3;
+        //    if (saleLoc.Lat <= 0 && saleLoc.Lng <= 0) return saleLoc.Lat >= o4 && saleLoc.Lng >= o3;
+        //    return false;
+        //}    
+
+        public static Point CalcShiftedPoint(double dlat, double dlng, Point p)
+        {
+            Point newP = new Point
+            {
+                Lat = p.Lat + (dlat / Constants.EarthR) * (180 / Math.PI),
+                Lng = p.Lng + (dlng / Constants.EarthR) * (180 / Math.PI) / Math.Cos(p.Lat * Math.PI / 180)
+            };
+            return newP;
+        }
+
     }
 }

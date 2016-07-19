@@ -6,44 +6,45 @@ namespace TradeCensus
 {
     public class PersonRepo : BaseRepo
     {
-        public PersonRepo():base("Person")
+        public PersonRepo() : base("Person")
         {
-        }                
+        }
+    
+        public PersonModel Login(string userName, string password)
+        {
+            Log("Request login: {0}", userName);
+            var user = _entities.PersonRoles.FirstOrDefault(i => string.Compare(i.Username, userName, StringComparison.OrdinalIgnoreCase) == 0);
+            if (user == null)
+                throw new Exception(string.Format("User {0} doesn't exist", userName));
 
-        public PersonModel Get(string id, string password)
-        {
-            Log("Get person id: {0}", id);
-            var item = _entities.People.FirstOrDefault(i=>i.ID.ToString() == id);
-            if (item != null)
+            if (user.Password != password)
+                throw new Exception("Password is incorrect.");
+
+            Person person = _entities.People.FirstOrDefault(i => i.ID == user.PersonID);
+            if (person == null)
+                throw new Exception(string.Format("User {0} is denied.", userName));
+
+            return new PersonModel
             {
-                if (!string.IsNullOrEmpty(password)&& !password.Equals(item.Password)) // TODO: hash password....
-                    throw new Exception(string.Format("Password is incorrect"));
-
-                var ad = _entities.PersonRoles.FirstOrDefault(i => i.PersonID == item.ID);
-                PersonModel res = new PersonModel()
-                {
-                    ID = item.ID,
-                    AreaID = item.AreaID,
-                    District = item.District,
-                    Email = item.Email,
-                    EmailTo = item.EmailTo,
-                    FirstName = item.FirstName,
-                    HasAuditRole = ad != null && ad.IsAudit == 1,
-                    HomeAddress = item.HomeAddress,
-                    HouseNo = item.HouseNo,
-                    IsTerminate = item.TerminateDate != null,
-                    LastName = item.LastName,
-                    Phone = item.Phone,
-                    PosID = item.PosID,
-                    ProvinceID = item.ProvinceID,
-                    Street = item.Street,
-                    WorkAddress = item.WorkAddress,
-                    ZoneID = item.ZoneID,
-                };
-                return res;
-            }
-            else
-                throw new Exception(string.Format("User {0} doesn't exist", id));
+                ID = person.ID,
+                UserID = user.ID,
+                AreaID = person.AreaID,
+                District = person.District,
+                Email = person.Email,
+                EmailTo = person.EmailTo,
+                FirstName = person.FirstName,
+                HasAuditRole = user.Role == Constants.RoleAudit,
+                HomeAddress = person.HomeAddress,
+                HouseNo = person.HouseNo,
+                IsTerminate = person.TerminateDate != null,
+                LastName = person.LastName,
+                Phone = person.Phone,
+                PosID = person.PosID,
+                ProvinceID = person.ProvinceID,
+                Street = person.Street,
+                WorkAddress = person.WorkAddress,
+                ZoneID = person.ZoneID,
+            };            
         }
     }
 }

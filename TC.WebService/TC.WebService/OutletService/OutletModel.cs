@@ -54,13 +54,9 @@ namespace TradeCensus
         [DataMember]
         public double Latitude { get; set; }
         [DataMember]
-        public string OutletEmail { get; set; }
+        public string OutletEmail { get; set; }        
         [DataMember]
-        public string PRowID { get; set; }
-        [DataMember]
-        public double Distance { get; set; }
-        [DataMember]
-        public int Action { get; set; }
+        public double Distance { get; set; }        
         [DataMember]
         public int InputBy { get; set; }
         [DataMember]
@@ -79,5 +75,11 @@ namespace TradeCensus
         public int TotalVolume { get; set; }
         [DataMember]
         public int VBLVolume { get; set; }
+        [DataMember]
+        public string PRowID { get; set; }
+        [DataMember]
+        public int PAction { get; set; }        
+        [DataMember]
+        public string PNote { get; set; }
     }
 }
