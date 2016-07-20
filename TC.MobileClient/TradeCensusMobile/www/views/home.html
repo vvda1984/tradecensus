@@ -1,28 +1,28 @@
 <div id="view-home">
-    <div id="view-home-top-panel">
-        <div class="box" ng-show="showListButton" ng-click="showhideLeftPanel()">
+    <div id="home-topleft">
+        <div class="square-box white" ng-show="showListButton" ng-click="showhideLeftPanel()">
             <img src="assets/img/menu.svg" />
-        </div>
-        <div class="box" ng-show="showCollapseButton" ng-click="closeLeftPanel()">
-            <img src="assets/img/arrow-left.svg" />
-        </div>
-        <div class="box" ng-show="showExpandButton" ng-click="showLeftPanel()">
-            <img src="assets/img/arrow-right.svg" />
-        </div>
-        <div class="box" ng-click="showDropdown()">
-            <span>{{outletHeader}}</span>
+        </div>        
+        <div class="square-box white" ng-click="showDropdown()">
+            <div style="text">{{outletHeader}}</div>
             <img src="assets/img/arrow-down.svg" />
         </div>
-        <div class="top-panel-button blue" ng-click="panToCurLocation()">
+        <div class="square-box white">
+            <img src="assets/img/arrow-down.svg" />
+            <span>Distance: </span>
+            <span>m</span>
+        </div>  
+
+        <div class="square-box blue" ng-click="panToCurLocation()">
             <img src="assets/img/curloccation.svg" />
         </div>
-        <div class="top-panel-button blue" ng-show="allowRefresh" ng-click="refresh()">
+        <div class="square-box blue" ng-show="allowRefresh" ng-click="refresh()">
             <img src="assets/img/refresh.svg" />
         </div>
-        <div class="top-panel-button blue" ng-click="createNewOutlet()">
+        <div class="square-box blue" ng-click="createNewOutlet()">
             <img src="assets/img/add.svg" />
         </div>
-        <div ng-show="showSyncButton" class="top-panel-button blue" ng-click="syncOutlets()">
+        <div ng-show="showSyncButton" class="square-box blue" ng-click="syncOutlets()">
             <img src="assets/img/sync.svg" />
         </div>
         <div id="outlet-dropdown" class="dropdown">
@@ -33,44 +33,52 @@
         </div>
     </div>
 
-    <div id="outletPanel" ng-click="hideDropdown()">
-		<div class="outlet-list-panel">
-				<span style="margin-left:8px;" ng-show="showNoOutletFound">No outlet found</span>
-				<div class="outlet-item" ng-repeat="outlet in outlets |  startFrom:currentPage*pageSize | limitTo:pageSize " ng-click="hideDropdown()">
-					<div class="outlet-item-col1"> <div class="{{outlet.IsDraft ? 'circle-gray' : (outlet.IsSynced ? 'circle' : 'circle-org')}}">{{$index + 1 + (currentPage) * pageSize}}</div> </div>
-					<div class="outlet-item-col2" >
-						<span class="header" ng-click="openOutlet($index)">{{outlet.Name}}</span>					
-						<div class="header-right" style="background-size:yellow;">
-							<span class="distance">
-								{{outlet.Distance}} m
-							</span>
-						</div>
-						<img class="imgDelete" ng-show="outlet.IsDraft"
-							 src="assets/img/delete.svg" ng-click="deleteOutlet($index)" />
-						<div class="content">
-							<table>
-								<tr>
-									<td class="title" ng-show="viewOutletFull">Address:</td>
-									<td class="value" colspan="5">{{outlet.FullAddress}}</td>
-									<td class="title" ng-show="viewOutletFull">Outlet type:</td>
-									<td class="value" ng-show="viewOutletFull">{{outlet.OutletTypeName}}</td>									
-								</tr>
-								<tr ng-show="viewOutletFull">
-									<td class="title">Distance:</td>
-									<td class="value">{{outlet.Distance}}</td>
-									<td class="title">SR/DSM:</td>
-									<td class="value">{{outlet.Name}}</td>
-									<td class="title">Tel:</td>
-									<td class="value">{{outlet.Phone}}</td>
-									<td class="title">Last contact:</td>
-									<td class="value">{{outlet.LastContact}}</td>
-								</tr>
-							</table>
-						</div>
-						<span class="span-datetime">Last Changed: {{outlet.AmendDate}}</span>
-					</div>
-				</div>
-			</div>
+    <div id="outletPanel" class="slider-left" ng-click="hideDropdown()">
+        <div class="expandcollapse-box" ng-show="showExpandButton" ng-click="showLeftPanel()">
+            <img src="assets/img/arrow-right-white.svg" />
+        </div>
+        <div class="expandcollapse-box" ng-show="showCollapseButton" ng-click="closeLeftPanel()">
+            <img src="assets/img/arrow-left-white.svg" />
+        </div>            
+        <div id="slider-left-content">
+            <div class="outlet-list-panel">
+                <span style="margin-left:4px;" ng-show="showNoOutletFound">No outlet found</span>
+                <div class="outlet-item" ng-repeat="outlet in outlets |  startFrom:currentPage*pageSize | limitTo:pageSize " ng-click="hideDropdown()">
+                    <div class="outlet-item-col1"> <div class="{{outlet.IsDraft ? 'circle-gray' : (outlet.IsSynced ? 'circle' : 'circle-org')}}">{{$index + 1 + (currentPage) * pageSize}}</div> </div>
+                    <div class="outlet-item-col2" >
+                        <span class="header" ng-click="openOutlet($index)">{{outlet.Name}}</span>					
+                        <div class="header-right" style="background-size:yellow;">
+                            <span class="distance">
+                                {{outlet.Distance}} m
+                            </span>
+                        </div>
+                        <img class="imgDelete" ng-show="outlet.IsDraft"
+                                src="assets/img/delete.svg" ng-click="deleteOutlet($index)" />
+                        <div class="content">
+                            <table>
+                                <tr>
+                                    <td class="title" ng-show="viewOutletFull">Address:</td>
+                                    <td class="value" colspan="5">{{outlet.FullAddress}}</td>
+                                    <td class="title" ng-show="viewOutletFull">Outlet type:</td>
+                                    <td class="value" ng-show="viewOutletFull">{{outlet.OutletTypeName}}</td>									
+                                </tr>
+                                <tr ng-show="viewOutletFull">
+                                    <td class="title">Distance:</td>
+                                    <td class="value">{{outlet.Distance}}</td>
+                                    <td class="title">SR/DSM:</td>
+                                    <td class="value">{{outlet.Name}}</td>
+                                    <td class="title">Tel:</td>
+                                    <td class="value">{{outlet.Phone}}</td>
+                                    <td class="title">Last contact:</td>
+                                    <td class="value">{{outlet.LastContact}}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <span class="span-datetime">Last Changed: {{outlet.AmendDate}}</span>
+                    </div>
+                </div>
+            </div>                     
+        </div>        
     </div>
 
     <div id="view-home-top-panel-right">
@@ -123,7 +131,7 @@
         </div>
     </div>
 
-    <div id="view-map">
+    <div id="map-container">
         <div id="map"></div>
     </div>
 

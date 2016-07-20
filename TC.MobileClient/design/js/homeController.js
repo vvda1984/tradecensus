@@ -10,8 +10,8 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     log(user);    
     var leftPanelStatus = 0;
     var righPanelStatus = 0;
-    var nearByOutlets = [];
-    var curOutlets = [];
+    //var nearByOutlets = [];
+ 
     var curOutletView = 0; // 0: near-by; 1: new: 2: updated 4: audit
     //$scope.nearByOutlets = [];
     //$scope.newOutlets = [];
@@ -35,6 +35,10 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     $scope.showSearchImg = true;
     $scope.showClearSearchImg = false;
   
+    $scope.panToCurLocation = function(){
+        moveToCurrentLocation();
+    }
+
     $scope.clearSearch = function(){
         $scope.searchName = '';
         $scope.searchChanged();
@@ -261,7 +265,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                 var i;
                 unsyncedOutlets = [];
                 for (i = 0; i < dbres.rows.length; i++) {
-                    unsyncedOutlets[i] = dbres.rows[0];
+                    unsyncedOutlets[i] = dbres.rows.item(i);
                 }
                 trySyncOutlets(unsyncedOutlets, 0, function () {
                     showInfo('Synchronize completed!');
@@ -413,7 +417,8 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     }   
      
     function getNearByOutletsOnline(callback) {
-        var url = baseURL + '/outlet/getoutlets/' + curlat.toString() + '/' + curlng.toString() + '/'
+        var url = baseURL + '/outlet/getoutlets/' + userID + '/' + 
+                          + curlat.toString() + '/' + curlng.toString() + '/'
                           + config.distance.toString() + '/' + config.item_count.toString();
         log('Call service api: ' + url);
         $http({
@@ -463,8 +468,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             $scope.showNoOutletFound = outlets.length == 0;
             curOutlets.length = 0;
             $scope.searchName = '';
-            for(var i = 0; i< outlets.length; i++){
-                outlets[i].positionIndex = i;
+            for(var i = 0; i< outlets.length; i++){                                
                 $scope.outlets[i] = outlets[i];
                 curOutlets[i] = outlets[i];
             }            
@@ -473,14 +477,21 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         }, 100);
     }   
 
-    function editOutlet(i, isPanTo) {
-        log(i);
-        var orgOutlet = isPanTo ? $scope.outlets[i] : curOutlets[i];
+    function editOutlet(j, isPanTo) {
+        log('Open outlet:' + j.toString());
+
+        var orgOutlet;                
+        if(isPanTo){ // from left menu            
+            orgOutlet = $scope.outlets[j + $scope.currentPage * $scope.pageSize];
+        } else {
+            orgOutlet = curOutlets[j];
+        }        
         var clonedOutlet = cloneObj(orgOutlet);
-        i = clonedOutlet.positionIndex;
+        var i = clonedOutlet.positionIndex;
+        log('display outlet ' + clonedOutlet.Name + ': ' + i.toString());    
         if(isPanTo && isMapReady && networkReady()){            
             marker = markers[i];                                       
-            panTo(marker.position.lat(), marker.position.lng());
+            panToOutlet(marker.position.lat(), marker.position.lng(), i, orgOutlet);
         }
         //var clonedOutlet = cloneObj($scope.outlets[i]); //cloneObj($scope.outlets[i]);
         $scope.outlet = clonedOutlet;
@@ -502,7 +513,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                 log('delete outlet ' + $scope.outlet.ID);
                 deleteDraftOutlet($scope.outlet);
             } else {
-               if ($scope.outlet.IsTracked) $scope.outlet.Tracking = 1;
+                if ($scope.outlet.IsTracked) $scope.outlet.Tracking = 1;
                 if ($scope.outlet.IsOpened) $scope.outlet.CloseDate = '';
                 $scope.outlet.PStatus = ($scope.outlet.IsDraft) ? 1 : 0;
                 $scope.outlet.AmendBy = user.id;
@@ -566,6 +577,8 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                         log('save outlet to local db')
                         saveOutletDB(config.tbl_outlet, orgOutlet, isEditDraft ? 1 : (isAuditChanged ? 4 : 2), synced,
                             function () {
+                                if (curOutletView == 1)
+                                       $scope.refresh();                                   
                                 hideDlg();
                             }, function (dberr) {
                                 hideDlg();
@@ -775,7 +788,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 				}
 				unsyncedOutlets = [];							
 				for (var i = 0; i < dbres.rows.length; i++) {
-					unsyncedOutlets[i] = dbres.rows[0];
+					unsyncedOutlets[i] = dbres.rows.item(i);
 				}
 				trySyncOutlets(unsyncedOutlets, 0, onSuccess, onError);
 			}, function(dberr){
@@ -794,7 +807,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                     if (dbres.rows.length > 0) {
                         var uploadItems = [];
                         for (var i = 0; i < dbres.rows.length; i++) {
-                            uploadItems[i] = dbres.rows[i];
+                            uploadItems[i] = dbres.rows.item(i);
                         }
                         tryUploadImages(uploadItems, 0,
                              function () {

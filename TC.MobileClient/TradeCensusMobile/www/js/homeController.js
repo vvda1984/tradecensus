@@ -187,6 +187,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 
     $scope.changeOutletView = function (v) {
         $scope.hideDropdown();
+        $scope.closeLeftPanel();
         if (curOutletView === v) return;
         log('change view to ' + v.toString());
         //curOutletView = v;
@@ -289,12 +290,14 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             $scope.showListButton = true;
             $scope.showCollapseButton = false;
             $scope.showExpandButton = false;
-            $scope.closeLeftPanel();            
+            $scope.closeLeftPanel();
+            $("#slider-left-content").css('right', '32px');            
         } else {
             $scope.showListButton = false;
             $scope.showCollapseButton = false;
             $scope.showExpandButton = false;
-            $scope.showLeftPanel();            
+            $scope.showLeftPanel();                
+            $("#slider-left-content").css('right', '0');        
         }
     }    
 
@@ -417,7 +420,8 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     }   
      
     function getNearByOutletsOnline(callback) {
-        var url = baseURL + '/outlet/getoutlets/' + curlat.toString() + '/' + curlng.toString() + '/'
+        var url = baseURL + '/outlet/getoutlets/' + userID + '/' + 
+                          + curlat.toString() + '/' + curlng.toString() + '/'
                           + config.distance.toString() + '/' + config.item_count.toString();
         log('Call service api: ' + url);
         $http({
@@ -464,7 +468,14 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     function setOutletsToList(outlets) {
         $timeout(function () {          
             $scope.showNaviBar = leftPanelStatus > 0 && outlets.length > $scope.config.page_size;
-            $scope.showNoOutletFound = outlets.length == 0;
+            if(outlets.length == 0){
+                $scope.showNoOutletFound = true;
+                $scope.showExpandButton = false;
+                $scope.showCollapseButton = false;
+            } else {
+                $scope.showNoOutletFound = false;
+            }
+            
             curOutlets.length = 0;
             $scope.searchName = '';
             for(var i = 0; i< outlets.length; i++){                                

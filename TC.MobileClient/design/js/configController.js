@@ -1,6 +1,4 @@
-﻿/// <reference path="app.global.js" />
-
-function configController($scope) {
+﻿function configController($scope) {
     log("Enter config page");
    
     $scope.resource = resource;

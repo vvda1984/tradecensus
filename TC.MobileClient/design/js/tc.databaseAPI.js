@@ -3,7 +3,7 @@
 */
 function initalizeDB(onSuccess) {
     //db = window.sqlitePlugin.openDatabase({ name: "td-v01.db", location: 'default' });
-    db = window.openDatabase("Database", "2.0", "td-v04.db", 200000);
+    db = window.openDatabase("Database", "2.0", "td-v01.db", 200000);
     db.transaction(function (tx) {
         if (resetDB) {
             tx.executeSql('DROP TABLE IF EXISTS person');
@@ -14,7 +14,7 @@ function initalizeDB(onSuccess) {
         }
 
         log("ensure table [person] exist");
-        tx.executeSql('CREATE TABLE IF NOT EXISTS [person] ( [ID] integer PRIMARY KEY NOT NULL, [FirstName] text, [LastName] text, [IsTerminate] text NOT NULL,	[HasAuditRole] text NOT NULL COLLATE NOCASE, [PosID] text NOT NULL COLLATE NOCASE, [ZoneID] text NOT NULL COLLATE NOCASE, [AreaID] text NOT NULL COLLATE NOCASE, [ProvinceID] text NOT NULL COLLATE NOCASE, [Email] text, [EmailTo] text, [HouseNo] text, [Street] text, [District] text, [HomeAddress] text, [WorkAddress] text, [Phone] text, [OfflinePassword] text NOT NULL)');
+        tx.executeSql('CREATE TABLE IF NOT EXISTS [person] ( [ID] integer PRIMARY KEY NOT NULL, [UserName] text, [FirstName] text, [LastName] text, [IsTerminate] text NOT NULL,	[HasAuditRole] text NOT NULL COLLATE NOCASE, [PosID] text NOT NULL COLLATE NOCASE, [ZoneID] text NOT NULL COLLATE NOCASE, [AreaID] text NOT NULL COLLATE NOCASE, [ProvinceID] text NOT NULL COLLATE NOCASE, [Email] text, [EmailTo] text, [HouseNo] text, [Street] text, [District] text, [HomeAddress] text, [WorkAddress] text, [Phone] text, [OfflinePassword] text NOT NULL)');
 
         log("ensure table [config] exist");
         tx.executeSql('CREATE TABLE IF NOT EXISTS [config] ( [Name] text PRIMARY KEY NOT NULL COLLATE NOCASE, [Value] text)');
@@ -40,10 +40,12 @@ function logSqlCommand(sql) {
     //log("SQL: " + sql);
 }
 
-function insertUserDB(person, password, onSuccess, onError) {
+function insertUserDB(person, userName, password, onSuccess, onError) {
     db.transaction(function (tx) {
+        log(person);        
         var sql = "INSERT OR REPLACE INTO [person] VALUES (";
         sql = sql.concat(person.ID.toString(), ", ");
+        sql = sql.concat("'", userName, "', ");
         sql = sql.concat("'", person.FirstName, "', ");
         sql = sql.concat("'", person.LastName, "', ");
         sql = sql.concat("'", person.IsTerminate ? "1" : "0", "', ");
@@ -80,10 +82,10 @@ function selectConfigs(onSuccess, onError) {
     });   
 }
 
-function selectUserDB(userID, password, onSuccess, onError) {
+function selectUserDB(userName, password, onSuccess, onError) {
     db.transaction(function (tx) {
         var sql = "SELECT * FROM person WHERE ";
-        sql = sql.concat("id=", userID.toString(), " AND OfflinePassword='" + hashString(password), "'");
+        sql = sql.concat("UserName='", userName, "' AND OfflinePassword='" + hashString(password), "'");
         logSqlCommand(sql);
         tx.executeSql(sql, [], onSuccess, onError);
     });
@@ -364,112 +366,62 @@ function ensureUserOutletDBExist(outletSyncTbl, outletTbl, onDone) {
     });
 }
 
+function syncWithStorageOutletDB(tx, userID, outletTbl, outlets, i, onSuccess, onError) {  
+    var outlet = outlets[i];
+    log('*** ('+ i.toString() + '/' + outlets.length.toString() + ') Sync: ' + outlet.Name );     
+    outlet.PStatus = 0; // no draft
+    outlet.PSynced = 1; // synced
+    initializeOutlet(outlet);            
+    outlet.positionIndex = i;                      
+    outlet.IsAuditApproved = outlet.AuditStatus == 1;     
+    var sql = 'SELECT * FROM ' + outletTbl + ' WHERE PRowID="' + outlet.PRowID + '"';
+    tx.executeSql(sql, [], 
+        function (tx1, dbres) {
+            var rowlen = dbres.rows.length;
+            if(rowlen > 0){
+                var existOutlet = dbres.rows.item(0); // first item only
+                if(outlet.AmendDate == existOutlet.AmendDate){                            
+                    // outlet wasn't changed
+                    log('Outlet was not changed');
+                }else{
+                    log('Outlet was changed');
+                    if (existOutlet.PSynced) {                        
+                        // synced already, just overwrite by server value...
+                        log('Overwrite local because it was synced to server');
+                        updateOutlet(tx, outletTbl, outlet, 0, true);
+                    } else {
+                        // outlet wasn't synced, check amend date
+                        // this logic can be failed if timezone in server and client are different
+                        if (compareDate(outlet.AmendDate, existOutlet.AmendDate, 'yyyy-MM-dd HH:mm:ss') > 0) {
+                            log('Overwrite local because server date > local date');
+                            updateOutlet(tx, outletTbl, outlet, 0, true);                                    
+                        }                            
+                    }
+                }
+            } else{
+                log('Add outlet to db:' + outlet.Name);
+                addNewOutlet(tx1, outletTbl, outlet, false, false, false, true, false);                
+            }
+
+            if((i+1) < outlets.length){
+                syncWithStorageOutletDB(tx1, userID, outletTbl, outlets, i + 1, onSuccess, onError);
+            } else{
+                onSuccess();
+            }
+        },  
+        function (dberr) {
+            log('select outlet error: ' + dberr.message);
+            onError('Cannot sync outlet ' + outlet.Name + ': ' + dberr.message);
+        });
+}
+
 function insertOutletsDB(userID, outletTbl, outlets, onSuccess, onError) {
     if (outlets.length == 0) {
         onSuccess();
         return;
     }
     db.transaction(function (tx) {
-        var whereCon = '(';
-        for (i = 0 ; i < outlets.length; i++) {        
-            if (i > 0) whereCon = whereCon.concat(', ');
-
-            var outlet = outlets[i];
-            outlet.PStatus = 0; // no draft
-	        outlet.PSynced = 1; // synced
-            initializeOutlet(outlet);
-            outlet.IsAuditApproved = outlet.AuditStatus == 1;
-            whereCon = whereCon.concat('"', outlet.PRowID, '"');
-        }
-        whereCon = whereCon.concat(')');
-        log('Select existing outlets')
-        //var sql = 'SELECT * FROM ' + outletTbl + ' WHERE PRowID = \'' + outlet.PRowID + '\'';
-        var sql = 'SELECT * FROM ' + outletTbl + ' WHERE PRowID IN ' + whereCon;
-        logSqlCommand(sql);
-        tx.executeSql(sql, [], function (tx1, dbres) {
-            var rowLen = dbres.rows.length;
-            log('Found local outlets: ' + rowLen.toString());
-            for (var oi = 0 ; oi < outlets.length; oi++) {
-                var outlet = outlets[oi];
-                outlet.PLastModTS = 0;
-                outlet.PStatus = 0;
-                if (rowLen) {
-                    var existOutlet = null;
-                    for (var j = 0 ; j < rowLen; j++) {
-                        var item = dbres.rows[j];
-                        if (item != null && outlet.PRowID == item.PRowID) {
-                            existOutlet = item;
-                            break;
-                        }
-                    }
-                    if (existOutlet != null) {
-                        log('Check status of outlet ' + existOutlet.ID.toString() + ': isSynced = ' + existOutlet.PSynced.toString());
-                        if(outlet.AmendDate === existOutlet.AmendDate){
-                            // outlet wasn't changed
-                        }else{
-                            if (existOutlet.PSynced) {
-                                // synced already, just overwrite by server value...
-                                updateOutlet(tx, outletTbl, outlet, 0, true);
-                            } else {
-                                // outlet wasn't synced, check amend date
-                                // this logic can be failed if timezone in server and client are different
-                                if (compareDate(outlet.AmendDate, existOutlet.AmendDate, 'yyyy-MM-dd HH:mm:ss') > 0) {
-                                    log('Server date > local date');
-                                    updateOutlet(tx, outletTbl, outlet, 0, true);                                    
-                                }                            
-                            }
-                        }
-                    } else{
-						 addNewOutlet(tx1, outletTbl, outlet, false, false, false, true, false);
-					}
-                } else {
-                    log('Add outlet ' + outlet.ID.toString() + ' to DB');
-                    addNewOutlet(tx1, outletTbl, outlet, false, false, false, true, false);
-                }
-            }
-            onSuccess();
-        },
-        function (dberr) {
-            log('select outlet error: ' + dberr.message);
-            onSuccess();
-        });
-
-        //outlets.forEach(function (outlet, i) {
-        //    try {
-        //        log('Select existing outlets')
-        //        //var sql = 'SELECT * FROM ' + outletTbl + ' WHERE PRowID = \'' + outlet.PRowID + '\'';
-        //        var sql = 'SELECT * FROM ' + outletTbl + ' WHERE PRowID IN ' + whereCon;
-        //        logSqlCommand(sql);
-        //        tx.executeSql(sql, [], function (tx1, dbrow) {
-        //            var rowLen = dbrow.rows.length;
-        //            if (rowLen) {
-        //                log('Outlet existed');
-        //                var existOutlet = dbrow.rows[0];
-        //                if (existOutlet != null && (existOutlet.AmendBy != outlet.AmendBy)) { // some one else has updated this outlet
-        //                    log('Sync outlet ' + existOutlet.ID.toString());
-        //                    if (existOutlet.PSynced) {
-        //                        // synced already, just overwrite by server value...
-        //                        updateOutlet(tx, outletTbl, outlet, 0, true);
-        //                    } else {
-        //                        // outlet wasn't synced, check amend date
-        //                        // this logic can be failed if timezone in server and client are different
-        //                        if (compareDate(outlet.AmendDate, existOutlet.AmendDate, 'yyyy-MM-dd HH:mm:ss') > 0) {
-        //                            log('Server date > local date');
-        //                            updateOutlet(tx, outletTbl, outlet, 0, true);
-        //                        }
-        //                    }
-        //                }
-        //            } else {
-        //                addNewOutlet(tx1, outletTbl, outlet, false, false, false, true, false);
-        //            }
-        //        },
-        //        function (dberr) { log('select outlet error'); log(dberr.message); });
-        //    }
-        //    catch (err) {
-        //        log(err);
-        //    }
-        //});                
-        //onSuccess();
+        syncWithStorageOutletDB(tx, userID, outletTbl, outlets, 0, onSuccess, onError);
     }, onError);
 }
 

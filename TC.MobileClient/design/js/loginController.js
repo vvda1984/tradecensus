@@ -14,8 +14,8 @@ function loginController($scope, $http) {
     $scope.login = function () {
         log($scope.user.id);        
         // validate user id
-        if (isEmpty($scope.user.id)) {
-            showError('User ID is empty!');
+        if (isEmpty($scope.userName)) {
+            showError('User Name is empty!');
             return;
         }
         
@@ -35,7 +35,7 @@ function loginController($scope, $http) {
    
     function loginOnline(retry, onSuccess, onError) {
         log('Login online');
-        var url = baseURL + '/login/' + $scope.user.id + '/' + $scope.password;
+        var url = baseURL + '/login/' + $scope.userName + '/' + $scope.password;
         log('Call service api: ' + url);
         $http({
             method: config.http_method,
@@ -43,13 +43,12 @@ function loginController($scope, $http) {
         }).then(function (resp) {
             hideDlg();            
             try {
-                log('Login response: ');
-                log(resp);
+                log('Login response: ');                
                 var data = resp.data;
                 if (data.Status == -1) { // error
                     onError(data.ErrorMessage);
                 } else {
-                    insertUserDB(data.People, hashString($scope.password),
+                    insertUserDB(data.People, $scope.userName,  $scope.password,
                         function (tx, row) {
                             onSuccess(data.People);
                         },
@@ -78,7 +77,7 @@ function loginController($scope, $http) {
   
     function loginOffline(onSuccess, onError) {
         log('Login offline');
-        selectUserDB($scope.user.id, hashString($scope.password),
+        selectUserDB($scope.userName, hashString($scope.password),
             function (tx, dbres) {
                 hideDlg();
                 if (dbres.rows.length == 1) {
@@ -118,8 +117,8 @@ function loginController($scope, $http) {
             return;
         }
 		
-        userID = $scope.user.id;
-        $scope.password = '';
+        userID = user.ID;
+        $scope.user.id = user.ID;
         $scope.user.firstName = user.FirstName;
         $scope.user.lastName = user.LastName;
         $scope.user.isTerminate = user.IsTerminate;
