@@ -137,16 +137,14 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     $scope.showRightPanel = function () {       
         if (righPanelStatus == 0) {
 			log('show right panel');
-			$("#home-right-panel").css('margin-right', '0');
-			$("#config-form").css('width', '30%');
+			$("#configPanel").css('width', '25%');			
 			$scope.showSettingCollapse = true;
             $scope.showSettingExpand = false;
 			righPanelStatus = 1;
         } else {
             log('hide right panel');
-            $("#home-right-panel").css('margin-right', '-100%');
-			$("#config-form").css('width', '0%');
-            righPanelStatus = 0;  
+            $("#configPanel").css('width', '0%');
+            righPanelStatus = 0;
             $scope.showSettingCollapse = false;
             $scope.showSettingExpand = true;
             insertConfig($scope.config, function(){log('Updated config')}, function(err){log(err);});
