@@ -8,9 +8,16 @@ var markerClicked = null;
 var loadMapCallback = null;
 var editOutletCallback = null;
 var mapClickedCallback = null;
+var mapViewChangedCallback = null;
 var homeMarker = null;
 var curInfoWin = null;
-
+const earthR = 6378137;
+var curlat = 10.773598;
+var curlng = 106.7058;
+var curacc = 0;
+var curaccCircle;
+var panorama;
+``
 function loadMapApi() { 
     if (!networkReady()) {
 		initializeMap()
@@ -76,32 +83,13 @@ function initializeMap() {
               mapClickedCallback();         
         });
 
-
-        /*
-        google.maps.event.addListener(map, 'bounds_changed', function (event) {
-            log('map bounds_changed');
-            //google.maps.event.removeListener(mapeventListener);
-            //callback();            
+        panorama = map.getStreetView();
+        google.maps.event.addListener(panorama, 'visible_changed', function() {
+            log('panorama visible_changed:' + panorama.getVisible().toString());
+            if( mapViewChangedCallback){
+                mapViewChangedCallback(panorama.getVisible());
+            }         
         });
-        google.maps.event.addListener(map, 'idle', function (event) {
-            log('map idle');
-            try{
-                if(markers.length > 0){
-                    var bounds = map.getBounds();
-                    for(var i=0; i<markers.length; i++ ){
-                        if(markers[i].isLoadedToMap == false && 
-                           bounds.contains(markers[i].getPosition())){
-                            markers[i].setMap(map);
-                            markers[i].isLoadedToMap = true;
-                        }
-                    }
-                }   
-            }catch(err){
-                log('Cannot load markers to map');
-                log(err);
-            }            
-        });
-        */
 
         if (loadMapCallback) {
             log('call back');
@@ -223,12 +211,26 @@ function panToOutlet(lat, lng, index, outlet) {
 
 function moveToCurrentLocation(){
     if (homeMarker != null) homeMarker.setMap(null);
+    var position = new google.maps.LatLng(curlat, curlng);
     homeMarker = new google.maps.Marker({
-        position: new google.maps.LatLng(curlat, curlng),
+        position: position,
         icon: 'assets/img/pin-cur.png',
         map: map,
     });
     panTo(curlat, curlng);
+   
+   if(curaccCircle) 
+        curaccCircle.setMap(null);
+
+   curaccCircle = new google.maps.Circle({
+        center: position,
+        radius: curacc,
+        map: map,
+        fillColor: '#2196F3',
+        fillOpacity: 0.5,
+        //strokeColor: '#0000FF',
+        strokeOpacity: 0,
+    });
 }
 
 function markerClick(i) {
@@ -284,7 +286,11 @@ function getCurPosition(onSuccess, onError) {
     try {       
         navigator.geolocation.getCurrentPosition(function (position) {
             var lat = position.coords.latitude;
-            var lng = position.coords.longitude;           
+            var lng = position.coords.longitude;   
+            curacc = position.coords.accuracy;
+            if(curacc > 140) curacc = 140;
+            log('Accuracy:'+ curacc.toString());
+
             // AnVO: DEBUG
             if (isDev) {
                 log('***set debug location...');

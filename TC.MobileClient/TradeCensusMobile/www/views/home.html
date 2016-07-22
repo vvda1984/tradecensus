@@ -1,5 +1,5 @@
 <div id="view-home">
-    <div id="home-topleft">
+    <div id="home-topleft" >
         <div class="square-button float-left white" ng-show="showListButton" ng-click="showhideLeftPanel()">
             <img src="assets/img/menu.svg" />                        
         </div>        
@@ -7,19 +7,13 @@
             <span>{{outletHeader}}<span>
             <img src="assets/img/arrow-down.svg" />                        
         </div>  
-        <div class="square-bar float-left white" ng-click="showDropdown()">
+        <div class="square-bar float-left white">
             <span>Distance: {{config.distance}}m, Maximum Outlets: {{config.item_count}}<span>
             <img src="assets/img/arrow-down.svg" style="width:0px;margin-left:0px;" />            
-        </div>                        
-        <div class="square-button float-left blue" ng-click="panToCurLocation()">
-            <img src="assets/img/curloccation.svg" />
-        </div>
+        </div>                            
         <div class="square-button float-left blue" ng-show="allowRefresh" ng-click="refresh()">
             <img src="assets/img/refresh.svg" />
-        </div>
-        <div class="square-button float-left blue" ng-click="createNewOutlet()">
-            <img src="assets/img/add.svg" />
-        </div>
+        </div>      
         <div ng-show="showSyncButton" class="square-button float-left blue" ng-click="syncOutlets()">
             <img src="assets/img/sync.svg" />
         </div>
@@ -31,7 +25,7 @@
         </div>
     </div>
 
-    <div id="outletPanel" class="slider-left" ng-click="hideDropdown()">
+    <div id="outletPanel" class="slider-left" ng-click="hideDropdown()" >
         <div class="expandcollapse-box" ng-show="showExpandButton" ng-click="showLeftPanel()">
             <img src="assets/img/arrow-right-white.svg" />
         </div>
@@ -45,13 +39,13 @@
                     <div class="outlet-item-col1"> <div class="{{outlet.IsDraft ? 'circle-gray' : (outlet.IsSynced ? 'circle' : 'circle-org')}}">{{$index + 1 + (currentPage) * pageSize}}</div> </div>
                     <div class="outlet-item-col2" >
                         <span class="header" ng-click="openOutlet($index)">{{outlet.Name}}</span>					
-                        <div class="header-right" style="background-size:yellow;">
+                        <div class="header-right">
                             <span class="distance">
                                 {{outlet.Distance}} m
                             </span>
                         </div>
                         <img class="imgDelete" ng-show="outlet.IsDraft"
-                                src="assets/img/delete.svg" ng-click="deleteOutlet($index)" />
+                             src="assets/img/delete.svg" ng-click="deleteOutlet($index)" />
                         <div class="content">
                             <table>
                                 <tr>
@@ -76,10 +70,28 @@
                     </div>
                 </div>
             </div>                     
+        </div>    
+        <div id="paging-bar" ng-show="showNaviBar" >
+            <button ng-disabled="currentPage >= outlets.length/pageSize - 1" ng-click="currentPage=currentPage+1">
+                <img src="assets/img/arrow-right.svg" />
+            </button> 
+             <div class="square-bar float-right white">
+                <span> {{currentPage+1}} / {{numberOfPages()}}<span>               
+            </div>     
+            <button ng-disabled="currentPage == 0" ng-click="currentPage=currentPage-1">                
+                <img src="assets/img/arrow-left.svg" />
+            </button>           
+            
+               
+            <div class="searchbox">
+                <input class="search" placeholder="Search" ng-model="searchName" ng-change="searchChanged()">
+                <img src="assets/img/search.svg" class="search-img" ng-show="showSearchImg" />
+                <img src="assets/img/clear.svg" class="search-img" ng-show="showClearSearchImg" ng-click='clearSearch()'/>
+            </div>      
         </div>        
     </div>
 
-    <div id="home-topright">
+    <div id="home-topright" >
         <!--<div class="box" ng-show="showSetingExpand" ng-click="showhideRightPanel()">
             <img src="assets/img/arrow-left.svg" />
         </div>-->
@@ -91,7 +103,13 @@
         </div>       
     </div>
 
-    <div id="configPanel" class="slider-right">
+    <div id="home-topright-street">      
+        <div class="square-button blue" ng-click="closeStreetViewMode()">
+            <img src="assets/img/close.svg" />
+        </div>        
+    </div>
+
+    <div id="configPanel" class="slider-right" >
 		<!--<div class=hidden-overlay" ng-click="showRightPanel()"></div> -->
         <div id="slider-right-content">            
             <md-content layout-padding="" class="md-content-white">
@@ -111,47 +129,34 @@
                         <input type="number" required="" name="page_size" ng-model="config.page_size">                  
                     </md-input-container>
                   
-                    <div class="md-block-item" style="margin-bottom:0px;">
+                    <div class="md-block-item" style="margin-bottom:0px;margin-top:-12px;">
                         <div class="md-block-item-title">Mode</div>
                         <md-switch class="md-primary" ng-model="config.mode_online">{{config.mode_online ? "Online" : "Offline"}}</md-switch>
-                    </div>                  
+                    </div>     
+                    <div class="md-block-item" style="margin-bottom:0px;">                        
+                        <md-button class="md-primary md-raised demo-menu-open-button" ng-click="changeView('login')" style="width:96px">
+                           LOGOUT <img src="assets/img/logout.svg" class="md-button-image">
+                        </md-button>      
+                         <md-button class="md-primary md-raised demo-menu-open-button" ng-click="syncOutlets()" style="width:96px">
+                           SYNC <img src="assets/img/sync.svg" class="md-button-image">
+                        </md-button>                                          
+                    </div>                                       
                 </form>
-            </md-content>
-            <div class="flat-button" ng-click="changeView('login')" style="margin-left:20px">
-                <img src="assets/img/logout.svg">
-                <span>LOGOUT<span>
-            </div>     
+            </md-content>                            
         </div>
     </div>
 
-    <div id="map-container">
+    <div id="map-container" >
         <div id="map"></div>
     </div>
 
-     <div id="home-bottom" ng-show="showNaviBar">
-         <button ng-disabled="currentPage == 0" ng-click="currentPage=currentPage-1">                
-            <img src="assets/img/arrow-left.svg" />
-        </button> 
-        <div class="contentbox">  
-            {{currentPage+1}} / {{numberOfPages()}}
-        </div>
-        <button ng-disabled="currentPage >= outlets.length/pageSize - 1" ng-click="currentPage=currentPage+1">
-            <img src="assets/img/arrow-right.svg" />
-        </button>      
-         <div class="searchbox">
-            <input class="search" placeholder="Search" ng-model="searchName" ng-change="searchChanged()">
-            <img src="assets/img/search.svg" class="search-img" ng-show="showSearchImg" />
-            <img src="assets/img/clear.svg" class="search-img" ng-show="showClearSearchImg" ng-click='clearSearch()'/>
-        </div>      
-    </div>    
-
-    <div id="home-bottomright">
+    <div id="home-bottomright" >
         <div class="square-button-small float-top blue" ng-click="createNewOutlet()">
             <img src="assets/img/add.svg" />
         </div>
          <div class="square-button-small float-top blue" ng-click="panToCurLocation()">
             <img src="assets/img/curloccation.svg" />
         </div>        
-    </div> 
+    </div>      
 </div>
 

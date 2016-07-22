@@ -1,8 +1,5 @@
 ﻿/// <reference path="tc.databaseAPI.js" />
 
-const earthR = 6378137;
-var curlat = 10.773598;
-var curlng = 106.7058;
 var nearByOutlets = [];
 var curOutlets = [];
 

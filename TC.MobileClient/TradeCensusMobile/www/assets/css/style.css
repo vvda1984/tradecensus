@@ -464,61 +464,7 @@ hr {
             background: transparent;
             margin-bottom:12px;
         }
-
-#home-bottom{
-    position: absolute;
-    bottom: 4px;
-    left: 8px;
-    z-index: 2;
-    border: 0px;
-    display: inline-block;
-    height: 42px;
-    background: #fff;
-    border-radius: 2px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.2); 
-}
-    #home-bottom .contentbox {
-        border: 0px;
-        display: inline-block;         
-    }
-
-    #home-bottom button {
-        border: 0px;      
-        background: #fff; 
-        display: inline-block;
-        height: 42px;        
-        width: 42px;
-        margin: 0px;
-        padding: 0px;
-    }
-
-    #home-bottom img {
-        height: 24px;
-        width: 24px;
-        margin: 9px;
-        vertical-align: middle;
-    }
-    #home-bottom .searchbox {
-        border: 0px;
-        display: inline-block;                       
-    }
-
-    #home-bottom .searchbox .search {           
-        min-width:90px; 
-        border:1px; 
-        padding:8px 4px 8px 16px;          
-        margin-right:8px;
-        background:#EFEFEF;
-        border-radius: 16px;             
-    }
-    
-    #home-bottom .searchbox .search-img {
-        height: 24px;
-        width: 24px;
-        margin: -42px;
-        vertical-align: middle;
-    }
-		
+	
 /*************** ANGULAR MATERIAL CUSTOMIZE ******************/
 
 ._md {

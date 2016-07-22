@@ -16,9 +16,22 @@
 }
 
 /**************** BUTTONs *******************/
+.md-button-image{
+    height: 24px;
+    width: 24px;
+    margin-top:5px; 
+    margin-right:4px; 
+    padding: 0;
+    float: left;
+}
+
 .float-left {
     float: left; 
     margin-right: 4px;
+}
+.float-right {
+    float: right; 
+    margin-left: 4px;
 }
 
 .float-top {     
@@ -57,10 +70,10 @@
 
 .square-bar span {        
     vertical-align: middle;                    
-    padding: 0;
     margin: 0;        
     margin-left: 12px;                 
     display: inline-block;
+    height: 100%;
 }
 
 .flat-button{
@@ -146,16 +159,82 @@
     border: 0px;
     display: inline-block;
 } 
+#home-topright-street {
+    position: fixed;
+    top: 4px;
+    right: 4px;    
+    z-index: 3;
+    border: 0px;
+    display: none;
+} 
 
 /******************** BOTTOM-RIGHT ******************/
 #home-bottomright {
     position: fixed;
     bottom: 128px;
     right: 10px;    
-    z-index: 3;
+    z-index: 1;
     border: 0px;
     display: inline-block;
 } 
+
+/********************* PAGING ********************/
+#paging-bar{
+    position:absolute;    
+    bottom:4px;    
+    right:36px;
+    height: 42px;
+    left:4px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2);    
+    border: 0px;  
+    border-radius: 2px;
+    display: inline-block;
+}   
+    #paging-bar button {
+        float: right; 
+        margin-left: 4px;
+        border: 0px;  
+        border-radius: 2px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.2);    
+        height: 42px;
+        width: 42px;
+        background: #fff;
+        padding: 0;           
+    }
+
+    #paging-bar img {
+        height: 24px;
+        width: 24px;
+        margin: 9px;              
+        display: inline-block;    
+    }
+    #paging-bar .searchbox {
+        float: right;       
+        border: 0px;            
+        border-radius: 2px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.2);       
+        background:#fff; 
+        height: 42px;      
+        width: 170px;   
+    }
+
+    #paging-bar .searchbox .search {           
+        border:1px;             
+        background:#EFEFEF;
+        border-radius: 16px;
+        width: 148px;
+        height: 32px;
+        margin-top: 4px;
+        margin-left: 6px;
+        padding-left:8px; ;   
+    }
+    
+    #paging-bar .searchbox .search-img {
+        height: 24px;
+        width: 24px;
+        margin: -32px;
+        vertical-align: middle;
+    }
 
 /********************* SLIDER-LEFT ********************/
 .slider-left {
@@ -206,7 +285,8 @@
 
 .outlet-list-panel {   
     margin-right: 0px;
-    display: inline-block;                             
+    display: inline-block;        
+    width: 100%;                
 }
 
 .outlet-list-panel .outlet-item {
@@ -216,6 +296,7 @@
     margin-left: 4px;
     margin-right: 4px;
     min-height: 28px;
+    width: 100%;
 }
 
 .outlet-item-col1 {
@@ -272,6 +353,7 @@
     float: right;
     color: #868686;
     font-size: 14px;  
+    right: 8px;
 }
 
 .outlet-item .distance {
@@ -342,6 +424,7 @@
     margin-bottom:4px;
     background: white;     
     border-radius: 2px;   
+
 } 
 
 .center-panel{    
@@ -352,3 +435,4 @@
     display: table-cell;
     vertical-align: middle;
 }
+

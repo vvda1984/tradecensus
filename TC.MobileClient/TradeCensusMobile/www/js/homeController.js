@@ -34,7 +34,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     $scope.showSettingExpand = true;
     $scope.showSearchImg = true;
     $scope.showClearSearchImg = false;
-  
+
     $scope.panToCurLocation = function(){
         moveToCurrentLocation();
     }
@@ -81,6 +81,10 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         getOutletsByView(curOutletView);
     }
 
+    $scope.closeStreetViewMode = function(){
+        panorama.setVisible(false);
+    }
+
     $scope.closeLeftPanel = function () {
         $scope.hideDropdown();
         leftPanelStatus = 0;
@@ -90,6 +94,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         $scope.viewOutletFull = false;
         $scope.showNaviBar = false;
         $("#outletPanel").css('width', '0%');
+        $("#slider-left-content").css('margin-bottom', '4px');
     }
 
     $scope.showLeftPanel = function () {
@@ -102,8 +107,13 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         if(isEmpty($scope.searchName)){
             $scope.showNaviBar =  $scope.outlets.length > $scope.pageSize;
         } else{
-            $scope.showNaviBar =  true;
+            $scope.showNaviBar =  true;         
         }
+        if($scope.showNaviBar)
+            $("#slider-left-content").css('margin-bottom', '48px');
+        else
+            $("#slider-left-content").css('margin-bottom', '4px');
+        
         log('navBarStatus: ' + $scope.showNaviBar.toString());
         //$("#outletPanel").css('height', $scope.showNaviBar ? '92%' : '100%');
         $("#outletPanel").css('width', '100%');
@@ -119,18 +129,23 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             $scope.showExpandButton = $scope.outlets.length > 0;
             $scope.showCollapseButton = false;
             $scope.viewOutletFull = false;            
-            $scope.showNaviBar = $scope.outlets.length > $scope.pageSize;                                                    
-            //$("#outletPanel").css('height', $scope.showNaviBar ? '92%' : '100%');
+            $scope.showNaviBar = $scope.outlets.length > $scope.pageSize;     
+                                                           
             $("#outletPanel").css('width', '40%');
+            if($scope.showNaviBar)
+                $("#slider-left-content").css('margin-bottom', '48px');
+            else
+                $("#slider-left-content").css('margin-bottom', '4px');
+
         } else if (leftPanelStatus == 1){
             leftPanelStatus = 0;           
             $scope.showExpandButton = false;
             $scope.showCollapseButton = false;
             $scope.viewOutletFull = false;      
-            $scope.showNaviBar = false;      
+            $scope.showNaviBar = false;                  
             $scope.clearSearch();
             $("#outletPanel").css('width', '0%');
-            //$("#outletPanel").css('height', '100%');
+            $("#slider-left-content").css('margin-bottom', '4px');
         }       
     }
 
@@ -466,6 +481,11 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     function setOutletsToList(outlets) {
         $timeout(function () {          
             $scope.showNaviBar = leftPanelStatus > 0 && outlets.length > $scope.config.page_size;
+            if($scope.showNaviBar)
+                $("#slider-left-content").css('margin-bottom', '48px');
+            else
+                $("#slider-left-content").css('margin-bottom', '4px');
+
             if(outlets.length == 0){
                 $scope.showNoOutletFound = true;
                 $scope.showExpandButton = false;
@@ -738,7 +758,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             //} else {
             //    showError('An error has occurred: ' + errorres.response.ErrorMessage);
             //    onError();
-            //}                           
+            //}
         }, function (error) {
             showError('An error has occurred: Code = " + error.code');
             onError();
@@ -752,6 +772,28 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         //    document.addEventListener("resume", loadMapApi, false);
         //}        
         mapClickedCallback = function(){ $scope.hideDropdown();};
+        mapViewChangedCallback = function(streetView){
+            log('Change view: ' + streetView); 
+            if(streetView){
+                $("#home-topleft").css('display', 'none');
+                $("#home-bottom").css('display', 'none');
+                $("#home-bottomright").css('display', 'none');
+                $("#home-topright").css('display', 'none');
+                $("#configPanel").css('display', 'none');                
+                $("#outletPanel").css('display', 'none');
+
+                $("#home-topright-street").css('display', 'inline-block');
+            } else{
+                $("#home-topleft").css('display', 'inline-block');           
+                $("#home-topright").css('display', 'inline-block');                
+                $("#home-bottom").css('display', 'inline-block');
+                $("#home-bottomright").css('display', 'inline-block');
+                $("#outletPanel").css('display', 'inline');
+                $("#configPanel").css('display', 'inline');
+
+                $("#home-topright-street").css('display', 'none');
+            }            
+        };
 		syncExecuter = syncOutletMethod;
         initializeView();
         editOutletCallback = function (i) { editOutlet(i, false);};   
