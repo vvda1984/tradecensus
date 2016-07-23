@@ -283,31 +283,75 @@
     overflow:scroll;
 }
 
-.outlet-list-panel {   
-    margin-right: 0px;
-    display: inline-block;        
-    width: 100%;                
+.outlet-list-panel {
+    margin-left: 4px;   
+    margin-right: 4px;        
+    width: 100%;    
+    /*background: #2196F3;*/         
 }
 
-.outlet-list-panel .outlet-item {
-    border-top: 1px solid #EBEBEB;
+.outlet-table {
+    border-radius: 0px;
     background: #fff;
     padding: 12px;
-    margin-left: 4px;
-    margin-right: 4px;
+    margin-left: 0px;
+    margin-right: 0px;
+    margin-bottom: 1px;
     min-height: 28px;
+    width: 100%;
+    display: table;
+}
+
+.outlet-table-1 {
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    background: #fff;
+    padding: 12px;
+    padding: 12px;
+    margin-left: 0px;
+    margin-right: 0px;
+    margin-bottom: 8px;
+    min-height: 28px;
+    width: 100%;
+    display: table;
+}
+
+.outlet-indicator {
+    width: 28px;
+    font-size: 14px;
+    vertical-align: top;
+}
+
+.outlet-header {
+    display: inline-block;
+    width:100%;
+    column-span: 4;
+}
+
+.outlet-header-right {
+    float: right;
+    margin-left: 4px;
+    vertical-align: bottom;
+}
+
+.outlet-header img{
+    height: 24px;
+    width: 24px;
+}
+
+.outlet-detail-table {
+    margin-top: -2px;
+    padding: 0px;
     width: 100%;
 }
 
-.outlet-item-col1 {
-    float: left;
-    width: 32px;
-    font-size: 14px;
+.outlet-table-c2 {
+    margin-left: 28px;
+    margin-right: 8px;
+    background: lightskyblue;
+    width: 100%
 }
 
-.outlet-item-col2 {
-    margin-left: 32px;
-}
+
 
 .outlet-item-col2 .span-datetime {
     color: rgb(128, 128, 128);    

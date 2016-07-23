@@ -4,6 +4,42 @@ html, body {
     padding: 0px;
 }
 
+.blue {
+    background: #2196F3;
+}
+
+.blue-dark {
+    background: #103B68;
+}
+
+.white {
+    background: white;
+}
+
+.black-color {
+    color: black;
+}
+
+.gray-color {
+    color:  rgb(128, 128, 128);
+}
+
+.blue-color {
+    color: #2196F3;
+}
+
+.normal-text {
+    font-size: 16px;
+}
+
+.large-text {
+    font-size: 20px;
+}
+
+.small-text {
+    font-size: 14px;
+}
+
 *:focus {
     outline: none;
 }
@@ -380,18 +416,6 @@ hr {
     max-width: 600px;
 }
 
-.blue {
-    background: #2196F3;
-}
-
-.blue-dark {
-    background: #103B68;
-}
-
-.white {
-    background: white;
-}
-
 #view-home-top-panel-right {
     position: absolute;
     top: 8px;
@@ -492,12 +516,6 @@ hr {
         color: rgb(128, 128, 128);
         display: inherit;
         margin: 4px 0;
-        font-size: 13px;
-    }
-
-    .md-block-item .md-block-item-value {
-        color: rgba(0,0,0,1);
-        display: inherit;
     }
 
 .md-scroll-mask {

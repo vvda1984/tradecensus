@@ -34,41 +34,60 @@
         </div>            
         <div id="slider-left-content">
             <div class="outlet-list-panel">
-                <span style="margin-left:4px;" ng-show="showNoOutletFound">No outlet found</span>
-                <div class="outlet-item" ng-repeat="outlet in outlets |  startFrom:currentPage*pageSize | limitTo:pageSize " ng-click="hideDropdown()">
-                    <div class="outlet-item-col1"> <div class="{{outlet.IsDraft ? 'circle-gray' : (outlet.IsSynced ? 'circle' : 'circle-org')}}">{{$index + 1 + (currentPage) * pageSize}}</div> </div>
-                    <div class="outlet-item-col2" >
-                        <span class="header" ng-click="openOutlet($index)">{{outlet.Name}}</span>					
-                        <div class="header-right">
-                            <span class="distance">
-                                {{outlet.Distance}} m
-                            </span>
-                        </div>
-                        <img class="imgDelete" ng-show="outlet.IsDraft"
-                             src="assets/img/delete.svg" ng-click="deleteOutlet($index)" />
-                        <div class="content">
-                            <table>
+                <span style="margin-left:0px;" ng-show="showNoOutletFound">No outlet found</span>
+                <table class="outlet-table" ng-repeat="outlet in outlets |  startFrom:currentPage*pageSize | limitTo:pageSize " ng-click="hideDropdown()">
+                    <tr>
+                        <td class="outlet-indicator">
+                            <div class="{{outlet.IsDraft ? 'circle-gray' : (outlet.IsSynced ? 'circle' : 'circle-org')}}">{{$index + 1 + (currentPage) * pageSize}}</div>
+                        </td>
+                        <td>
+                            <table class="outlet-detail-table">
                                 <tr>
-                                    <td class="title" ng-show="viewOutletFull">Address:</td>
-                                    <td class="value" colspan="5">{{outlet.FullAddress}}</td>
-                                    <td class="title" ng-show="viewOutletFull">Outlet type:</td>
-                                    <td class="value" ng-show="viewOutletFull">{{outlet.OutletTypeName}}</td>									
+                                    <td colspan="4"s>
+                                        <span class="large-text blue-color" ng-click="openOutlet($index)">{{outlet.Name}}</span>					
+                                        <img class="outlet-header-right small-text gray-color" ng-show="outlet.IsDraft" src="assets/img/delete.svg" ng-click="deleteOutlet($index)" />
+                                        <span class="outlet-header-right small-text gray-color">
+                                            {{outlet.Distance}} m
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="normal-text black-color" colspan="3">
+                                        <span class="small-text gray-color" ng-show="viewOutletFull">Address: </span>
+                                        <span class="normal-text black-color">{{outlet.FullAddress}}</span>
+                                    </td>
+                                    <td ng-show="viewOutletFull">
+                                        <span class="small-text gray-color">Closed Date: </span>
+                                        <span class="normal-text black-color">{{outlet.CloseDate ? outlet.CloseDate : "-"}}</span>
+                                    <td>
                                 </tr>
                                 <tr ng-show="viewOutletFull">
-                                    <td class="title">Distance:</td>
-                                    <td class="value">{{outlet.Distance}}</td>
-                                    <td class="title">SR/DSM:</td>
-                                    <td class="value">{{outlet.Name}}</td>
-                                    <td class="title">Tel:</td>
-                                    <td class="value">{{outlet.Phone}}</td>
-                                    <td class="title">Last contact:</td>
-                                    <td class="value">{{outlet.LastContact}}</td>
+                                    <td>
+                                        <span class="small-text gray-color">Type: </span>
+                                        <span class="normal-text black-color">{{outlet.OutletTypeName}}</span>
+                                    </td>
+                                    <td>
+                                        <span class="small-text gray-color">Phone: </span>
+                                        <span class="normal-text black-color">{{outlet.Phone}}</span>
+                                    </td>
+                                    <td>
+                                        <span class="small-text gray-color">Last Contact: </span>
+                                        <span class="normal-text black-color">{{outlet.LastContact ? outlet.LastContact : "-"}}</span>
+                                    </td>   
+                                    <td>
+                                        <span class="small-text gray-color">Tracking: </span>
+                                        <span class="normal-text black-color">{{outlet.IsTracked ? "Yes" : "No"}}</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="small-text gray-color">
+                                        Last Changed: {{outlet.AmendDate}}
+                                    </td>
                                 </tr>
                             </table>
-                        </div>
-                        <span class="span-datetime">Last Changed: {{outlet.AmendDate}}</span>
-                    </div>
-                </div>
+                        </td>
+                    </tr>
+                </table>
             </div>                     
         </div>    
         <div id="paging-bar" ng-show="showNaviBar" >
