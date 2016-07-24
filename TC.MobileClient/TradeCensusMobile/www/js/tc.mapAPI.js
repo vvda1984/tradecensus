@@ -14,10 +14,12 @@ var curInfoWin = null;
 const earthR = 6378137;
 var curlat = 10.773598;
 var curlng = 106.7058;
-var curacc = 0;
+var curacc = 120;
 var curaccCircle;
 var panorama;
-``
+var locationChangedCallback = null;
+var gpsWatchID = -1;
+
 function loadMapApi() { 
     if (!networkReady()) {
 		initializeMap()
@@ -210,6 +212,11 @@ function panToOutlet(lat, lng, index, outlet) {
 }
 
 function moveToCurrentLocation(){
+    displayCurrentPostion();
+    panTo(curlat, curlng);   
+}
+
+function displayCurrentPostion(){
     if (homeMarker != null) homeMarker.setMap(null);
     var position = new google.maps.LatLng(curlat, curlng);
     homeMarker = new google.maps.Marker({
@@ -217,20 +224,18 @@ function moveToCurrentLocation(){
         icon: 'assets/img/pin-cur.png',
         map: map,
     });
-    panTo(curlat, curlng);
    
-   if(curaccCircle) 
-        curaccCircle.setMap(null);
-
-   curaccCircle = new google.maps.Circle({
-        center: position,
-        radius: curacc,
-        map: map,
-        fillColor: '#2196F3',
-        fillOpacity: 0.5,
-        //strokeColor: '#0000FF',
-        strokeOpacity: 0,
-    });
+    if(curaccCircle) curaccCircle.setMap(null);
+    var cradius = (curacc > 300) ? 300 : curacc;
+    curaccCircle = new google.maps.Circle({
+            center: position,
+            radius: cradius,
+            map: map,
+            fillColor: '#2196F3',
+            fillOpacity: 0.5,
+            //strokeColor: '#0000FF',
+            strokeOpacity: 0,
+        });
 }
 
 function markerClick(i) {
@@ -287,8 +292,7 @@ function getCurPosition(onSuccess, onError) {
         navigator.geolocation.getCurrentPosition(function (position) {
             var lat = position.coords.latitude;
             var lng = position.coords.longitude;   
-            curacc = position.coords.accuracy;
-            if(curacc > 140) curacc = 140;
+            curacc = position.coords.accuracy;         
             log('Accuracy:'+ curacc.toString());
 
             // AnVO: DEBUG
@@ -314,3 +318,22 @@ function getCurPosition(onSuccess, onError) {
         onError(err.message);
     }
 }
+
+function startLocationWatcher(){
+    if(isDev) return;     
+    gpsWatchID = navigator.geolocation.watchPosition(onSuccess, onError, { timeout: 30000 });
+}
+
+function onSuccess(position) {    
+    if(locationChangedCallback)
+        locationChangedCallback(position.coords.latitude, position.coords.longitude, position.coords.accuracy);   
+}
+
+// onError Callback receives a PositionError object
+//
+function onError(error) {
+    log('GPW watching error code: ' + error.code    + '\n' +
+        'message: ' + error.message + '\n');
+}
+
+// Options: throw an error if no update is received every 30 seconds.

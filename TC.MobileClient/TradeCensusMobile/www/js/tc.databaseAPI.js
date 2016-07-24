@@ -3,7 +3,7 @@
 */
 function initalizeDB(onSuccess) {
     //db = window.sqlitePlugin.openDatabase({ name: "td-v01.db", location: 'default' });
-    db = window.openDatabase("Database", "2.0", "td-v01.db", 200000);
+    db = window.openDatabase("Database", "2.0", "tc-v1.db", 200000);
     db.transaction(function (tx) {
         if (resetDB) {
             tx.executeSql('DROP TABLE IF EXISTS person');
@@ -13,8 +13,8 @@ function initalizeDB(onSuccess) {
             tx.executeSql('DROP TABLE IF EXISTS outletImage');        
         }
 
-        log("ensure table [person] exist");
-        tx.executeSql('CREATE TABLE IF NOT EXISTS [person] ( [ID] integer PRIMARY KEY NOT NULL, [UserName] text, [FirstName] text, [LastName] text, [IsTerminate] text NOT NULL,	[HasAuditRole] text NOT NULL COLLATE NOCASE, [PosID] text NOT NULL COLLATE NOCASE, [ZoneID] text NOT NULL COLLATE NOCASE, [AreaID] text NOT NULL COLLATE NOCASE, [ProvinceID] text NOT NULL COLLATE NOCASE, [Email] text, [EmailTo] text, [HouseNo] text, [Street] text, [District] text, [HomeAddress] text, [WorkAddress] text, [Phone] text, [OfflinePassword] text NOT NULL)');
+        log("ensure table [user] exist");
+        tx.executeSql('CREATE TABLE IF NOT EXISTS [user] ( [ID] integer PRIMARY KEY NOT NULL, [UserName] text, [FirstName] text, [LastName] text, [IsTerminate] text NOT NULL,	[HasAuditRole] text NOT NULL COLLATE NOCASE, [PosID] text NOT NULL COLLATE NOCASE, [ZoneID] text NOT NULL COLLATE NOCASE, [AreaID] text NOT NULL COLLATE NOCASE, [ProvinceID] text NOT NULL COLLATE NOCASE, [Email] text, [EmailTo] text, [HouseNo] text, [Street] text, [District] text, [HomeAddress] text, [WorkAddress] text, [Phone] text, [OfflinePassword] text NOT NULL)');
 
         log("ensure table [config] exist");
         tx.executeSql('CREATE TABLE IF NOT EXISTS [config] ( [Name] text PRIMARY KEY NOT NULL COLLATE NOCASE, [Value] text)');
@@ -43,7 +43,7 @@ function logSqlCommand(sql) {
 function insertUserDB(person, userName, password, onSuccess, onError) {
     db.transaction(function (tx) {
         log(person);        
-        var sql = "INSERT OR REPLACE INTO [person] VALUES (";
+        var sql = "INSERT OR REPLACE INTO [user] VALUES (";
         sql = sql.concat(person.ID.toString(), ", ");
         sql = sql.concat("'", userName, "', ");
         sql = sql.concat("'", person.FirstName, "', ");
@@ -84,7 +84,7 @@ function selectConfigs(onSuccess, onError) {
 
 function selectUserDB(userName, password, onSuccess, onError) {
     db.transaction(function (tx) {
-        var sql = "SELECT * FROM person WHERE ";
+        var sql = "SELECT * FROM user WHERE ";
         sql = sql.concat("UserName='", userName, "' AND OfflinePassword='" + hashString(password), "'");
         logSqlCommand(sql);
         tx.executeSql(sql, [], onSuccess, onError);

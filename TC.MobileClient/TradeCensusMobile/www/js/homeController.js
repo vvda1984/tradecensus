@@ -35,15 +35,18 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     $scope.showSearchImg = true;
     $scope.showClearSearchImg = false;
 
+    //*************************************************************************
     $scope.panToCurLocation = function(){
         moveToCurrentLocation();
     }
 
+    //*************************************************************************
     $scope.clearSearch = function(){
         $scope.searchName = '';
         $scope.searchChanged();
     };
 
+    //*************************************************************************
     $scope.searchChanged = function(){
         if(isEmpty($scope.searchName)){
             $scope.showSearchImg = true;
@@ -74,17 +77,20 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         return Math.ceil($scope.outlets.length/$scope.pageSize);                
     }
 
+    //*************************************************************************
     $scope.refresh = function () {
         if (curOutletView == 0) {
             nearByOutlets = [];
         }
-        getOutletsByView(curOutletView);
+        getOutletsByView(curOutletView, false);
     }
 
+    //*************************************************************************
     $scope.closeStreetViewMode = function(){
         panorama.setVisible(false);
     }
 
+    //*************************************************************************
     $scope.closeLeftPanel = function () {
         $scope.hideDropdown();
         leftPanelStatus = 0;
@@ -97,6 +103,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         $("#slider-left-content").css('margin-bottom', '4px');
     }
 
+    //*************************************************************************
     $scope.showLeftPanel = function () {
         $scope.hideDropdown();
         leftPanelStatus = 2;
@@ -119,6 +126,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         $("#outletPanel").css('width', '100%');
     }
 
+    //*************************************************************************
     $scope.showhideLeftPanel = function () {
         $scope.hideDropdown();
         log("Left panel state: " + leftPanelStatus.toString());
@@ -149,6 +157,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         }       
     }
 
+    //*************************************************************************
     $scope.showRightPanel = function () {       
         if (righPanelStatus == 0) {
 			log('show right panel');
@@ -170,6 +179,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         }
     }
 
+    //*************************************************************************
     $scope.hideRightPanel = function () {
         log('hide right panel');
         $scope.hideDropdown();       
@@ -177,14 +187,17 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         righPanelStatus = 0;       
     }
 
+    //*************************************************************************
     $scope.showDropdown = function () {
         $("#outlet-dropdown").css('display', 'block');
     }
 
+    //*************************************************************************
     $scope.hideDropdown = function () {
         $("#outlet-dropdown").css('display', 'none');
     }
 
+    //*************************************************************************
     $scope.openOutlet = function (i) {
         editOutlet(i, true);
         /*
@@ -198,6 +211,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         */
     }
 
+    //*************************************************************************
     $scope.changeOutletView = function (v) {
         $scope.hideDropdown();
         $scope.closeLeftPanel();
@@ -205,9 +219,10 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         log('change view to ' + v.toString());
         //curOutletView = v;
         $scope.currentPage = 0;     
-        getOutletsByView(v);
+        getOutletsByView(v, false);
     }
 
+    //*************************************************************************
     $scope.createNewOutlet = function () {
         log('create new outlet');
         showDlg('Get current location', "Please wait...");
@@ -263,6 +278,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         }
     }
 
+    //*************************************************************************
     $scope.syncOutlets = function () {
         if (!networkReady()) {
             showError('Please check network connection!');
@@ -290,12 +306,14 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             }, handleDBError);
     }
 
+    //*************************************************************************
     $scope.deleteOutlet = function (i) {
         var outlet = $scope.outlets[i];
         
         showConfirm('Delete Outlet', 'Are you sure you want to delete outlet ' + outlet.Name, function () { deleteDraftOutlet(outlet); }, function () { });
     }
 
+    //*************************************************************************
     function initializeView() {        
         var hasNetwork = networkReady();
         log('update view when base on network: ' + hasNetwork);
@@ -314,6 +332,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         }
     }    
 
+    //*************************************************************************
     function tryCreateNewOutlet(lat, lng, address2, district) {
         log($scope.outletTypes);
         $scope.outlet = newOutlet();
@@ -371,11 +390,47 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         });
     }
     
-    function getOutletsByView(view) {
+    //*************************************************************************
+    function getOutletsByView(view, isbackground) {
         $scope.outlets.length = 0;
         switch (view) {
             case 0:
                 log('view near-by outlets');
+                if(isbackground){
+                    nearByOutlets = [];
+                    if (networkReady()) {
+                        getNearByOutletsOnline(isbackground, function (foundOutlets) {
+                            log('*** Load outlet...');
+                            loadOutlets(foundOutlets);
+                        });
+                    } else {
+                        queryNearbyOutlets(function (foundOutlets) {
+                            loadOutlets(foundOutlets);
+                        });
+                    }
+                } else{
+                    showDlg('Get current location', "Please wait...");
+                    getCurPosition(function (lat, lng) {                       
+                        curOutletView = view;
+                        $scope.outletHeader = 'Near-by Outlets';                        
+                        nearByOutlets = [];
+                        if (networkReady()) {
+                            getNearByOutletsOnline(isbackground, function (foundOutlets) {
+                                log('*** Load outlet...');
+                                loadOutlets(foundOutlets);
+                            });
+                        } else {
+                            queryNearbyOutlets(function (foundOutlets) {
+                                loadOutlets(foundOutlets);
+                            });
+                        }
+                    }, function (err) {
+                        log(err);
+                        if(!isbackground) showError('Cannot get current location!');
+                    });
+                }
+              
+                /*
                 if (nearByOutlets.length > 0) {
                     showDlg('Load near-by outlets', "Please wait...");
                     curOutletView = view;
@@ -401,10 +456,11 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                         showError('Cannot get current location!');
                     });
                 }
+                */
                 break;
             case 1:
                 log('view new outlets');
-                showDlg('Get new outlets', "Please wait...");
+                if(!isbackground) showDlg('Get new outlets', "Please wait...");
                 queryOutlets(view, function (foundOutlets) {
                     curOutletView = view;
                     $scope.outletHeader = 'New Outlets';
@@ -413,7 +469,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                 break
             case 2:
                 log('view updated outlets');
-                showDlg('Get updated outlets', "Please wait...");
+                if(!isbackground) showDlg('Get updated outlets', "Please wait...");
                 queryOutlets(view, function (foundOutlets) {
                     curOutletView = view;
                     $scope.outletHeader = 'Updated Outlets';
@@ -422,7 +478,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                 break;
             case 4:
                 log('view auditted outlets');
-                showDlg('Get auditted outlets', "Please wait...");
+                if(!isbackground) showDlg('Get auditted outlets', "Please wait...");
                 queryOutlets(view, function (foundOutlets) {
                     curOutletView = view;
                     $scope.outletHeader = 'Auditted Outlets';
@@ -432,39 +488,71 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         }
     }   
      
-    function getNearByOutletsOnline(callback) {
-        var url = baseURL + '/outlet/getoutlets/' + userID + '/' + 
-                          + curlat.toString() + '/' + curlng.toString() + '/'
-                          + config.distance.toString() + '/' + config.item_count.toString();
-        log('Call service api: ' + url);
-        $http({
-            method: config.http_method,
-            url: url
-        }).then(function (resp) {            
-            try {
-                var data = resp.data;
-                if (data.Status == -1) { // error
-                    handleError(data.ErrorMessage);
-                } else {
-                    nearByOutlets = data.Items;
-                    nearByOutlets.sort(function (a, b) { return a.Distance - b.Distance });
-					showDlg('Get near-by outlets', 'Found ' + nearByOutlets.length.toString() + ' outlet(s)... loading outlets');
-                    //syncNearByOutlets();
-                    //callback(nearByOutlets);                    
-                    insertOutletsDB(user.id, config.tbl_outlet, nearByOutlets,
-                        function () {
-                            callback(nearByOutlets);
-                        },
-                        function (dberr) {
-                            showError(dberr.message);
-                        });                    
-                }
-            } catch (err) {
-                showError(dberr.message);
+    //*************************************************************************
+    function getNearByOutletsOnline(isbackground, callback) {       
+        try{
+            if(!config.distance)
+            {
+                showError("Distance is invalid!");
+                return;
             }
-        }, handleHttpError);
+            if(!config.item_count)
+            {
+                showError("Max Outlets is invalid!");
+                return;
+            }
+
+            var url = baseURL + '/outlet/getoutlets/' + userID + '/' + 
+                            + curlat.toString() + '/' + curlng.toString() + '/'
+                            + config.distance.toString() + '/' + config.item_count.toString();
+            log('Call service api: ' + url);
+            $http({
+                method: config.http_method,
+                url: url
+            }).then(function (resp) {            
+                try {
+                    var data = resp.data;
+                    if (data.Status == -1) { // error
+                        handleError(data.ErrorMessage);
+                    } else {
+                        nearByOutlets = data.Items;
+                        nearByOutlets.sort(function (a, b) { return a.Distance - b.Distance });
+                        if(!isbackground) 
+                            showDlg('Get near-by outlets', 'Found ' + nearByOutlets.length.toString() + ' outlet(s)... loading outlets');
+                        
+                        insertOutletsDB(user.id, config.tbl_outlet, nearByOutlets,
+                            function () {
+                                log('Sync outlet from server completed');
+                                callback(nearByOutlets);
+                            },
+                            function (dberr) {
+                                if(!isbackground)
+                                    showError(dberr.message);
+                                else
+                                    log(dberr.message);
+                            });                    
+                    }
+                } catch (err) {
+                    if(!isbackground)
+                        showError(dberr.message);
+                    else
+                        log(dberr.message);
+                }
+            }, function(err){
+                log('HTTP error...');
+                log(err);
+                hideDlg();
+                if(!isbackground){
+                    var msg = err.statusText == '' ? $scope.resource.text_ConnectionTimeout : err.statusText;
+                    showError(msg);
+                }            
+            });
+        } catch(ex){
+            showError(ex.message);
+        }
     }   
 
+    //*************************************************************************
     function loadOutlets(outlets) {
         $scope.outlets.length = 0;
         clearMarkers();
@@ -478,6 +566,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         }
     }     
 
+    //*************************************************************************
     function setOutletsToList(outlets) {
         $timeout(function () {          
             $scope.showNaviBar = leftPanelStatus > 0 && outlets.length > $scope.config.page_size;
@@ -502,9 +591,40 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             }            
             $('.md-scroll-mask').remove();
             hideDlg();
-        }, 100);
-    }   
 
+            if(firstStart){
+                firstStart = false;
+                startPositionWatching();
+            }  
+        }, 100);
+    }
+
+
+    //*************************************************************************
+    $scope.testChangeLocation = function(){
+        if(locationChangedCallback)
+            locationChangedCallback($scope.testlat, $scope.testlng, 120);   
+    }
+
+    function startPositionWatching(){
+        if(gpsWatchID == -1){
+            locationChangedCallback = handleLocationChange;
+            startLocationWatcher();            
+        }
+    }
+
+    function handleLocationChange(lat, lng, acc){
+        var distance = calcDistance({Lat: curlat, Lng : curlng}, {Lat : lat, Lng : lng});
+        if(distance > 10){
+            curlat = lat;
+            curlng = lng;
+            curacc = acc;
+            displayCurrentPostion();
+            getOutletsByView(curOutletView, true);
+        }       
+    }
+
+    //*************************************************************************
     function editOutlet(j, isPanTo) {
         log('Open outlet:' + j.toString());
 
@@ -619,6 +739,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         });
     }
 
+    //*************************************************************************
     function deleteDraftOutlet(outlet) {    
         log('delete outlet ' + outlet.ID.toString());
         deteleOutletDB(config.tbl_outlet, outlet, function (tx) {
@@ -630,6 +751,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         });
     }
 
+    //*************************************************************************
     function saveOutlet(outlet, onSuccess) {
         if (outlet.modifiedImage1 || outlet.modifiedImage2 || outlet.modifiedImage3) {
             log('Save image to database before start uploading');
@@ -660,6 +782,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             submitOutlet(outlet, onSuccess);
     }
 
+    //*************************************************************************
     function submitOutlet(outlet, callback) {
         if (networkReady()) {
             var url = baseURL + '/outlet/save';
@@ -691,6 +814,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         }
     }
 
+    //*************************************************************************
     function tryUploadImages(uploadItems, i, onSuccess, onError) {
         showDlg('Uploading image (' + (i + 1).toString() + '/' + uploadItems.length.toString() + ')', 'Please wait...');
         var item = uploadItems[i];
@@ -765,68 +889,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         }, options);
     }       
 
-    //******************************************
-    try {
-        //if (isRegisterNetworkChanged) {
-        //    document.addEventListener("online", loadMapApi, false);
-        //    document.addEventListener("resume", loadMapApi, false);
-        //}        
-        mapClickedCallback = function(){ $scope.hideDropdown();};
-        mapViewChangedCallback = function(streetView){
-            log('Change view: ' + streetView); 
-            if(streetView){
-                $("#home-topleft").css('display', 'none');
-                $("#home-bottom").css('display', 'none');
-                $("#home-bottomright").css('display', 'none');
-                $("#home-topright").css('display', 'none');
-                $("#configPanel").css('display', 'none');                
-                $("#outletPanel").css('display', 'none');
-
-                $("#home-topright-street").css('display', 'inline-block');
-            } else{
-                $("#home-topleft").css('display', 'inline-block');           
-                $("#home-topright").css('display', 'inline-block');                
-                $("#home-bottom").css('display', 'inline-block');
-                $("#home-bottomright").css('display', 'inline-block');
-                $("#outletPanel").css('display', 'inline');
-                $("#configPanel").css('display', 'inline');
-
-                $("#home-topright-street").css('display', 'none');
-            }            
-        };
-		syncExecuter = syncOutletMethod;
-        initializeView();
-        editOutletCallback = function (i) { editOutlet(i, false);};   
-        loadMapCallback = function () {          
-            if (networkReady()) {
-                if(isMapReady)
-                {
-                    log('Move to current location');
-                    moveToCurrentLocation();
-                }
-                getNearByOutletsOnline(function (foundOutlets) {
-                    loadOutlets(foundOutlets);
-                });
-            } else {
-                queryNearbyOutlets(function (foundOutlets) {
-                    loadOutlets(foundOutlets);
-                });
-            }
-            loadMapCallback = null;
-        };     
-        getCurPosition(function (lat, lng) {            
-            loadMapApi();
-        }, function (err) {
-            log(err);
-            //showError('Cannot get current location!');
-            loadMapApi();
-        });		                               		
-    } catch (err) {
-        showError(err);
-        log(err);
-    }
-
-    //******************************************
+    //*************************************************************************
 	function syncOutletMethod(onSuccess, onError) {
 		log('Select unsynced outlets');			
 		selectUnsyncedOutlets(config.tbl_outlet,
@@ -847,6 +910,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 			});		 
 	}
 	
+    //*************************************************************************
 	function trySyncOutlets(unsyncedOutlets, index, onSuccess, onError) {
         var item = unsyncedOutlets[index];        
         log('Sync outlet ' + item.Name + ' (' + (index + 1).toString() + '/' + unsyncedOutlets.length.toString() + ')');
@@ -890,5 +954,66 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                 onError('Sync error, please try again!');
             }
         });
+    }
+
+    //*************************************************************************
+    try {
+        //if (isRegisterNetworkChanged) {
+        //    document.addEventListener("online", loadMapApi, false);
+        //    document.addEventListener("resume", loadMapApi, false);
+        //}        
+        mapClickedCallback = function(){ $scope.hideDropdown();};
+        mapViewChangedCallback = function(streetView){
+            log('Change view: ' + streetView); 
+            if(streetView){
+                $("#home-topleft").css('display', 'none');
+                $("#home-bottom").css('display', 'none');
+                $("#home-bottomright").css('display', 'none');
+                $("#home-topright").css('display', 'none');
+                $("#configPanel").css('display', 'none');                
+                $("#outletPanel").css('display', 'none');
+
+                $("#home-topright-street").css('display', 'inline-block');
+            } else{
+                $("#home-topleft").css('display', 'inline-block');           
+                $("#home-topright").css('display', 'inline-block');                
+                $("#home-bottom").css('display', 'inline-block');
+                $("#home-bottomright").css('display', 'inline-block');
+                $("#outletPanel").css('display', 'inline');
+                $("#configPanel").css('display', 'inline');
+
+                $("#home-topright-street").css('display', 'none');
+            }            
+        };
+		syncExecuter = syncOutletMethod;
+        initializeView();
+        editOutletCallback = function (i) { editOutlet(i, false);};   
+        loadMapCallback = function () {          
+            if (networkReady()) {
+                if(isMapReady)
+                {
+                    log('Move to current location');
+                    moveToCurrentLocation();
+                }
+                getNearByOutletsOnline(false, function (foundOutlets) {
+                    loadOutlets(foundOutlets);
+                });
+            } else {
+                queryNearbyOutlets(function (foundOutlets) {
+                    loadOutlets(foundOutlets);
+                });
+            }
+            loadMapCallback = null;
+        };
+        getCurPosition(function (lat, lng) {            
+            loadMapApi();
+        }, function (err) {
+            log(err);
+            //showError('Cannot get current location!');
+            loadMapApi();
+        });		                               		
+    } catch (err) {
+        showError(err);
+        log(err);
     }
 };

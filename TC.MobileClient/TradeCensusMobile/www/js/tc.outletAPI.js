@@ -2,6 +2,7 @@
 
 var nearByOutlets = [];
 var curOutlets = [];
+var firstStart = true;
 
 function calcRetangleBoundary(dlat, dlng, p) {
     var np = {
@@ -11,7 +12,7 @@ function calcRetangleBoundary(dlat, dlng, p) {
     return np;
 }
 
-function calcDistanceCircle(saleLoc, outletLoc, meter) {
+function calcDistance(saleLoc, outletLoc) {
     var R = 6378137; // Earth’s mean radius in meter
     var dLat = calculateRad(outletLoc.Lat - saleLoc.Lat);
     var dLong = calculateRad(outletLoc.Lng - saleLoc.Lng);
@@ -43,7 +44,7 @@ function newOutlet() {
         AmendBy: 11693,
         AmendDate: "",
         AreaID: user.areaID,
-        AuditStatus: 0,
+        AuditStatus: 10,
         CloseDate: "",
         CreateDate: "",
         Distance: 0,
@@ -149,7 +150,7 @@ function queryOutlets(view, callback) {
                         var outlet = dbres.rows.item(i);
                         var distance = 10000000;
                         if (config.calc_distance_algorithm == "circle")
-                            distance = calcDistanceCircle(saleLoc, { Lat: outlet.Latitude, Lng: outlet.Longitude }, meter);
+                            distance = calcDistance(saleLoc, { Lat: outlet.Latitude, Lng: outlet.Longitude });
                         log('Distance to Outlet ' + outlet.ID.toString() + ': ' + distance.toString());
 
                         if (distance <= meter) {
@@ -197,7 +198,7 @@ function queryNearbyOutlets(callback) {
                     var outlet = dbres.rows.item(i);
                     var distance = 10000000;
                     if (config.calc_distance_algorithm == "circle")
-                        distance = calcDistanceCircle(saleLoc, { Lat: outlet.Latitude, Lng: outlet.Longitude }, meter);
+                        distance = calcDistance(saleLoc, { Lat: outlet.Latitude, Lng: outlet.Longitude });
                     log('Distance to Outlet ' + outlet.ID.toString() + ': ' + distance.toString());
 
                     if (distance <= meter) {

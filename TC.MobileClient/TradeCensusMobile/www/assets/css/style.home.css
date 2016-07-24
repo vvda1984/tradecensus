@@ -64,16 +64,30 @@
 .square-bar img  {        
     height: 24px;
     width: 24px;
-    margin: 9px;                  
-    display: inline-block;           
+    margin: 9px;                        
+    float: left;              
 }
 
 .square-bar span {        
-    vertical-align: middle;                    
-    margin: 0;        
-    margin-left: 12px;                 
-    display: inline-block;
-    height: 100%;
+    float: left;                    
+    margin: 0;   
+    margin-top: 10px;     
+    margin-left: 8px;
+    margin-right: 8px;                      
+    height: 100%;    
+}
+
+.square-bar input{
+    vertical-align: middle;            
+    float: left;  
+    background: white;         
+    border: 0px;
+    border-bottom: 2px solid #2196F3;  
+    width: 52px;
+    height: 24px;
+    margin-top: 7px;
+    padding-left:8px;
+    color: rgb(128, 128, 128);
 }
 
 .flat-button{
@@ -168,6 +182,15 @@
     display: none;
 } 
 
+#home-topright-test {
+    position: fixed;
+    top: 4px;
+    right: 64px;    
+    z-index: 3;
+    border: 0px;
+    display: none; /*inline-block;*/
+} 
+
 /******************** BOTTOM-RIGHT ******************/
 #home-bottomright {
     position: fixed;
@@ -218,15 +241,19 @@
         width: 170px;   
     }
 
-    #paging-bar .searchbox .search {           
-        border:1px;             
+    #paging-bar .searchbox .search {             
+        /*
+        border:1px;      
         background:#EFEFEF;
         border-radius: 16px;
-        width: 148px;
-        height: 32px;
-        margin-top: 4px;
+        */
+        border: 0px;
+        border-bottom: 2px solid #2196F3;  
         margin-left: 6px;
-        padding-left:8px; ;   
+        margin-top: 7px;
+        padding-left:8px;
+        width: 148px;
+        height: 24px;        
     }
     
     #paging-bar .searchbox .search-img {

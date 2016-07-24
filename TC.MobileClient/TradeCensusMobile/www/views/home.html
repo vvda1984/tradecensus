@@ -3,13 +3,16 @@
         <div class="square-button float-left white" ng-show="showListButton" ng-click="showhideLeftPanel()">
             <img src="assets/img/menu.svg" />                        
         </div>        
-        <div class="square-bar float-left white" ng-click="showDropdown()">
-            <span>{{outletHeader}}<span>
+        <div class="square-bar float-left white" ng-click="showDropdown()">            
+            <span>{{outletHeader}}</span>
             <img src="assets/img/arrow-down.svg" />                        
         </div>  
         <div class="square-bar float-left white">
-            <span>Distance: {{config.distance}}m, Maximum Outlets: {{config.item_count}}<span>
-            <img src="assets/img/arrow-down.svg" style="width:0px;margin-left:0px;" />            
+            <span>Distance (m):</span>
+            <input placeholder="meter" ng-model="config.distance" type="number" min="100" >
+            <span>Max Outlets:</span>
+            <input placeholder="number" ng-model="config.item_count" min="1" >
+            <span> </span>
         </div>                            
         <div class="square-button float-left blue" ng-show="allowRefresh" ng-click="refresh()">
             <img src="assets/img/refresh.svg" />
@@ -63,7 +66,7 @@
                                 </tr>
                                 <tr ng-show="viewOutletFull">
                                     <td>
-                                        <span class="small-text gray-color">Type: </span>
+                                        <span class="small-text gray-color">Outlet Type: </span>
                                         <span class="normal-text black-color">{{outlet.OutletTypeName}}</span>
                                     </td>
                                     <td>
@@ -95,7 +98,7 @@
                 <img src="assets/img/arrow-right.svg" />
             </button> 
              <div class="square-bar float-right white">
-                <span> {{currentPage+1}} / {{numberOfPages()}}<span>               
+                <span> {{currentPage+1}} / {{numberOfPages()}}</span>               
             </div>     
             <button ng-disabled="currentPage == 0" ng-click="currentPage=currentPage-1">                
                 <img src="assets/img/arrow-left.svg" />
@@ -128,6 +131,12 @@
         </div>        
     </div>
 
+     <div id="home-topright-test">      
+        <input placeholder="lat" ng-model="testlat" style="width:36px;height36px;">
+        <input placeholder="lng" ng-model="testlng" style="width:36px;height36px;" >        
+        <a ng-click="testChangeLocation()">SET<a/>
+    </div>
+
     <div id="configPanel" class="slider-right" >
 		<!--<div class=hidden-overlay" ng-click="showRightPanel()"></div> -->
         <div id="slider-right-content">            
@@ -153,10 +162,10 @@
                         <md-switch class="md-primary" ng-model="config.mode_online">{{config.mode_online ? "Online" : "Offline"}}</md-switch>
                     </div>     
                     <div class="md-block-item" style="margin-bottom:0px;">                        
-                        <md-button class="md-primary md-raised demo-menu-open-button" ng-click="changeView('login')" style="width:96px">
+                        <md-button class="md-primary md-raised demo-menu-open-button" ng-click="changeView('login')" style="width:124px">
                            LOGOUT <img src="assets/img/logout.svg" class="md-button-image">
                         </md-button>      
-                         <md-button class="md-primary md-raised demo-menu-open-button" ng-click="syncOutlets()" style="width:96px">
+                         <md-button class="md-primary md-raised demo-menu-open-button" ng-click="syncOutlets()" style="width:124px">
                            SYNC <img src="assets/img/sync.svg" class="md-button-image">
                         </md-button>                                          
                     </div>                                       

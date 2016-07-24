@@ -406,7 +406,8 @@ hr {
 
 .outlet-image {
     min-height:80px;
-    min-width:128px;    
+    min-width:124px;    
+    margin-right:12px;
     height: 100%;
     width: 100%;
 }
