@@ -226,7 +226,7 @@ function displayCurrentPostion(){
     });
    
     if(curaccCircle) curaccCircle.setMap(null);
-    var cradius = (curacc > 300) ? 300 : curacc;
+    var cradius = (curacc > 500) ? 500 : curacc;
     curaccCircle = new google.maps.Circle({
             center: position,
             radius: cradius,
@@ -319,21 +319,30 @@ function getCurPosition(onSuccess, onError) {
     }
 }
 
-function startLocationWatcher(){
-    if(isDev) return;     
-    gpsWatchID = navigator.geolocation.watchPosition(onSuccess, onError, { timeout: 30000 });
+function startPositionWatching(){
+    if(isDev) return;
+    if(gpsWatchID == -1){
+        gpsWatchID = navigator.geolocation.watchPosition(
+            function(position){
+                if(locationChangedCallback)
+                    locationChangedCallback(position.coords.latitude, position.coords.longitude, position.coords.accuracy);   
+            }, 
+            function(error){
+                log('GPW watching error code: ' + error.code  + '\n' + 'message: ' + error.message + '\n');
+            }, { 
+                enableHighAccuracy: true,
+                maximumAge: 3000,
+                timeout: 10000 
+            });
+    }
 }
 
-function onSuccess(position) {    
-    if(locationChangedCallback)
-        locationChangedCallback(position.coords.latitude, position.coords.longitude, position.coords.accuracy);   
+function stopPositionWatching(){
+    if(gpsWatchID != -1){
+        try{
+            navigator.geolocation.clearWatch(gpsWatchID);
+        } catch(err){
+            log('Stop GPW watching error: ' + err.message);
+        }
+    }
 }
-
-// onError Callback receives a PositionError object
-//
-function onError(error) {
-    log('GPW watching error code: ' + error.code    + '\n' +
-        'message: ' + error.message + '\n');
-}
-
-// Options: throw an error if no update is received every 30 seconds.

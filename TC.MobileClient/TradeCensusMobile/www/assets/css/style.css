@@ -16,6 +16,11 @@ html, body {
     background: white;
 }
 
+.transparent {
+    background: transparent;
+    box-shadow: 0px;
+}
+
 .black-color {
     color: black;
 }
@@ -511,6 +516,7 @@ hr {
     color: rgba(0,0,0,0.87);
     padding: 8px 8px 20px 8px;
     display: block;
+    min-width: 120px;
 }
 
     .md-block-item .md-block-item-title {
@@ -704,13 +710,14 @@ hr {
 .span-title {
     color: rgb(128, 128, 128);
     margin: 4px 0;
-    font-size: 13px;
+    font-size: 12px;
+    min-width: 80px;
 }
 
 .span-value {
     margin-top:8px;
     color: rgba(0,0,0,1); 
-    min-width:92px;
+    min-width:124px;
 }
 .span-button-text{  
     text-align: center;

@@ -176,6 +176,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 				loadMapApi();			
 			}
             initializeView();
+            changeGPSTrackingStatus();
         }
     }
 
@@ -594,11 +595,10 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 
             if(firstStart){
                 firstStart = false;
-                startPositionWatching();
+                changeGPSTrackingStatus();
             }  
         }, 100);
     }
-
 
     //*************************************************************************
     $scope.testChangeLocation = function(){
@@ -606,13 +606,16 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             locationChangedCallback($scope.testlat, $scope.testlng, 120);   
     }
 
-    function startPositionWatching(){
-        if(gpsWatchID == -1){
-            locationChangedCallback = handleLocationChange;
-            startLocationWatcher();            
+    //*************************************************************************
+    function changeGPSTrackingStatus(){
+        if($scope.enable_liveGPS){
+            startPositionWatching();
+        } else {
+            stopPositionWatching();
         }
     }
 
+    //*************************************************************************
     function handleLocationChange(lat, lng, acc){
         var distance = calcDistance({Lat: curlat, Lng : curlng}, {Lat : lat, Lng : lng});
         if(distance > 10){
@@ -961,7 +964,8 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         //if (isRegisterNetworkChanged) {
         //    document.addEventListener("online", loadMapApi, false);
         //    document.addEventListener("resume", loadMapApi, false);
-        //}        
+        //}         
+        locationChangedCallback = handleLocationChange;
         mapClickedCallback = function(){ $scope.hideDropdown();};
         mapViewChangedCallback = function(streetView){
             log('Change view: ' + streetView); 

@@ -3,7 +3,7 @@
 */
 function initalizeDB(onSuccess) {
     //db = window.sqlitePlugin.openDatabase({ name: "td-v01.db", location: 'default' });
-    db = window.openDatabase("Database", "2.0", "tc-v1.db", 200000);
+    db = window.openDatabase("Database", "2.0", "tc-v2.db", 200000);
     db.transaction(function (tx) {
         if (resetDB) {
             tx.executeSql('DROP TABLE IF EXISTS person');

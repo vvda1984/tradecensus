@@ -13,10 +13,10 @@
             <span>Max Outlets:</span>
             <input placeholder="number" ng-model="config.item_count" min="1" >
             <span> </span>
-        </div>                            
+        </div>
         <div class="square-button float-left blue" ng-show="allowRefresh" ng-click="refresh()">
             <img src="assets/img/refresh.svg" />
-        </div>      
+        </div>  
         <div ng-show="showSyncButton" class="square-button float-left blue" ng-click="syncOutlets()">
             <img src="assets/img/sync.svg" />
         </div>
@@ -103,8 +103,7 @@
             <button ng-disabled="currentPage == 0" ng-click="currentPage=currentPage-1">                
                 <img src="assets/img/arrow-left.svg" />
             </button>           
-            
-               
+        
             <div class="searchbox">
                 <input class="search" placeholder="Search" ng-model="searchName" ng-change="searchChanged()">
                 <img src="assets/img/search.svg" class="search-img" ng-show="showSearchImg" />
@@ -117,12 +116,12 @@
         <!--<div class="box" ng-show="showSetingExpand" ng-click="showhideRightPanel()">
             <img src="assets/img/arrow-left.svg" />
         </div>-->
-        <div class="square-button white" ng-show="showSettingCollapse" ng-click="showRightPanel()">
+        <div class="cirle-button white float-right" ng-show="showSettingCollapse" ng-click="showRightPanel()">
             <img src="assets/img/arrow-right.svg" />
         </div>
-        <div class="square-button white" ng-show="showSettingExpand" ng-click="showRightPanel()">
+        <div class="cirle-button white float-right" ng-show="showSettingExpand" ng-click="showRightPanel()">
             <img src="assets/img/setting-white.svg" />
-        </div>       
+        </div>    
     </div>
 
     <div id="home-topright-street">      
@@ -179,10 +178,10 @@
     </div>
 
     <div id="home-bottomright" >
-        <div class="square-button-small float-top blue" ng-click="createNewOutlet()">
+        <div class="cirle-button float-top blue" ng-click="createNewOutlet()">
             <img src="assets/img/add.svg" />
         </div>
-         <div class="square-button-small float-top blue" ng-click="panToCurLocation()">
+         <div class="cirle-button float-top white" ng-click="panToCurLocation()">
             <img src="assets/img/curloccation.svg" />
         </div>        
     </div>      
