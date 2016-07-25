@@ -220,14 +220,15 @@
     right: 64px;    
     z-index: 3;
     border: 0px;
-    display: none; /*inline-block;*/
+    display: inline-block;
 } 
 
 /******************** BOTTOM-RIGHT ******************/
 #home-bottomright {
     position: fixed;
     bottom: 128px;
-    right: 3px;    
+    /*right: 3px;*/
+    right: 10px;
     z-index: 1;
     border: 0px;
     display: inline-block;
@@ -410,7 +411,10 @@
     width: 100%
 }
 
-
+.outlet-detail-table tr {
+    height: 32px;
+    vertical-align: top;
+}
 
 .outlet-item-col2 .span-datetime {
     color: rgb(128, 128, 128);    

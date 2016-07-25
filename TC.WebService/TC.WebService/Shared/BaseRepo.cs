@@ -11,6 +11,13 @@ namespace TradeCensus.Shared
         protected bool _isDataChanged;
         protected string _name;     
 
+        protected void ValidatePerson(int personID)
+        {
+            var user = _entities.PersonRoles.FirstOrDefault(i => i.PersonID == personID);
+            if (user == null)
+                throw new Exception(string.Format("User {0} doesn't exist", personID));
+        }
+
         protected BaseRepo(string name)
         {            
             _entities = new tradecensusEntities(); // throw error

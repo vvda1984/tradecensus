@@ -1,4 +1,10 @@
-﻿var map = null;
+﻿var devCurLat = 10.775432;
+var devCurLng = 106.705803;
+var devNewDetlta = 0.00001;
+var devNewLat = devCurLat + devNewDetlta;
+var devNewLng = devCurLng + devNewDetlta;
+
+var map = null;
 var markerClusterer;
 var loadedMapAPI = false;
 var isMapReady = false;
@@ -12,8 +18,8 @@ var mapViewChangedCallback = null;
 var homeMarker = null;
 var curInfoWin = null;
 const earthR = 6378137;
-var curlat = 10.773598;
-var curlng = 106.7058;
+var curlat = 10.775432;
+var curlng = 106.705803;
 var curacc = 120;
 var curaccCircle;
 var panorama;
@@ -75,14 +81,14 @@ function initializeMap() {
 
         google.maps.event.addListener(map, 'click', function (event) {
             log('map clicked');
-            if (mapClicked != null)
-                mapClicked();
+            if (mapClickedCallback != null)
+                mapClickedCallback();
         });
 
         google.maps.event.addListener(map, 'bounds_changed', function (event) {
             log('map bounds_changed');
             if(mapClickedCallback)
-              mapClickedCallback();         
+              mapClickedCallback();
         });
 
         panorama = map.getStreetView();
@@ -93,12 +99,12 @@ function initializeMap() {
             }         
         });
 
+        isMapReady = true;
         if (loadMapCallback) {
-            log('call back');
+            log('Map is ready');
             loadMapCallback();
             loadMapCallback = null;
-        }
-		isMapReady = true;	
+        }			
     }
     catch (err) {
         isMapReady = false;
@@ -225,6 +231,11 @@ function displayCurrentPostion(){
         map: map,
     });
    
+   displayAccuracy(position);
+}
+
+function displayAccuracy(){
+    var position = new google.maps.LatLng(curlat, curlng);
     if(curaccCircle) curaccCircle.setMap(null);
     var cradius = (curacc > 500) ? 500 : curacc;
     curaccCircle = new google.maps.Circle({
@@ -232,10 +243,17 @@ function displayCurrentPostion(){
             radius: cradius,
             map: map,
             fillColor: '#2196F3',
-            fillOpacity: 0.5,
+            fillOpacity: 0.18,
             //strokeColor: '#0000FF',
             strokeOpacity: 0,
         });
+
+    if (homeMarker != null) homeMarker.setMap(null);
+    homeMarker = new google.maps.Marker({
+        position: position,
+        icon: 'assets/img/pin-cur.png',
+        map: map,
+    });
 }
 
 function markerClick(i) {
@@ -243,41 +261,27 @@ function markerClick(i) {
         markerClicked(i);
 }
 
-function loadMarkers(isNew, outlets, callback) {
-    ////showDlg("Load Markers...", "Please wait");
-    //log("Clear existing markers");
-    //clearMarkers();
-
+function loadMarkers(isNew, outlets, callback) {   
     log("Load outlets markers: " + outlets.length.toString());
     var bounds = map.getBounds();
     log('Current bound: ');
     log(bounds);
 
-    markers = [];
-    //var bounds = new google.maps.LatLngBounds();    
+    markers = [];  
     for (var i = 0; i < outlets.length; i++) {
         var outlet = outlets[i];
         var position = new google.maps.LatLng(outlet.Latitude, outlet.Longitude);
         //bounds.extend(position);
         createMaker(outlet, position, i, isNew, bounds);
     };
-   
-    //bounds.extend(homePosition);
-    //map.fitBounds(bounds);
+     
     var options = {
         gridSize: config.cluster_size,
         maxZoom: config.cluster_max_zoom,
         imagePath: 'assets/img/m'
     };
-    markerClusterer = new MarkerClusterer(map, markers, options);
-    //adjustCurrentLocation(la)
+    markerClusterer = new MarkerClusterer(map, markers, options);  
     callback();
-
-    var mapidleListener = google.maps.event.addListener(map, 'idle', function (event) {
-        log('map idled');
-        google.maps.event.removeListener(mapidleListener);
-        moveToCurrentLocation();
-    });
 }
 
 function editSelectedOutlet(i) {
@@ -286,7 +290,7 @@ function editSelectedOutlet(i) {
     }
 }
 
-function getCurPosition(onSuccess, onError) {
+function getCurPosition(moveToCur, onSuccess, onError) {
     log('Get current location...');
     try {       
         navigator.geolocation.getCurrentPosition(function (position) {
@@ -303,7 +307,7 @@ function getCurPosition(onSuccess, onError) {
             }
             curlat = lat;
             curlng = lng;
-            if(isMapReady)
+            if(isMapReady && moveToCur)
             {
                 log('Move to current location');
                 moveToCurrentLocation();

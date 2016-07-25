@@ -193,23 +193,28 @@ function queryNearbyOutlets(callback) {
             log('Found outlets: ' + rowLen.toString());
             nearByOutlets = [];
             if (rowLen) {
-                var found = 0;                
+                var found = 0;    
+                var foundOutlets = [];            
                 for (i = 0; i < rowLen; i++) {
-                    var outlet = dbres.rows.item(i);
-                    var distance = 10000000;
-                    if (config.calc_distance_algorithm == "circle")
-                        distance = calcDistance(saleLoc, { Lat: outlet.Latitude, Lng: outlet.Longitude });
-                    log('Distance to Outlet ' + outlet.ID.toString() + ': ' + distance.toString());
-
-                    if (distance <= meter) {
-                        log('Add outlet ' + outlet.ID.toString() + ' to list');
-                        initializeOutlet(outlet);
-                        nearByOutlets[found] = outlet;
-                        found++;
-                    }
-                    if (found >= count) break;
+                    var outlet = dbres.rows.item(i);                    
+                    outlet.Distance = calcDistance(saleLoc, { Lat: outlet.Latitude, Lng: outlet.Longitude });
+                    log('Distance from outlet ' + outlet.ID.toString() + ": " + outlet.Distance.toString());
+                    foundOutlets[i] = outlet;
                 }
-                nearByOutlets.sort(function (a, b) { return a.Distance - b.Distance });
+                foundOutlets.sort(function (a, b) { return a.Distance - b.Distance });
+
+                for (i = 0; i < foundOutlets.length && i <= count; i++) {                    
+                    var isMatched = true; 
+                    if (config.calc_distance_algorithm == "circle")
+                        isMatched = foundOutlets[i].Distance <= meter;
+                    
+                    if(isMatched){                        
+                        log('Found outlet: ' + outlet.ID.toString());
+                        initializeOutlet(foundOutlets[i]);                        
+                        nearByOutlets[i] = foundOutlets[i];
+                    }                
+                }
+                
                 callback(nearByOutlets);
             } else {
                 callback([]);

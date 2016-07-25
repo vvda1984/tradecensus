@@ -1,7 +1,8 @@
 <div id="view-home">
     <div id="home-topleft" >
-        <div class="square-button float-left white" ng-show="showListButton" ng-click="showhideLeftPanel()">
-            <img src="assets/img/menu.svg" />                        
+        <div class="square-button float-left white" ng-show="showListButton" ng-click="showhideOutletPanel()">
+            <img src="assets/img/menu.svg" ng-hide="viewOutletPanel"/>                        
+            <img src="assets/img/menu-blue.svg" ng-show="viewOutletPanel"/>
         </div>        
         <div class="square-bar float-left white" ng-click="showDropdown()">            
             <span>{{outletHeader}}</span>
@@ -29,12 +30,12 @@
     </div>
 
     <div id="outletPanel" class="slider-left" ng-click="hideDropdown()" >
-        <div class="expandcollapse-box" ng-show="showExpandButton" ng-click="showLeftPanel()">
+        <div class="expandcollapse-box" ng-show="showExpandButton" ng-click="expandOutletPanel()">
             <img src="assets/img/arrow-right-white.svg" />
         </div>
-        <div class="expandcollapse-box" ng-show="showCollapseButton" ng-click="closeLeftPanel()">
+        <div class="expandcollapse-box" ng-show="showCollapseButton" ng-click="collapseOutletPanel()">
             <img src="assets/img/arrow-left-white.svg" />
-        </div>            
+        </div>
         <div id="slider-left-content">
             <div class="outlet-list-panel">
                 <span style="margin-left:0px;" ng-show="showNoOutletFound">No outlet found</span>
@@ -94,11 +95,11 @@
             </div>                     
         </div>    
         <div id="paging-bar" ng-show="showNaviBar" >
-            <button ng-disabled="currentPage >= outlets.length/pageSize - 1" ng-click="currentPage=currentPage+1">
+            <button ng-disabled="currentPage >= outlets.length/pageSize - 1" ng-click="currentPage = currentPage+1">
                 <img src="assets/img/arrow-right.svg" />
             </button> 
              <div class="square-bar float-right white">
-                <span> {{currentPage+1}} / {{numberOfPages()}}</span>               
+                <span> {{numberOfPages() > 0 ? currentPage + 1 : 0}} / {{numberOfPages()}}</span>               
             </div>     
             <button ng-disabled="currentPage == 0" ng-click="currentPage=currentPage-1">                
                 <img src="assets/img/arrow-left.svg" />
@@ -130,9 +131,10 @@
         </div>        
     </div>
 
-     <div id="home-topright-test">      
-        <input placeholder="lat" ng-model="testlat" style="width:36px;height36px;">
-        <input placeholder="lng" ng-model="testlng" style="width:36px;height36px;" >        
+     <div id="home-topright-test" ng-show="config.enable_devmode">      
+        <input placeholder="acc" ng-model="testacc" style="width:50px;height36px;" type="number">
+        <input placeholder="lat" ng-model="testlat" style="width:50px;height36px;" type="number">
+        <input placeholder="lng" ng-model="testlng" style="width:50px;height36px;" type="number">
         <a ng-click="testChangeLocation()">SET<a/>
     </div>
 
@@ -166,6 +168,9 @@
                         </md-button>      
                          <md-button class="md-primary md-raised demo-menu-open-button" ng-click="syncOutlets()" style="width:124px">
                            SYNC <img src="assets/img/sync.svg" class="md-button-image">
+                        </md-button>     
+                        <md-button class="md-primary md-raised demo-menu-open-button" ng-click="downloadOutlets()" style="width:124px">
+                           DOWNLOAD <img src="assets/img/download.svg" class="md-button-image">
                         </md-button>                                          
                     </div>                                       
                 </form>
@@ -178,10 +183,10 @@
     </div>
 
     <div id="home-bottomright" >
-        <div class="cirle-button float-top blue" ng-click="createNewOutlet()">
+        <div class="square-button-small float-top blue" ng-click="createNewOutlet()">
             <img src="assets/img/add.svg" />
         </div>
-         <div class="cirle-button float-top white" ng-click="panToCurLocation()">
+         <div class="square-button-small float-top white" ng-click="panToCurLocation()">
             <img src="assets/img/curloccation.svg" />
         </div>        
     </div>      

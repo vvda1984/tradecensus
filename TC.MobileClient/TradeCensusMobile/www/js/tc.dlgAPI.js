@@ -2,10 +2,11 @@
 var dlgAcceptCallback;
 var dlgDenyCallback;
 
-function dlgClose(i) {
-	hideDlg();
+function dlgClose() {
+	log('Close dialog.');
 	if (dlgCloseCallback)
 		dlgCloseCallback();
+	hideDlg();	
 }
 
 function dlgConfirmClose(i) {
@@ -22,14 +23,13 @@ function dlgConfirmClose(i) {
 }
 
 function showDlg(title, message, callback) {
-	log("show dlg: " + message);
-
+	log("show dlg: " + message);	
 	if (isDlgOpened) {
 		$('#dlg-title').html(title);
 		$('#dlg-message').html(message);
 	} else {
 		var cover = null;
-		if (callback) {
+		if (callback) {			
 			dlgCloseCallback = callback;
 			cover =
                 '<div id="loading-overlay">' +
@@ -40,8 +40,8 @@ function showDlg(title, message, callback) {
                                 '<div id="dlg-message">' + message + '</div>' +
                             '</div>' +
                             '<div class="button label-blue" onclick="dlgClose()">' +
-                               '<div class="center" fit>CLOSE</div>' +
-                                '<paper-ripple fit></paper-ripple>' +
+                               	'<div class="center" fit>CLOSE</div>' +
+                            	'<paper-ripple fit></paper-ripple>' +
                             '</div>' +
                             //'<div class="button">'+
                             //    '<div class="center" fit>DECLINE</div>'+
@@ -72,14 +72,20 @@ function showDlg(title, message, callback) {
 }
 
 function setDlgMsg(message) {
+	log(message);
 	$('#dlg-message').html(message);
+}
+
+function setDlgTitle(title) {
+	log(title);
+	$('#dlg-title').html(title);
 }
 
 function hideDlg() {
 	try {
-		dlgCloseCallback = null;
-		dlgAcceptCallback = null;
-		dlgDenyCallback = null;
+		//dlgCloseCallback = null;
+		//dlgAcceptCallback = null;
+		//dlgDenyCallback = null;
 		$('#loading-overlay').remove();
 		isDlgOpened = false;
 	}

@@ -1,10 +1,4 @@
-﻿var devCurLat = 10.774812;
-var devCurLng = 106.702550;
-var devNewDetlta = 0.00001;
-var devNewLat = devCurLat + devNewDetlta;
-var devNewLng = devCurLng + devNewDetlta;
-
-// For todays date;
+﻿// For todays date;
 Date.prototype.today = function () {
     return this.getFullYear() + '-' + (((this.getMonth() + 1) < 10) ? "0" : "") + (this.getMonth() + 1) + '-' + ((this.getDate() < 10) ? "0" : "") + this.getDate();
 }
@@ -22,8 +16,13 @@ function networkReady() {
     // ANVO: DEBUG
     if (isDev)
         return true;   
-    var networkState = navigator.connection.type;
-    return (networkState != 'Unknown connection' && networkState != 'no network connection')
+    try{
+        var networkState = navigator.connection.type;
+        return (networkState != 'Unknown connection' && networkState != 'no network connection')
+    }
+    catch(er){
+        return true;
+    }
 }
 
 /** 

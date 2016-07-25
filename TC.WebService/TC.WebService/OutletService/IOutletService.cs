@@ -8,10 +8,10 @@ namespace TradeCensus
     public interface IOutletService
     {
         [OperationContract]
-        OutletResponse GetOutletIDsByProvince(string provinceID);
+        GetOutletIDResponse GetOutletsByProvince(string personID, string provinceID);
 
         [OperationContract]
-        GetOutletResponse GetOutletByID(string id);
+        GetOutletResponse GetOutletByID(string personID, string id);
 
         [OperationContract]
         GetOutletTypeResponse GetOutlets();

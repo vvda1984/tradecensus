@@ -18,50 +18,30 @@ namespace TradeCensus
         const byte ActionAudit = 3;
 
         public OutletRepo() : base("Outlet")
-        {            
+        {
         }
 
-        public List<int> GetByProvinceID(string provinceID)
+        public List<OutletShort> GetByProvinceID(int personID, string provinceID)
         {
+            ValidatePerson(personID);
             Log("Get outlet by province id: {0}", provinceID);
             var items = _entities.Outlets.Where(i => i.ProvinceID == provinceID);
             Log("Found {0} outlets of province {1}", items.Count(), provinceID);
-            List<int> ids = new List<int>();
-            foreach (var i in items) ids.Add(i.ID);
+            List<OutletShort> ids = new List<OutletShort>();
+            foreach (var i in items) ids.Add(new OutletShort { ID = i.ID, Name = i.Name });
             return ids;
         }
 
-        public OutletModel GetByID(string id)
+        public OutletModel GetByID(int personID, string id)
         {
+            ValidatePerson(personID);
             Log("Get outlet by id: {0}", id);
             var outlet = _entities.Outlets.FirstOrDefault(i => i.ID.ToString() == id);
             if (outlet != null)
                 Log("Found outlet {0}", id);
             else
                 Log("Found outlet {0} is missing", id);
-
-            return new OutletModel
-            {
-                ID = outlet.ID,
-                Name = outlet.Name,
-                AddLine = outlet.AddLine,
-                AddLine2 = outlet.AddLine2,
-                AreaID = outlet.AreaID,
-                CloseDate = outlet.CloseDate == null ? "" : outlet.CloseDate.Value.ToString("yyyy-mm-dd"),
-                District = outlet.District,
-                LastContact = outlet.LastContact,
-                Latitude = outlet.Latitude,
-                Longitude = outlet.Longitude,
-                Note = outlet.Note,
-                OTypeID = outlet.OTypeID,
-                OutletTypeName = GetOutletType(outlet.OTypeID),
-                OutletEmail = outlet.OutletEmail,
-                PersonID = outlet.PersonID,
-                Phone = outlet.Phone,
-                ProvinceID = outlet.ProvinceID,
-                Tracking = outlet.Tracking,
-                PRowID = outlet.PRowID.ToString(),
-            };
+            return ToOutletModel(outlet);
         }
 
         public List<OutletType> GetAllOutletTypes()
@@ -70,7 +50,26 @@ namespace TradeCensus
             return _entities.OutletTypes.ToList();
         }
 
-        public List<OutletModel> GetOutletByLocation(int personID, double lat, double lng, double meter, int count)
+        public List<OutletModel> GetOutletsByProvince(int personID, string provinceID)
+        {
+            var user = _entities.PersonRoles.FirstOrDefault(i => i.PersonID == personID);
+            if (user == null)
+                throw new Exception(string.Format("User {0} doesn't exist", personID));
+
+            List<OutletModel> res = new List<OutletModel>();
+            var query = (from i in _entities.Outlets
+                         where i.ProvinceID == provinceID
+                         select i);
+            if (query.Any())
+            {
+                var arr = query.ToArray();
+                foreach (var outlet in arr)
+                    res.Add(ToOutletModel(outlet));
+            }
+            return res;
+        }
+
+        public List<OutletModel> GetOutletsByLocation(int personID, double lat, double lng, double meter, int count)
         {
             var user = _entities.PersonRoles.FirstOrDefault(i => i.PersonID == personID);
             if (user == null)
@@ -100,11 +99,19 @@ namespace TradeCensus
             if (query.Any())
             {
                 var arr = query.ToArray();
+                Array.Sort(arr, delegate (Outlet o1, Outlet o2)
+                {
+                    if (o1.Distance == 0)
+                        o1.Distance = DistanceHelper.CalcDistance(curLocation, new Point { Lat = o1.Latitude, Lng = o1.Longitude });
+                    if (o2.Distance == 0)
+                        o2.Distance = DistanceHelper.CalcDistance(curLocation, new Point { Lat = o2.Latitude, Lng = o2.Longitude });
+                    return o1.Distance.CompareTo(o2.Distance);
+                });
                 int found = 0;
                 foreach (var outlet in arr)
-                {                    
-                    double distance = DistanceHelper.CalcDistance(curLocation, new Point { Lat = outlet.Latitude, Lng = outlet.Longitude });
-
+                {
+                    double distance = outlet.Distance;
+                    //DistanceHelper.CalcDistance(curLocation, new Point { Lat = outlet.Latitude, Lng = outlet.Longitude });
                     //value == "circle"
                     bool isMatched = string.Compare(method, "squard", StringComparison.OrdinalIgnoreCase) == 0;
                     if (string.Compare(method, "circle", StringComparison.OrdinalIgnoreCase) == 0)
@@ -112,59 +119,8 @@ namespace TradeCensus
 
                     if (isMatched)
                     {
-                        var foundOutlet = new OutletModel
-                        {
-                            ID = outlet.ID,
-                            Name = outlet.Name,
-                            AddLine = outlet.AddLine,
-                            AddLine2 = outlet.AddLine2,
-                            AreaID = outlet.AreaID,
-                            CloseDate = outlet.CloseDate == null ? "" : outlet.CloseDate.Value.ToString("yyyy-mm-dd"),
-                            IsOpened = outlet.CloseDate == null,
-                            District = outlet.District,
-                            LastContact = outlet.LastContact,
-                            LastVisit = outlet.LastVisit != null ? outlet.LastVisit.Value.ToString("yyyy-mm-dd") : "",
-                            Latitude = outlet.Latitude,
-                            Longitude = outlet.Longitude,
-                            Note = outlet.Note,
-                            OTypeID = outlet.OTypeID,
-                            OutletTypeName = GetOutletType(outlet.OTypeID),
-                            OutletEmail = outlet.OutletEmail,
-                            PersonID = outlet.PersonID,
-                            Phone = outlet.Phone,
-                            ProvinceID = outlet.ProvinceID,
-                            ProvinceName = GetProvinceName(outlet.ProvinceID),                            
-                            Tracking = outlet.Tracking,
-                            IsTracked = outlet.Tracking == 1,
-                            PRowID = outlet.PRowID.ToString(),
-                            PAction = 0,
-                            PNote = "",
-                            InputBy = outlet.InputBy,                            
-                            AmendBy = outlet.AmendBy,
-                            AmendDate = outlet.AmendDate.ToString("yyyy-MM-dd HH:mm:ss"),
-                            AuditStatus = outlet.AuditStatus,
-                            CreateDate = outlet.CreateDate.ToString("yyyy-MM-dd HH:mm:ss"),
-                            Distance = distance,
-                            OutletSource = 0,
-                            StringImage1 = "",
-                            StringImage2 = "",
-                            StringImage3 = "",
-                        };
-                        if (outlet.DEDISID > 0)
-                            foundOutlet.OutletSource = 1;
-                        else if (outlet.DISAlias != null)
-                            foundOutlet.OutletSource = string.IsNullOrEmpty(outlet.DISAlias.Trim()) ? 0 : 1;
-
-                        foundOutlet.FullAddress = string.Format("{0} {1} {2} {3}", outlet.AddLine, outlet.AddLine2, outlet.District, foundOutlet.ProvinceName);
-                        foundOutlet.FullAddress = foundOutlet.FullAddress.Trim().Replace("  ", " ");
-
-                        var outletImg = outlet.OutletImages.FirstOrDefault();
-                        if (outletImg != null)
-                        {
-                            foundOutlet.StringImage1 = outletImg.Image1;
-                            foundOutlet.StringImage2 = outletImg.Image2;
-                            foundOutlet.StringImage3 = outletImg.Image3;
-                        }
+                        var foundOutlet = ToOutletModel(outlet);
+                        foundOutlet.Distance = distance;
                         res.Add(foundOutlet);
                         found++;
                     }
@@ -172,6 +128,63 @@ namespace TradeCensus
                 }
             }
             return res;
+        }
+
+        private OutletModel ToOutletModel(Outlet outlet)
+        {
+            var foundOutlet = new OutletModel
+            {
+                ID = outlet.ID,
+                Name = outlet.Name,
+                AddLine = outlet.AddLine,
+                AddLine2 = outlet.AddLine2,
+                AreaID = outlet.AreaID,
+                CloseDate = outlet.CloseDate == null ? "" : outlet.CloseDate.Value.ToString("yyyy-mm-dd"),
+                IsOpened = outlet.CloseDate == null,
+                District = outlet.District,
+                LastContact = outlet.LastContact,
+                LastVisit = outlet.LastVisit != null ? outlet.LastVisit.Value.ToString("yyyy-mm-dd") : "",
+                Latitude = outlet.Latitude,
+                Longitude = outlet.Longitude,
+                Note = outlet.Note,
+                OTypeID = outlet.OTypeID,
+                OutletTypeName = GetOutletType(outlet.OTypeID),
+                OutletEmail = outlet.OutletEmail,
+                PersonID = outlet.PersonID,
+                Phone = outlet.Phone,
+                ProvinceID = outlet.ProvinceID,
+                ProvinceName = GetProvinceName(outlet.ProvinceID),
+                Tracking = outlet.Tracking,
+                IsTracked = outlet.Tracking == 1,
+                PRowID = outlet.PRowID.ToString(),
+                PAction = 0,
+                PNote = "",
+                InputBy = outlet.InputBy,
+                AmendBy = outlet.AmendBy,
+                AmendDate = outlet.AmendDate.ToString("yyyy-MM-dd HH:mm:ss"),
+                AuditStatus = outlet.AuditStatus,
+                CreateDate = outlet.CreateDate.ToString("yyyy-MM-dd HH:mm:ss"),
+                OutletSource = 0,
+                StringImage1 = "",
+                StringImage2 = "",
+                StringImage3 = "",
+            };
+            if (outlet.DEDISID > 0)
+                foundOutlet.OutletSource = 1;
+            else if (outlet.DISAlias != null)
+                foundOutlet.OutletSource = string.IsNullOrEmpty(outlet.DISAlias.Trim()) ? 0 : 1;
+
+            foundOutlet.FullAddress = string.Format("{0} {1} {2} {3}", outlet.AddLine, outlet.AddLine2, outlet.District, foundOutlet.ProvinceName);
+            foundOutlet.FullAddress = foundOutlet.FullAddress.Trim().Replace("  ", " ");
+
+            var outletImg = outlet.OutletImages.FirstOrDefault();
+            if (outletImg != null)
+            {
+                foundOutlet.StringImage1 = outletImg.Image1;
+                foundOutlet.StringImage2 = outletImg.Image2;
+                foundOutlet.StringImage3 = outletImg.Image3;
+            }
+            return foundOutlet;
         }
 
         public string SaveOutlet(OutletModel outlet)
@@ -465,5 +478,10 @@ namespace TradeCensus
             return newP;
         }
 
+    }
+
+    partial class Outlet
+    {
+        public double Distance { get; set; }
     }
 }

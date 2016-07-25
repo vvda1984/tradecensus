@@ -1,7 +1,7 @@
 ﻿
 var resetDB = false;                // force reset database - testing only
 var db;                             // database instance
-var isDev = true;                  // enable DEV mode
+var isDev = false;                  // enable DEV mode
 
 var userOutletTable = 'outlet';     // outlet table name for current user
 var isDlgOpened = false;            //  
@@ -88,12 +88,13 @@ function newConfig() {
         cluster_max_zoom: 15.5,
         mode_online: true,
         protocol: 'https',
-        ip: '203.34.144.29',
+        ip: '203.34.144.29/trade-census',
         port: '443',
         //ip: 'localhost', //'27.0.15.234',
         //port: '33334',//'3001',
         service_name: 'TradeCensusService.svc',
         enable_liveGPS: true,
+        enable_devmode: isDev,
         map_zoom: 16,
         distance: 200,
         item_count: 20,

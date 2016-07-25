@@ -73,15 +73,15 @@ namespace TradeCensus
         }
 
         //[WebGet(UriTemplate = "outlet/getbyprovince/{provinceID}", ResponseFormat = WebMessageFormat.Json)]
-        [WebInvoke(Method = "POST", UriTemplate = "outlet/getbyprovince/{provinceID}", ResponseFormat = WebMessageFormat.Json)]
-        public OutletResponse GetOutletIDsByProvince(string provinceID)
+        [WebInvoke(Method = "POST", UriTemplate = "outlet/getbyprovince/{personID}/{provinceID}", ResponseFormat = WebMessageFormat.Json)]
+        public GetOutletIDResponse GetOutletsByProvince(string personID, string provinceID)
         {
             using (var repo = new OutletRepo())
             {
-                var resp = new OutletResponse();
+                var resp = new GetOutletIDResponse();
                 try
                 {
-                    resp.IDs = repo.GetByProvinceID(provinceID);
+                    resp.Outlets = repo.GetByProvinceID(int.Parse(personID), provinceID);
                 }
                 catch (Exception ex)
                 {
@@ -93,15 +93,15 @@ namespace TradeCensus
         }
 
         //[WebGet(UriTemplate = "outlet/get/{id}", ResponseFormat = WebMessageFormat.Json)]
-        [WebInvoke(Method = "POST", UriTemplate = "outlet/get/{id}", ResponseFormat = WebMessageFormat.Json)]
-        public GetOutletResponse GetOutletByID(string id)
+        [WebInvoke(Method = "POST", UriTemplate = "outlet/get/{personID}/{id}", ResponseFormat = WebMessageFormat.Json)]
+        public GetOutletResponse GetOutletByID(string personID, string id)
         {
             using (var repo = new OutletRepo())
             {
                 var resp = new GetOutletResponse();
                 try
                 {
-                    resp.Item = repo.GetByID(id);
+                    resp.Item = repo.GetByID(int.Parse(personID), id);
                 }
                 catch (Exception ex)
                 {
@@ -140,7 +140,7 @@ namespace TradeCensus
                 var resp = new GetOutletListResponse();
                 try
                 {
-                    resp.Items = repo.GetOutletByLocation(int.Parse(personID),
+                    resp.Items = repo.GetOutletsByLocation(int.Parse(personID),
                                                         Convert.ToDouble(lat),
                                                         Convert.ToDouble(lng),
                                                         Convert.ToDouble(meter),
