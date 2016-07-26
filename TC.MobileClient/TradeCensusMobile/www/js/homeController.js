@@ -1124,11 +1124,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
    
 
     //*************************************************************************
-    try {
-        //if (isRegisterNetworkChanged) {
-        //    document.addEventListener("online", loadMapApi, false);
-        //    document.addEventListener("resume", loadMapApi, false);
-        //}         
+    try {        
         locationChangedCallback = handleLocationChange;
         mapClickedCallback = function(){ 
             $scope.hideDropdown();

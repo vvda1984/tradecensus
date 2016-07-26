@@ -198,6 +198,7 @@ function loginController($scope, $http) {
                         syncProvinces = config.tbl_province_ver != p.Value;
                         config.tbl_province_ver = p.Value;
                     } else if (p.Key == 'tbl_zone_ver') {
+
                     }
                 }
 

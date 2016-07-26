@@ -1,7 +1,7 @@
 ﻿
 var resetDB = false;                // force reset database - testing only
 var db;                             // database instance
-var isDev = false;                  // enable DEV mode
+var isDev = true;                  // enable DEV mode
 
 var userOutletTable = 'outlet';     // outlet table name for current user
 var isDlgOpened = false;            //  
@@ -9,8 +9,8 @@ var isInitialize = false;
 var enableSync = false;
 var onImageViewerClose;
 var newImageFile;
-var user = newUser();
 var userID = 0;
+var user = newUser();
 var resource = newResource();
 var config = newConfig();
 var provinces = [];
@@ -18,7 +18,9 @@ var outletTypes = [];
 var provinces = [];
 var outletTypes = [];
 var baseURL = '';
-var isRegisterNetworkChanged = false;
+
+var isNetworkAvailable = true;      // Network monitoring status
+var onNetworkChangedCallback;       // Network monitoring callback
 
 var app = angular.module('TradeCensus', ['ngRoute', 'ngMaterial', 'ngMessages'])
 .config(['$routeProvider', appRouter])
@@ -41,7 +43,8 @@ var app = angular.module('TradeCensus', ['ngRoute', 'ngMaterial', 'ngMessages'])
     function onDeviceReady() {
         // disable back button
         document.addEventListener("backbutton", function (e) { e.preventDefault(); }, false);
-        //document.addEventListener("online", loadMapApi, false);
+        document.addEventListener("online", onNetworkConnected, false);
+        document.addEventListener("offline", onNetworkDisconnected, false);
         //document.addEventListener("resume", loadMapApi, false);
 
         initializeEnvironment(function(){
@@ -267,6 +270,30 @@ function initializeApp() {
     hideDlg();    
     startSyncProgress();
 };
+
+function onNetworkConnected() {
+    //states[Connection.UNKNOWN] = 'Unknown connection';
+    //states[Connection.ETHERNET] = 'Ethernet connection';
+    //states[Connection.WIFI] = 'WiFi connection';
+    //states[Connection.CELL_2G] = 'Cell 2G connection';
+    //states[Connection.CELL_3G] = 'Cell 3G connection';
+    //states[Connection.CELL_4G] = 'Cell 4G connection';
+    //states[Connection.CELL] = 'Cell generic connection';
+    //states[Connection.NONE] = 'No network connection';
+
+    var networkState = navigator.connection.type;
+    isNetworkAvailable = (networkState !== Connection.NONE && networkState !== Connection.UNKNOWN)
+    log('Network status: ' + networkState);
+    if (onNetworkChangedCallback)
+        onNetworkChangedCallback(true);
+}
+
+function onNetworkDisconnected() {
+    log('Network disconnected');
+    isNetworkAvailable = false
+    if (onNetworkChangedCallback)
+        onNetworkChangedCallback(false);
+}
 
 //******************************************
 var syncExecuter;
