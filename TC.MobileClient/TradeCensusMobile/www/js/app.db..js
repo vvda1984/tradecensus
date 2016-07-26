@@ -1,106 +1,219 @@
-﻿/**
-* Initialize database
-*/
-function initalizeDB(onSuccess) {
-    //db = window.sqlitePlugin.openDatabase({ name: "td-v01.db", location: 'default' });
-    db = window.openDatabase("Database", "2.0", "tc-v2.db", 200000);
-    db.transaction(function (tx) {
-        if (resetDB) {
-            tx.executeSql('DROP TABLE IF EXISTS person');
-            tx.executeSql('DROP TABLE IF EXISTS config');
-            tx.executeSql('DROP TABLE IF EXISTS province');
-            tx.executeSql('DROP TABLE IF EXISTS outletType');        
-            tx.executeSql('DROP TABLE IF EXISTS outletImage');        
-        }
-
-        log("ensure table [user] exist");
-        tx.executeSql('CREATE TABLE IF NOT EXISTS [user] ( [ID] integer PRIMARY KEY NOT NULL, [UserName] text, [FirstName] text, [LastName] text, [IsTerminate] text NOT NULL,	[HasAuditRole] text NOT NULL COLLATE NOCASE, [PosID] text NOT NULL COLLATE NOCASE, [ZoneID] text NOT NULL COLLATE NOCASE, [AreaID] text NOT NULL COLLATE NOCASE, [ProvinceID] text NOT NULL COLLATE NOCASE, [Email] text, [EmailTo] text, [HouseNo] text, [Street] text, [District] text, [HomeAddress] text, [WorkAddress] text, [Phone] text, [OfflinePassword] text NOT NULL)');
-
-        log("ensure table [config] exist");
-        tx.executeSql('CREATE TABLE IF NOT EXISTS [config] ( [Name] text PRIMARY KEY NOT NULL COLLATE NOCASE, [Value] text)');
-
-        log("ensure table [province] exist");
-        tx.executeSql('CREATE TABLE IF NOT EXISTS [province] ( [ID] text PRIMARY KEY NOT NULL, [Name] text COLLATE NOCASE)');
-       
-        log("ensure table [outletType] exist");
-        tx.executeSql('CREATE TABLE IF NOT EXISTS [outletType] ( [ID] text PRIMARY KEY NOT NULL, [Name] text COLLATE NOCASE, [OGroupID] text COLLATE NOCASE, [KPIType] int NOT NULL)');
-
-        log("ensure table [outletImage] exist");
-        tx.executeSql('CREATE TABLE IF NOT EXISTS [outletImage] ( [ID] text PRIMARY KEY NOT NULL, [OutletID] int NOT NULL, [ImageIndex] int NOT NULL, [ImagePath] text NOT NULL, [Uploaded] int NOT NULL, [CreatedDate] text NOT NULL, [CreatedBy] int NOT NULL )');
-
-        //log("ensure table [outletSync] exist");
-        //tx.executeSql('CREATE TABLE IF NOT EXISTS [outletSync] ( [ID] text PRIMARY KEY NOT NULL, [PersonID] integer NOT NULL, [LastSyncTS] text NOT NULL)');
-
-        log("initialized db successfully");
-        initializeProvinces(tx, onSuccess);
-    });    
-}
-
-function logSqlCommand(sql) {
-    //log("SQL: " + sql);
-}
-
-function resetLocalDB(outlettable, callback){
-    db.transaction(function (tx) {    
-        tx.executeSql('DROP TABLE IF EXISTS person');
-        tx.executeSql('DROP TABLE IF EXISTS config');
-        tx.executeSql('DROP TABLE IF EXISTS province');
-        tx.executeSql('DROP TABLE IF EXISTS outletType');        
-        tx.executeSql('DROP TABLE IF EXISTS outletImage');        
-
-        log("Reset table [user] exist");
-        tx.executeSql('CREATE TABLE IF NOT EXISTS [user] ( [ID] integer PRIMARY KEY NOT NULL, [UserName] text, [FirstName] text, [LastName] text, [IsTerminate] text NOT NULL,	[HasAuditRole] text NOT NULL COLLATE NOCASE, [PosID] text NOT NULL COLLATE NOCASE, [ZoneID] text NOT NULL COLLATE NOCASE, [AreaID] text NOT NULL COLLATE NOCASE, [ProvinceID] text NOT NULL COLLATE NOCASE, [Email] text, [EmailTo] text, [HouseNo] text, [Street] text, [District] text, [HomeAddress] text, [WorkAddress] text, [Phone] text, [OfflinePassword] text NOT NULL)');
-
-        log("ensure table [config] exist");
-        tx.executeSql('CREATE TABLE IF NOT EXISTS [config] ( [Name] text PRIMARY KEY NOT NULL COLLATE NOCASE, [Value] text)');
-
-        log("ensure table [province] exist");
-        tx.executeSql('CREATE TABLE IF NOT EXISTS [province] ( [ID] text PRIMARY KEY NOT NULL, [Name] text COLLATE NOCASE)');
-       
-        log("ensure table [outletType] exist");
-        tx.executeSql('CREATE TABLE IF NOT EXISTS [outletType] ( [ID] text PRIMARY KEY NOT NULL, [Name] text COLLATE NOCASE, [OGroupID] text COLLATE NOCASE, [KPIType] int NOT NULL)');
-
-        log("ensure table [outletImage] exist");
-        tx.executeSql('CREATE TABLE IF NOT EXISTS [outletImage] ( [ID] text PRIMARY KEY NOT NULL, [OutletID] int NOT NULL, [ImageIndex] int NOT NULL, [ImagePath] text NOT NULL, [Uploaded] int NOT NULL, [CreatedDate] text NOT NULL, [CreatedBy] int NOT NULL )');
+﻿function tcdb(name, version){
+    this.name = name;
+    this.version = version;    
+    this.db = window.openDatabase('Database', '2.0',  name + '-v' + version + '.db', 200000);
+    this.syncTable = 'sync_';
+    this.outletTable = 'outlet_';
     
-        log("Reset local database successfully");
-        initializeProvinces(tx, onSuccess);
-    });    
-}
+    /*****************************************************************
+     * Clean outlet data     
+     */
+    this.cleanOutletData = function (tx) {
+        log('Delete data in [config]');
+        tx.executeSql('DELETE FROM [' + syncTable + ']');
 
-function insertUserDB(person, userName, password, onSuccess, onError) {
-    db.transaction(function (tx) {
-        log(person);        
-        var sql = "INSERT OR REPLACE INTO [user] VALUES (";
-        sql = sql.concat(person.ID.toString(), ", ");
-        sql = sql.concat("'", userName, "', ");
-        sql = sql.concat("'", person.FirstName, "', ");
-        sql = sql.concat("'", person.LastName, "', ");
-        sql = sql.concat("'", person.IsTerminate ? "1" : "0", "', ");
-        sql = sql.concat("'", person.HasAuditRole ? "1" : "0", "', ");
-        sql = sql.concat("'", person.PosID.toString(), "', ");
-        sql = sql.concat("'", person.ZoneID, "', ");
-        sql = sql.concat("'", person.AreaID, "', ");
-        sql = sql.concat("'", person.ProvinceID, "', ");
-        sql = sql.concat("'", toStr(person.Email), "', ");
-        sql = sql.concat("'", toStr(person.EmailTo), "', ");
-        sql = sql.concat("'", toStr(person.HouseNo), "', ");
-        sql = sql.concat("'", toStr(person.Street), "', ");
-        sql = sql.concat("'", toStr(person.District), "', ");
-        sql = sql.concat("'", toStr(person.HomeAddress), "', ");
-        sql = sql.concat("'", toStr(person.WorkAddress), "', ");
-        sql = sql.concat("'", toStr(person.Phone), "', ");
-        sql = sql.concat("'", hashString(password), "')");
+        log('Delete data in [' + outletTable + ']');
+        tx.executeSql('DELETE FROM [' + outletTable + ']');    
+    }
+
+    /*****************************************************************
+     * Clean outlet databases     
+     */
+    this.cleanGlobalData = function (tx) {        
+        //tx.executeSql('delete from [user]');
+       
+        log('Delete data in [config]');
+        tx.executeSql('DELETE FROM [config]');
+
+        log('Delete data in [outletType');
+        tx.executeSql('DELETE FROM [outletType]');
+
+        log('Delete data in [outletImage]');
+        tx.executeSql('DELETE FROM [outletImage]');    
+    }
+
+    /*****************************************************************
+     * Create global tables     
+     */
+    this.createGlobalTables = function (tx) {
+        log('Ensure table [user] exist');
+        tx.executeSql(tableUser());
+
+        log('Ensure table [config] exist');
+        tx.executeSql(tableConfig());
+
+        log('Ensure table [province] exist');
+        tx.executeSql(tableProvince());
+
+        log('Ensure table [outletType] exist');
+        tx.executeSql(tableOutletType());
+
+        log('Ensure table [outletImage] exist');
+        tx.executeSql(tableOutletImage());
+    }
+
+    /*****************************************************************
+     * Create outlet tables     
+     */
+    this.createOutletTables = function (tx, synctableName, outlettableName) {
+        log('Ensure table [' + synctableName + '] exist');
+        tx.executeSql(tableOutletSync());
+
+        log('Ensure table [' + outlettableName + '] exist');
+        tx.executeSql(tableOutlet());       
+    }    
+
+    /*****************************************************************
+     * Initialize database     
+     */
+    this.initialize = function (callback) {  
+        db.transaction(function (tx) {
+            if (resetDB) {                
+                tx.executeSql('DROP TABLE IF EXISTS [user]');
+                tx.executeSql('DROP TABLE IF EXISTS [config]');
+                tx.executeSql('DROP TABLE IF EXISTS [province]');
+                tx.executeSql('DROP TABLE IF EXISTS [outletType]');        
+                tx.executeSql('DROP TABLE IF EXISTS [outletImage]');        
+            }
+
+            createGlobalTables();            
+            log("Initialized database successfully");
+
+            insertProvinces(tx, callback);
+        });    
+    }
+
+    /*****************************************************************
+     * Initialize database    
+     */
+    this.insertProvinces = function (tx, callback) {  
+        tx.executeSql("SELECT * FROM province", [], function (tx1, dbres) {
+            if (dbres.rows.length == 0) {
+                tx1.executeSql(sqlInsertProvince('11', 'Cao Bằng'));
+                tx1.executeSql(sqlInsertProvince('12', 'Lạng Sơn'));
+                tx1.executeSql(sqlInsertProvince('14', 'Quảng Ninh'));
+                tx1.executeSql(sqlInsertProvince('15', 'Hải Phòng'));
+                tx1.executeSql(sqlInsertProvince('17', 'Thái Bình'));
+                tx1.executeSql(sqlInsertProvince('18', 'Nam Định'));
+                tx1.executeSql(sqlInsertProvince('19', 'Phú Thọ'));
+                tx1.executeSql(sqlInsertProvince('20', 'Thái Nguyên'));
+                tx1.executeSql(sqlInsertProvince('21', 'Yên Bái'));
+                tx1.executeSql(sqlInsertProvince('22', 'Tuyên Quang'));
+                tx1.executeSql(sqlInsertProvince('23', 'Hà Giang'));
+                tx1.executeSql(sqlInsertProvince('24', 'Lào Cai'));
+                tx1.executeSql(sqlInsertProvince('25', 'Lai Châu'));
+                tx1.executeSql(sqlInsertProvince('26', 'Sơn La'));
+                tx1.executeSql(sqlInsertProvince('28', 'Hòa Bình'));
+                tx1.executeSql(sqlInsertProvince('29', 'Hà Tây'));
+                tx1.executeSql(sqlInsertProvince('32', 'Hà Nội'));
+                tx1.executeSql(sqlInsertProvince('34', 'Hải Dương'));
+                tx1.executeSql(sqlInsertProvince('35', 'Ninh Bình'));
+                tx1.executeSql(sqlInsertProvince('36', 'Thanh Hóa'));
+                tx1.executeSql(sqlInsertProvince('37', 'Nghệ An'));
+                tx1.executeSql(sqlInsertProvince('38', 'Hà Tĩnh'));
+                tx1.executeSql(sqlInsertProvince('43', 'Đà Nẵng'));
+                tx1.executeSql(sqlInsertProvince('47', 'Đắc Lắc'));
+                tx1.executeSql(sqlInsertProvince('48', 'Đắc Nông'));
+                tx1.executeSql(sqlInsertProvince('49', 'Lâm Đồng'));
+                tx1.executeSql(sqlInsertProvince('50', 'Hồ Chí Minh'));
+                tx1.executeSql(sqlInsertProvince('60', 'Đồng Nai'));
+                tx1.executeSql(sqlInsertProvince('61', 'Bình Dương'));
+                tx1.executeSql(sqlInsertProvince('62', 'Long An'));
+                tx1.executeSql(sqlInsertProvince('63', 'Tiền Giang'));
+                tx1.executeSql(sqlInsertProvince('64', 'Vĩnh Long'));
+                tx1.executeSql(sqlInsertProvince('65', 'Cần Thơ'));
+                tx1.executeSql(sqlInsertProvince('66', 'Đồng Tháp'));
+                tx1.executeSql(sqlInsertProvince('67', 'An Giang'));
+                tx1.executeSql(sqlInsertProvince('68', 'Kiên Giang'));
+                tx1.executeSql(sqlInsertProvince('69', 'Cà Mau'));
+                tx1.executeSql(sqlInsertProvince('70', 'Tây Ninh'));
+                tx1.executeSql(sqlInsertProvince('71', 'Bến Tre'));
+                tx1.executeSql(sqlInsertProvince('72', 'Bà Rịa-VũngTàu'));
+                tx1.executeSql(sqlInsertProvince('73', 'Quảng Bình'));
+                tx1.executeSql(sqlInsertProvince('74', 'Quảng Trị'));
+                tx1.executeSql(sqlInsertProvince('75', 'Thừa Thiên-Huế'));
+                tx1.executeSql(sqlInsertProvince('76', 'Quảng Ngãi'));
+                tx1.executeSql(sqlInsertProvince('77', 'Bình Định'));
+                tx1.executeSql(sqlInsertProvince('78', 'Phú Yên'));
+                tx1.executeSql(sqlInsertProvince('79', 'Khánh Hòa'));
+                tx1.executeSql(sqlInsertProvince('81', 'Gia Lai'));
+                tx1.executeSql(sqlInsertProvince('82', 'Kon Tum'));
+                tx1.executeSql(sqlInsertProvince('83', 'Sóc Trăng'));
+                tx1.executeSql(sqlInsertProvince('84', 'Trà Vinh'));
+                tx1.executeSql(sqlInsertProvince('85', 'Ninh Thuận'));
+                tx1.executeSql(sqlInsertProvince('86', 'Bình Thuận'));
+                tx1.executeSql(sqlInsertProvince('88', 'Vĩnh Phúc'));
+                tx1.executeSql(sqlInsertProvince('89', 'Hưng Yên'));
+                tx1.executeSql(sqlInsertProvince('90', 'Hà Nam'));
+                tx1.executeSql(sqlInsertProvince('92', 'Quảng Nam'));
+                tx1.executeSql(sqlInsertProvince('93', 'Bình Phước'));
+                tx1.executeSql(sqlInsertProvince('94', 'Bạc Liêu'));
+                tx1.executeSql(sqlInsertProvince('95', 'Hậu Giang'));
+                tx1.executeSql(sqlInsertProvince('97', 'Bắc Kạn'));
+                tx1.executeSql(sqlInsertProvince('98', 'Bắc Giang'));
+                tx1.executeSql(sqlInsertProvince('99', 'Bắc Ninh'));
+
+                log('Add provinces completed.');
+                callback();
+            }
+            else {
+                log('Provinces have been existed already.');
+                callback();
+            }
+        }, function (dberr) {
+            log('Database error:')
+            log(dberr);
+            callback();
+        });
+    }
+
+    /*****************************************************************
+     * Log Sql Command  
+     */
+    this.logSqlCommand = function (sql) {
+        //log("SQL: " + sql);
+    }
+
+    /*****************************************************************
+     * Insert User 
+     */
+    this.insertUser = function (person, userName, password, onSuccess, onError) {
+        db.transaction(function (tx) {
+            log(person);        
+            var sql = "INSERT OR REPLACE INTO [user] VALUES (";
+            sql = sql.concat(person.ID.toString(), ", ");
+            sql = sql.concat("'", userName, "', ");
+            sql = sql.concat("'", person.FirstName, "', ");
+            sql = sql.concat("'", person.LastName, "', ");
+            sql = sql.concat("'", person.IsTerminate ? "1" : "0", "', ");
+            sql = sql.concat("'", person.HasAuditRole ? "1" : "0", "', ");
+            sql = sql.concat("'", person.PosID.toString(), "', ");
+            sql = sql.concat("'", person.ZoneID, "', ");
+            sql = sql.concat("'", person.AreaID, "', ");
+            sql = sql.concat("'", person.ProvinceID, "', ");
+            sql = sql.concat("'", toStr(person.Email), "', ");
+            sql = sql.concat("'", toStr(person.EmailTo), "', ");
+            sql = sql.concat("'", toStr(person.HouseNo), "', ");
+            sql = sql.concat("'", toStr(person.Street), "', ");
+            sql = sql.concat("'", toStr(person.District), "', ");
+            sql = sql.concat("'", toStr(person.HomeAddress), "', ");
+            sql = sql.concat("'", toStr(person.WorkAddress), "', ");
+            sql = sql.concat("'", toStr(person.Phone), "', ");
+            sql = sql.concat("'", hashString(password), "')");
+            logSqlCommand(sql);
+            tx.executeSql(sql, [], onSuccess, onError);
+        });
+    }
+    
+    this.loadSettings = function(tx, onSuccess, onError) {
+        var sql = "SELECT * FROM config";
         logSqlCommand(sql);
         tx.executeSql(sql, [], onSuccess, onError);
-    });
+    }
 }
 
-function selectSettingDB(tx, onSuccess, onError) {
-    var sql = "SELECT * FROM config";
-    logSqlCommand(sql);
-    tx.executeSql(sql, [], onSuccess, onError);
-}
+
+
 
 function selectConfigs(onSuccess, onError) {
     db.transaction(function (tx) {

@@ -37,10 +37,10 @@
                         </div>-->
                     </md-input-container>
                 </div>
-                 <div layout-gt-sm="row">                  
+                 <div layout-gt-sm="row" ng-show="config.enable_devmode">                  
                     <md-input-container class="md-block" flex-gt-sm="">
                         <label>{{ resource.text_Distance }}</label>
-                        <input type="number" required="" name="distance" ng-model="config.distance">
+                        <input type="number" required="" name="distance" ng-model="config.distance" >
                         <!--<div ng-messages="configForm.ipAddress.$error" role="alert">
                             <div ng-message="required">{{ resource.text_ValRequired }}</div>
                         </div>-->
@@ -53,7 +53,7 @@
                             </div>-->
                         </md-input-container>
                  </div>              
-                 <div layout-gt-sm="row">
+                 <div layout-gt-sm="row" ng-show="config.enable_devmode">
                     <md-input-container class="md-block" flex-gt-sm="">
                         <label>Outlet Page Size</label>
                         <input type="number" required="" name="page_size" ng-model="config.page_size">                  
