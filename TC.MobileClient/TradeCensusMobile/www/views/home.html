@@ -38,7 +38,7 @@
         </div>
         <div id="slider-left-content">
             <div class="outlet-list-panel">
-                <span style="margin-left:0px;" ng-show="showNoOutletFound">No outlet found</span>
+                <span style="margin-left:0px; color:red" ng-show="showNoOutletFound">No outlet found</span>
                 <table class="outlet-table" ng-repeat="outlet in outlets |  startFrom:currentPage*pageSize | limitTo:pageSize " ng-click="hideDropdown()">
                     <tr>
                         <td class="outlet-indicator">
@@ -56,31 +56,41 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td class="normal-text black-color" colspan="3">
+                                    <td class="normal-text black-color" colspan="2">
                                         <span class="small-text gray-color" ng-show="viewOutletFull">Address: </span>
                                         <span class="normal-text black-color">{{outlet.FullAddress}}</span>
+                                    </td>
+                                    <td class="normal-text black-color" ng-show="viewOutletFull">
+                                        <span class="small-text gray-color">Last Visit: </span>
+                                        <span class="normal-text black-color">{{outlet.LastVisit}}</span>
                                     </td>
                                     <td ng-show="viewOutletFull">
                                         <span class="small-text gray-color">Closed Date: </span>
                                         <span class="normal-text black-color">{{outlet.CloseDate ? outlet.CloseDate : "-"}}</span>
                                     <td>
                                 </tr>
-                                <tr ng-show="viewOutletFull">
+                                <tr>
                                     <td>
-                                        <span class="small-text gray-color">Outlet Type: </span>
+                                        <span class="small-text gray-color" ng-show="viewOutletFull">Outlet Type: </span>
                                         <span class="normal-text black-color">{{outlet.OutletTypeName}}</span>
                                     </td>
-                                    <td>
+                                    <td ng-show="viewOutletFull">
                                         <span class="small-text gray-color">Phone: </span>
                                         <span class="normal-text black-color">{{outlet.Phone}}</span>
                                     </td>
-                                    <td>
+                                    <td ng-show="viewOutletFull">
                                         <span class="small-text gray-color">Last Contact: </span>
                                         <span class="normal-text black-color">{{outlet.LastContact ? outlet.LastContact : "-"}}</span>
                                     </td>   
-                                    <td>
+                                    <td ng-show="viewOutletFull">
                                         <span class="small-text gray-color">Tracking: </span>
                                         <span class="normal-text black-color">{{outlet.IsTracked ? "Yes" : "No"}}</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span class="small-text gray-color" ng-show="viewOutletFull">SR/DSM Name: </span>
+                                        <span class="normal-text black-color">{{outlet.ExtractName}}</span>
                                     </td>
                                 </tr>
                                 <tr>
@@ -138,6 +148,12 @@
         <a ng-click="testChangeLocation()">SET<a/>
     </div>
 
+     <div id="home-topright-offline">      
+       <div class=" square-box float-right">
+            <span>You are in Offline mode!</span>
+        </div>         
+    </div>
+
     <div id="configPanel" class="slider-right" >
 		<!--<div class=hidden-overlay" ng-click="showRightPanel()"></div> -->
         <div id="slider-right-content">            
@@ -157,24 +173,34 @@
                         <label>Outlet Page Size</label>
                         <input type="number" required="" name="page_size" ng-model="config.page_size">                  
                     </md-input-container>
-                  
-                    <div class="md-block-item" style="margin-bottom:0px;margin-top:-12px;">
-                        <div class="md-block-item-title">Mode</div>
-                        <md-switch class="md-primary" ng-model="config.mode_online">{{config.mode_online ? "Online" : "Offline"}}</md-switch>
-                    </div>     
-                    <div class="md-block-item" style="margin-bottom:0px;">                        
-                        <md-button class="md-primary md-raised demo-menu-open-button" ng-click="changeView('login')" style="width:124px">
-                           LOGOUT <img src="assets/img/logout.svg" class="md-button-image">
-                        </md-button>      
-                         <md-button class="md-primary md-raised demo-menu-open-button" ng-click="syncOutlets()" style="width:124px">
-                           SYNC <img src="assets/img/sync.svg" class="md-button-image">
-                        </md-button>     
-                        <md-button class="md-primary md-raised demo-menu-open-button" ng-click="downloadOutlets()" style="width:124px">
-                           DOWNLOAD <img src="assets/img/download.svg" class="md-button-image">
-                        </md-button>                                          
-                    </div>                                       
+
+                    <md-input-container class="md-block" flex-gt-sm="" style="margin-bottom:20px;">
+                        <label>{{ resource.text_EnterProvince }}</label>
+                        <md-select ng-model="config.province_id">
+                            <md-option ng-repeat="p in provinces" value="{{p.id}}">
+                                {{p.name}}
+                            </md-option>
+                        </md-select>
+                    </md-input-container>
                 </form>
-            </md-content>                            
+            </md-content>
+
+            <div style="position:absolute; bottom:4px; right:8px; height:64px; left:8px;z-index:3">
+                 <div class="text-button float-left" ng-click="downloadOutlets('login')">
+                    <div><img src="assets/img/download.svg"></div>
+                    <div class="title">DOWNLOAD</div>
+                </div>
+
+                <div class="text-button float-left" ng-click="syncOutlets('login')">
+                    <div><img src="assets/img/sync.svg"></div>
+                    <div class="title">SYNC</div>
+                </div>
+
+                <div class="text-button float-left" ng-click="changeView('login')">
+                    <div><img src="assets/img/logout.svg"></div>
+                    <div class="title">LOGOUT</div>
+                </div>
+            </div>              
         </div>
     </div>
 
@@ -191,4 +217,3 @@
         </div>        
     </div>      
 </div>
-

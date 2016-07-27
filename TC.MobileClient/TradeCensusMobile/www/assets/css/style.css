@@ -732,3 +732,33 @@ hr {
     height: 24px;
     width: 24px;
 }
+
+/****************************************/
+.province-table {    
+    border-collapse: collapse;
+    width: 400px;
+    margin: 12px;    
+}
+
+.province-table td, th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+    height: 28px;
+}
+
+.province-table span {
+    font-style: italic;
+}
+
+.province-table img {
+    height: 24px;
+    width: 24px;
+    margin-top: 2px;
+}
+
+/*
+.province-table tr:nth-child(even) {
+    background-color: #dddddd;
+}
+*/

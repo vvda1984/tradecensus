@@ -30,7 +30,7 @@ function networkReady() {
         log('Network status: ' + networkState);
         return (networkState !== Connection.NONE && networkState !== Connection.UNKNOWN)
     }
-    catch(er){
+    catch(err){
         return true;
     }
 }

@@ -9,11 +9,36 @@ function loginController($scope, $http) {
     }
 
     $scope.resource = resource;
+    $scope.config = config;
     $scope.user = user;
     $scope.password = '';    
 
     $scope.exit = function () {
         navigator.app.exitApp();
+    };
+
+    $scope.changeMode = function (i) {
+        log('Change mode: ' + i.toString());
+        if(i == 0){
+            if (isEmpty($scope.config.ip)) {
+                showError('IP is empty!');
+                return;
+            }
+
+            if (isEmpty($scope.config.port)) {
+                showError('Port is empty!');
+                return;
+            }
+                     
+            insertSettingDB($scope.config, function () {                
+                baseURL = buildURL($scope.config.protocol, $scope.config.ip, $scope.config.port, $scope.config.service_name);
+                $scope.showConfig = false;
+            }, function (dberr) {
+                showError(dberr.message);
+            });
+        } else{
+             $scope.showConfig = true; 
+        }
     };
    
     $scope.login = function () {
@@ -52,9 +77,9 @@ function loginController($scope, $http) {
                 var data = resp.data;
                 if (data.Status == -1) { // error
                     onError(data.ErrorMessage);
-                } else {
+                } else {                    
                     insertUserDB(data.People, $scope.userName,  $scope.password,
-                        function (tx, row) {
+                        function (tx, row) {                                                  
                             onSuccess(data.People);
                         },
                         function (dberr) {
@@ -86,7 +111,7 @@ function loginController($scope, $http) {
             function (tx, dbres) {
                 hideDlg();
                 if (dbres.rows.length == 1) {
-                    var per = dbres.rows[0];
+                    var per = dbres.rows.item(0);
                     onSuccess({
                         ID: per.ID,
                         FirstName: per.FirstName,
@@ -105,6 +130,7 @@ function loginController($scope, $http) {
                         HomeAddress: per.HomeAddress,
                         WorkAddress: per.WorkAddress,
                         Phone: per.Phone,
+                        Role : per.HasAuditRole == '1' ? 1 : 0,
                     });
                 } else {
                     onError($scope.resource.text_InvalidUserPass);
@@ -121,7 +147,7 @@ function loginController($scope, $http) {
             showError($scope.resource.text_UserTerminated);
             return;
         }
-		
+      
         userID = user.ID;
         $scope.user.id = user.ID;
         $scope.user.firstName = user.FirstName;
@@ -140,29 +166,33 @@ function loginController($scope, $http) {
         $scope.user.homeAddress = user.HomeAddress;
         $scope.user.workAddress = user.WorkAddress;
         $scope.user.phone = user.Phone;
-        config.tbl_outletSync = 'outletSync' + $scope.user.id;
+        
+        config.tbl_outletSync = 'outletsync_' + $scope.user.id;
         config.tbl_outlet = 'outlet' + $scope.user.id;
+        config.tbl_downloadProvince = 'outlet_province_' + $scope.user.id;
+        
         log($scope.user.hasAuditRole);
 		enableSync = true;
 
         log('create outlet tables');
-        ensureUserOutletDBExist(config.tbl_outletSync, config.tbl_outlet, function () {
-            if (networkReady()) {
-                showDlg('Downloading Settings', 'Please wait...');
-                downloadServerConfig(function () {
-                    hideDlg();
-                    log('Navigate to home (online)');
+        ensureUserOutletDBExist(user.Role == 101 || user.Role == 100, config.tbl_outletSync, config.tbl_outlet, config.tbl_downloadProvince,
+            function () {
+                if (networkReady()) {
+                    showDlg('Downloading Settings', 'Please wait...');
+                    downloadServerConfig(function () {
+                        hideDlg();
+                        log('Navigate to home (online)');
+                        $scope.changeView('home');
+                    }, function (dberr) {
+                        hideDlg();
+                        showError(dberr.message);
+                    });
+                }
+                else {
+                    log('Navigate to home (offline)');
                     $scope.changeView('home');
-                }, function (dberr) {
-                    hideDlg();
-                    showError(dberr.message);
-                });
-            }
-            else {
-                log('Navigate to home (offline)');
-                $scope.changeView('home');
-            }
-        });      
+                }
+            });
     }
 
     function loginError(err) {
@@ -190,7 +220,7 @@ function loginController($scope, $http) {
                     if (p.Key == 'calc_distance_algorithm') {
                         config.calc_distance_algorithm = p.Value;
                     } else if (p.Key == 'tbl_area_ver') {
-
+                        // do nothing
                     } else if (p.Key == 'tbl_outlettype_ver') {
                         syncOutletTypes = config.tbl_outlettype_ver != p.Value;
                         config.tbl_outlettype_ver = p.Value;
@@ -198,11 +228,19 @@ function loginController($scope, $http) {
                         syncProvinces = config.tbl_province_ver != p.Value;
                         config.tbl_province_ver = p.Value;
                     } else if (p.Key == 'tbl_zone_ver') {
-
+                        // do nothing
+                    } else if (p.Key == 'map_api_key') {
+                        config.map_api_key = p.Value;                      
+                    } else if (p.Key == 'http_method') {
+                        config.http_method = p.Value;
+                    } else if (p.Key == 'sync_time') {                        
+                        config.sync_time = parseInt(p.Value);
+                    } else if (p.Key == 'protocol') {
+                        config.protocol = p.Value;
                     }
                 }
 
-                insertConfig(config, function () {
+                insertSettingDB(config, function () {
                     if (syncProvinces) {
                         downloadProvinces(function () {
                             if (syncOutletTypes) {

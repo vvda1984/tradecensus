@@ -37,35 +37,71 @@ function initalizeDB(onSuccess) {
 }
 
 function logSqlCommand(sql) {
-    //log("SQL: " + sql);
+    log("SQL: " + sql);
 }
 
-function resetLocalDB(outlettable, callback){
-    db.transaction(function (tx) {    
-        tx.executeSql('DROP TABLE IF EXISTS person');
-        tx.executeSql('DROP TABLE IF EXISTS config');
-        tx.executeSql('DROP TABLE IF EXISTS province');
-        tx.executeSql('DROP TABLE IF EXISTS outletType');        
-        tx.executeSql('DROP TABLE IF EXISTS outletImage');        
+function resetLocalDB(tx, outlettable, outletdownloadtable){
+    log('Reset local data');
+    tx.executeSql('DROP TABLE IF EXISTS [config]');    
+    tx.executeSql('DROP TABLE IF EXISTS [outletImage]');
+    tx.executeSql('DROP TABLE IF EXISTS ' + outlettable);
+    tx.executeSql('DROP TABLE IF EXISTS ' + outletdownloadtable);          
 
-        log("Reset table [user] exist");
-        tx.executeSql('CREATE TABLE IF NOT EXISTS [user] ( [ID] integer PRIMARY KEY NOT NULL, [UserName] text, [FirstName] text, [LastName] text, [IsTerminate] text NOT NULL,	[HasAuditRole] text NOT NULL COLLATE NOCASE, [PosID] text NOT NULL COLLATE NOCASE, [ZoneID] text NOT NULL COLLATE NOCASE, [AreaID] text NOT NULL COLLATE NOCASE, [ProvinceID] text NOT NULL COLLATE NOCASE, [Email] text, [EmailTo] text, [HouseNo] text, [Street] text, [District] text, [HomeAddress] text, [WorkAddress] text, [Phone] text, [OfflinePassword] text NOT NULL)');
-
-        log("ensure table [config] exist");
-        tx.executeSql('CREATE TABLE IF NOT EXISTS [config] ( [Name] text PRIMARY KEY NOT NULL COLLATE NOCASE, [Value] text)');
-
-        log("ensure table [province] exist");
-        tx.executeSql('CREATE TABLE IF NOT EXISTS [province] ( [ID] text PRIMARY KEY NOT NULL, [Name] text COLLATE NOCASE)');
-       
-        log("ensure table [outletType] exist");
-        tx.executeSql('CREATE TABLE IF NOT EXISTS [outletType] ( [ID] text PRIMARY KEY NOT NULL, [Name] text COLLATE NOCASE, [OGroupID] text COLLATE NOCASE, [KPIType] int NOT NULL)');
-
-        log("ensure table [outletImage] exist");
-        tx.executeSql('CREATE TABLE IF NOT EXISTS [outletImage] ( [ID] text PRIMARY KEY NOT NULL, [OutletID] int NOT NULL, [ImageIndex] int NOT NULL, [ImagePath] text NOT NULL, [Uploaded] int NOT NULL, [CreatedDate] text NOT NULL, [CreatedBy] int NOT NULL )');
-    
-        log("Reset local database successfully");
-        initializeProvinces(tx, onSuccess);
-    });    
+    tx.executeSql('CREATE TABLE IF NOT EXISTS [config] ( [Name] text PRIMARY KEY NOT NULL COLLATE NOCASE, [Value] text)');                
+    tx.executeSql('CREATE TABLE IF NOT EXISTS [outletImage] ( [ID] text PRIMARY KEY NOT NULL, [OutletID] int NOT NULL, [ImageIndex] int NOT NULL, [ImagePath] text NOT NULL, [Uploaded] int NOT NULL, [CreatedDate] text NOT NULL, [CreatedBy] int NOT NULL )');
+    tx.executeSql('CREATE TABLE IF NOT EXISTS [' + outletdownloadtable + '] ( [id] text PRIMARY KEY NOT NULL, [name] text COLLATE NOCASE NOT NULL, download int NOT NULL))');            
+    sql = ('CREATE TABLE IF NOT EXISTS ' + outlettable + '(' +
+                    '[ID] int NOT NULL,' +
+                    '[AreaID] text NOT NULL,' +
+                    '[TerritoryID] text NOT NULL,' +
+                    '[OTypeID] text NOT NULL,' +
+                    '[Name] text NOT NULL,' +
+                    '[AddLine] text NULL,' +
+                    '[AddLine2] text NULL,' +
+                    '[District] text NULL,' +
+                    '[ProvinceID] text NOT NULL,' +
+                    '[Phone] text NULL,' +
+                    '[CallRate] int NOT NULL,' +
+                    '[CloseDate] text NULL,' +
+                    '[CreateDate] text NOT NULL,' +
+                    '[Tracking] int NOT NULL,' +
+                    '[Class] text NULL,' +
+                    '[Open1st] text NULL,' +
+                    '[Close1st] text NULL,' +
+                    '[Open2nd] text NULL,' +
+                    '[Close2nd] text NULL,' +
+                    '[SpShift] int NOT NULL,' +
+                    '[LastContact] text NOT NULL,' +
+                    '[LastVisit] text NULL,' +
+                    '[PersonID] int NOT NULL,' +
+                    '[PersonFirstName] text NULL,' +
+                    '[PersonLastName] text NULL,' +
+                    '[Note] text NULL,' +
+                    '[Longitude] float NULL,' +
+                    '[Latitude] float NULL,' +
+                    '[TaxID] text NULL,' +
+                    '[ModifiedStatus] int NULL,' +
+                    '[InputBy] int NULL,' +
+                    '[InputDate] text NULL,' +
+                    '[AmendBy] int NOT NULL,' +
+                    '[AmendDate] text NOT NULL,' +
+                    '[OutletEmail] text NULL,' +
+                    '[AuditStatus] int NOT NULL,' +
+                    '[TotalVolume] int NOT NULL,' +
+                    '[VBLVolume] int NOT NULL,' +                        
+                    '[StringImage1] text,' +
+                    '[StringImage2] text,' +
+                    '[StringImage3] text,' +
+                    '[OutletSource] int,' +
+                    '[PRowID] text NULL,' +
+                    '[PIsAdd] bit,' +
+                    '[PIsMod] bit,' +
+                    '[PIsAud] bit,' +
+                    '[PSynced] bit,' +
+                    '[PStatus] int,' +
+                    '[PLastModTS] int,' +
+                    '[PMarked] bit)');       
+    tx.executeSql(sql);  
 }
 
 function insertUserDB(person, userName, password, onSuccess, onError) {
@@ -177,24 +213,6 @@ function insertSettingDB(config, onSuccess, onError) {
 		insertConfigRow(tx, "cluster_max_zoom", config.cluster_max_zoom);		
         onSuccess();
     }, onError);
-}
-
-function insertConfig(config, onSuccess, onError) {
-    db.transaction(function (tx) {
-        insertConfigRow(tx, "protocol", config.protocol);
-        insertConfigRow(tx, "ip", config.ip, onError);
-        insertConfigRow(tx, "port", config.port);
-        insertConfigRow(tx, "service_name", config.service_name);
-        insertConfigRow(tx, "item_count", config.item_count);
-        insertConfigRow(tx, "distance", config.distance);
-        insertConfigRow(tx, "province_id", config.province_id);
-        insertConfigRow(tx, "calc_distance_algorithm", config.calc_distance_algorithm);
-        insertConfigRow(tx, "tbl_area_ver", config.tbl_area_ver);
-        insertConfigRow(tx, "tbl_outlettype_ver", config.tbl_outlettype_ver);
-        insertConfigRow(tx, "tbl_province_ver", config.tbl_province_ver);
-        insertConfigRow(tx, "tbl_zone_ver", config.tbl_zone_ver);
-        onSuccess();
-    });
 }
 
 function insertConfigRow(tx, name, value) {
@@ -322,14 +340,12 @@ function selectOutletTypes(onSuccess, onError) {
     });
 }
 
-function ensureUserOutletDBExist(outletSyncTbl, outletTbl, onDone) {
+function ensureUserOutletDBExist(isReset, outletSyncTbl, outletTbl, provinceDownloadTbl, callback) {
     db.transaction(function (tx) {
-        if (resetDB) {
-            tx.executeSql('DROP TABLE IF EXISTS ' + outletSyncTbl);
-            tx.executeSql('DROP TABLE IF EXISTS ' + outletTbl);
-        }
+        if(isReset)
+            resetLocalDB(tx, outletTbl, provinceDownloadTbl);
 
-        log('ensure table [' + outletSyncTbl + ' exist');
+        log('ensure table [' + outletSyncTbl + '] exist');
         var sql = ('CREATE TABLE IF NOT EXISTS [' + outletSyncTbl + '](' +
                         '[ID] text PRIMARY KEY NOT NULL, ' +
 	                    '[PersonID] integer NOT NULL,	' +
@@ -338,7 +354,12 @@ function ensureUserOutletDBExist(outletSyncTbl, outletTbl, onDone) {
         logSqlCommand(sql);
         tx.executeSql(sql, [], function (tx1) { }, function (dberr) { log(dberr.message) });
 
-        log('ensure table [' + outletTbl + ' exist');
+        log('ensure table [' + provinceDownloadTbl + '] exist');
+        sql = 'CREATE TABLE IF NOT EXISTS [' + provinceDownloadTbl + '] ( [id] text PRIMARY KEY NOT NULL, [name] text COLLATE NOCASE NOT NULL, download int NOT NULL)';
+        logSqlCommand(sql);
+        tx.executeSql(sql, [], function (tx1) { }, function (dberr) { log(dberr.message) });
+
+        log('ensure table [' + outletTbl + '] exist');
         sql = ('CREATE TABLE IF NOT EXISTS ' + outletTbl + '(' +
                         '[ID] int NOT NULL,' +
 	                    '[AreaID] text NOT NULL,' +
@@ -363,6 +384,8 @@ function ensureUserOutletDBExist(outletSyncTbl, outletTbl, onDone) {
 	                    '[LastContact] text NOT NULL,' +
 	                    '[LastVisit] text NULL,' +
 	                    '[PersonID] int NOT NULL,' +
+                        '[PersonFirstName] text NULL,' +
+                        '[PersonLastName] text NULL,' +
 	                    '[Note] text NULL,' +
 	                    '[Longitude] float NULL,' +
 	                    '[Latitude] float NULL,' +
@@ -389,8 +412,8 @@ function ensureUserOutletDBExist(outletSyncTbl, outletTbl, onDone) {
 	                    '[PLastModTS] int,' +
 	                    '[PMarked] bit)');
         logSqlCommand(sql);
-        tx.executeSql(sql, [], function (tx1) { }, function (dberr) { log(dberr.message) });
-        onDone();
+        tx.executeSql(sql);        
+        callback();
     });
 }
 
@@ -479,7 +502,9 @@ function addNewOutlet(tx, outletTbl, outlet, isAdd, isMod, isAud, synced, marked
     sql = sql.concat('0, ');                                //'[SpShift] int NOT NULL,' ,
     sql = sql.concat('"', outlet.LastContact, '", ');       //'[LastContact]text NOT NULL,' ,
     sql = sql.concat('"', outlet.LastVisit, '", ');         //'[LastVisit] text NULL,' ,
-    sql = sql.concat(outlet.PersonID.toString(), ', ');     //'[PersonID] int NOT NULL,' ,
+    sql = sql.concat(outlet.PersonID.toString(), ', ');     //'[PersonID] int NOT NULL,' ,     
+    sql = sql.concat('"', outlet.PersonFirstName, '", ');   //'[PersonFirstName] text NULL,'
+    sql = sql.concat('"', outlet.PersonLastName, '", ');    //'[PersonLastName] text NULL,' +
     sql = sql.concat('"', outlet.Note, '", ');              //'[Note] text NULL,' ,
     sql = sql.concat(outlet.Longitude.toString(), ', ');    //'[Longitude] float NULL,' ,
     sql = sql.concat(outlet.Latitude.toString(), ', ');     //'[Latitude] float NULL,' ,
@@ -734,6 +759,17 @@ function selectUnsyncedOutlets(outletTbl, onSuccess, onError) {
     }, onError);
 }
 
+function selectUnsyncedOutletsOfProvince(outletTbl, provinceid, onSuccess, onError) {
+    db.transaction(function (tx) {
+        log('Select existing outlet')
+        var sql = 'SELECT * FROM ' + outletTbl + ' WHERE PSynced = 0 AND PStatus = 0 AND ProvinceID = " ' + provinceid + '"';
+        logSqlCommand(sql);
+        tx.executeSql(sql, [], function (tx1, dbres) {
+            onSuccess(dbres);
+        }, onError);
+    }, onError);
+}
+
 function selectUnsyncedOutletImage(userID, outletID, onSuccess, onError) {
     db.transaction(function (tx) {
         log('Select existing outlet')
@@ -743,5 +779,34 @@ function selectUnsyncedOutletImage(userID, outletID, onSuccess, onError) {
                   ' AND Uploaded = 0';
         logSqlCommand(sql);
         tx.executeSql(sql, [], onSuccess, onError);
+    }, onError);
+}
+
+function selectDownloadProvincesDB(tablename, onSuccess, onError) {
+    db.transaction(function (tx) {
+        log('Select download provinces');
+        var sql = 'SELECT * FROM ' + tablename;
+        logSqlCommand(sql);
+        tx.executeSql(sql, [], function (tx1, dbres) {
+            onSuccess(dbres);
+        }, onError);
+    }, onError);
+}
+
+function saveDownloadProvincesDB(tablename, downloadProvinces, onSuccess, onError) {
+    db.transaction(function (tx) {        
+        log('Update download provinces');
+        var i;
+        var sql;
+        for(i = 0; i< downloadProvinces.length;i++){
+            var p = downloadProvinces[i];
+            sql = 'INSERT OR REPLACE INTO ' + tablename + ' VALUES (' +
+            '"' + p.id + '", ' +
+            '"' + p.name + '", ' +
+            + p.download.toString() + ')';
+            logSqlCommand(sql);
+            tx.executeSql(sql, [], function () { }, onError);
+        }
+        onSuccess();    
     }, onError);
 }

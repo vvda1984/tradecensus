@@ -29,7 +29,7 @@
             return;
         }
 
-        if (isEmpty($scope.config.distance)) {
+        if (isEmpty($scope.config.item_count)) {
             showError('Maximum outlets count is empty!');
             return;
         }

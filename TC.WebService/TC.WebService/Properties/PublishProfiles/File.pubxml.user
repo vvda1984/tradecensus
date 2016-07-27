@@ -118,7 +118,7 @@ by editing this MSBuild file. In order to learn more about this please visit htt
       <publishTime>03/19/2010 10:31:26</publishTime>
     </File>
     <File Include="bin/TradeCensus.dll">
-      <publishTime>07/17/2016 12:44:52</publishTime>
+      <publishTime>07/23/2016 22:11:51</publishTime>
     </File>
     <File Include="Global.asax">
       <publishTime>07/11/2016 21:48:46</publishTime>
@@ -127,7 +127,7 @@ by editing this MSBuild file. In order to learn more about this please visit htt
       <publishTime>07/11/2016 21:48:46</publishTime>
     </File>
     <File Include="ReleaseNote.txt">
-      <publishTime>07/17/2016 12:44:24</publishTime>
+      <publishTime>07/23/2016 22:10:58</publishTime>
     </File>
     <File Include="scripts/ai.0.22.9-build00167.js">
       <publishTime>07/11/2016 21:48:46</publishTime>
@@ -136,13 +136,13 @@ by editing this MSBuild file. In order to learn more about this please visit htt
       <publishTime>07/11/2016 21:48:46</publishTime>
     </File>
     <File Include="TradeCensusModel.edmx.diagram">
-      <publishTime>07/11/2016 21:48:46</publishTime>
+      <publishTime>07/20/2016 00:52:44</publishTime>
     </File>
     <File Include="TradeCensusService.svc">
       <publishTime>07/11/2016 21:48:46</publishTime>
     </File>
     <File Include="Web.config">
-      <publishTime>07/11/2016 23:55:42</publishTime>
+      <publishTime>07/23/2016 22:11:54</publishTime>
     </File>
   </ItemGroup>
 </Project>

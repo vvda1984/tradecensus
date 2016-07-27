@@ -76,7 +76,10 @@ function newOutlet() {
         Tracking: 0,
         VBLVolume: 0,
         PStatus: 0,
-        IsDraft: false,        
+        IsDraft: false,
+        ExtractName: '',
+        PersonFirstName: '',
+        PersonLastName: '',
     };
 }
 
@@ -107,6 +110,23 @@ function initializeOutlet(outlet) {
     if (outlet.FullAddress == null || isEmpty(outlet.FullAddress))
         outlet.FullAddress = outlet.AddLine + ' ' + outlet.AddLine2 + ' ' + outlet.District + ' ' + provinceName;
 
+    //sql = sql.concat(person.ID.toString(), ", ");
+    var exname = '';
+    if (outlet.PersonFirstName) {
+        exname = exname.concat(outlet.PersonFirstName, ' ');
+    }
+    if (outlet.PersonLastName) {
+        exname = exname.concat(outlet.PersonFirstName, ' ');
+    }    
+    exname = exname.trim();
+
+    if (exname != '') {
+        exname = exname.concat(' / ', outlet.PersonID.toString());
+    } else {
+        exname = exname.concat('- / ', outlet.PersonID.toString());
+    }
+
+    outlet.ExtractName = exname;
     outlet.IsOpened = isEmpty(outlet.CloseDate);
     outlet.IsTracked = outlet.Tracking == 1;
     //outlet.IsAuditApproved = outlet.AuditStatus == 1;

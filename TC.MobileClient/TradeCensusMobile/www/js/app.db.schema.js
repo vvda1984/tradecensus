@@ -120,7 +120,7 @@ function tableOutletImage() {
 }
 
 /************************************************************************/
-function sqlInsertProvince(name, value) {
+function sqlInsertProvince(name, value) {    
     var sql = "INSERT INTO [province] VALUES (";
     sql = sql.concat("'", name, "', ");
     sql = sql.concat("'", value, "')");

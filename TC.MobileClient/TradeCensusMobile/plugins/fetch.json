@@ -87,5 +87,14 @@
         },
         "is_top_level": true,
         "variables": {}
+    },
+    "cordova-plugin-locationservices": {
+        "source": {
+            "type": "git",
+            "url": "https://github.com/louisbl/cordova-plugin-locationservices",
+            "subdir": "."
+        },
+        "is_top_level": true,
+        "variables": {}
     }
 }

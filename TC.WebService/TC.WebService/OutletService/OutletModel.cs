@@ -46,6 +46,10 @@ namespace TradeCensus
         [DataMember]
         public int PersonID { get; set; }
         [DataMember]
+        public string PersonFirstName { get; set; }
+        [DataMember]
+        public string PersonLastName { get; set; }
+        [DataMember]
         public string CreateDate { get; set; }
         [DataMember]
         public string Note { get; set; }

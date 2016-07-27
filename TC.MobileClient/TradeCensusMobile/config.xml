@@ -121,4 +121,5 @@
   <plugin name="cordova-plugin-file-transfer" version="1.5.1" />
   <preference name="android-minSdkVersion" value="19" />
   <preference name="android-targetSdkVersion" value="21" />
+  <plugin name="cordova-plugin-locationservices" version="2.1.0" src="https://github.com/louisbl/cordova-plugin-locationservices" />
 </widget>

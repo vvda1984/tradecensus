@@ -36,12 +36,18 @@ namespace TradeCensus
         {
             ValidatePerson(personID);
             Log("Get outlet by id: {0}", id);
+            OutletModel outletModel = null;
+
             var outlet = _entities.Outlets.FirstOrDefault(i => i.ID.ToString() == id);
             if (outlet != null)
+            {
                 Log("Found outlet {0}", id);
+                outletModel = ToOutletModel(outlet);
+            }
             else
                 Log("Found outlet {0} is missing", id);
-            return ToOutletModel(outlet);
+
+            return outletModel;
         }
 
         public List<OutletType> GetAllOutletTypes()
@@ -184,6 +190,14 @@ namespace TradeCensus
                 foundOutlet.StringImage2 = outletImg.Image2;
                 foundOutlet.StringImage3 = outletImg.Image3;
             }
+
+            var person = _entities.People.FirstOrDefault(p=>p.ID == outlet.PersonID);
+            if(person != null)
+            {
+                foundOutlet.PersonLastName = person.LastName;
+                foundOutlet.PersonFirstName = person.FirstName;
+            }
+
             return foundOutlet;
         }
 

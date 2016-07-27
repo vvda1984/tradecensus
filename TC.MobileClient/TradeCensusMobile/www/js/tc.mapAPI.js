@@ -324,7 +324,7 @@ function getCurPosition(moveToCur, onSuccess, onError) {
 }
 
 function startPositionWatching(){
-    if(isDev) return;
+    if (isDev) return;    
     if(gpsWatchID == -1){
         gpsWatchID = navigator.geolocation.watchPosition(
             function(position){

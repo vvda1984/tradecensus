@@ -15,7 +15,47 @@
     z-index: 0;    
 }
 
-/**************** BUTTONs *******************/
+/**************** BUTTONS *******************/
+.square-box {
+    border: 1px solid red;  
+    border-radius: 2px;
+    height: 38px;   
+    display: table; 
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2);    
+}
+
+.square-box span{
+    display: table-cell;
+    vertical-align: middle;
+    padding-left: 12px;
+    padding-right: 12px;
+    color: red;
+    font-weight: bold; 
+}
+
+.text-button{
+    display: table;
+    border: 0px;
+    width: 96px;
+    margin-right:10px;
+    margin-left:10px;       
+    height:64px;
+}
+
+.text-button img {
+    height: 24px;
+    width: 24px;  
+    margin-top: 12px;
+    margin-bottom: 4px;
+    margin-left: 36px;
+}
+
+.text-button .title{      
+    width: 100%;
+    text-align:center;
+    color:#2196F3;    
+}
+
 .md-button-image{
     height: 24px;
     width: 24px;
@@ -82,11 +122,11 @@
 }
 
 .square-bar span {        
-    float: left;                    
-    margin: 0;   
+    float: left; 
+    margin: 0;
     margin-top: 10px;     
     margin-left: 8px;
-    margin-right: 8px;                      
+    margin-right: 8px;
     height: 100%;    
 }
 
@@ -201,7 +241,7 @@
     position: fixed;
     top: 4px;
     right: 3px;    
-    z-index: 3;
+    z-index: 4;
     border: 0px;
     display: inline-block;
 } 
@@ -223,13 +263,23 @@
     display: inline-block;
 } 
 
+
+#home-topright-offline {
+    position: fixed;
+    top: 4px;
+    right: 64px;    
+    z-index: 3;
+    border: 0px;
+    display: none;
+} 
+
 /******************** BOTTOM-RIGHT ******************/
 #home-bottomright {
     position: fixed;
     bottom: 128px;
     /*right: 3px;*/
     right: 10px;
-    z-index: 1;
+    z-index: 3;
     border: 0px;
     display: inline-block;
 } 
@@ -238,7 +288,7 @@
 #paging-bar{
     position:absolute;    
     bottom:4px;    
-    right:36px;
+    right:42px;
     height: 42px;
     left:4px;
     box-shadow: 0 1px 2px rgba(0,0,0,0.2);    
@@ -315,7 +365,7 @@
     width: 28px;    
     position:absolute;    
     top:0;    
-    right:4px;
+    right:14px;
     margin-top:48px;
     background:#2196F3;
     /*background: rgba(0, 0, 0, 0.4);*/    
@@ -336,7 +386,7 @@
     bottom:0;
     top:0;
     left:0;
-    right:32px;
+    right:42px;
     margin-top:48px;
     margin-bottom:4px;
     background-color: transparent;
@@ -515,7 +565,7 @@
     position: fixed;
     top: 0;
     right: 0;    
-    z-index: 2;
+    z-index: 4;
     transition: 0.5s;
 }
 

@@ -41,5 +41,7 @@ namespace TradeCensus
         public string WorkAddress { get; set; }
         [DataMember]
         public string Phone { get; set; }
+        [DataMember]
+        public int Role { get; set; }
     }
 }

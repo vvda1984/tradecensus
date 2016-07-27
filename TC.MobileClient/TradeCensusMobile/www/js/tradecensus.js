@@ -1,7 +1,7 @@
 ﻿
 var resetDB = false;                // force reset database - testing only
 var db;                             // database instance
-var isDev = true;                  // enable DEV mode
+var isDev = false;                  // enable DEV mode
 
 var userOutletTable = 'outlet';     // outlet table name for current user
 var isDlgOpened = false;            //  
@@ -43,8 +43,8 @@ var app = angular.module('TradeCensus', ['ngRoute', 'ngMaterial', 'ngMessages'])
     function onDeviceReady() {
         // disable back button
         document.addEventListener("backbutton", function (e) { e.preventDefault(); }, false);
-        document.addEventListener("online", onNetworkConnected, false);
-        document.addEventListener("offline", onNetworkDisconnected, false);
+        //document.addEventListener("online", onNetworkConnected, false);
+        //document.addEventListener("offline", onNetworkDisconnected, false);
         //document.addEventListener("resume", loadMapApi, false);
 
         initializeEnvironment(function(){
@@ -74,7 +74,7 @@ function newResource() {
         text_EnterIPAddress: 'Enter IP Address',
         text_EnterPort: 'Enter Port',
         text_EnterPassword: 'Enter Password',
-        text_EnterProvince: 'Select Province',
+        text_EnterProvince: 'Working Province',
         text_ValRequired: 'Required.',
         text_ValLength10: 'Has to be less than 10 characters long.',
         text_UserTerminated: 'User has been terminated',
@@ -105,13 +105,14 @@ function newConfig() {
         province_id: 50, // HCM
         http_method: 'POST',
         calc_distance_algorithm: 'circle',
+        map_api_key: 'AIzaSyDpKidHSrPMfErXLJSts9R6pam7iUOr_W0',
         tbl_area_ver: '0',
         tbl_outlettype_ver: '0',
         tbl_province_ver: '1',
         tbl_zone_ver: '0',
         tbl_outletSync: 'outletSync',
         tbl_outlet: 'outlet',
-        map_api_key: 'AIzaSyDpKidHSrPMfErXLJSts9R6pam7iUOr_W0',
+        tbl_downloadProvince: 'downloadProvince',        
     };
 }
 
@@ -217,8 +218,7 @@ function loadSettings(tx, callback) {
             for (i = 0; i < rowLen; i++) {
                 var name = dbres.rows.item(i).Name;
                 var value = dbres.rows.item(i).Value;
-                if (name == 'protocol') {
-                    log('set protocol ' + value);
+                if (name == 'protocol') {                    
                     config.protocol = value;
                 } else if (name == 'ip') {
                     log('set ip: ' + value);
@@ -255,6 +255,10 @@ function loadSettings(tx, callback) {
                     config.cluster_size = parseInt(value);
                 } else if (name == 'cluster_max_zoom') {
                     config.cluster_max_zoom = parseFloat(value);
+                } else if (name == 'http_method') {
+                    config.http_method = value;
+                } else if (name == 'map_api_key') {
+                    config.http_method = value;
                 }
             }
         }     
@@ -269,6 +273,7 @@ function initializeApp() {
     log('Initialize angular app.');    
     hideDlg();    
     startSyncProgress();
+    startNetworkMonitor();
 };
 
 function onNetworkConnected() {
@@ -293,6 +298,18 @@ function onNetworkDisconnected() {
     isNetworkAvailable = false
     if (onNetworkChangedCallback)
         onNetworkChangedCallback(false);
+}
+
+//******************************************
+function startNetworkMonitor() {
+    setTimeout(function () {
+        var s = networkReady();
+        if(isNetworkAvailable != s){
+            isNetworkAvailable = s;
+            onNetworkChangedCallback(isNetworkAvailable);
+        }
+        startNetworkMonitor();
+    }, 1 * 60 * 1000);
 }
 
 //******************************************
