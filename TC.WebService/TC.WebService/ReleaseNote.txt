@@ -16,3 +16,14 @@ Release beta version
 - Return SR/DRM name to client
 Client: 
 - use location service of Android instead of geolocation
+
+[1.0.16211.5] 2016-07-29
+- Apply Status
+DEL => invisible for all user
+NEW => visible for owner
+POST => visible for all
+AUDIT => visible for all
+- Action:
+Owner can delete NEW
+Owner can change POST => NEW
+Owner cannot delete POST or AUDIT

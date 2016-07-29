@@ -16,6 +16,8 @@ namespace TradeCensus
         const byte ActionUpdate = 1;
         const byte ActionUpdateImage = 2;
         const byte ActionAudit = 3;
+        const byte ActionDelete = 4;
+        const byte ActionRevise = 5;
 
         public OutletRepo() : base("Outlet")
         {
@@ -75,15 +77,13 @@ namespace TradeCensus
             return res;
         }
 
-        public List<OutletModel> GetOutletsByLocation(int personID, double lat, double lng, double meter, int count)
+        public List<OutletModel> GetOutletsByLocation(int personID, double lat, double lng, double meter, int count, int status)
         {
             var user = _entities.PersonRoles.FirstOrDefault(i => i.PersonID == personID);
             if (user == null)
                 throw new Exception(string.Format("User {0} doesn't exist", personID));
 
-            string method = GetSetting("calc_distance_algorithm", "circle");
-            bool isAudit = user.Role == Constants.RoleAudit;
-
+            string method = GetSetting("calc_distance_algorithm", "circle");            
             Log("Calculate distance method: {0}", method);
             var curLocation = new Point { Lat = lat, Lng = lng };
             Point tl = DistanceHelper.CalcShiftedPoint(meter, 0 - meter, curLocation);
@@ -92,16 +92,41 @@ namespace TradeCensus
             Point br = DistanceHelper.CalcShiftedPoint(0 - meter, meter, curLocation);
 
             List<OutletModel> res = new List<OutletModel>();
-            var query = isAudit ?
-                (from i in _entities.Outlets
-                 where i.Latitude >= bl.Lat && i.Latitude <= tl.Lat &&
-                       i.Longitude >= bl.Lng && i.Longitude <= br.Lng
-                 select i) :
-                (from i in _entities.Outlets
-                 where i.Latitude >= bl.Lat && i.Latitude <= tl.Lat &&
-                     i.Longitude >= bl.Lng && i.Longitude <= br.Lng &&
-                     i.AuditStatus == Constants.AuditStatusAccept
-                 select i);
+            IQueryable<Outlet> query;
+            if (status == 0) // near-by
+            {
+                query = from i in _entities.Outlets
+                        where i.Latitude >= bl.Lat && i.Latitude <= tl.Lat &&
+                              i.Longitude >= bl.Lng && i.Longitude <= br.Lng &&
+                              i.AuditStatus != Constants.StatusDelete
+                        select i;
+            }
+            else if (status == 1) // new
+            {
+                query = from i in _entities.Outlets
+                        where i.Latitude >= bl.Lat && i.Latitude <= tl.Lat &&
+                              i.Longitude >= bl.Lng && i.Longitude <= br.Lng &&
+                              (i.AuditStatus == Constants.StatusNew || i.AuditStatus == Constants.StatusPost)
+                        select i;
+            } else if (status == 2) // edit
+            {
+                query = from i in _entities.Outlets
+                        where i.Latitude >= bl.Lat && i.Latitude <= tl.Lat &&
+                              i.Longitude >= bl.Lng && i.Longitude <= br.Lng &&
+                              i.AuditStatus == Constants.StatusEdit &&
+                              i.AmendBy == personID
+                        select i;
+            }
+            else // audit
+            {
+                query = from i in _entities.Outlets
+                        where i.Latitude >= bl.Lat && i.Latitude <= tl.Lat &&
+                              i.Longitude >= bl.Lng && i.Longitude <= br.Lng &&
+                              (i.AuditStatus == Constants.StatusAuditAccept || i.AuditStatus == Constants.StatusAuditDeny) &&
+                              i.AmendBy == personID
+                        select i;
+            }
+                        
             if (query.Any())
             {
                 var arr = query.ToArray();
@@ -116,6 +141,8 @@ namespace TradeCensus
                 int found = 0;
                 foreach (var outlet in arr)
                 {
+                    if (outlet.AuditStatus == Constants.StatusNew && outlet.PersonID != personID) continue;
+
                     double distance = outlet.Distance;
                     //DistanceHelper.CalcDistance(curLocation, new Point { Lat = outlet.Latitude, Lng = outlet.Longitude });
                     //value == "circle"
@@ -210,13 +237,9 @@ namespace TradeCensus
             if (existingOutlet == null)
                 existingOutlet = _entities.Outlets.FirstOrDefault(i => i.ID == outlet.ID);
 
-            string note = "";
-            byte action = ActionUpdate;
-
-            if (existingOutlet == null)
-            {
-                note = "Add new outlet";
-                action = ActionAdd;
+           
+            if (existingOutlet == null && outlet.AuditStatus != Constants.StatusDelete)
+            {                
                 existingOutlet = new Outlet
                 {
                     ID = outlet.ID,
@@ -246,67 +269,91 @@ namespace TradeCensus
                 };
                 _entities.Outlets.Add(existingOutlet);
             }
+           
+            if (outlet.AuditStatus == Constants.StatusDelete)
+            {
+                DeleteOutlet(outlet.PersonID, outlet.ID);
+                return outlet.PRowID;
+            }
             else
             {
-                if (existingOutlet.AuditStatus != outlet.AuditStatus)
+                string note = "";
+                byte action = ActionUpdate;
+                switch (outlet.AuditStatus)
                 {
-                    action = ActionAudit;
-                    note = "Audit outlet";
+                    case Constants.StatusAuditAccept:
+                        action = ActionAudit;
+                        note = "Audit Accept";
+                        break;
+                    case Constants.StatusAuditDeny:
+                        action = ActionAudit;
+                        note = "Audit Deny";
+                        break;
+                    case Constants.StatusDelete:
+                        action = ActionDelete;
+                        note = "Delete Outlet";
+                        break;
+                    case Constants.StatusPost:
+                        action = ActionDelete;
+                        note = "Post Outlet";
+                        break;
+                    case Constants.StatusNew:
+                        action = ActionDelete;
+                        note = "New Outlet";
+                        break;
                 }
+
+                existingOutlet.AreaID = outlet.AreaID;
+                existingOutlet.Name = outlet.Name;
+                existingOutlet.OTypeID = outlet.OTypeID;
+                existingOutlet.AddLine = outlet.AddLine;
+                existingOutlet.AddLine2 = outlet.AddLine2;
+                existingOutlet.District = outlet.District;
+                existingOutlet.ProvinceID = outlet.ProvinceID;
+                existingOutlet.Phone = outlet.Phone;
+                if (!string.IsNullOrEmpty(outlet.CloseDate))
+                    existingOutlet.CloseDate = DateTime.Parse("yyyy-MM-dd HH:mm:ss");
                 else
-                    note = "Update outlet";
+                    existingOutlet.CloseDate = null;
+                existingOutlet.Tracking = outlet.Tracking;
+                existingOutlet.PersonID = outlet.PersonID;
+                existingOutlet.Note = outlet.Note;
+                existingOutlet.Longitude = outlet.Longitude;
+                existingOutlet.Latitude = outlet.Latitude;
+                existingOutlet.AmendBy = outlet.AmendBy;
+                existingOutlet.AmendDate = DateTime.Now;
+                existingOutlet.AuditStatus = (byte)outlet.AuditStatus;
+                existingOutlet.TotalVolume = outlet.TotalVolume;
+                existingOutlet.VBLVolume = outlet.VBLVolume;
+                existingOutlet.AuditStatus = (byte)outlet.AuditStatus;
+                if (!string.IsNullOrEmpty(outlet.PRowID))
+                    existingOutlet.PRowID = new Guid(outlet.PRowID);
+
+                if (existingOutlet.OutletImages.Count() > 0)
+                {
+                    var outletImage = existingOutlet.OutletImages.FirstOrDefault();
+                    if (string.IsNullOrEmpty(outlet.StringImage1))
+                    {
+                        outletImage.Image1 = "";
+                        outletImage.ImageData1 = null;
+                    }
+                    if (string.IsNullOrEmpty(outlet.StringImage2))
+                    {
+                        outletImage.Image2 = "";
+                        outletImage.ImageData2 = null;
+                    }
+                    if (string.IsNullOrEmpty(outlet.StringImage3))
+                    {
+                        outletImage.Image3 = "";
+                        outletImage.ImageData3 = null;
+                    }
+                }
+
+                TrackOutletChanged(existingOutlet.PRowID, outlet.AmendBy, note, 0, action);
+                AppendOutletHistory(outlet.AmendBy, outlet.ID, outlet.PAction, outlet.PNote);
+                _entities.SaveChanges();
+                return existingOutlet.PRowID.ToString();
             }
-
-            existingOutlet.AreaID = outlet.AreaID;
-            existingOutlet.Name = outlet.Name;
-            existingOutlet.OTypeID = outlet.OTypeID;
-            existingOutlet.AddLine = outlet.AddLine;
-            existingOutlet.AddLine2 = outlet.AddLine2;
-            existingOutlet.District = outlet.District;
-            existingOutlet.ProvinceID = outlet.ProvinceID;
-            existingOutlet.Phone = outlet.Phone;
-            if (!string.IsNullOrEmpty(outlet.CloseDate))
-                existingOutlet.CloseDate = DateTime.Parse("yyyy-MM-dd HH:mm:ss");
-            else
-                existingOutlet.CloseDate = null;
-            existingOutlet.Tracking = outlet.Tracking;
-            existingOutlet.PersonID = outlet.PersonID;
-            existingOutlet.Note = outlet.Note;
-            existingOutlet.Longitude = outlet.Longitude;
-            existingOutlet.Latitude = outlet.Latitude;
-            existingOutlet.AmendBy = outlet.AmendBy;
-            existingOutlet.AmendDate = DateTime.Now;
-            existingOutlet.AuditStatus = (byte)outlet.AuditStatus;
-            existingOutlet.TotalVolume = outlet.TotalVolume;
-            existingOutlet.VBLVolume = outlet.VBLVolume;
-            if (!string.IsNullOrEmpty(outlet.PRowID))
-                existingOutlet.PRowID = new Guid(outlet.PRowID);
-
-            if(existingOutlet.OutletImages.Count() > 0)
-            {
-                var outletImage = existingOutlet.OutletImages.FirstOrDefault();
-                if (string.IsNullOrEmpty(outlet.StringImage1))
-                {
-                    outletImage.Image1 = "";
-                    outletImage.ImageData1 = null;
-                }
-                if (string.IsNullOrEmpty(outlet.StringImage2))
-                {
-                    outletImage.Image2 = "";
-                    outletImage.ImageData2 = null;
-                }
-                if (string.IsNullOrEmpty(outlet.StringImage3))
-                {
-                    outletImage.Image3 = "";
-                    outletImage.ImageData3 = null;
-                }
-            }
-            
-            TrackOutletChanged(existingOutlet.PRowID, outlet.AmendBy, note, 0, action);
-            AppendOutletHistory(outlet.AmendBy, outlet.ID, outlet.PAction, outlet.PNote);
-            _entities.SaveChanges();
-
-            return existingOutlet.PRowID.ToString();
         }
 
         private string GetOutletType(string id)
@@ -320,12 +367,7 @@ namespace TradeCensus
             var item = _entities.Provinces.FirstOrDefault(i => i.ID == id);
             return item == null ? "" : item.Name;
         }      
-
-        public void DeleteOutlet(List<OutletModel> items)
-        {
-
-        }
-        
+  
         public string SaveImage(string personID, string outletID, string index,  HttpPostedFile file)
         {           
             string path = AppDomain.CurrentDomain.BaseDirectory; //GetType().Assembly.Location; // ...\bin\...
@@ -440,6 +482,27 @@ namespace TradeCensus
                 InputDate = DateTime.Now,
             };
             _entities.OutletHistories.Add(hist);
+        }
+
+        public void DeleteOutlet(int personID, int outletID)
+        {
+            Outlet existingOutlet = _entities.Outlets.FirstOrDefault(i => i.ID == outletID);
+            if (existingOutlet != null)
+            {
+                var imgs = existingOutlet.OutletImages.ToArray();
+                foreach(var img in imgs)
+                {
+                    img.Outlet = null;
+                    _entities.OutletImages.Remove(img);
+                }
+                existingOutlet.OutletImages.Clear();
+
+                _entities.Outlets.Remove(existingOutlet);
+
+                AppendOutletHistory(personID, outletID, ActionDelete, string.Format("Delete {0}", existingOutlet.Name));
+            }
+
+            _entities.SaveChanges();
         }
     }
 

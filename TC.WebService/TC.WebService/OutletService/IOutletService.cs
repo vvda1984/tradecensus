@@ -17,7 +17,7 @@ namespace TradeCensus
         GetOutletTypeResponse GetOutlets();
 
         [OperationContract]
-        GetOutletListResponse GetNearbyOutlets(string personID, string lat, string lng, string meter, string count);
+        GetOutletListResponse GetNearbyOutlets(string personID, string lat, string lng, string meter, string count, string status);
 
         [OperationContract]
         SaveOutletResponse SaveOutlet(OutletModel item);

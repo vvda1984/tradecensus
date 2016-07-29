@@ -132,8 +132,8 @@ namespace TradeCensus
             }
         }
 
-        [WebInvoke(Method = "POST", UriTemplate = "outlet/getoutlets/{personID}/{lat}/{lng}/{meter}/{count}", ResponseFormat = WebMessageFormat.Json)]
-        public GetOutletListResponse GetNearbyOutlets(string personID, string lat, string lng, string meter, string count)
+        [WebInvoke(Method = "POST", UriTemplate = "outlet/getoutlets/{personID}/{lat}/{lng}/{meter}/{count}/{status}", ResponseFormat = WebMessageFormat.Json)]
+        public GetOutletListResponse GetNearbyOutlets(string personID, string lat, string lng, string meter, string count, string status)
         {            
             using (var repo = new OutletRepo())
             {
@@ -144,7 +144,8 @@ namespace TradeCensus
                                                         Convert.ToDouble(lat),
                                                         Convert.ToDouble(lng),
                                                         Convert.ToDouble(meter),
-                                                        Convert.ToInt32(count));
+                                                        Convert.ToInt32(count),
+                                                        Convert.ToInt32(status));
                 }
                 catch (Exception ex)
                 {
