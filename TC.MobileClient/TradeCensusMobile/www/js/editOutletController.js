@@ -1,5 +1,6 @@
 ﻿function editOutletController($scope, $mdDialog) {
     log('view outlet ' + $scope.outlet.ID.toString());
+    $scope.R = R;
     $scope.needAudit = user.hasAuditRole &&
                        $scope.outlet.AuditStatus == StatusPost &&
                        $scope.outlet.InputBy != user.id;

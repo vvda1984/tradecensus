@@ -1,7 +1,8 @@
-﻿
+﻿/// <reference path="tc.language.js" />
+
 var resetDB = false;                // force reset database - testing only
 var db;                             // database instance
-var isDev = false;                  // enable DEV mode
+var isDev = true;                  // enable DEV mode
 
 var userOutletTable = 'outlet';     // outlet table name for current user
 var isDlgOpened = false;            //  
@@ -11,13 +12,14 @@ var onImageViewerClose;
 var newImageFile;
 var userID = 0;
 var user = newUser();
-var resource = newResource();
+//var resource = newResource();
 var config = newConfig();
 var provinces = [];
 var outletTypes = [];
 var provinces = [];
 var outletTypes = [];
 var baseURL = '';
+var R = useLanguage();
 
 var isNetworkAvailable = true;      // Network monitoring status
 var onNetworkChangedCallback;       // Network monitoring callback
@@ -52,7 +54,6 @@ var app = angular.module('TradeCensus', ['ngRoute', 'ngMaterial', 'ngMessages'])
 }])
 .controller('MainController', ['$scope', '$route', '$location', mainController])
 .controller('LoginController', ['$scope', '$http', loginController])
-.controller('ConfigController', ['$scope', configController])
 .controller('HomeController', ['$scope', '$http', '$mdDialog', '$mdMedia', '$timeout', homeController])
 .filter('startFrom', function() {
     return function(input, start) {
@@ -64,12 +65,16 @@ var app = angular.module('TradeCensus', ['ngRoute', 'ngMaterial', 'ngMessages'])
 (function (global) {
     "use strict";
     function onDeviceReady() {
+        console.log('Device Ready!');
+
         // disable back button
         document.addEventListener("backbutton", function (e) { e.preventDefault(); }, false);
         //document.addEventListener("online", onNetworkConnected, false);
         //document.addEventListener("offline", onNetworkDisconnected, false);
         //document.addEventListener("resume", loadMapApi, false);
 
+        logger.initialize('tradecencus');
+       
         initializeEnvironment(function(){
             initializeApp();
         });        

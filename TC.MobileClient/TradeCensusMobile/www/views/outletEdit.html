@@ -1,57 +1,57 @@
 ﻿<md-dialog aria-label="Edit" ng-cloak>
     <md-toolbar>
         <div class="md-toolbar-tools">
-            <div>Name: {{outlet.Name}}</div>
+            <div>{{R.name}}: {{outlet.Name}}</div>
             <span flex=""></span>
-            <div>Distance: {{outlet.Distance}} m</div>
+            <div>{{R.distance}}: {{outlet.Distance}} m</div>
         </div>
     </md-toolbar>
     <md-content layout-padding="" class="popup-content" style="margin-bottom:-8px;">
         <form name="userForm" style="margin-bottom:0px;">
             <div layout-gt-sm="row" style="margin-bottom:2px;">
                 <div class="md-block-item">
-                    <div class="md-block-item-title">Code</div>
+                    <div class="md-block-item-title">{{R.code}}</div>
                     <div class="md-block-item-value">{{outlet.ID}}</div>
                 </div>
                 <div class="md-block-item" flex-gt-sm="">
-                    <div class="md-block-item-title">Address</div>
+                    <div class="md-block-item-title">{{R.address}}</div>
                     <div class="md-block-item-value">{{outlet.FullAddress}}</div>
                 </div>
                 <div class="md-block-item">
-                    <div class="md-block-item-title">Outlet Type</div>
+                    <div class="md-block-item-title">{{R.outlet_type}}</div>
                     <div class="md-block-item-value">{{outlet.OutletTypeName}}</div>
                 </div>  
             </div>
 
             <div layout-gt-sm="row" style="margin-bottom:2px;">
                 <div class="md-block-item" flex-gt-sm="">
-                    <div class="md-block-item-title">Phone</div>
+                    <div class="md-block-item-title">{{R.phone}}</div>
                     <div class="md-block-item-value">{{outlet.Phone}}</div>
                 </div>
 
                 <div class="md-block-item" flex-gt-sm="">
-                    <div class="md-block-item-title">Last Contact</div>
+                    <div class="md-block-item-title">{{R.last_contact}}</div>
                     <div class="md-block-item-value">{{outlet.LastContact ? outlet.LastContact : "-"}}</div>
                 </div>
 
                 <div class="md-block-item" flex-gt-sm="">
-                    <div class="md-block-item-title">Last Visit</div>
+                    <div class="md-block-item-title">{{R.last_visit}}</div>
                     <div class="md-block-item-value">{{outlet.LastContact ? outlet.LastContact : "-"}}</div>
                 </div>
 
                 <div class="md-block-item" flex-gt-sm="">
-                    <div class="md-block-item-title">Closed Date</div>
+                    <div class="md-block-item-title">{{R.closed_date}}</div>
                     <div class="md-block-item-value">{{outlet.CloseDate ? outlet.CloseDate : "-"}}</div>
                 </div>
 
                 <div class="md-block-item" flex-gt-sm="" ng-show="openedOptionVisible">
-                    <span class="md-block-item-title">{{outlet.IsOpened ? "Opened" : "Closed"}}</span>
+                    <span class="md-block-item-title">{{outlet.IsOpened ? R.opened : R.closed}}</span>
                     <md-checkbox md-no-ink="" aria-label="Is Opened" ng-model="outlet.IsOpened" class="md-primary">
                     </md-checkbox>
                 </div>
 
                 <div class="md-block-item" flex-gt-sm="" ng-show="trackedOptionVisible">
-                    <span class="md-block-item-title">{{outlet.IsTracked ? "Tracking" : "Non-Tracking"}}</span>
+                    <span class="md-block-item-title">{{outlet.IsTracked ? R.tracking : R.non_tracking}}</span>
                     <md-checkbox md-no-ink="" aria-label="Is Tracked" ng-model="outlet.IsTracked" class="md-primary" style="margin-bottom:0px;">
                     </md-checkbox>
                 </div>
@@ -59,14 +59,14 @@
 
             <div layout-gt-sm="row" ng-show="needAudit" style="margin-bottom:0px;">
                 <div class="md-block-item">
-                    <div class="md-block-item-title" style="min-width:80px">Audit Status</div>
+                    <div class="md-block-item-title" style="min-width:80px">{{R.audit_status}}</div>
                       <md-radio-group ng-model="outlet.AuditStatus">
-                        <md-radio-button value="2" class="md-primary" style="margin-bottom:8px;">Approve</md-radio-button>
-                        <md-radio-button value="3" class="md-primary" style="margin-bottom:4px;">Deny </md-radio-button>                        
+                        <md-radio-button value="2" class="md-primary" style="margin-bottom:8px;">{{R.approve}}</md-radio-button>
+                        <md-radio-button value="3" class="md-primary" style="margin-bottom:4px;">{{R.deny}}</md-radio-button>                        
                     </md-radio-group>                    
                 </div>
                 <md-input-container class="md-block" flex-gt-sm="">
-                    <label>Comment</label>
+                    <label>{{R.comment}}</label>
                     <textarea ng-model="outlet.Note" md-maxlength="150" rows="2" md-select-on-focus="" style="margin-bottom:0px;"></textarea>
                 </md-input-container>                           
             </div>
@@ -93,8 +93,8 @@
             </div>
 
             <div layout-gt-xs="row" layout-margin layout-align="center" style="margin-bottom:0px;">              
-                <md-button class="md-raised md-primary" ng-click="saveUpdate()">Save</md-button>
-                <md-button class="md-raised" ng-click="cancelUpdate()">Cancel</md-button>
+                <md-button class="md-raised md-primary" ng-click="saveUpdate()">{{R.btn_save}}</md-button>
+                <md-button class="md-raised" ng-click="cancelUpdate()">{{R.btn_cancel}}</md-button>
             </div>
         </form>
     </md-content>

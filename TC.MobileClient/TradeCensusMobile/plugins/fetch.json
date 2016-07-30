@@ -96,5 +96,22 @@
         },
         "is_top_level": true,
         "variables": {}
+    },
+    "cordova-plugin-console": {
+        "source": {
+            "type": "registry",
+            "id": "cordova-plugin-console"
+        },
+        "is_top_level": true,
+        "variables": {}
+    },
+    "cordova-plugin-logtofile": {
+        "source": {
+            "type": "git",
+            "url": "https://github.com/andischerer/cordova-plugin-logtofile",
+            "subdir": "."
+        },
+        "is_top_level": true,
+        "variables": {}
     }
 }

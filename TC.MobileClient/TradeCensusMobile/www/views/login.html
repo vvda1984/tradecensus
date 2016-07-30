@@ -7,18 +7,18 @@
                 <md-content layout-padding="" class="md-content-white">
                     <form name="loginForm">
                         <md-input-container class="md-block">
-                            <label>{{ resource.text_EnterUserID }}</label>
+                            <label>{{ R.enter_username }}</label>
                             <input required="" name="userName" ng-model="userName">
                             <!--<div ng-messages="loginForm.user.id.$error" role="alert">
-                                <div ng-message="required">{{ resource.text_ValRequired }}</div>
+                                <div ng-message="required">{{ R.text_ValRequired }}</div>
                             </div>-->
                         </md-input-container>
                     
                         <md-input-container class="md-block">
-                            <label>{{ resource.text_EnterPassword }}</label>
+                            <label>{{ R.enter_password }}</label>
                             <input required="" name="password" type="password" ng-model="password">
                             <!--<div ng-messages="loginForm.user.id.$error" role="alert">
-                                <div ng-message="required">{{ resource.text_ValRequired }}</div>                                
+                                <div ng-message="required">{{ R.text_ValRequired }}</div>                                
                             </div>-->
                         </md-input-container>
                     </form>
@@ -26,10 +26,8 @@
             </div>
 
             <div class="action-buttons">                
-                <div class="button raised blue" ng-click="login()">{{ resource.text_Login }}</div>
-                <div class="button raised" ng-click="exit()">{{ resource.text_Exit }}</div>
-                <!--<md-button class="md-raised md-primary" ng-click="login()">{{ resource.text_Login }}</md-button>
-                <md-button class="md-raised" ng-click="exit()">{{ resource.text_Exit }}</md-button>-->                
+                <div class="button raised blue" ng-click="login()">{{ R.btn_login }}</div>
+                <div class="button raised" ng-click="exit()">{{ R.btn_exit }}</div>                
             </div>
         </div>
 
@@ -37,7 +35,7 @@
             <md-toolbar class="md-hue-2">
                 <div class="md-toolbar-tools">                    
                     <h2>
-                    <span>SETTINGS</span>
+                    <span>{{R.settings}}</span>
                     </h2>
                     <span flex=""></span>                    
                     <!--<md-button class="md-icon-button" aria-label="Settings" ng-click="changeMode(0)">
@@ -50,7 +48,7 @@
                 <md-content layout-padding="" class="md-content-white">
                     <form name="configForm">
                         <md-input-container class="md-block" style="margin-bottom:32px;" ng-show="config.enable_devmode">
-                            <label>{{ resource.text_EnterProtocol }}</label>
+                            <label>{{ R.enter_protocol }}</label>
                             <md-select ng-model="config.protocol">
                                 <md-option value="http">
                                     HTTP
@@ -62,18 +60,18 @@
                         </md-input-container>
 
                         <md-input-container class="md-block" style="margin-bottom:0px;">
-                            <label>{{ resource.text_EnterIPAddress }}</label>
+                            <label>{{ R.enter_ip_address }}</label>
                             <input required="" name="ipAddress" ng-model="config.ip">
                             <!--<div ng-messages="configForm.ipAddress.$error" role="alert">
-                                <div ng-message="required">{{ resource.text_ValRequired }}</div>
+                                <div ng-message="required">{{ R.text_ValRequired }}</div>
                             </div>-->
                         </md-input-container>
 
                         <md-input-container class="md-block" style="margin-bottom:0px;">
-                            <label>{{ resource.text_EnterPort }}</label>
+                            <label>{{ R.enter_port }}</label>
                             <input required="" name="ipAddress" ng-model="config.port">
                             <!--<div ng-messages="configForm.ipAddress.$error" role="alert">
-                                <div ng-message="required">{{ resource.text_ValRequired }}</div>
+                                <div ng-message="required">{{ R.text_ValRequired }}</div>
                             </div>-->
                         </md-input-container>   
 
@@ -86,8 +84,8 @@
             </div>       
             
             <div class="action-buttons">
-                <div class="button raised blue" ng-click="closeConfig(1)">Save</div>
-                <div class="button raised" ng-click="closeConfig(0)">Cancel</div>        
+                <div class="button raised blue" ng-click="closeConfig(1)">{{R.btn_save}}</div>
+                <div class="button raised" ng-click="closeConfig(0)">{{R.btn_cancel}}</div>        
             </div>    
         </div>
     </div>

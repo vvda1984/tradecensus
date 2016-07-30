@@ -4,6 +4,7 @@
 
 function newOutletController($scope, $mdDialog) {
     //log($scope.outletTypes);
+    $scope.R = R;
     $scope.outletTypes = outletTypes;
     $scope.allowCapture = true;
     $scope.showImage1 = false;
@@ -104,7 +105,7 @@ function newOutletController($scope, $mdDialog) {
 
     $scope.deleteOutlet = function () {
         log("delete pressed");
-        showConfirm('Delete Outlet', 'Are you sure you want to delete outlet ' + $scope.outlet.Name, function () {
+        showConfirm(R.delete_outlet, R.delete_outlet_confirm + $scope.outlet.Name, function () {
             $scope.outlet.isDeleted = true;
             $mdDialog.hide(true);
         }, function () { });                
@@ -112,23 +113,23 @@ function newOutletController($scope, $mdDialog) {
 
     $scope.saveUpdate = function () {
         if (isEmpty($scope.outlet.Name)) {
-            showError('Outlet name is empty!');
+            showError(R.outlet_name_is_empty);
             return;
         }
         if (isEmpty($scope.outlet.AddLine)) {
-            showError('House number is empty!');
+            showError(R.house_no_is_empty);
             return;
         }
         if (isEmpty($scope.outlet.AddLine2)) {
-            showError('Street is empty!');
+            showError(R.street_is_empty);
             return;
         }
         if (isEmpty($scope.outlet.District)) {
-            showError('District is empty!');
+            showError(R.district_is_empty);
             return;
         }
         if (isEmpty($scope.outlet.Phone)) {
-            showError('Phone is empty!');
+            showError(R.phone_is_empty);
             return;
         }
         //if ($scope.outlet.TotalVolume ) {

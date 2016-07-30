@@ -1,6 +1,7 @@
 ﻿/// <reference path="tradecensus.js" />
 
-function downloadProvinceController($scope, $http, $mdDialog) {  
+function downloadProvinceController($scope, $http, $mdDialog) {
+    $scope.R = R;
     $scope.close = function () {
         $mdDialog.hide(isDirty);
     };   
@@ -12,10 +13,10 @@ function downloadProvinceController($scope, $http, $mdDialog) {
 
     //*************************************************************************    
     $scope.delete = function (p) {
-        showConfirm('Confim', 'Delete "' + p.name + '"?', function () {
+        showConfirm(R.confirm, R.delete_offline_outlets_of + p.name + '?', function () {
             selectUnsyncedOutletsOfProvince($scope.config.tbl_outlet, p.id, function (dbres) {
                 if (dbres.rows.length > 0) {
-                    showDlg('Error', 'There are unsynced outlet in province ' + p.name + '.\n Please change working outlet and do sync first!');
+                    showDlg(R.error, R.unsynced_outlet_in_province);
                     return;
                 }
 
@@ -39,11 +40,11 @@ function downloadProvinceController($scope, $http, $mdDialog) {
     $scope.download = function (p) {
         var downloadedCount = 0;
         for (var i = 0; i < $scope.dprovinces.length; i++) {
-            if ($scope.dprovinces[i].download)
+            if ($scope.dprovinces[i].download && p.id != $scope.dprovinces[i].id)
                 downloadedCount++;
 
             if (downloadedCount >= maxDownload) {
-                showError('Reach maximum downloaded (' + maxDownload.toString() + ' provinces).\n Please delete existing to download more!');
+                showError(R.reach_maximum_download);
                 return;
             }
         }
@@ -51,14 +52,14 @@ function downloadProvinceController($scope, $http, $mdDialog) {
         curProvince = p;
         selectUnsyncedOutletsOfProvince($scope.config.tbl_outlet, p.id, function (dbres) {
             if (dbres.rows.length > 0) {
-                showDlg('Error', 'There are unsynced outlet in province ' + p.name + '.\n Please change working outlet and do sync first!');
+                showDlg(R.error, R.unsynced_outlet_in_province);
                 return;
             }
 
-            showConfirm('Download Outlets in ' + curProvince.name + '?', 'It may take for a while!.', function () {
+            showConfirm(R.download_outlets, R.download_outlets_confim + curProvince.name + '?', function () {
                 try {
                     cancelDownload = false;
-                    showDlg('Downloading Outlets', 'please wait...',
+                    showDlg(R.downloading_outlet, R.please_wait,
                         function () {
                             log('****** CANCEL download');
                             cancelDownload = true;
@@ -81,7 +82,7 @@ function downloadProvinceController($scope, $http, $mdDialog) {
                                     downloadOutlet(outletHeaders, 0);
                                 }
                                 else {
-                                    showInfo('Not outlets was found!');
+                                    showInfo(R.no_outlet_found);
                                 }
                             }
                         } catch (err) {
@@ -107,7 +108,7 @@ function downloadProvinceController($scope, $http, $mdDialog) {
     function downloadOutlet(outletHeaders, i){
         try{
             var outletheader = outletHeaders[i];
-            setDlgTitle('Downloading outlets (' + (i + 1).toString() + '/' + outletHeaders.length + ')');
+            setDlgTitle(R.downloading_outlet + '(' + (i + 1).toString() + '/' + outletHeaders.length + ')');
             var url = baseURL + '/outlet/get/' + userID + '/' +  outletheader.ID.toString();              
             log('Call service api: ' + url);
             $http({
@@ -140,7 +141,7 @@ function downloadProvinceController($scope, $http, $mdDialog) {
                                 }
                             },
                             function (dberr) {
-                                showError('Download outlet '+  outletheader.Name + ' has got error: ' + dberr.message);
+                                showError(dberr.message);
                             });                                         
                     }
                 } catch (err) {

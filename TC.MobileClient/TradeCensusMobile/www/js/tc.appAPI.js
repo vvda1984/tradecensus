@@ -35,12 +35,7 @@ function networkReady() {
     }
 }
 
-/** 
-* log
-*/
-function log(message) {
-    console.log(message);
-}
+
 
 /** 
 * log

@@ -3,7 +3,7 @@
 function loginController($scope, $http) {
     log('Enter Login Controller');
    
-    $scope.resource = resource;
+    $scope.R = R;
     $scope.config = config;
     $scope.user = user;
     $scope.password = '';
@@ -35,16 +35,16 @@ function loginController($scope, $http) {
             $("#configscreen").css('display', 'none');
         } else {
             if (isEmpty($scope.config.ip)) {
-                showError('IP is empty!');
+                showError(R.ip_is_empty);
                 return;
             }
 
             if (isEmpty($scope.config.port)) {
-                showError('Port is empty!');
+                showError(R.port_is_empty);
                 return;
             }
 
-            showDlg("Update Settings", 'Please wait...');
+            showDlg(R.update_settings, R.please_wait);
             insertSettingDB(config, function () {
                 hideDlg();
                 baseURL = buildURL(
@@ -72,17 +72,17 @@ function loginController($scope, $http) {
         log($scope.user.id);        
         // validate user id
         if (isEmpty($scope.userName)) {
-            showError('User Name is empty!');
+            showError(R.username_is_empty);
             return;
         }
         
         // validate password
         if (isEmpty($scope.password)) {
-            showError('Password is empty!');
+            showError(R.password_is_empty);
             return;
         }       
 
-        showDlg('Login', 'Please wait...');    
+        showDlg(R.btn_login, R.please_wait);    
         if (networkReady()) {
             loginOnline(0, loginSuccess, loginError);
         } else {
@@ -118,14 +118,13 @@ function loginController($scope, $http) {
                 log(ex);
                 onError(ex.message);
             }
-        }, function (err) {            
-            log('HTTP error!');
+        }, function (err) {                        
             log(err);
             if(retry == 0){   
                 loginOnline(1, onSuccess, onError);             
             }
             try{
-                onError(err.statusText == '' ? $scope.resource.text_ConnectionTimeout : err.statusText);
+                onError(err.statusText == '' ? R.connection_timeout : err.statusText);
             }catch(ex){
                 onError(err);
             }
@@ -160,7 +159,7 @@ function loginController($scope, $http) {
                         Role : per.HasAuditRole == '1' ? 1 : 0,
                     });
                 } else {
-                    onError($scope.resource.text_InvalidUserPass);
+                    onError(R.invalid_user_password);
                 }
             },
             function (dberr) {
@@ -171,7 +170,7 @@ function loginController($scope, $http) {
     function loginSuccess(user) {
         log('Login successfully');
         if (user.IsTerminate) {
-            showError($scope.resource.text_UserTerminated);
+            showError(R.user_terminated);
             return;
         }
       
@@ -205,7 +204,7 @@ function loginController($scope, $http) {
         ensureUserOutletDBExist(user.Role == 101 || user.Role == 100, config.tbl_outletSync, config.tbl_outlet, config.tbl_downloadProvince,
             function () {
                 if (networkReady()) {
-                    showDlg('Downloading Settings', 'Please wait...');
+                    showDlg(R.download_settings, R.please_wait);
                     downloadServerConfig(function () {
                         hideDlg();
                         log('Navigate to home (online)');
@@ -238,7 +237,7 @@ function loginController($scope, $http) {
             if (data.Status == -1) { // error
                 onError(data.ErrorMessage);
             } else {
-                setDlgMsg('Update settings...');
+                setDlgMsg(R.update_settings);
 
                 var syncProvinces = false;
                 var syncOutletTypes = false;
@@ -292,7 +291,7 @@ function loginController($scope, $http) {
     }
    
     function downloadProvinces(onSuccess, onError) {
-        setDlgMsg('Downloading Provinces...');
+        setDlgMsg(R.download_provinces);
         var url = baseURL + '/provinces/getall';
         log('Call service api: ' + url);
         $http({
@@ -309,7 +308,7 @@ function loginController($scope, $http) {
     }
    
     function downloadOutletTypes(onSuccess, onError) {
-        setDlgMsg('Downloading Outlet Types...');
+        setDlgMsg(R.download_outlet_types);
         var url = baseURL + '/outlet/getoutlettypes';
         log('Call service api: ' + url);
         $http({

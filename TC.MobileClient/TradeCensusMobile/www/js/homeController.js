@@ -8,6 +8,7 @@
 
 function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     log('Enter Home page');
+    $scope.R = R;
     log(user);    
     var leftPanelStatus = 0;
     var righPanelStatus = 0;
@@ -24,12 +25,11 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     $scope.testacc = curacc;
 
     $scope.provinces = provinces;
-    $scope.resource = resource;
     $scope.config = config;
     $scope.editOutletFull = false;
     $scope.allowRefresh = true;
     $scope.hasAuditRole = user.hasAuditRole;
-    $scope.outletHeader = 'Near-by Outlets';         
+    $scope.outletHeader = R.near_by_outlets;
     $scope.showNoOutletFound = true; 
     $scope.showSyncButton = false;   
     $scope.outlets = [];
@@ -262,16 +262,16 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         
         switch (curOutletView) {
             case 0:                
-                $scope.outletHeader = 'Near-by Outlets';
+                $scope.outletHeader = R.near_by_outlets;
                 break;
             case 1:                
-                $scope.outletHeader = 'New Outlets';
+                $scope.outletHeader = R.new_outlets;
                 break;
             case 2:
-                $scope.outletHeader = 'Updated Outlets';
+                $scope.outletHeader = R.updated_outlets;
                 break;                
             case 3:                
-                $scope.outletHeader = 'Auditted Outlets';
+                $scope.outletHeader = R.auditted_outlets;
                 break;
         }
         $scope.currentPage = 0;     
@@ -281,7 +281,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     //*************************************************************************
     $scope.createNewOutlet = function () {
         log('create new outlet');
-        showDlg('Get current location', "Please wait...");
+        showDlg(R.get_current_location, R.please_wait);
 
         devNewDetlta = devNewDetlta + 0.0001;
 
@@ -327,7 +327,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                     tryCreateNewOutlet(lat, lng, '', '');
                 }
             }, function () {
-                showError('Cannot get current location!');
+                showError(R.cannot_get_current_location);
             });          
         } catch (err) {
             log(err);
@@ -337,15 +337,15 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     //*************************************************************************
     $scope.syncOutlets = function () {
         if (!networkReady()) {
-            showError('Please check network connection!');
+            showError(R.check_network_connection);
             return;
         }
-        showDlg('Synchronize Outlets', 'Please wait...');
+        showDlg(R.synchronize_outlets, R.please_wait);
         selectUnsyncedOutlets(config.tbl_outlet,
             function (dbres) {
                 log('Number of unsynced outlets: ' + dbres.rows.length.toString());
                 if (dbres.rows.length == 0) {
-                    showInfo('All outlets have been synced!');
+                    showInfo(R.all_outlets_have_been_synced);
                     return;
                 }
                 var i;
@@ -354,7 +354,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                     unsyncedOutlets[i] = dbres.rows.item(i);
                 }
                 trySyncOutlets(unsyncedOutlets, 0, function () {
-                    showInfo('Synchronize completed!');
+                    showInfo(R.synchronize_completed);
                     $scope.showSyncButton = false;
                 }, function(err){
 					 showError(err);
@@ -366,14 +366,14 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     $scope.deleteOutlet = function (i) {
         var outlet = $scope.outlets[i];
         
-        showConfirm('Delete Outlet', 'Are you sure you want to delete outlet ' + outlet.Name, function () {
+        showConfirm(R.delete_outlet, R.delete_outlet_confirm + outlet.Name, function () {
             deleteDraftOutlet(outlet);
         }, function () { });
     }
 
     //*************************************************************************
     $scope.downloadOutlets = function () {
-        showDlg('Loading...', 'Please wait');
+        showDlg(R.loading, R.please_wait);
         selectDownloadProvincesDB(config.tbl_downloadProvince,
 			function (dbres) {
 			    log('Found download provinces: ' + dbres.rows.length.toString());
@@ -469,7 +469,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                 $scope.outlet.AuditStatus = ($scope.outlet.IsDraft) ? StatusNew : StatusPost;
 
                 log('Audit Status: ' + $scope.outlet.AuditStatus.toString());
-                showDlg('Saving Outlet', 'Please wait...');
+                showDlg(R.save_outlet, R.please_wait);
                 saveOutlet($scope.outlet,
                        function (synced) {
                            addOutletDB(config.tbl_outlet, $scope.outlet, synced,
@@ -509,11 +509,11 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     function queryOutletsOnline(isbackground, callback) {
         try {
             if (!config.distance) {
-                if(!isbackground) showError("Distance is invalid!");
+                if(!isbackground) showError( R.distance_is_invalid);
                 return;
             }
             if (!config.item_count) {
-                if (!isbackground) showError("Max Outlets is invalid!");
+                if (!isbackground) showError(R.max_outlet_is_invalid);
                 return;
             }
 
@@ -537,7 +537,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                         nearByOutlets = data.Items;
                         nearByOutlets.sort(function (a, b) { return a.Distance - b.Distance });
                         if (!isbackground)
-                            showDlg('Get near-by outlets', 'Found ' + nearByOutlets.length.toString() + ' outlet(s)... loading outlets');
+                            showDlg(R.get_near_by_outlets, R.found + nearByOutlets.length.toString() + R.outlets_loading);
 
                         insertOutletsDB(user.id, config.tbl_outlet, nearByOutlets,
                             function () {
@@ -732,7 +732,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             orgOutlet.modifiedImage2 = $scope.outlet.modifiedImage2;
             orgOutlet.modifiedImage3 = $scope.outlet.modifiedImage3;
 
-            showDlg('Saving Outlet', 'Please wait...');
+            showDlg(R.saving_outlet, R.please_wait);
             if($scope.outlet.isDeleted){
                 log('save outlet to server')
                 saveOutlet($scope.outlet, function (synced) {
@@ -877,7 +877,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 
     //*************************************************************************
     function tryUploadImages(uploadItems, i, onSuccess, onError) {
-        showDlg('Uploading image (' + (i + 1).toString() + '/' + uploadItems.length.toString() + ')', 'Please wait...');
+        showDlg(R.updating_image + '(' + (i + 1).toString() + '/' + uploadItems.length.toString() + ')', R.please_wait);
         var item = uploadItems[i];
 
 		log(item);
@@ -891,7 +891,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                 }
             }, function (dberr) {
                 log(dberr.message);
-                showError('An error has occurred: Code = " + error.code');
+                showError(dberr.message);
                 onError();
             });
 			return;
@@ -945,7 +945,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             //    onError();
             //}
         }, function (error) {
-            showError('An error has occurred: Code = " + error.code');
+            showError(R.error);
             onError();
         }, options);
     }       
