@@ -6,9 +6,9 @@
             <div>Distance: {{outlet.Distance}} m</div>
         </div>
     </md-toolbar>
-    <md-content layout-padding="" class="popup-content">
-        <form name="userForm">
-            <div layout-gt-sm="row">
+    <md-content layout-padding="" class="popup-content" style="margin-bottom:-8px;">
+        <form name="userForm" style="margin-bottom:0px;">
+            <div layout-gt-sm="row" style="margin-bottom:2px;">
                 <div class="md-block-item">
                     <div class="md-block-item-title">Code</div>
                     <div class="md-block-item-value">{{outlet.ID}}</div>
@@ -23,7 +23,7 @@
                 </div>  
             </div>
 
-            <div layout-gt-sm="row">
+            <div layout-gt-sm="row" style="margin-bottom:2px;">
                 <div class="md-block-item" flex-gt-sm="">
                     <div class="md-block-item-title">Phone</div>
                     <div class="md-block-item-value">{{outlet.Phone}}</div>
@@ -52,26 +52,26 @@
 
                 <div class="md-block-item" flex-gt-sm="" ng-show="trackedOptionVisible">
                     <span class="md-block-item-title">{{outlet.IsTracked ? "Tracking" : "Non-Tracking"}}</span>
-                    <md-checkbox md-no-ink="" aria-label="Is Tracked" ng-model="outlet.IsTracked" class="md-primary">
+                    <md-checkbox md-no-ink="" aria-label="Is Tracked" ng-model="outlet.IsTracked" class="md-primary" style="margin-bottom:0px;">
                     </md-checkbox>
                 </div>
             </div>
 
-            <div layout-gt-sm="row" ng-show="needAudit">
+            <div layout-gt-sm="row" ng-show="needAudit" style="margin-bottom:0px;">
                 <div class="md-block-item">
                     <div class="md-block-item-title" style="min-width:80px">Audit Status</div>
                       <md-radio-group ng-model="outlet.AuditStatus">
-                        <md-radio-button value="1" class="md-primary">Approve</md-radio-button>
-                        <md-radio-button value="2" class="md-primary">Deny </md-radio-button>                        
+                        <md-radio-button value="2" class="md-primary" style="margin-bottom:8px;">Approve</md-radio-button>
+                        <md-radio-button value="3" class="md-primary" style="margin-bottom:4px;">Deny </md-radio-button>                        
                     </md-radio-group>                    
                 </div>
                 <md-input-container class="md-block" flex-gt-sm="">
                     <label>Comment</label>
-                    <textarea ng-model="outlet.Note" md-maxlength="150" rows="2" md-select-on-focus=""></textarea>
+                    <textarea ng-model="outlet.Note" md-maxlength="150" rows="2" md-select-on-focus="" style="margin-bottom:0px;"></textarea>
                 </md-input-container>                           
             </div>
            
-            <div layout-gt-sm="row">
+            <div layout-gt-sm="row" style="margin-bottom:24px;">
                 <div flex-gt-sm="" style="margin-left:8px;" class="outlet-image-container">
                     <img id="outletImg1" class="outlet-image" ng-click="capture(1);" src="{{image1URL}}" alt="Outlet Image" />
                 </div>
@@ -83,10 +83,16 @@
                 </div>
                 <div flex-gt-sm="">
                     <img id="captureButton" ng-show="allowCapture" ng-click="capture(0)" src="assets/img/camera.svg" />
-                </div>             
+                </div>     
+                
+                <div class="md-block-item" style="margin-left:24px;" flex-gt-sm="" ng-show="canRevise">
+                    <div class="md-block-item-title" style="min-width:80px">Revise</div>
+                    <md-checkbox md-no-ink="" aria-label="Is IsDraft" ng-model="outlet.IsDraft" class="md-primary">
+                    </md-checkbox>
+                </div>        
             </div>
 
-            <div layout-gt-xs="row" layout-margin layout-align="center">              
+            <div layout-gt-xs="row" layout-margin layout-align="center" style="margin-bottom:0px;">              
                 <md-button class="md-raised md-primary" ng-click="saveUpdate()">Save</md-button>
                 <md-button class="md-raised" ng-click="cancelUpdate()">Cancel</md-button>
             </div>

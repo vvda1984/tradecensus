@@ -1,13 +1,13 @@
 ﻿<md-dialog aria-label="New Outlet" ng-cloak>
-    <md-toolbar>
+    <md-toolbar class="md-hue-2">
         <div class="md-toolbar-tools" id="toolbar">
             <div>{{createNew ? "CREATE NEW OUTLET" : "EDIT OUTLET"}} </div>
             <span flex=""></span>
             <div>Location: {{outlet.Latitude}}, {{outlet.Longitude}}</div>
         </div>
     </md-toolbar>
-    <md-content layout-padding="" class="popup-content">
-        <form name="createOutletForm">
+    <md-content layout-padding="" class="popup-content" style="margin-bottom:-8px;">
+        <form name="createOutletForm" style="margin-bottom:0px;">
             <div layout-gt-sm="row">
                 <md-input-container class="md-block" flex-gt-sm="">
                     <label>ID</label>
@@ -94,7 +94,7 @@
                 </md-input-container>
             </div>
 
-            <div layout-gt-sm="row">
+            <div layout-gt-sm="row" style="margin-bottom:24px;">
                 <div flex-gt-sm="" style="margin-left:12px;" class="outlet-image-container">
                     <img id="outletImg1" class="outlet-image" ng-click="capture(1);" src="{{image1URL}}" alt="Outlet Image" />
                 </div>   
@@ -113,7 +113,7 @@
                     </md-checkbox>
                 </div>
             </div>
-            <div layout-gt-sm="row" layout-margin layout-align="center">     
+            <div layout-gt-sm="row" layout-margin layout-align="center" style="margin-bottom:0px;">     
                 <md-button class="md-raised md-primary" ng-click="saveUpdate()">Save</md-button>
                 <md-button class="md-raised" ng-click="cancelUpdate()">Cancel</md-button>
                 <md-button class="md-raised" ng-click="deleteOutlet()" ng-show="showDraft">Delete</md-button>

@@ -1,31 +1,16 @@
 ﻿/// <reference path="tc.databaseAPI.js" />
 
+const StatusInitial = 0;
+const StatusEdit = 1;
+const StatusAuditAccept = 2;
+const StatusAuditDeny = 3;
+const StatusNew = 10;
+const StatusPost = 11;
+const StatusDelete = 21;
+
 var nearByOutlets = [];
 var curOutlets = [];
 var firstStart = true;
-
-function calcRetangleBoundary(dlat, dlng, p) {
-    var np = {
-        Lat: p.Lat + (dlat / earthR) * (180 / Math.PI),
-        Lng: p.Lng + (dlng / earthR) * (180 / Math.PI) / Math.cos(p.Lat * Math.PI / 180)
-    };
-    return np;
-}
-
-function calcDistance(saleLoc, outletLoc) {
-    var R = 6378137; // Earth’s mean radius in meter
-    var dLat = calculateRad(outletLoc.Lat - saleLoc.Lat);
-    var dLong = calculateRad(outletLoc.Lng - saleLoc.Lng);
-    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(calculateRad(saleLoc.Lat)) * Math.cos(calculateRad(outletLoc.Lat)) *
-           Math.sin(dLong / 2) * Math.sin(dLong / 2);
-    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    var d = R * c;
-    return Math.round(d * 100) / 100;
-}
-
-function calculateRad(x) {
-    return x * Math.PI / 180;
-}
 
 function newOutlet() {
     var provineName  = '';
@@ -44,7 +29,7 @@ function newOutlet() {
         AmendBy: 11693,
         AmendDate: "",
         AreaID: user.areaID,
-        AuditStatus: 10,
+        AuditStatus: StatusPost,
         CloseDate: "",
         CreateDate: "",
         Distance: 0,
@@ -75,7 +60,7 @@ function newOutlet() {
         TotalVolume: 0,
         Tracking: 0,
         VBLVolume: 0,
-        PStatus: 0,
+        PStatus: StatusPost,
         IsDraft: false,
         ExtractName: '',
         PersonFirstName: '',
@@ -110,7 +95,6 @@ function initializeOutlet(outlet) {
     if (outlet.FullAddress == null || isEmpty(outlet.FullAddress))
         outlet.FullAddress = outlet.AddLine + ' ' + outlet.AddLine2 + ' ' + outlet.District + ' ' + provinceName;
 
-    //sql = sql.concat(person.ID.toString(), ", ");
     var exname = '';
     if (outlet.PersonFirstName) {
         exname = exname.concat(outlet.PersonFirstName, ' ');
@@ -121,21 +105,20 @@ function initializeOutlet(outlet) {
     exname = exname.trim();
 
     if (exname != '') {
-        exname = exname.concat(' / ', outlet.PersonID.toString());
+        exname = exname.concat(' (', outlet.PersonID.toString(), ')');
     } else {
-        exname = exname.concat('- / ', outlet.PersonID.toString());
+        exname = exname.concat('Unknown (', outlet.PersonID.toString(), ')');
     }
 
     outlet.ExtractName = exname;
     outlet.IsOpened = isEmpty(outlet.CloseDate);
-    outlet.IsTracked = outlet.Tracking == 1;
-    //outlet.IsAuditApproved = outlet.AuditStatus == 1;
-    outlet.IsDraft = outlet.PStatus == 1;
+    outlet.IsTracked = outlet.Tracking == 1;      
+    outlet.IsAuditApproved = outlet.AuditStatus == 1;
+    outlet.IsDraft = outlet.AuditStatus == StatusNew;
     outlet.IsSynced = (outlet.PSynced) && (outlet.PSynced == 1);
 }
 
-function queryOutlets(view, callback) {
-    showDlg('Get outlets', "Please wait...");
+function queryOutlets(isbackground, view, callback) {
     try {
         meter = config.distance;
         count = config.item_count;
@@ -147,20 +130,7 @@ function queryOutlets(view, callback) {
 
         selectOutletsDB(config.tbl_outlet, bl.Lat, tl.Lat, bl.Lng, br.Lng, view, //config.province_id,
             function (dbres) {
-                //hideDlg();
-                //var rowLen = dbres.rows.length;
-                //log('Found outlets: ' + rowLen.toString());
-                //if (rowLen) {
-                //    var foundOutlets = [];
-                //    for (var i = 0; i < rowLen; i++) {
-                //        var outlet = dbres.rows[i];
-                //        initializeOutlet(outlet);                        
-                //        foundOutlets[i] = outlet;
-                //    }
-                //    callback(foundOutlets);
-                //} else {
-                //    callback([]);
-                //}
+
                 var rowLen = dbres.rows.length;
                 log('Found outlets: ' + rowLen.toString());
                 if (rowLen) {

@@ -25,7 +25,30 @@ var onNetworkChangedCallback;       // Network monitoring callback
 var app = angular.module('TradeCensus', ['ngRoute', 'ngMaterial', 'ngMessages'])
 .config(['$routeProvider', appRouter])
 .config(['$mdThemingProvider', function($mdThemingProvider) {
-    $mdThemingProvider.theme('default').primaryPalette('blue');      
+    //$mdThemingProvider.theme('default').primaryPalette('green');   
+    $mdThemingProvider.definePalette('tradecensustheme', {
+        '50': 'd078ce',
+        '100': 'a3e9a4',
+        '200': '72d572',
+        '300': '42bd41',
+        '400': '259b24',
+        '500': '00551E',
+        '600': '00551E',
+        '700': '00551E',
+        '800': '00551E',
+        '900': '00551E',
+        'A100': '00551E',
+        'A200': '00551E',
+        'A400': '00551E',
+        'A700': '00551E',
+        'contrastDefaultColor': 'light',    // whether, by default, text (contrast)
+        // on this palette should be dark or light
+        'contrastDarkColors': ['50', '100', //hues which contrast should be 'dark' by default
+         '200', '300', '400', 'A100'],
+        'contrastLightColors': undefined    // could also specify this if default was 'dark'
+    });
+    $mdThemingProvider.theme('default')
+      .primaryPalette('tradecensustheme')
 }])
 .controller('MainController', ['$scope', '$route', '$location', mainController])
 .controller('LoginController', ['$scope', '$http', loginController])
@@ -106,13 +129,14 @@ function newConfig() {
         http_method: 'POST',
         calc_distance_algorithm: 'circle',
         map_api_key: 'AIzaSyDpKidHSrPMfErXLJSts9R6pam7iUOr_W0',
+        max_oulet_download: 2,
         tbl_area_ver: '0',
         tbl_outlettype_ver: '0',
         tbl_province_ver: '1',
         tbl_zone_ver: '0',
-        tbl_outletSync: 'outletSync',
-        tbl_outlet: 'outlet',
-        tbl_downloadProvince: 'downloadProvince',        
+        tbl_outletSync: 'uos',
+        tbl_outlet: 'uo',
+        tbl_downloadProvince: 'udp',
     };
 }
 
@@ -258,7 +282,9 @@ function loadSettings(tx, callback) {
                 } else if (name == 'http_method') {
                     config.http_method = value;
                 } else if (name == 'map_api_key') {
-                    config.http_method = value;
+                    config.map_api_key = value;
+                } else if (name == 'max_oulet_download') {
+                    config.max_oulet_download = parseInt(value);
                 }
             }
         }     

@@ -22,10 +22,10 @@
             <img src="assets/img/sync.svg" />
         </div>
         <div id="outlet-dropdown" class="dropdown">
-            <div class="dropdown-item" ng-click="changeOutletView(0)"><span>Near-by Outlets</span></div>
-            <div class="dropdown-item" ng-click="changeOutletView(1)"><span>New Outlets</span></div>
-            <div class="dropdown-item" ng-click="changeOutletView(2)"><span>Updated Outlets</span></div>
-            <div class="dropdown-item" ng-show="hasAuditRole" ng-click="changeOutletView(4)"><span>Auditted Outlets</span></div>
+            <div class="dropdown-item" ng-click="changeOutletView(0)"><img src="assets/img/outlet-near.svg"/><span>Near-by Outlets</span></div>
+            <div class="dropdown-item" ng-click="changeOutletView(1)"><img src="assets/img/outlet-new.svg" /><span>New Outlets</span></div>
+            <div class="dropdown-item" ng-click="changeOutletView(2)"><img src="assets/img/outlet-edit.svg" /><span>Updated Outlets</span></div>
+            <div class="dropdown-item" ng-show="hasAuditRole" ng-click="changeOutletView(4)"><img src="assets/img/outlet-audit.svg" /><span>Auditted Outlets</span></div>
         </div>
     </div>
 
@@ -47,9 +47,10 @@
                         <td>
                             <table class="outlet-detail-table">
                                 <tr>
-                                    <td colspan="4"s>
+                                    <td colspan="4">
                                         <span class="large-text blue-color" ng-click="openOutlet($index)">{{outlet.Name}}</span>					
-                                        <img class="outlet-header-right small-text gray-color" ng-show="outlet.IsDraft" src="assets/img/delete.svg" ng-click="deleteOutlet($index)" />
+                                        <span class="normal-text black-color">({{outlet.ID}})</span>					
+                                        <img class="outlet-header-right small-text gray-color" style="height:24px; width:25px;" ng-show="outlet.IsDraft" src="assets/img/delete.svg" ng-click="deleteOutlet($index)" />
                                         <span class="outlet-header-right small-text gray-color">
                                             {{outlet.Distance}} m
                                         </div>
@@ -89,14 +90,15 @@
                                 </tr>
                                 <tr>
                                     <td>
-                                        <span class="small-text gray-color" ng-show="viewOutletFull">SR/DSM Name: </span>
+                                        <span class="small-text gray-color" ng-show="viewOutletFull">Name: </span>
                                         <span class="normal-text black-color">{{outlet.ExtractName}}</span>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td class="small-text gray-color">
-                                        Last Changed: {{outlet.AmendDate}}
-                                    </td>
+                                    <td>
+                                        <span class="small-text gray-color" ng-show="viewOutletFull">Last Changed: </span>
+                                        <span class="small-text gray-color">{{outlet.AmendDate ? outlet.AmendDate : "-"}}</span>
+                                    </td>                                   
                                 </tr>
                             </table>
                         </td>

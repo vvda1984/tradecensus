@@ -11,22 +11,34 @@
         </div>
     </md-toolbar>          
     <md-content layout-padding="" class="popup-content">                
-        <table class="province-table ">
-            <thead>
+        <table class="province-table">
+            <!--<thead>
                 <tr>
-                    <th>PROVINCE</th>
-                    <th>STATUS</th>                            
+                    <th>PROVINCE</th>                    
+                    <th colspan="2">DOWNLOAD</th>                            
                 </tr>
-            </thead>
+            </thead>-->
             <tbody>
                 <tr ng-repeat="province in dprovinces | orderBy:'-name'">
                     <td> {{ province.name }} </td>
-                    <td>
-                        <img ng-hide="province.download" src="assets/img/download.svg" ng-click="download(province)" style="margin-left:12px;"> 
-                        <span ng-show="province.download" >downloaded</span>                           
+                    <td>                       
+                        <!--<span ng-show="province.download">downloaded</span>-->
+                        <img ng-show="province.download" src="assets/img/check.svg"/>
                     </td>                          
+                    <td>
+                        <img ng-show="province.download" src="assets/img/clear.svg" ng-click="delete(province)" style="margin-left:12px;">                        
+                    </td>  
+                    <td>
+                        <img src="assets/img/download.svg" ng-click="download(province)" style="margin-left:12px;">
+                    </td>  
                 </tr>
             </tbody>
         </table>
     </md-content>
+     <div class="action-buttons">
+         <div class="button label-blue" ng-click="close()" style="float:right;right:4px;">
+             <div class="center" fit>CLOSE</div>
+             <paper-ripple fit></paper-ripple>
+         </div>    
+     </div>
 </md-dialog>

@@ -2,24 +2,38 @@
 
 function loginController($scope, $http) {
     log('Enter Login Controller');
-    
-    if(isDev){
+   
+    $scope.resource = resource;
+    $scope.config = config;
+    $scope.user = user;
+    $scope.password = '';
+
+    if (isDev) {
         $scope.userName = 'sale1';
         $scope.password = '1';
     }
 
-    $scope.resource = resource;
-    $scope.config = config;
-    $scope.user = user;
-    $scope.password = '';    
+    var protocol = $scope.config.protocol;
+    var ip = $scope.config.ip;
+    var port = $scope.config.port;
+    var province_id = $scope.config.province_id;        
+    var online = $scope.config.mode_online;
 
     $scope.exit = function () {
         navigator.app.exitApp();
     };
 
-    $scope.changeMode = function (i) {
-        log('Change mode: ' + i.toString());
-        if(i == 0){
+    $scope.closeConfig = function (r) {
+        if (r === 0) { // cancel
+            config.protocol = protocol;
+            config.ip = ip;
+            config.port = port;
+            config.province_id = province_id;
+            config.mode_online = online;
+
+            $("#loginscreen").css('display', 'block');
+            $("#configscreen").css('display', 'none');
+        } else {
             if (isEmpty($scope.config.ip)) {
                 showError('IP is empty!');
                 return;
@@ -29,16 +43,29 @@ function loginController($scope, $http) {
                 showError('Port is empty!');
                 return;
             }
-                     
-            insertSettingDB($scope.config, function () {                
-                baseURL = buildURL($scope.config.protocol, $scope.config.ip, $scope.config.port, $scope.config.service_name);
-                $scope.showConfig = false;
+
+            showDlg("Update Settings", 'Please wait...');
+            insertSettingDB(config, function () {
+                hideDlg();
+                baseURL = buildURL(
+                    $scope.config.protocol,
+                    $scope.config.ip,
+                    $scope.config.port,
+                    $scope.config.service_name);
+                log('Change baseURL: ' + baseURL);
+                $("#configscreen").css('display', 'none');
+                $("#loginscreen").css('display', 'block');
             }, function (dberr) {
                 showError(dberr.message);
             });
-        } else{
-             $scope.showConfig = true; 
         }
+    }
+
+    $scope.changeMode = function () {
+        $scope.config = config;
+        log('Change mode: ' + i.toString());
+        $("#loginscreen").css('display', 'none');
+        $("#configscreen").css('display', 'block');
     };
    
     $scope.login = function () {
@@ -168,7 +195,7 @@ function loginController($scope, $http) {
         $scope.user.phone = user.Phone;
         
         config.tbl_outletSync = 'outletsync_' + $scope.user.id;
-        config.tbl_outlet = 'outlet' + $scope.user.id;
+        config.tbl_outlet = 'outlet_' + $scope.user.id;
         config.tbl_downloadProvince = 'outlet_province_' + $scope.user.id;
         
         log($scope.user.hasAuditRole);
@@ -237,6 +264,8 @@ function loginController($scope, $http) {
                         config.sync_time = parseInt(p.Value);
                     } else if (p.Key == 'protocol') {
                         config.protocol = p.Value;
+                    } else if (p.Key == 'max_oulet_download') {
+                        config.max_oulet_download = p.Value;
                     }
                 }
 

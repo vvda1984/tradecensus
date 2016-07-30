@@ -1,8 +1,13 @@
 ﻿function editOutletController($scope, $mdDialog) {
     log('view outlet ' + $scope.outlet.ID.toString());
     $scope.needAudit = user.hasAuditRole &&
-                       ($scope.outlet.AuditStatus <= 0 || $scope.outlet.AuditStatus == 255) &&
+                       $scope.outlet.AuditStatus == StatusPost &&
                        $scope.outlet.InputBy != user.id;
+    if ($scope.needAudit) {
+        $scope.outlet.AuditAction = 1; //approve
+    }
+
+    $scope.canRevise = $scope.outlet.AuditStatus == StatusPost && $scope.outlet.InputBy == user.id;
 
     $scope.allowCapture = isEmpty($scope.outlet.StringImage1) ||
                           isEmpty($scope.outlet.StringImage2) ||

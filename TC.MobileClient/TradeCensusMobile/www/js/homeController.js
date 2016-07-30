@@ -40,7 +40,9 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     $scope.showSettingExpand = true;
     $scope.showSearchImg = true;
     $scope.showClearSearchImg = false;
-    $scope.viewOutletPanel = false;    
+    $scope.viewOutletPanel = false;
+    $scope.currentPage = 0;
+    $scope.pageSize = config.page_size;
 
     //*************************************************************************
     $scope.testChangeLocation = function(){
@@ -86,8 +88,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         }        
     }
 
-    $scope.currentPage = 0;
-    $scope.pageSize = config.page_size;
+    //*************************************************************************
     $scope.numberOfPages = function(){        
         return Math.ceil($scope.outlets.length/$scope.pageSize);                
     }  
@@ -254,12 +255,27 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     //*************************************************************************
     $scope.changeOutletView = function (v) {
         $scope.hideDropdown();
-        $scope.closeLeftPanel();
-        if (curOutletView === v) return;
+        if (curOutletView === v) return;        
+        $scope.closeLeftPanel();        
         log('change view to ' + v.toString());
-        //curOutletView = v;
+        curOutletView = v;
+        
+        switch (curOutletView) {
+            case 0:                
+                $scope.outletHeader = 'Near-by Outlets';
+                break;
+            case 1:                
+                $scope.outletHeader = 'New Outlets';
+                break;
+            case 2:
+                $scope.outletHeader = 'Updated Outlets';
+                break;                
+            case 3:                
+                $scope.outletHeader = 'Auditted Outlets';
+                break;
+        }
         $scope.currentPage = 0;     
-        getOutletsByView(v, false);
+        getOutletsByView(false);
     }
 
     //*************************************************************************
@@ -350,7 +366,65 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     $scope.deleteOutlet = function (i) {
         var outlet = $scope.outlets[i];
         
-        showConfirm('Delete Outlet', 'Are you sure you want to delete outlet ' + outlet.Name, function () { deleteDraftOutlet(outlet); }, function () { });
+        showConfirm('Delete Outlet', 'Are you sure you want to delete outlet ' + outlet.Name, function () {
+            deleteDraftOutlet(outlet);
+        }, function () { });
+    }
+
+    //*************************************************************************
+    $scope.downloadOutlets = function () {
+        showDlg('Loading...', 'Please wait');
+        selectDownloadProvincesDB(config.tbl_downloadProvince,
+			function (dbres) {
+			    log('Found download provinces: ' + dbres.rows.length.toString());
+			    var dprovinces = [];
+			    if (dbres.rows.length == 0) {
+			        for (var i = 0; i < provinces.length; i++) {
+			            dprovinces[i] = {
+			                id: provinces[i].id,
+			                name: provinces[i].name,
+			                download: 0,
+			            };
+			        }
+			    } else {
+			        for (var i = 0; i < dbres.rows.length; i++) {
+			            dprovinces[i] = {
+			                id: dbres.rows.item(i).id,
+			                name: dbres.rows.item(i).name,
+			                download: dbres.rows.item(i).download,
+			            };
+			        }
+			    }
+
+			    $scope.dprovinces = dprovinces;
+			    hideDlg();
+			    $mdDialog.show({
+			        scope: $scope.$new(),
+			        controller: downloadProvinceController,
+			        templateUrl: 'views/downloadProvince.html',
+			        parent: angular.element(document.body),
+			        clickOutsideToClose: false,
+			        fullscreen: false,
+			    })
+                .then(function (answer) {
+                    if (answer) {
+                        log('save download')
+                        saveDownloadProvincesDB(config.tbl_downloadProvince, $scope.dprovinces,
+                           function () {
+
+                           },
+                           function (dberr) {
+                               showError('Query error: ' + dberr.message);
+                           });
+                        $scope.dprovinces = [];
+                    }
+                }, function () {
+                });
+
+			}, function (dberr) {
+			    log(dberr);
+			    showError('Query error: ' + dberr.message);
+			});
     }
 
     //*************************************************************************
@@ -392,23 +466,11 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         .then(function (answer) {
             if (answer) {
                 log('save outlet')
-                $scope.outlet.PStatus = ($scope.outlet.IsDraft) ? 1 : 0;
+                $scope.outlet.AuditStatus = ($scope.outlet.IsDraft) ? StatusNew : StatusPost;
 
-                log('$scope.outlet.IsDraft: ' + $scope.outlet.IsDraft.toString());
+                log('Audit Status: ' + $scope.outlet.AuditStatus.toString());
                 showDlg('Saving Outlet', 'Please wait...');
-                if ($scope.outlet.IsDraft) {
-                    addOutletDB(config.tbl_outlet, $scope.outlet, false, function () {
-                        if (curOutletView == 1)
-                            $scope.refresh();
-                        else
-                            $scope.changeOutletView(1);
-                        hideDlg();
-                    }, function (dberr) {
-                        hideDlg();
-                        showError(dberr.message);
-                    });
-                } else {
-                    saveOutlet($scope.outlet,
+                saveOutlet($scope.outlet,
                        function (synced) {
                            addOutletDB(config.tbl_outlet, $scope.outlet, synced,
                                function () {
@@ -416,142 +478,57 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                                        $scope.refresh();
                                    else
                                        $scope.changeOutletView(1);
-                                   //$scope.refresh();
-                                   //addOutletRequiredFields($scope.outlet);
-                                   //$scope.outlets[$scope.outlets.length] = $scope.outlet;
-                                   //createMaker($scope.outlet, new google.maps.LatLng($scope.outlet.Latitude, $scope.outlet.Longitude), markers.length, true);
                                    hideDlg();
                                }, function (dberr) {
                                    hideDlg();
                                    showError(dberr.message);
                                });
                        });
-                }
             }
         }, function () {
         });
     }
     
     //*************************************************************************
-    function getOutletsByView(view, isbackground) {
-        $scope.outlets.length = 0;
-        switch (view) {
-            case 0:
-                log('view near-by outlets');
-                if(isbackground){
-                    nearByOutlets = [];
-                    if (networkReady()) {
-                        getNearByOutletsOnline(isbackground, function (foundOutlets) {
-                            log('*** Load outlet...');
-                            loadOutlets(foundOutlets);
-                        });
-                    } else {
-                        queryNearbyOutlets(function (foundOutlets) {
-                            loadOutlets(foundOutlets);
-                        });
-                    }
-                } else{
-                    showDlg('Get current location', "Please wait...");
-                    getCurPosition(false, function (lat, lng) {                       
-                        curOutletView = view;
-                        $scope.outletHeader = 'Near-by Outlets';                        
-                        nearByOutlets = [];
-                        if (networkReady()) {
-                            getNearByOutletsOnline(isbackground, function (foundOutlets) {
-                                log('*** Load outlet...');
-                                loadOutlets(foundOutlets);
-                            });
-                        } else {
-                            queryNearbyOutlets(function (foundOutlets) {
-                                loadOutlets(foundOutlets);
-                            });
-                        }
-                    }, function (err) {
-                        log(err);
-                        if(!isbackground) showError('Cannot get current location!');
-                    });
-                }
-              
-                /*
-                if (nearByOutlets.length > 0) {
-                    showDlg('Load near-by outlets', "Please wait...");
-                    curOutletView = view;
-                    $scope.outletHeader = 'Near-by Outlets';
-                    loadOutlets(nearByOutlets);
-                } else {
-                    showDlg('Get current location', "Please wait...");
-                    getCurPosition(function (lat, lng) {                       
-                        curOutletView = view;
-                        $scope.outletHeader = 'Near-by Outlets';                        
-                        nearByOutlets = [];
-                        if (networkReady()) {
-                            getNearByOutletsOnline(function (foundOutlets) {
-                                loadOutlets(foundOutlets);
-                            });
-                        } else {
-                            queryNearbyOutlets(function (foundOutlets) {
-                                loadOutlets(foundOutlets);
-                            });
-                        }
-                    }, function (err) {
-						log(err);
-                        showError('Cannot get current location!');
-                    });
-                }
-                */
-                break;
-            case 1:
-                log('view new outlets');
-                if(!isbackground) showDlg('Get new outlets', "Please wait...");
-                queryOutlets(view, function (foundOutlets) {
-                    curOutletView = view;
-                    $scope.outletHeader = 'New Outlets';
-                    loadOutlets(foundOutlets);
-                });
-                break
-            case 2:
-                log('view updated outlets');
-                if(!isbackground) showDlg('Get updated outlets', "Please wait...");
-                queryOutlets(view, function (foundOutlets) {
-                    curOutletView = view;
-                    $scope.outletHeader = 'Updated Outlets';
-                    loadOutlets(foundOutlets);
-                });
-                break;
-            case 4:
-                log('view auditted outlets');
-                if(!isbackground) showDlg('Get auditted outlets', "Please wait...");
-                queryOutlets(view, function (foundOutlets) {
-                    curOutletView = view;
-                    $scope.outletHeader = 'Auditted Outlets';
-                    loadOutlets(foundOutlets);
-                });
-                break;
-        }
-    }   
-     
+    function getOutletsByView(isbackground) {
+        if (!isbackground)
+            showDlg('Get ' + $scope.outletHeader, 'Please wait...');
+
+        if (networkReady()) {
+            queryOutletsOnline(isbackground, function (foundOutlets) {
+                loadOutlets(foundOutlets);
+            });
+        } else {
+            queryOutlets(false, curOutletView, function (foundOutlets) {
+                loadOutlets(foundOutlets);
+            });
+        }      
+    }       
+
     //*************************************************************************
-    function getNearByOutletsOnline(isbackground, callback) {       
-        try{
-            if(!config.distance)
-            {
-                showError("Distance is invalid!");
+    function queryOutletsOnline(isbackground, callback) {
+        try {
+            if (!config.distance) {
+                if(!isbackground) showError("Distance is invalid!");
                 return;
             }
-            if(!config.item_count)
-            {
-                showError("Max Outlets is invalid!");
+            if (!config.item_count) {
+                if (!isbackground) showError("Max Outlets is invalid!");
                 return;
             }
 
-            var url = baseURL + '/outlet/getoutlets/' + userID + '/' + 
-                            + curlat.toString() + '/' + curlng.toString() + '/'
-                            + config.distance.toString() + '/' + config.item_count.toString();
+            var url = baseURL + '/outlet/getoutlets/' + userID + '/'
+                            + curlat.toString() + '/'
+                            + curlng.toString() + '/'
+                            + config.distance.toString() + '/'
+                            + config.item_count.toString() + '/'
+                            + curOutletView.toString();
+
             log('Call service api: ' + url);
             $http({
                 method: config.http_method,
                 url: url
-            }).then(function (resp) {            
+            }).then(function (resp) {
                 try {
                     var data = resp.data;
                     if (data.Status == -1) { // error
@@ -559,40 +536,40 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                     } else {
                         nearByOutlets = data.Items;
                         nearByOutlets.sort(function (a, b) { return a.Distance - b.Distance });
-                        if(!isbackground) 
+                        if (!isbackground)
                             showDlg('Get near-by outlets', 'Found ' + nearByOutlets.length.toString() + ' outlet(s)... loading outlets');
-                        
+
                         insertOutletsDB(user.id, config.tbl_outlet, nearByOutlets,
                             function () {
                                 log('Sync outlet from server completed');
                                 callback(nearByOutlets);
                             },
                             function (dberr) {
-                                if(!isbackground)
+                                if (!isbackground)
                                     showError(dberr.message);
                                 else
                                     log(dberr.message);
-                            });                    
+                            });
                     }
                 } catch (err) {
-                    if(!isbackground)
+                    if (!isbackground)
                         showError(err.message);
                     else
                         log(err.message);
                 }
-            }, function(err){
+            }, function (err) {
                 log('HTTP error...');
                 log(err);
                 hideDlg();
-                if(!isbackground){
+                if (!isbackground) {
                     var msg = err.statusText == '' ? $scope.resource.text_ConnectionTimeout : err.statusText;
                     showError(msg);
-                }            
+                }
             });
-        } catch(ex){
+        } catch (ex) {
             showError(ex.message);
         }
-    }   
+    }
 
     //*************************************************************************
     function loadOutlets(outlets) {
@@ -643,63 +620,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             }  
         }, 100);
     }
-    
-    //*************************************************************************
-    $scope.downloadOutlets = function(){
-        showDlg('Loading...', 'Please wait');        
-	    selectDownloadProvincesDB(config.tbl_downloadProvince,
-			function (dbres) {
-				log('Found download provinces: ' + dbres.rows.length.toString());
-                var dprovinces = [];
-			    if (dbres.rows.length == 0) {					
-					for(var i = 0; i< provinces.length; i++){                    
-                        dprovinces[i] = {
-                            id : provinces[i].id,
-                            name : provinces[i].name,
-                            download : 0,                            
-                        };
-                    }
-			    } else {
-			        for (var i = 0; i < dbres.rows.length; i++) {
-			            dprovinces[i] = {
-			                id: dbres.rows.item(i).id,
-			                name: dbres.rows.item(i).name,
-			                download: dbres.rows.item(i).download,
-			            };
-			        }
-			    }
-
-                $scope.dprovinces = dprovinces;
-                hideDlg();				                            
-                $mdDialog.show({
-                    scope: $scope.$new(),
-                    controller: downloadProvinceController,
-                    templateUrl: 'views/downloadProvince.html',
-                    parent: angular.element(document.body),
-                    clickOutsideToClose: false,
-                    fullscreen: false,
-                })
-                .then(function (answer) {
-                    if (answer) {
-                        log('save download')
-                         saveDownloadProvincesDB(config.tbl_downloadProvince, $scope.dprovinces, 
-                            function(){
-
-                            }, 
-                            function(dberr){
-                                showError('Query error: ' + dberr.message);                                
-                            });
-                        $scope.dprovinces = [];
-                    }
-                }, function () {
-                });
-
-			}, function(dberr){
-                log(dberr);
-                showError('Query error: ' + dberr.message);					
-			});		         
-    }  
-
+        
     //*************************************************************************
     function changeGPSTrackingStatus(){
         if($scope.enable_liveGPS){
@@ -713,11 +634,11 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     function handleLocationChange(lat, lng, acc){
         var distance = calcDistance({Lat: curlat, Lng : curlng}, {Lat : lat, Lng : lng});
         curacc = acc;
-        if(distance > 10){
+        if(distance > 1){
             curlat = lat;
             curlng = lng;            
             displayCurrentPostion();
-            getOutletsByView(curOutletView, true);
+            getOutletsByView(true);
         }      
         else 
             displayAccuracy() 
@@ -744,7 +665,8 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         $scope.outlet = clonedOutlet;
         initializeOutlet($scope.outlet);        
         log('draft: ' + $scope.outlet.IsDraft);
-		var isEditDraft = $scope.outlet.IsDraft;
+        var isEditDraft = $scope.outlet.IsDraft;
+
         $mdDialog.show({
             scope: $scope.$new(),
             controller: isEditDraft ? newOutletController : editOutletController,
@@ -754,85 +676,108 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             fullscreen: false,
         })
         .then(function (answer) {           
-            if (!answer) return
+            if (!answer) return;
 
-            if ($scope.outlet.isDeleted) {
-                log('delete outlet ' + $scope.outlet.ID);
-                deleteDraftOutlet($scope.outlet);
+            if(isEditDraft) {                
+                if($scope.outlet.isDeleted)
+                    $scope.outlet.AuditStatus = StatusDelete;
+                else
+                    $scope.outlet.AuditStatus = ($scope.outlet.IsDraft) ? StatusNew : StatusPost;                
+            } else{
+                if($scope.outlet.AuditStatus == StatusInitial)
+                    $scope.outlet.AuditStatus = StatusEdit;
+                else if ($scope.outlet.AuditStatus == StatusPost) {
+                    if($scope.outlet.IsDraft){
+                        $scope.outlet.AuditStatus = StatusNew;  //Revise
+                    }                    
+                }
+            }
+
+            if ($scope.outlet.IsTracked) $scope.outlet.Tracking = 1;
+            if ($scope.outlet.IsOpened) $scope.outlet.CloseDate = '';            
+            $scope.outlet.AmendBy = user.id;
+            
+            var isPost = $scope.outlet.IsDraft != orgOutlet.IsDraft;
+            var isAuditChanged = $scope.outlet.AuditStatus != orgOutlet.AuditStatus;
+
+            orgOutlet.AuditStatus = $scope.outlet.AuditStatus;
+            orgOutlet.AmendBy = $scope.outlet.AmendBy;                        
+            orgOutlet.AddLine = $scope.outlet.AddLine;
+            orgOutlet.AddLine2 = $scope.outlet.AddLine2;            
+            orgOutlet.AuditStatus = $scope.outlet.AuditStatus;
+            orgOutlet.CloseDate = $scope.outlet.CloseDate;
+            orgOutlet.Distance = $scope.outlet.Distance;
+            orgOutlet.District = $scope.outlet.District;
+            orgOutlet.FullAddress = $scope.outlet.FullAddress;            
+            orgOutlet.IsOpened = $scope.outlet.IsOpened;
+            orgOutlet.IsTracked = $scope.outlet.IsTracked;
+            orgOutlet.Name = $scope.outlet.Name;
+            orgOutlet.Note = $scope.outlet.Note;
+            orgOutlet.OTypeID = $scope.outlet.OTypeID;
+            orgOutlet.OutletEmail = $scope.outlet.OutletEmail;
+            orgOutlet.OutletSource = $scope.outlet.OutletSource;
+            orgOutlet.OutletTypeName = $scope.outlet.OutletTypeName;
+            orgOutlet.Phone = $scope.outlet.Phone;
+            orgOutlet.ProvinceID = $scope.outlet.ProvinceID;
+            orgOutlet.ProvinceName = $scope.outlet.ProvinceName;
+            orgOutlet.StringImage1 = $scope.outlet.StringImage1;
+            orgOutlet.StringImage2 = $scope.outlet.StringImage2;
+            orgOutlet.StringImage3 = $scope.outlet.StringImage3;
+            orgOutlet.TotalVolume = $scope.outlet.TotalVolume;
+            orgOutlet.Tracking = $scope.outlet.Tracking;
+            orgOutlet.VBLVolume = $scope.outlet.VBLVolume;
+            orgOutlet.PStatus = $scope.outlet.PStatus;
+                
+            orgOutlet.modifiedImage1 = $scope.outlet.modifiedImage1;
+            orgOutlet.modifiedImage2 = $scope.outlet.modifiedImage2;
+            orgOutlet.modifiedImage3 = $scope.outlet.modifiedImage3;
+
+            showDlg('Saving Outlet', 'Please wait...');
+            if($scope.outlet.isDeleted){
+                log('save outlet to server')
+                saveOutlet($scope.outlet, function (synced) {
+                    log('Save outlet to local db')
+                    if(synced){
+                        deleteOutletDB($scope.config.tbl_outlet, orgOutlet, function(){
+                            if (curOutletView == 1)
+                                $scope.refresh();
+                            hideDlg();
+                        }, function (dberr) {
+                            hideDlg();
+                            showError(dberr.message);
+                        })
+                    } else{
+                        saveOutletDB(config.tbl_outlet, orgOutlet, curOutletView, synced,
+                        function () {
+                            if (curOutletView == 1)
+                                $scope.refresh();                                   
+                            hideDlg();
+                        }, function (dberr) {
+                            hideDlg();
+                            showError(dberr.message);
+                        });
+                    }                    
+                });
             } else {
-                if ($scope.outlet.IsTracked) $scope.outlet.Tracking = 1;
-                if ($scope.outlet.IsOpened) $scope.outlet.CloseDate = '';
-                $scope.outlet.PStatus = ($scope.outlet.IsDraft) ? 1 : 0;
-                $scope.outlet.AmendBy = user.id;
-                
-                var isUnDraft = $scope.outlet.IsDraft != orgOutlet.IsDraft;
-                var isAuditChanged = $scope.outlet.AuditStatus != orgOutlet.AuditStatus;
-
-                //orgOutlet.Action: 0,
-                orgOutlet.AddLine = $scope.outlet.AddLine;
-                orgOutlet.AddLine2 = $scope.outlet.AddLine2;
-                //orgOutlet.AreaID= $scope.outlet.AreaID;
-                orgOutlet.AuditStatus = $scope.outlet.AuditStatus;
-                orgOutlet.CloseDate = $scope.outlet.CloseDate;
-                orgOutlet.Distance = $scope.outlet.Distance;
-                orgOutlet.District = $scope.outlet.District;
-                orgOutlet.FullAddress = $scope.outlet.FullAddress;
-                //orgOutlet.InputBy=  user.id,
-                orgOutlet.IsOpened = $scope.outlet.IsOpened;
-                orgOutlet.IsTracked = $scope.outlet.IsTracked;
-                orgOutlet.Name = $scope.outlet.Name;
-                orgOutlet.Note = $scope.outlet.Note;
-                orgOutlet.OTypeID = $scope.outlet.OTypeID;
-                orgOutlet.OutletEmail = $scope.outlet.OutletEmail;
-                orgOutlet.OutletSource = $scope.outlet.OutletSource;
-                orgOutlet.OutletTypeName = $scope.outlet.OutletTypeName;
-                orgOutlet.Phone = $scope.outlet.Phone;
-                orgOutlet.ProvinceID = $scope.outlet.ProvinceID;
-                orgOutlet.ProvinceName = $scope.outlet.ProvinceName;
-                orgOutlet.StringImage1 = $scope.outlet.StringImage1;
-                orgOutlet.StringImage2 = $scope.outlet.StringImage2;
-                orgOutlet.StringImage3 = $scope.outlet.StringImage3;
-                orgOutlet.TotalVolume = $scope.outlet.TotalVolume;
-                orgOutlet.Tracking = $scope.outlet.Tracking;
-                orgOutlet.VBLVolume = $scope.outlet.VBLVolume;
-                orgOutlet.PStatus = $scope.outlet.PStatus;
-                
-                orgOutlet.modifiedImage1 = $scope.outlet.modifiedImage1;
-                orgOutlet.modifiedImage2 = $scope.outlet.modifiedImage2;
-                orgOutlet.modifiedImage3 = $scope.outlet.modifiedImage3;
-
                 if (curOutletView != 1) { // new outlet
                     var iconUrl = getMarkerIcon($scope.outlet);
                     log('change marker ' + i.toString() + ' icon: ' + iconUrl);
                     markers[i].setIcon(iconUrl);
                 }
 
-                log('save outlet')
-                showDlg('Saving Outlet', 'Please wait...');
-                if ($scope.outlet.IsDraft) {
+                log('save outlet to server')
+                saveOutlet($scope.outlet, function (synced) {
                     log('save outlet to local db')
-                    saveOutletDB(config.tbl_outlet, orgOutlet, 1, false,
-                            function () {
-                                hideDlg();
-                            }, function (dberr) {
-                                hideDlg();
-                                showError(dberr.message);
-                            });
-                } else {
-                    log('save outlet to server')
-                    saveOutlet($scope.outlet, function (synced) {
-                        log('save outlet to local db')
-                        saveOutletDB(config.tbl_outlet, orgOutlet, isEditDraft ? 1 : (isAuditChanged ? 4 : 2), synced,
-                            function () {
-                                if (curOutletView == 1)
-                                       $scope.refresh();                                   
-                                hideDlg();
-                            }, function (dberr) {
-                                hideDlg();
-                                showError(dberr.message);
-                            });
-                    });
-                }
+                    saveOutletDB(config.tbl_outlet, orgOutlet, curOutletView, synced,
+                        function () {
+                            if (curOutletView == 1)
+                                $scope.refresh();                                   
+                            hideDlg();
+                        }, function (dberr) {
+                            hideDlg();
+                            showError(dberr.message);
+                        });
+                });
             }
         }, function () {
         });
@@ -841,13 +786,30 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     //*************************************************************************
     function deleteDraftOutlet(outlet) {    
         log('delete outlet ' + outlet.ID.toString());
-        deteleOutletDB(config.tbl_outlet, outlet, function (tx) {
-            hideDlg();
-            $scope.refresh();
-        }, function (dberr) {
-            hideDlg();
-            showError(dberr.message);
-        });
+        outlet.AuditStatus = StatusDelete;
+
+        log('save outlet to server')
+        saveOutlet(outlet, function (synced) {
+            log('Save outlet to local db')
+            if (synced) {
+                deleteOutletDB($scope.config.tbl_outlet, outlet, function () {
+                    hideDlg();
+                    $scope.refresh();
+                }, function (dberr) {
+                    hideDlg();
+                    showError(dberr.message);
+                })
+            } else {
+                saveOutletDB(config.tbl_outlet, outlet, curOutletView, synced,
+                function () {
+                    hideDlg();
+                    $scope.refresh();
+                }, function (dberr) {
+                    hideDlg();
+                    showError(dberr.message);
+                });
+            }
+        });      
     }
 
     //*************************************************************************
@@ -1118,11 +1080,11 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                     log('Move to current location');
                     moveToCurrentLocation();
                 }
-                getNearByOutletsOnline(false, function (foundOutlets) {
+                queryOutletsOnline(false, function (foundOutlets) {
                     loadOutlets(foundOutlets);
                 });
             } else {
-                queryNearbyOutlets(function (foundOutlets) {
+                queryOutlets(false, curOutletView, function (foundOutlets) {
                     loadOutlets(foundOutlets);
                 });
             }

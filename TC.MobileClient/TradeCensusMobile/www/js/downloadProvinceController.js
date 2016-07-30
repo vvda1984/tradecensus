@@ -4,17 +4,54 @@ function downloadProvinceController($scope, $http, $mdDialog) {
     $scope.close = function () {
         $mdDialog.hide(isDirty);
     };   
-
+    
+    var maxDownload = $scope.config.max_oulet_download;
     var cancelDownload = false;
     var curProvince;
     var isDirty = false;
 
     //*************************************************************************    
-    $scope.download = function(p){
+    $scope.delete = function (p) {
+        showConfirm('Confim', 'Delete "' + p.name + '"?', function () {
+            selectUnsyncedOutletsOfProvince($scope.config.tbl_outlet, p.id, function (dbres) {
+                if (dbres.rows.length > 0) {
+                    showDlg('Error', 'There are unsynced outlet in province ' + p.name + '.\n Please change working outlet and do sync first!');
+                    return;
+                }
+
+                p.download = 0;
+                try {
+                    $scope.$apply();
+                } catch (err) {
+                }
+                deleleDownloadProvinceDB($scope.config.tbl_outlet, $scope.config.tbl_downloadProvince, p.id, function () {
+
+                }, function (dberr) {
+                    showError(dberr.message);
+                });
+            }, function (dberr) {
+                showError(dberr.message);
+            });           
+        }, function () { });
+    }
+
+    //*************************************************************************    
+    $scope.download = function (p) {
+        var downloadedCount = 0;
+        for (var i = 0; i < $scope.dprovinces.length; i++) {
+            if ($scope.dprovinces[i].download)
+                downloadedCount++;
+
+            if (downloadedCount >= maxDownload) {
+                showError('Reach maximum downloaded (' + maxDownload.toString() + ' provinces).\n Please delete existing to download more!');
+                return;
+            }
+        }
+
         curProvince = p;
         selectUnsyncedOutletsOfProvince($scope.config.tbl_outlet, p.id, function (dbres) {
             if (dbres.rows.length > 0) {
-                showDlg('Cannot download', 'There are unsynced outlet in province ' + p.name + ' please change working outlet and do sync first!');
+                showDlg('Error', 'There are unsynced outlet in province ' + p.name + '.\n Please change working outlet and do sync first!');
                 return;
             }
 
@@ -89,14 +126,17 @@ function downloadProvinceController($scope, $http, $mdDialog) {
                         insertOutletsDB(user.id, config.tbl_outlet, temp,
                             function () {
                                 if(!cancelDownload){
-                                    if((i + 1)<outletHeaders.length){
+                                    if((i + 1) < outletHeaders.length){
                                         downloadOutlet(outletHeaders, i + 1);
                                         curProvince.download = 1;                                        
                                         isDirty = true;
-                                        // update db status
+                                        // update db status                                    
                                     } else {
-                                        showInfo('Download outlets completed!');
+                                        //showInfo('Download outlets completed!');
+                                        hideDlg();
                                     }
+                                } else {
+                                    hideDlg();
                                 }
                             },
                             function (dberr) {

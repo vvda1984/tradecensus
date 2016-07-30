@@ -1,4 +1,8 @@
-﻿function newOutletController($scope, $mdDialog) {
+﻿/// <reference path="tradecensus.js" />
+/// <reference path="tc.outletAPI.js" />
+
+
+function newOutletController($scope, $mdDialog) {
     //log($scope.outletTypes);
     $scope.outletTypes = outletTypes;
     $scope.allowCapture = true;
@@ -8,8 +12,8 @@
     $scope.outlet.modifiedImage1 = false;
     $scope.outlet.modifiedImage2 = false;
     $scope.outlet.modifiedImage3 = false;
-    $scope.createNew = $scope.outlet.PStatus == 0;
-    $scope.showDraft = $scope.outlet.PStatus != 0;
+    $scope.createNew = $scope.outlet.AuditStatus == StatusNew;
+    $scope.showDraft = $scope.outlet.AuditStatus == StatusNew;
     $scope.isDeleted = false;
 
     if (!isEmpty($scope.outlet.StringImage1)) {

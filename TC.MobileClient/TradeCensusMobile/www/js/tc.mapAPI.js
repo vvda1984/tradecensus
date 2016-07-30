@@ -171,9 +171,13 @@ function createMaker(outlet, position, i, isNew, bounds) {
 
 function getMarkerIcon(outlet) {
     if (outlet != null) {
+        if (outlet.AuditStatus == StatusNew || outlet.AuditStatus == StatusPost) {
+            return 'assets/img/pin-new.png';
+        }
+
         switch (outlet.OutletSource) {
             case 0: //SR
-                if (outlet.AuditStatus == 2) {
+                if (outlet.AuditStatus == StatusAuditDeny) {
                     return 'assets/img/pin-sr-error.png';
                 }
                 if (!isEmpty(outlet.CloseDate)) {
@@ -182,9 +186,10 @@ function getMarkerIcon(outlet) {
                 if (outlet.Tracking) {
                     return 'assets/img/pin-sr-track.png';
                 }
-                return 'assets/img/pin-sr-nontrack.png';                
+                return 'assets/img/pin-sr-nontrack.png';
+
             case 1: // DIS
-                if (outlet.AuditStatus == 2) {
+                if (outlet.AuditStatus == StatusAuditDeny) {
                     return 'assets/img/pin-dis-error.png';
                 }
                 if (!isEmpty(outlet.CloseDate)) {
@@ -349,4 +354,27 @@ function stopPositionWatching(){
             log('Stop GPW watching error: ' + err.message);
         }
     }
+}
+
+function calcRetangleBoundary(dlat, dlng, p) {
+    var np = {
+        Lat: p.Lat + (dlat / earthR) * (180 / Math.PI),
+        Lng: p.Lng + (dlng / earthR) * (180 / Math.PI) / Math.cos(p.Lat * Math.PI / 180)
+    };
+    return np;
+}
+
+function calcDistance(saleLoc, outletLoc) {
+    var R = 6378137; // Earth’s mean radius in meter
+    var dLat = calculateRad(outletLoc.Lat - saleLoc.Lat);
+    var dLong = calculateRad(outletLoc.Lng - saleLoc.Lng);
+    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(calculateRad(saleLoc.Lat)) * Math.cos(calculateRad(outletLoc.Lat)) *
+           Math.sin(dLong / 2) * Math.sin(dLong / 2);
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    var d = R * c;
+    return Math.round(d * 100) / 100;
+}
+
+function calculateRad(x) {
+    return x * Math.PI / 180;
 }

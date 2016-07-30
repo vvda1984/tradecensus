@@ -75,7 +75,6 @@ function isEmpty(text) {
 * buildURL
 */
 function buildURL(protocol, ip, port, serviceName) {
-
     var host = ip;
     var subhost = '';
     var positionS = ip.indexOf('/');
@@ -84,7 +83,9 @@ function buildURL(protocol, ip, port, serviceName) {
         subhost = ip.substr(positionS);
     }
 
-    return protocol + '://' + host + ':' + port + subhost + '/' + serviceName;
+    var url = protocol + '://' + host + ':' + port.toString() + subhost + '/' + serviceName;
+    log(url);
+    return url;
     //return protocol + '://' + ip + ':' + port + '/' + serviceName;
 }
 

@@ -3,7 +3,7 @@
 */
 function initalizeDB(onSuccess) {
     //db = window.sqlitePlugin.openDatabase({ name: "td-v01.db", location: 'default' });
-    db = window.openDatabase("Database", "2.0", "tc-v2.db", 200000);
+    db = window.openDatabase("Database", "2.0", "tc-v1-01.db", 200000);
     db.transaction(function (tx) {
         if (resetDB) {
             tx.executeSql('DROP TABLE IF EXISTS person');
@@ -195,32 +195,33 @@ function insertOutletTypes(items, onSuccess, onError) {
 
 function insertSettingDB(config, onSuccess, onError) {
     db.transaction(function (tx) {        
-        insertConfigRow(tx, "protocol", config.protocol);
-        insertConfigRow(tx, "ip", config.ip, onError);
-        insertConfigRow(tx, "port", config.port);
-        insertConfigRow(tx, "service_name", config.service_name);
-        insertConfigRow(tx, "item_count", config.item_count);
-        insertConfigRow(tx, "distance", config.distance);
-        insertConfigRow(tx, "province_id", config.province_id);
-        insertConfigRow(tx, "calc_distance_algorithm", config.calc_distance_algorithm);
-        insertConfigRow(tx, "tbl_area_ver", config.tbl_area_ver);
-        insertConfigRow(tx, "tbl_outlettype_ver", config.tbl_outlettype_ver);
-        insertConfigRow(tx, "tbl_province_ver", config.tbl_province_ver);
-        insertConfigRow(tx, "tbl_zone_ver", config.tbl_zone_ver);
-		insertConfigRow(tx, "map_api_key", config.map_api_key);
-		insertConfigRow(tx, "sync_time", config.sync_time);
-		insertConfigRow(tx, "cluster_size", config.cluster_size);
-		insertConfigRow(tx, "cluster_max_zoom", config.cluster_max_zoom);		
+        insertSetting(tx, "protocol", config.protocol);
+        insertSetting(tx, "ip", config.ip, onError);
+        insertSetting(tx, "port", config.port);
+        insertSetting(tx, "service_name", config.service_name);
+        insertSetting(tx, "item_count", config.item_count.toString());
+        insertSetting(tx, "distance", config.distance);
+        insertSetting(tx, "province_id", config.province_id);
+        insertSetting(tx, "calc_distance_algorithm", config.calc_distance_algorithm);
+        insertSetting(tx, "tbl_area_ver", config.tbl_area_ver);
+        insertSetting(tx, "tbl_outlettype_ver", config.tbl_outlettype_ver);
+        insertSetting(tx, "tbl_province_ver", config.tbl_province_ver);
+        insertSetting(tx, "tbl_zone_ver", config.tbl_zone_ver);
+		insertSetting(tx, "map_api_key", config.map_api_key);
+		insertSetting(tx, "sync_time", config.sync_time);
+		insertSetting(tx, "cluster_size", config.cluster_size);
+		insertSetting(tx, "cluster_max_zoom", config.cluster_max_zoom);
+		insertSetting(tx, "max_oulet_download", config.max_oulet_download.toString());
         onSuccess();
     }, onError);
 }
 
-function insertConfigRow(tx, name, value) {
+function insertSetting(tx, name, value) {
     var sql = "INSERT OR REPLACE INTO [config] VALUES (";
     sql = sql.concat("'", name, "', ");
     sql = sql.concat("'", value, "')");
     logSqlCommand(sql);
-    tx.executeSql(sql);
+    tx.executeSql(sql, [], function () { }, function (err) { log(err);});
 }
 
 function initializeProvinces(tx1, onSuccess) {
@@ -419,13 +420,14 @@ function ensureUserOutletDBExist(isReset, outletSyncTbl, outletTbl, provinceDown
 
 function syncWithStorageOutletDB(tx, userID, outletTbl, outlets, i, onSuccess, onError) {  
     var outlet = outlets[i];
-    log('*** ('+ i.toString() + '/' + outlets.length.toString() + ') Sync: ' + outlet.Name );     
-    outlet.PStatus = 0; // no draft
+    log('*** (' + (i + 1).toString() + '/' + outlets.length.toString() + ') Sync: ' + outlet.Name);
+
     outlet.PSynced = 1; // synced
-    initializeOutlet(outlet);            
-    outlet.positionIndex = i;                      
-    outlet.IsAuditApproved = outlet.AuditStatus == 1;     
-    var sql = 'SELECT * FROM ' + outletTbl + ' WHERE PRowID="' + outlet.PRowID + '"';
+    outlet.positionIndex = i;
+    outlet.PStatus = 0;
+    initializeOutlet(outlet);
+
+    var sql = 'SELECT * FROM ' + outletTbl + ' WHERE ID=' + outlet.ID.toString();
     tx.executeSql(sql, [], 
         function (tx1, dbres) {
             var rowlen = dbres.rows.length;
@@ -649,14 +651,19 @@ function deteleOutletDB(outletTbl, outlet, onSuccess, onError) {
 function selectOutletsDB(outletTbl, latMin, latMax, lngMin, lngMax, view, onSuccess, onError) {
     db.transaction(function (tx) {
         log('Select outlets by view: ' + view.toString());
-        var sql = 'SELECT * FROM ' + outletTbl + ' WHERE '; //' WHERE provinceID = "' + provinceID + '" AND  ';
+        var sql = 'SELECT * FROM [' + outletTbl + '] WHERE ' //' WHERE provinceID = "' + provinceID + '" AND  ';
 
-        if (view == 1) {
-            sql = sql.concat('PIsAdd = 1 ');
+        if (view == 0) {            
+            sql = sql.concat('AuditStatus <> ' + StatusDelete.toString());
+        } else if (view == 1) {
+            sql = sql.concat('AuditStatus in (' + StatusNew.toString(), ', ', StatusPost.toString(), ')');            
+            sql = sql.concat(' AND PersonID = ' + userID.toString());
         } else if (view == 2) {
-            sql = sql.concat('PIsMod = 1 ');
-        } else if (view == 4) {
-            sql = sql.concat('PIsAud = 1 ');
+            sql = sql.concat('AuditStatus = ' + StatusEdit.toString());
+            sql = sql.concat(' AND PersonID = ' + userID.toString());
+        } else {
+            sql = sql.concat('AuditStatus in (' + StatusAuditAccept.toString(), ', ', StatusAuditDeny.toString(), ')');
+            sql = sql.concat(' AND PersonID = ' + userID.toString());
         }
         sql = sql.concat(' AND Latitude >= ', latMin.toString(), ' AND Latitude <= ', latMax.toString());
         sql = sql.concat(' AND Longitude >= ', lngMin.toString(), ' AND Longitude <= ', lngMax.toString());
@@ -808,5 +815,25 @@ function saveDownloadProvincesDB(tablename, downloadProvinces, onSuccess, onErro
             tx.executeSql(sql, [], function () { }, onError);
         }
         onSuccess();    
+    }, onError);
+}
+
+function deleleDownloadProvinceDB(outletTableName, downloadTableName, provinceId, onSuccess, onError) {
+    db.transaction(function (tx) {
+        var sql = 'UPDATE ' + downloadTableName + ' SET download = 0 WHERE id = "' + provinceId + '"';           
+        logSqlCommand(sql);
+        tx.executeSql(sql, [], function () { }, onError);
+
+        var sql = 'DELETE FROM ' + outletTableName + ' WHERE ProvinceID = "' + provinceId + '"';
+        logSqlCommand(sql);
+        tx.executeSql(sql, [], function (tx1, dbres) { onSuccess(dbres); }, onError);
+    }, onError);
+}
+
+function deleteOutletDB(outletTableName, outlet, onSuccess, onError) {
+    db.transaction(function (tx) {      
+        var sql = 'DELETE FROM ' + outletTableName + ' WHERE ID = ' + outlet.ID.toString();
+        logSqlCommand(sql);
+        tx.executeSql(sql, [], function () { onSuccess() }, onError);
     }, onError);
 }
