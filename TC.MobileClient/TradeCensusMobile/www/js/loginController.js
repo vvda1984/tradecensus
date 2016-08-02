@@ -89,14 +89,18 @@ function loginController($scope, $http) {
             loginOffline(loginSuccess, loginError);
         }
     };
-   
+    
+    var markedCert = false;
     function loginOnline(retry, onSuccess, onError) {
+        
+
         log('Login online');
         var url = baseURL + '/login/' + $scope.userName + '/' + $scope.password;
         log('Call service api: ' + url);
         $http({
             method: config.http_method,
-            url: url
+            url: url,
+            timeout: 200,
         }).then(function (resp) {
             hideDlg();            
             try {
@@ -120,13 +124,15 @@ function loginController($scope, $http) {
             }
         }, function (err) {                        
             log(err);
-            if(retry == 0){   
-                loginOnline(1, onSuccess, onError);             
-            }
-            try{
-                onError(err.statusText == '' ? R.connection_timeout : err.statusText);
-            }catch(ex){
-                onError(err);
+            if (retry == 0) {
+                loginOnline(1, onSuccess, onError);
+            } else {
+                try {
+                    var errormg = 'Cannot connect to: ' + baseURL + ' : ' + R.connection_timeout;
+                    onError(errormg);
+                } catch (ex) {
+                    onError(err);
+                }
             }
         });
     }
@@ -205,10 +211,9 @@ function loginController($scope, $http) {
             function () {
                 if (networkReady()) {
                     showDlg(R.download_settings, R.please_wait);
-                    downloadServerConfig(function () {
-                        hideDlg();
+                    downloadServerConfig(function () {                        
                         log('Navigate to home (online)');
-                        $scope.changeView('home');
+                        finailizeLoginView();
                     }, function (dberr) {
                         hideDlg();
                         showError(dberr.message);
@@ -216,7 +221,7 @@ function loginController($scope, $http) {
                 }
                 else {
                     log('Navigate to home (offline)');
-                    $scope.changeView('home');
+                    finailizeLoginView();
                 }
             });
     }
@@ -226,6 +231,65 @@ function loginController($scope, $http) {
         showError(err);
     }   
     
+    function finailizeLoginView(stat) {
+        log('Load downloaded provinces table');
+        selectDownloadProvincesDB(config.tbl_downloadProvince, function (dbres) {
+            dprovinces = [];
+            log('Found downloaded provinces: ' + dbres.rows.length.toString());
+            if (dbres.rows.length == 0) {
+                for (var i = 0; i < provinces.length; i++) {
+                    dprovinces[i] = {
+                        id: provinces[i].id,
+                        name: provinces[i].name,
+                        download: 0,
+                    };
+                }
+
+                saveDownloadProvincesDB(config.tbl_downloadProvince, dprovinces, function () {
+                    dprovinces.sort(function (a, b) {
+                        if (a.name > b.name) {
+                            return 1;
+                        } else if (a.name < b.name) {
+                            return -1;
+                        } else {
+                            return 0;
+                        }
+                    });
+
+                    hideDlg();
+                    $scope.changeView('home');
+                }, function (dberr) {
+                    hideDlg();
+                    showError(dberr.message);
+                });
+            } else {
+                for (var i = 0; i < dbres.rows.length; i++) {
+                    dprovinces[i] = {
+                        id: dbres.rows.item(i).id,
+                        name: dbres.rows.item(i).name,
+                        download: dbres.rows.item(i).download,
+                    };
+                }
+
+                dprovinces.sort(function (a, b) {
+                    if (a.name > b.name) {
+                        return 1;
+                    } else if (a.name < b.name) {
+                        return -1;
+                    } else {
+                        return 0;
+                    }
+                });
+
+                hideDlg();
+                $scope.changeView('home');
+            }            
+        }, function (dberr) {
+            hideDlg();
+            showError(dberr.message);
+        });
+    }
+
     function downloadServerConfig(onSuccess, onError) {
         var url = baseURL + '/config/getall';
         log('Call service api: ' + url);
@@ -322,5 +386,5 @@ function loginController($scope, $http) {
                 insertOutletTypes(data.Items, onSuccess, onError);
             }
         }, handleHttpError);
-    }
+    }   
 };

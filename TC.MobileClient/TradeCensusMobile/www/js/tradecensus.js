@@ -2,7 +2,7 @@
 
 var resetDB = false;                // force reset database - testing only
 var db;                             // database instance
-var isDev = true;                  // enable DEV mode
+var isDev = false;                   // enable DEV mode
 
 var userOutletTable = 'outlet';     // outlet table name for current user
 var isDlgOpened = false;            //  
@@ -12,14 +12,14 @@ var onImageViewerClose;
 var newImageFile;
 var userID = 0;
 var user = newUser();
-//var resource = newResource();
 var config = newConfig();
 var provinces = [];
 var outletTypes = [];
 var provinces = [];
+var dprovinces = [];
 var outletTypes = [];
-var baseURL = '';
 var R = useLanguage();
+var baseURL = '';
 
 var isNetworkAvailable = true;      // Network monitoring status
 var onNetworkChangedCallback;       // Network monitoring callback
@@ -69,6 +69,7 @@ var app = angular.module('TradeCensus', ['ngRoute', 'ngMaterial', 'ngMessages'])
 
         // disable back button
         document.addEventListener("backbutton", function (e) { e.preventDefault(); }, false);
+        document.addEventListener("resume", function () { }, false);
         //document.addEventListener("online", onNetworkConnected, false);
         //document.addEventListener("offline", onNetworkDisconnected, false);
         //document.addEventListener("resume", loadMapApi, false);
@@ -125,11 +126,12 @@ function newConfig() {
         //port: '33334',//'3001',
         service_name: 'TradeCensusService.svc',
         enable_liveGPS: true,
+        liveGPS_distance: 10,
         enable_devmode: isDev,
         map_zoom: 16,
         distance: 200,
         item_count: 20,
-        sync_time: 1*60*1000,
+        sync_time: 1 * 60 * 1000,
         province_id: 50, // HCM
         http_method: 'POST',
         calc_distance_algorithm: 'circle',
@@ -142,6 +144,7 @@ function newConfig() {
         tbl_outletSync: 'uos',
         tbl_outlet: 'uo',
         tbl_downloadProvince: 'udp',
+        version: 'Version 1.0.16215.12'
     };
 }
 
@@ -168,7 +171,7 @@ function newUser() {
     }
 }
 
-function initializeEnvironment(callback){   
+function initializeEnvironment(callback) {
     initalizeDB(function () {
         showDlg('Starting Application', 'Please wait...', null);      
         db.transaction(function (tx) {
@@ -191,22 +194,23 @@ function loadOutletTypes(tx, callback) {
         log('Outlets have been loaded before.');
         callback(tx);
         return;
-    } 
+    }
     log('Load outlets from db');
     outletTypes = [];
+    outletTypes[0] = { ID: '-1', Name: ' ' };
     selectOutletTypesDB(tx, function (tx1, dbrow) {
         var rowLen = dbrow.rows.length;
         log('Outlet found: ' + rowLen.toString());
         if (rowLen) {
             for (i = 0; i < rowLen; i++) {
-                outletTypes[i] = {
+                outletTypes[i + 1] = {
                     ID: dbrow.rows.item(i).ID,
                     Name: dbrow.rows.item(i).Name,
                 }
             }
         }
         callback(tx1);
-    }, function (dberr) {     
+    }, function (dberr) {
         showError(dberr.message);
     });
 }
@@ -337,10 +341,11 @@ function startNetworkMonitor() {
         var s = networkReady();
         if(isNetworkAvailable != s){
             isNetworkAvailable = s;
-            onNetworkChangedCallback(isNetworkAvailable);
+            if (onNetworkChangedCallback != null)
+                onNetworkChangedCallback(isNetworkAvailable);
         }
         startNetworkMonitor();
-    }, 1 * 60 * 1000);
+    }, 10 * 1000);
 }
 
 //******************************************

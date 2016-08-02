@@ -39,33 +39,40 @@
                     <div class="md-block-item-value">{{outlet.LastContact ? outlet.LastContact : "-"}}</div>
                 </div>
 
-                <div class="md-block-item" flex-gt-sm="">
+                <!--<div class="md-block-item" flex-gt-sm="">
                     <div class="md-block-item-title">{{R.closed_date}}</div>
                     <div class="md-block-item-value">{{outlet.CloseDate ? outlet.CloseDate : "-"}}</div>
+                </div>-->
+
+                <div class="md-block-item" flex-gt-sm="" ng-hide="canChangeOpenClose">
+                    <div class="md-block-item-title">{{R.open_close}}</div>
+                    <div class="md-block-item-value">{{outlet.IsOpened ? R.opened : R.closed}}</div>
                 </div>
 
-                <div class="md-block-item" flex-gt-sm="" ng-show="openedOptionVisible">
-                    <span class="md-block-item-title">{{outlet.IsOpened ? R.opened : R.closed}}</span>
+                <div class="md-block-item" flex-gt-sm="" ng-show="canChangeOpenClose">
+                    <span class="md-block-item-title">{{R.open_close}}</span>
                     <md-checkbox md-no-ink="" aria-label="Is Opened" ng-model="outlet.IsOpened" class="md-primary">
+                        {{outlet.IsOpened ? R.opened : R.closed}}
                     </md-checkbox>
                 </div>
 
-                <div class="md-block-item" flex-gt-sm="" ng-show="trackedOptionVisible">
-                    <span class="md-block-item-title">{{outlet.IsTracked ? R.tracking : R.non_tracking}}</span>
-                    <md-checkbox md-no-ink="" aria-label="Is Tracked" ng-model="outlet.IsTracked" class="md-primary" style="margin-bottom:0px;">
+                <div class="md-block-item" flex-gt-sm="" ng-show="canChangeTrackNonTrack">
+                    <span class="md-block-item-title">{{R.tracking_status}}</span>
+                    <md-checkbox md-no-ink="" aria-label="Is Tracked" ng-model="outlet.IsTracked" class="md-primary" style="margin-bottom:0px;" >
+                        {{outlet.IsTracked ? R.tracking : R.non_tracking}}
                     </md-checkbox>
                 </div>
             </div>
 
-            <div layout-gt-sm="row" ng-show="needAudit" style="margin-bottom:0px;">
-                <div class="md-block-item">
+            <div layout-gt-sm="row" style="margin-bottom:0px;">
+                <div class="md-block-item" ng-show="needAudit" style="margin-top:-12px;">
                     <div class="md-block-item-title" style="min-width:80px">{{R.audit_status}}</div>
                       <md-radio-group ng-model="outlet.AuditStatus">
                         <md-radio-button value="2" class="md-primary" style="margin-bottom:8px;">{{R.approve}}</md-radio-button>
                         <md-radio-button value="3" class="md-primary" style="margin-bottom:4px;">{{R.deny}}</md-radio-button>                        
                     </md-radio-group>                    
                 </div>
-                <md-input-container class="md-block" flex-gt-sm="">
+                <md-input-container class="md-block" flex-gt-sm="" ng-show="isAuditor" >
                     <label>{{R.comment}}</label>
                     <textarea ng-model="outlet.Note" md-maxlength="150" rows="2" md-select-on-focus="" style="margin-bottom:0px;"></textarea>
                 </md-input-container>                           
@@ -85,14 +92,15 @@
                     <img id="captureButton" ng-show="allowCapture" ng-click="capture(0)" src="assets/img/camera.svg" />
                 </div>     
                 
-                <div class="md-block-item" style="margin-left:24px;" flex-gt-sm="" ng-show="canRevise">
+                <!--<div class="md-block-item" style="margin-left:24px;" flex-gt-sm="" ng-show="canRevise">
                     <div class="md-block-item-title" style="min-width:80px">Revise</div>
                     <md-checkbox md-no-ink="" aria-label="Is IsDraft" ng-model="outlet.IsDraft" class="md-primary">
                     </md-checkbox>
-                </div>        
+                </div>-->        
             </div>
 
-            <div layout-gt-xs="row" layout-margin layout-align="center" style="margin-bottom:0px;">              
+            <div layout-gt-xs="row" layout-margin layout-align="center" style="margin-bottom:0px;">   
+                <md-button class="md-raised md-primary blue1" ng-click="reviseOutlet()" ng-show="canRevise">{{R.btn_revise}}</md-button>           
                 <md-button class="md-raised md-primary" ng-click="saveUpdate()">{{R.btn_save}}</md-button>
                 <md-button class="md-raised" ng-click="cancelUpdate()">{{R.btn_cancel}}</md-button>
             </div>

@@ -4,51 +4,6 @@ html, body {
     padding: 0px;
 }
 
-.blue {
-    background: #01541E;
-}
-
-.blue-dark {
-    background: #103B68;
-}
-
-.white {
-    background: white;
-}
-
-.transparent {
-    background: transparent;
-    box-shadow: 0px;
-}
-
-.black-color {
-    color: black;
-}
-
-.gray-color {
-    color:  rgb(128, 128, 128);
-}
-
-.blue-color {
-    color: #2196F3;
-}
-
-.normal-text {
-    font-size: 16px;
-}
-
-.large-text {
-    font-size: 20px;
-}
-
-.small-text {
-    font-size: 14px;
-}
-
-*:focus {
-    outline: none;
-}
-
 .md-icon-button-primary {
     color: #3A678D;
 }
@@ -111,13 +66,26 @@ html, body {
     background: white;
 }
 
-#loading-overlay {
+#dlg-panel {
     position: fixed;
     top: 0;
     left: 0;
     background-color: rgb(0,0,0);
     background-color: rgba(0,0,0, 0.1);
     z-index: 105;
+    width: 100%;
+    height: 100%;
+    display: table;
+    text-align: center;
+}
+
+#loading-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0, 0.1);
+    z-index: 104;
     width: 100%;
     height: 100%;
     display: table;
@@ -538,6 +506,7 @@ hr {
         color: rgb(128, 128, 128);
         display: inherit;
         margin: 4px 0;
+        font-size:12px;
     }
 
 .md-scroll-mask {
@@ -666,6 +635,7 @@ hr {
 
         .dialog > .content > .title {
             font-size: 1.3em;
+            color : #000000;
         }
 
     .dialog > .button {

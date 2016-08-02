@@ -19,6 +19,24 @@ namespace TradeCensus
         const byte ActionDelete = 4;
         const byte ActionRevise = 5;
 
+        private bool AuditorNewMode
+        {
+            get
+            {
+                bool v = false;
+                try
+                {
+                    System.Configuration.AppSettingsReader sr = new System.Configuration.AppSettingsReader();
+                    v = (bool)sr.GetValue("auditorNewMode", typeof(bool));
+                }
+                catch
+                {
+                    v = false;
+                }
+                return v;
+            }
+        }
+
         public OutletRepo() : base("Outlet")
         {
         }
@@ -82,6 +100,7 @@ namespace TradeCensus
             var user = _entities.PersonRoles.FirstOrDefault(i => i.PersonID == personID);
             if (user == null)
                 throw new Exception(string.Format("User {0} doesn't exist", personID));
+            var auditor = user.Role == Constants.RoleAudit ||  user.Role == Constants.RoleAudit1;
 
             string method = GetSetting("calc_distance_algorithm", "circle");            
             Log("Calculate distance method: {0}", method);
@@ -103,19 +122,49 @@ namespace TradeCensus
             }
             else if (status == 1) // new
             {
-                query = from i in _entities.Outlets
-                        where i.Latitude >= bl.Lat && i.Latitude <= tl.Lat &&
-                              i.Longitude >= bl.Lng && i.Longitude <= br.Lng &&
-                              (i.AuditStatus == Constants.StatusNew || i.AuditStatus == Constants.StatusPost)
-                        select i;
-            } else if (status == 2) // edit
+                if (AuditorNewMode)
+                {
+                    if (auditor)
+                        query = from i in _entities.Outlets
+                                where i.Latitude >= bl.Lat && i.Latitude <= tl.Lat &&
+                                      i.Longitude >= bl.Lng && i.Longitude <= br.Lng &&
+                                      i.AuditStatus == Constants.StatusPost &&
+                                      i.PersonID != personID
+                                select i;
+                    else
+                        query = from i in _entities.Outlets
+                                where i.Latitude >= bl.Lat && i.Latitude <= tl.Lat &&
+                                      i.Longitude >= bl.Lng && i.Longitude <= br.Lng &&
+                                      (i.AuditStatus == Constants.StatusNew || i.AuditStatus == Constants.StatusPost) &&
+                                      i.PersonID == personID
+                                select i;
+                }
+                else
+                {
+                    query = from i in _entities.Outlets
+                            where i.Latitude >= bl.Lat && i.Latitude <= tl.Lat &&
+                                  i.Longitude >= bl.Lng && i.Longitude <= br.Lng &&
+                                  (i.AuditStatus == Constants.StatusNew || i.AuditStatus == Constants.StatusPost) &&
+                                  i.PersonID == personID
+                            select i;
+                }
+            }
+            else if (status == 2) // edit
             {
-                query = from i in _entities.Outlets
-                        where i.Latitude >= bl.Lat && i.Latitude <= tl.Lat &&
-                              i.Longitude >= bl.Lng && i.Longitude <= br.Lng &&
-                              i.AuditStatus == Constants.StatusEdit &&
-                              i.AmendBy == personID
-                        select i;
+                if (auditor)
+                    query = from i in _entities.Outlets
+                            where i.Latitude >= bl.Lat && i.Latitude <= tl.Lat &&
+                                  i.Longitude >= bl.Lng && i.Longitude <= br.Lng &&
+                                  i.AuditStatus == Constants.StatusEdit &&
+                                  i.PersonID != personID
+                            select i;
+                else
+                    query = from i in _entities.Outlets
+                            where i.Latitude >= bl.Lat && i.Latitude <= tl.Lat &&
+                                  i.Longitude >= bl.Lng && i.Longitude <= br.Lng &&
+                                  i.AuditStatus == Constants.StatusEdit &&
+                                  i.AmendBy == personID
+                            select i;
             }
             else // audit
             {
@@ -216,6 +265,18 @@ namespace TradeCensus
                 foundOutlet.StringImage1 = outletImg.Image1;
                 foundOutlet.StringImage2 = outletImg.Image2;
                 foundOutlet.StringImage3 = outletImg.Image3;
+
+                //string path = AppDomain.CurrentDomain.BaseDirectory; //GetType().Assembly.Location; // ...\bin\...
+                //path = Path.GetDirectoryName(path) + "\\Images";
+                //EnsureDirExist(path);
+               
+
+                //if (!string.IsNullOrEmpty(foundOutlet.StringImage1))
+                //{
+                //    string imagePath = Path.Combine(path, string.Format("{0}_{1}.jpg", outletID, index));
+
+                //    file.SaveAs(imagePath);
+                //}
             }
 
             var person = _entities.People.FirstOrDefault(p=>p.ID == outlet.PersonID);
@@ -312,7 +373,11 @@ namespace TradeCensus
                 existingOutlet.ProvinceID = outlet.ProvinceID;
                 existingOutlet.Phone = outlet.Phone;
                 if (!string.IsNullOrEmpty(outlet.CloseDate))
-                    existingOutlet.CloseDate = DateTime.Parse("yyyy-MM-dd HH:mm:ss");
+                    try {
+                        existingOutlet.CloseDate = DateTime.ParseExact(outlet.CloseDate, "yyyy-MM-dd HH:mm:ss", null);
+                    } catch {
+                        existingOutlet.CloseDate = DateTime.ParseExact(outlet.CloseDate, "yyyy-MM-dd", null);
+                    }
                 else
                     existingOutlet.CloseDate = null;
                 existingOutlet.Tracking = outlet.Tracking;

@@ -11,7 +11,7 @@
             <div layout-gt-sm="row">
                 <md-input-container class="md-block" flex-gt-sm="">
                     <label>{{R.code}}</label>
-                    <input ng-model="outlet.ID" name="name" required="">
+                    <input id="inputID" ng-model="outlet.ID" name="name" required="">
                     <div ng-messages="createOutletForm.ID.$error" role="alert">
                         <div ng-message="required">{{ resource.text_ValRequired }}</div>
                     </div>
@@ -19,7 +19,7 @@
 
                 <md-input-container class="md-block" flex-gt-sm="">
                     <label>{{R.name}}</label>
-                    <input ng-model="outlet.Name" name="name" required="">
+                    <input id="inputName" ng-model="outlet.Name" name="name" required="">
                     <div ng-messages="createOutletForm.name.$error" role="alert">
                         <div ng-message="required">{{ resource.text_ValRequired }}</div>
                     </div>
@@ -27,7 +27,7 @@
 
                 <md-input-container class="md-block" flex-gt-sm="">
                     <label>{{R.outlet_type}}</label>
-                    <md-select ng-model="outlet.OTypeID">
+                    <md-select id="inputOutletType" ng-model="outlet.OTypeID">
                         <md-option ng-repeat="o in outletTypes" value="{{o.ID}}">
                             {{o.Name}}
                         </md-option>
@@ -36,7 +36,7 @@
                
                 <md-input-container class="md-block" flex-gt-sm="">
                     <label>{{R.phone}}</label>
-                    <input ng-model="outlet.Phone" name="phone" required="">
+                    <input id="inputPhone" ng-model="outlet.Phone" name="phone" required="">
                     <!--<div ng-messages="createOutletForm.phone.$error" role="alert">
                         <div ng-message="required">{{ resource.text_ValRequired }}</div>
                     </div>-->
@@ -46,21 +46,21 @@
             <div layout-gt-sm="row">
                 <md-input-container class="md-block" flex-gt-sm="">
                     <label>{{R.house_no}}</label>
-                    <input ng-model="outlet.AddLine" name="houseno" required="">
+                    <input id="inputAdd1" ng-model="outlet.AddLine" name="houseno" required="">
                     <div ng-messages="createOutletForm.houseno.$error" role="alert">
                         <div ng-message="required">{{ resource.text_ValRequired }}</div>
                     </div>
                 </md-input-container>
                 <md-input-container class="md-block" flex-gt-sm="">
                     <label>{{R.street}}</label>
-                    <input ng-model="outlet.AddLine2" name="street" required="">
+                    <input id="inputAdd2" ng-model="outlet.AddLine2" name="street" required="">
                     <div ng-messages="createOutletForm.street.$error" role="alert">
                         <div ng-message="required">{{ resource.text_ValRequired }}</div>
                     </div>
                 </md-input-container>
                 <md-input-container class="md-block" flex-gt-sm="">
                     <label>{{R.district}}</label>
-                    <input ng-model="outlet.District" name="district" required="">
+                    <input id="inputDistrict" ng-model="outlet.District" name="district" required="">
                     <div ng-messages="createOutletForm.district.$error" role="alert">
                         <div ng-message="required">{{ resource.text_ValRequired }}</div>
                     </div>
@@ -72,7 +72,7 @@
             </div>
 
             <div layout-gt-sm="row">
-                <div flex-gt-sm="" style="margin-left:12px;">
+                <div flex-gt-sm="" style="margin-left:12px;margin-top:-12px;">
                     <p>
                         {{R.volumn}}<br />
                         {{R.create_cartoons_avg_month}}
@@ -107,16 +107,17 @@
                 <div flex-gt-sm="">
                     <img id="captureButton" ng-show="allowCapture" ng-click="capture(0)" src="assets/img/camera.svg" />
                 </div>              
-                <div class="md-block-item" style="margin-left:24px;" flex-gt-sm="">
+                <!--<div class="md-block-item" style="margin-left:24px;" flex-gt-sm="">
                     <div class="md-block-item-title" style="min-width:80px">{{R.draft}}</div>
                     <md-checkbox md-no-ink="" aria-label="Is IsDraft" ng-model="outlet.IsDraft" class="md-primary">
                     </md-checkbox>
-                </div>
+                </div>-->
             </div>
             <div layout-gt-sm="row" layout-margin layout-align="center" style="margin-bottom:0px;">     
+                <md-button class="md-raised md-primary" ng-click="postOutlet()" ng-show="showDraft">{{R.btn_post}}</md-button>
+                <md-button class="md-raised md-primary" ng-click="deleteOutlet()" ng-show="showDraft">{{R.btn_delete}}</md-button>
                 <md-button class="md-raised md-primary" ng-click="saveUpdate()">{{R.btn_save}}</md-button>
-                <md-button class="md-raised" ng-click="cancelUpdate()">{{R.btn_cancel}}</md-button>
-                <md-button class="md-raised" ng-click="deleteOutlet()" ng-show="showDraft">{{R.btn_delete}}</md-button>
+                <md-button class="md-raised" ng-click="cancelUpdate()">{{R.btn_cancel}}</md-button>                
             </div>
         </form>
     </md-content>

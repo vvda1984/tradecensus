@@ -78,7 +78,7 @@ function buildURL(protocol, ip, port, serviceName) {
         subhost = ip.substr(positionS);
     }
 
-    var url = protocol + '://' + host + ':' + port.toString() + subhost + '/' + serviceName;
+    var url = protocol + '://' + host + ':' + port.toString() + subhost + '/' + 'TradeCensusService.svc';
     log(url);
     return url;
     //return protocol + '://' + ip + ':' + port + '/' + serviceName;
@@ -89,7 +89,7 @@ function buildURL(protocol, ip, port, serviceName) {
 */
 function handleError(err) {
     hideDlg();
-    showDialog(err, 'Error', function () { });
+    showError(err);
 }
 
 /** 
@@ -143,6 +143,23 @@ function validateEmpty(name, value){
     }
     return true;
 }
+
+/***/
+function currentDate() {
+    var today = new Date();
+    var dd = today.getDate();
+    var mm = today.getMonth() + 1; //January is 0!
+
+    var yyyy = today.getFullYear();
+    if (dd < 10) {
+        dd = '0' + dd.toString();
+    }
+    if (mm < 10) {
+        mm = '0' + mm.toString();
+    }
+    return yyyy + '-' + mm + '-' + dd;
+}
+
 
 /**
 * compareDate

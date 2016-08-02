@@ -5,14 +5,18 @@
 /// <reference path="tc.databaseAPI.js" />
 /// <reference path="tc.appAPI.js" />
 
-
+var requestingDisplayOutlet = false;
+var rendringOutlets = false;
 function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     log('Enter Home page');
     $scope.R = R;
-    log(user);    
+    log(user);
+    var firstStart = true;
     var leftPanelStatus = 0;
     var righPanelStatus = 0;
     var viewDropdown = 0;
+    var selectProvince;
+
     //var nearByOutlets = [];
  
     var curOutletView = 0; // 0: near-by; 1: new: 2: updated 4: audit
@@ -24,7 +28,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     $scope.testlng = curlng;
     $scope.testacc = curacc;
 
-    $scope.provinces = provinces;
+    $scope.dprovinces = dprovinces;
     $scope.config = config;
     $scope.editOutletFull = false;
     $scope.allowRefresh = true;
@@ -43,6 +47,23 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     $scope.viewOutletPanel = false;
     $scope.currentPage = 0;
     $scope.pageSize = config.page_size;
+    
+
+    for (var i = 0; i < dprovinces.length; i++) {
+        if (dprovinces[i].id === $scope.config.province_id) {
+            selectProvince = dprovinces[i];            
+            if (dprovinces[i].download) {
+                $("#buttonDownload").css('display', 'none');
+                $("#buttonRedownload").css('display', 'table');
+                $("#buttonDeleteOffline").css('display', 'table');
+            } else {
+                $("#buttonDownload").css('display', 'table');
+                $("#buttonRedownload").css('display', 'none');
+                $("#buttonDeleteOffline").css('display', 'none');
+            }
+            break;
+        }
+    }
 
     //*************************************************************************
     $scope.testChangeLocation = function(){
@@ -90,15 +111,33 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 
     //*************************************************************************
     $scope.numberOfPages = function(){        
-        return Math.ceil($scope.outlets.length/$scope.pageSize);                
+        return Math.ceil($scope.outlets.length/$scope.pageSize);
     }  
+
+    //*************************************************************************
+    $scope.pageSizeChanged = function () {
+        $scope.pageSize = $scope.config.page_size;
+        log('Change page size: ' + $scope.pageSize.toString());
+    }
+
+    //*************************************************************************
+    $scope.navPrev = function () {
+        $scope.currentPage = $scope.currentPage - 1
+        //$('#outlet-list').scrollTop(0);
+    }
+
+    //*************************************************************************
+    $scope.navNext = function () {
+        $scope.currentPage = $scope.currentPage + 1;
+        //$('#outlet-list').scrollTop(0);
+    }
 
     //*************************************************************************
     $scope.refresh = function () {
         if (curOutletView == 0) {
             nearByOutlets = [];
         }
-        initializeView();
+        //initializeView();
         getOutletsByView(curOutletView, false);
     }
 
@@ -116,6 +155,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         $scope.showExpandButton = false;      
         $scope.viewOutletFull = false;
         $scope.showNaviBar = false;
+        $scope.viewOutletPanel = false;
         $("#outletPanel").css('width', '0%');
         $("#slider-left-content").css('margin-bottom', '4px');
     }
@@ -124,8 +164,8 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     $scope.expandOutletPanel = function(){
         $scope.hideDropdown();
         leftPanelStatus = 2;
-        //$scope.showListButton = true;
-
+        
+        $scope.viewOutletPanel = true;
         $scope.showExpandButton = false;
         $scope.showCollapseButton = true; // networkReady();
         $scope.viewOutletFull = true;
@@ -143,8 +183,9 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     }
 
     //*************************************************************************  
-    $scope.collapseOutletPanel = function(){
+    $scope.collapseOutletPanel = function () {
         $scope.hideDropdown();
+        $scope.viewOutletPanel = true;
         $scope.showExpandButton = $scope.outlets.length > 0;
         $scope.showCollapseButton = false;
         $scope.viewOutletFull = false;            
@@ -160,7 +201,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             $("#slider-left-content").css('margin-bottom', '4px');
     }
 
-     //*************************************************************************
+    //*************************************************************************
     $scope.showhideOutletPanel = function () {
         $scope.hideDropdown();
         $scope.showCollapseButton = false;
@@ -190,13 +231,15 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     }    
 
     //*************************************************************************
-    $scope.showRightPanel = function () {       
+    var tempPageSize = 0;
+    $scope.showHideRightPanel = function () {
         if (righPanelStatus == 0) {
 			log('show right panel');
 			$("#configPanel").css('width', '360px');
 			$scope.showSettingCollapse = true;
             $scope.showSettingExpand = false;
-			righPanelStatus = 1;
+            righPanelStatus = 1;
+            tempPageSize = $scope.config.page_size;
         } else {
             log('hide right panel');
             $("#configPanel").css('width', '0');
@@ -209,17 +252,26 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                 getCurPosition(true, function(lat, lng){                    
                 }, function(err){});	
 			}
-            initializeView();            
-        }
-    }
+			var hasNetwork = networkReady();
+			log('update view when base on network: ' + hasNetwork);
+			enableOffline(hasNetwork);
+			if (hasNetwork) {
+			    if (!firstStart)
+			        changeGPSTrackingStatus();
+			}
 
-    //*************************************************************************
-    $scope.hideRightPanel = function () {
-        log('hide right panel');
-        $scope.hideDropdown();       
-        $("#home-right-panel").css('margin-right', '-100%');
-        righPanelStatus = 0;       
-    }
+			if (tempPageSize != $scope.config.page_size) {
+			    $scope.pageSize = $scope.config.page_size;
+			    tempPageSize = $scope.pageSize;
+			    log('Update paging');
+			    if (curOutlets.length == 0) return;
+			    $scope.outlets.length = 0;
+			    for (var i = 0; i < curOutlets.length; i++) {
+			        $scope.outlets[i] = curOutlets[i];
+			    }
+			}
+        }
+    }    
 
     //*************************************************************************
     $scope.showDropdown = function () {
@@ -281,57 +333,82 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     //*************************************************************************
     $scope.createNewOutlet = function () {
         log('create new outlet');
+        requestingDisplayOutlet = true;
+
         showDlg(R.get_current_location, R.please_wait);
-
-        devNewDetlta = devNewDetlta + 0.0001;
-
-        try {
-            getCurPosition(true, function (lat, lng) {
-                lat = Math.round(lat * 100000000) / 100000000;
-                lng = Math.round(lng * 100000000) / 100000000;                             
-                if (networkReady()) {
-                    log('try reverse the address');
-                    var geocoder = new google.maps.Geocoder();
-                    geocoder.geocode({
-                        'latLng': new google.maps.LatLng(lat, lng),
-                        'language': 'vi',
-                    }, function (results, status) {
-                        if (status === google.maps.GeocoderStatus.OK && results.length > 0) {
-                            var street = '';
-                            var district = '';
-                            try {
-                                log(results);
-                                if (results[0]) {
-                                    for (var i = 0; i < results[0].address_components.length; i++) {
-                                        log('foreach add_comp ' + i.toString() + ':' + results[0].address_components[i].types[0]);
-                                        if (results[0].address_components[i].types[0] == 'route') {
-                                            street = results[0].address_components[i].long_name;
-                                        } else if (results[0].address_components[i].types[0] == 'administrative_area_level_2') {
-                                            district = results[0].address_components[i].long_name;
-                                            break;
-                                        }
-                                    }
-                                } else {
-                                    log('no geocoder result.');
-                                }
-                            } catch (geoerr) {
-                                log('Parse geocoder failed due to: ' + geoerr);
-                            }
-                            tryCreateNewOutlet(lat, lng, street, district);
-                        } else {
-                            log('Geocoder failed due to: ' + status);
-                            tryCreateNewOutlet(lat, lng, '', '');
-                        }
-                    });
-                } else {
-                    tryCreateNewOutlet(lat, lng, '', '');
+        if (networkReady()) {
+            if (!rendringOutlets)
+                addNewOutlet();
+            else {
+                waitCount = 0;
+                tryCreateNewOutlet();
+            }
+        } else {
+            getCurPosition(false, function (lat, lng) {
+                if (!rendringOutlets)
+                    addNewOutlet();
+                else {
+                    waitCount = 0;
+                    tryCreateNewOutlet();
                 }
-            }, function () {
+            }, function (err) {
+                hideDlg();
+                requestingDisplayOutlet = false;
                 showError(R.cannot_get_current_location);
-            });          
-        } catch (err) {
-            log(err);
+            });
         }
+           
+
+        //devNewDetlta = devNewDetlta + 0.0001;
+        //try {
+        //    getCurPosition(true, function (lat, lng) {
+        //        lat = Math.round(lat * 100000000) / 100000000;
+        //        lng = Math.round(lng * 100000000) / 100000000;                             
+        //        if (networkReady()) {
+        //            log('try reverse the address');
+        //            var geocoder = new google.maps.Geocoder();
+        //            geocoder.geocode({
+        //                'latLng': new google.maps.LatLng(lat, lng),
+        //                'language': 'vi',
+        //            }, function (results, status) {
+        //                if (status === google.maps.GeocoderStatus.OK && results.length > 0) {
+        //                    var street = '';
+        //                    var district = '';
+        //                    try {
+        //                        log(results);
+        //                        if (results[0]) {
+        //                            for (var i = 0; i < results[0].address_components.length; i++) {
+        //                                log('foreach add_comp ' + i.toString() + ':' + results[0].address_components[i].types[0]);
+        //                                if (results[0].address_components[i].types[0] == 'route') {
+        //                                    street = results[0].address_components[i].long_name;
+        //                                } else if (results[0].address_components[i].types[0] == 'administrative_area_level_2') {
+        //                                    district = results[0].address_components[i].long_name;
+        //                                    break;
+        //                                }
+        //                            }
+        //                        } else {
+        //                            log('no geocoder result.');
+        //                        }
+        //                    } catch (geoerr) {
+        //                        log('Parse geocoder failed due to: ' + geoerr);
+        //                    }
+        //                    tryCreateNewOutlet(lat, lng, street, district);
+        //                } else {
+        //                    log('Geocoder failed due to: ' + status);
+        //                    tryCreateNewOutlet(lat, lng, '', '');
+        //                }
+        //            });
+        //        } else {
+        //            tryCreateNewOutlet(lat, lng, '', '');
+        //        }
+        //        showingDialog = false;
+        //    }, function (err) {
+        //        showingDialog = false;
+        //        showError(R.cannot_get_current_location);
+        //    });          
+        //} catch (err) {
+        //    log(err);
+        //}
     }
 
     //*************************************************************************
@@ -361,70 +438,365 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 				});
             }, handleDBError);
     }
-
+   
     //*************************************************************************
-    $scope.deleteOutlet = function (i) {
-        var outlet = $scope.outlets[i];
+    $scope.deleteOutlet = function (outlet) {
+        //var outlet = $scope.outlets[i];
         
         showConfirm(R.delete_outlet, R.delete_outlet_confirm + outlet.Name, function () {
             deleteDraftOutlet(outlet);
         }, function () { });
     }
 
+    //*************************************************************************    
+    $scope.postOutlet = function (outlet) {
+        //var outlet = $scope.outlets[i];
+        showConfirm(R.post_outlet, R.post_outlet_confirm + outlet.Name, function () {
+            outlet.IsDraft = false;
+            outlet.AuditStatus = StatusPost;
+
+            log('Post outlet ' + outlet.ID.toString());
+            outlet.AuditStatus = StatusPost;
+
+            log('Save outlet to server')
+            saveOutlet(outlet, function (synced) {
+                log('Save outlet to local db')
+                changeOutletStatusDB($scope.config.tbl_outlet, outlet, StatusPost, synced ? 1 : 0, function () {
+                    hideDlg();
+                    $scope.refresh();
+                }, function (dberr) {
+                    hideDlg();
+                    showError(dberr.message);
+                });
+            });
+
+        }, function () { });
+    }
+
+    //*************************************************************************    
+    $scope.reviseOutlet = function (outlet) {
+        //var outlet = $scope.outlets[i];
+        showConfirm(R.revise_outlet, R.revise_outlet_confirm + outlet.Name, function () {
+            outlet.IsDraft = false;
+            outlet.AuditStatus = StatusPost;
+
+            log('Revise outlet ' + outlet.ID.toString());
+            outlet.AuditStatus = StatusNew;
+
+            log('Save outlet to server')
+            saveOutlet(outlet, function (synced) {
+                log('Save outlet to local db')
+                changeOutletStatusDB($scope.config.tbl_outlet, outlet, StatusNew, synced ? 1 : 0, function () {
+                    hideDlg();
+                    $scope.refresh();
+                }, function (dberr) {
+                    hideDlg();
+                    showError(dberr.message);
+                });
+            });
+
+        }, function () { });
+    }
+
+    //*************************************************************************    
+    $scope.provinceChanged = function () {
+        var provId = $scope.config.province_id;
+        log('Change to province: ' + provId.toString());
+
+        for (var i = 0; i < dprovinces.length; i++) {
+            if (dprovinces[i].id === provId) {
+                selectProvince = dprovinces[i];
+                if (dprovinces[i].download) {
+                    $("#buttonDownload").css('display', 'none');
+                    $("#buttonRedownload").css('display', 'table');
+                    $("#buttonDeleteOffline").css('display', 'table');
+                } else {
+                    $("#buttonDownload").css('display', 'table');
+                    $("#buttonRedownload").css('display', 'none');
+                    $("#buttonDeleteOffline").css('display', 'none');
+                }
+                break;
+            }
+        }
+    }
+   
+    //*************************************************************************    
+    $scope.deleteOfflineOutlets = function () {
+        var p = selectProvince;
+        showConfirm(R.confirm, R.delete_offline_outlets_of + p.name + '?', function () {
+            selectUnsyncedOutletsOfProvince($scope.config.tbl_outlet, p.id, function (dbres) {
+                if (dbres.rows.length > 0) {
+                    showDlg(R.error, R.unsynced_outlet_in_province);
+                    return;
+                }
+                deleleDownloadProvinceDB($scope.config.tbl_outlet, $scope.config.tbl_downloadProvince, p.id, function () {
+                    p.download = 0;
+                    try {
+                        $scope.$apply();
+                    } catch (err) {
+                    }
+                    updateProvinceActionView();
+                }, function (dberr) {
+                    showError(dberr.message);
+                });
+            }, function (dberr) {
+                showError(dberr.message);
+            });
+        }, function () { });
+    }
+    
     //*************************************************************************
     $scope.downloadOutlets = function () {
-        showDlg(R.loading, R.please_wait);
-        selectDownloadProvincesDB(config.tbl_downloadProvince,
-			function (dbres) {
-			    log('Found download provinces: ' + dbres.rows.length.toString());
-			    var dprovinces = [];
-			    if (dbres.rows.length == 0) {
-			        for (var i = 0; i < provinces.length; i++) {
-			            dprovinces[i] = {
-			                id: provinces[i].id,
-			                name: provinces[i].name,
-			                download: 0,
-			            };
-			        }
-			    } else {
-			        for (var i = 0; i < dbres.rows.length; i++) {
-			            dprovinces[i] = {
-			                id: dbres.rows.item(i).id,
-			                name: dbres.rows.item(i).name,
-			                download: dbres.rows.item(i).download,
-			            };
-			        }
-			    }
+        if (!networkReady()) {
+            showError(R.download_network_warn);
+            return;
+        }
 
-			    $scope.dprovinces = dprovinces;
-			    hideDlg();
-			    $mdDialog.show({
-			        scope: $scope.$new(),
-			        controller: downloadProvinceController,
-			        templateUrl: 'views/downloadProvince.html',
-			        parent: angular.element(document.body),
-			        clickOutsideToClose: false,
-			        fullscreen: false,
-			    })
-                .then(function (answer) {
-                    if (answer) {
-                        log('save download')
-                        saveDownloadProvincesDB(config.tbl_downloadProvince, $scope.dprovinces,
-                           function () {
+        var p = selectProvince;
+        var downloadedCount = 0;       
+        for (var i = 0; i < $scope.dprovinces.length; i++) {
+            if ($scope.dprovinces[i].download && p.id != $scope.dprovinces[i].id)
+                downloadedCount++;
 
-                           },
-                           function (dberr) {
-                               showError('Query error: ' + dberr.message);
-                           });
-                        $scope.dprovinces = [];
+            if (downloadedCount >= config.max_oulet_download) {
+                showError(R.reach_maximum_download);
+                return;
+            }
+        }
+
+        selectUnsyncedOutletsOfProvince($scope.config.tbl_outlet, p.id, function (dbres) {
+            if (dbres.rows.length > 0) {
+                showDlg(R.error, R.unsynced_outlet_in_province);
+                return;
+            }
+
+            showConfirm(R.download_outlets, R.download_outlets_confim + selectProvince.name + '?', function () {
+                setTimeout(function () {
+                    try {
+                        showLoading(R.downloading_outlet, R.please_wait, R.cancel_download_confirm,
+                            function () {
+                                log('****** CANCEL download');
+                                cancelLoadingDlg = true;
+                            }
+                        );
+                        var url = baseURL + '/outlet/getbyprovince/' + userID + '/' + selectProvince.id;
+                        log('Call service api: ' + url);
+                        $http({
+                            method: config.http_method,
+                            url: url
+                        }).then(function (resp) {
+                            try {
+                                var data = resp.data;
+                                if (data.Status == -1) { // error
+                                    showError(data.ErrorMessage);
+                                } else {
+                                    var outletHeaders = data.Outlets;
+                                    if (outletHeaders.length > 0) {
+                                        log('Found ' + outletHeaders.length.toString() + ' outlets');
+                                        downloadOutlet(outletHeaders, 0);
+                                    }
+                                    else {
+                                        hideLoadingDlg();
+                                        showInfo(R.no_outlet_found);
+                                    }
+                                }
+                            } catch (err) {
+                                showError(err.message);
+                            }
+                        }, function (err) {
+                            log('HTTP error...');
+                            log(err);
+                            hideDlg();
+                            var msg = err.statusText == '' ? $scope.resource.text_ConnectionTimeout : err.statusText;
+                            showError(msg);
+                        });
+                    } catch (ex) {
+                        showError(ex.message);
                     }
-                }, function () {
-                });
+                }, 500);               
+            }, function () {
+            });
+        }, function (dberr) {
+            showError(dberr.message);
+        });
+    }
 
-			}, function (dberr) {
-			    log(dberr);
-			    showError('Query error: ' + dberr.message);
-			});
+    //*************************************************************************
+    var waitCount = 0;
+    function waitingToAddNewOutlet() {
+        setTimeout(function () {
+            waitCount++;
+            if (!rendringOutlets)
+                addNewOutlet();
+            else
+            {
+                if (waitCount >= 15) {
+                    requestingDisplayOutlet = false;
+                } else {
+                    waitingToAddNewOutlet();
+                }
+            }
+        }, 300);
+    }
+
+    //*************************************************************************
+    function addNewOutlet() {
+        if (networkReady()) {
+            log('try reverse the address');
+            var geocoder = new google.maps.Geocoder();
+            geocoder.geocode({
+                'latLng': new google.maps.LatLng(curlat, curlng),
+                'language': 'vi',
+            }, function (results, status) {
+                if (status === google.maps.GeocoderStatus.OK && results.length > 0) {
+                    var street = '';
+                    var district = '';
+                    try {
+                        log(results);
+                        if (results[0]) {
+                            for (var i = 0; i < results[0].address_components.length; i++) {
+                                log('foreach add_comp ' + i.toString() + ':' + results[0].address_components[i].types[0]);
+                                if (results[0].address_components[i].types[0] == 'route') {
+                                    street = results[0].address_components[i].long_name;
+                                } else if (results[0].address_components[i].types[0] == 'administrative_area_level_2') {
+                                    district = results[0].address_components[i].long_name;
+                                    break;
+                                }
+                            }
+                        } else {
+                            log('no geocoder result.');
+                        }
+                    } catch (geoerr) {
+                        log('Parse geocoder failed due to: ' + geoerr);
+                    }
+                    tryCreateNewOutlet(curlat, curlng, street, district);
+                } else {
+                    log('Geocoder failed due to: ' + status);
+                    tryCreateNewOutlet(curlat, curlng, '', '');
+                }
+            });
+        } else {
+            tryCreateNewOutlet(curlat, curlng, '', '');
+        }
+    }
+
+    //*************************************************************************
+    function tryCreateNewOutlet(lat, lng, address2, district) {
+        log($scope.outletTypes);
+        $scope.outlet = newOutlet();
+        $scope.outlet.AddLine2 = address2;
+        $scope.outlet.District = district;
+        $scope.isNewOutlet = true;
+        hideDlg();
+        $mdDialog.show({
+            scope: $scope.$new(),
+            controller: newOutletController,
+            templateUrl: 'views/outletCreate.html',
+            parent: angular.element(document.body),
+            clickOutsideToClose: false,
+            fullscreen: false,
+        })
+        .then(function (answer) {
+            requestingDisplayOutlet = false;
+            if (answer) {
+                log('save outlet')
+                $scope.outlet.AuditStatus = ($scope.outlet.IsDraft) ? StatusNew : StatusPost;
+
+                log('Audit Status: ' + $scope.outlet.AuditStatus.toString());
+                showDlg(R.save_outlet, R.please_wait);
+                saveOutlet($scope.outlet,
+                       function (synced) {
+                           addOutletDB(config.tbl_outlet, $scope.outlet, synced,
+                               function () {
+                                   //if (curOutletView == 1)
+                                   //    $scope.refresh();
+                                   //else
+                                   //    $scope.changeOutletView(1);
+                                   $scope.refresh();
+                                   hideDlg();
+                               }, function (dberr) {
+                                   hideDlg();
+                                   showError(dberr.message);
+                               });
+                       });
+            }
+        }, function () {
+            requestingDisplayOutlet = false;
+        });
+    }
+
+    //*************************************************************************
+    function downloadOutlet(outletHeaders, i) {
+        try {
+            var outletheader = outletHeaders[i];
+            showLoading(R.downloading_outlet + '(' + (i + 1).toString() + '/' + outletHeaders.length + ')');
+            var url = baseURL + '/outlet/get/' + userID + '/' + outletheader.ID.toString();
+            log('Call service api: ' + url);
+            $http({
+                method: config.http_method,
+                url: url
+            }).then(function (resp) {
+                try {
+                    var data = resp.data;
+                    if (data.Status == -1) { // error
+                        showError(data.ErrorMessage);
+                    } else {
+                        var outlet = data.Item;
+                        log(data);
+                        var temp = [];
+                        temp[0] = outlet;
+                        insertOutletsDB(user.id, config.tbl_outlet, temp,
+                            function () {
+                                if (!cancelLoadingDlg) {
+                                    if ((i + 1) < outletHeaders.length) {
+                                        downloadOutlet(outletHeaders, i + 1);                                        
+                                    } else {                                        
+                                        changeDownloadProvinceStatusDB(config.tbl_downloadProvince, selectProvince.id, 1, function () {
+                                            selectProvince.download = 1;
+                                            hideLoadingDlg();
+                                            showInfo('Download outlets completed!');
+                                            if (selectProvince.download) {
+                                                $("#buttonDownload").css('display', 'none');
+                                                $("#buttonRedownload").css('display', 'table');
+                                                $("#buttonDeleteOffline").css('display', 'table');
+                                            }
+                                        }, function (dberr) {
+                                            showError(dberr.message);
+                                        });
+                                    }
+                                } else {
+                                    hideLoadingDlg();
+                                }
+                            }, function (dberr) {
+                                showError(dberr.message);
+                            });
+                    }
+                } catch (err) {
+                    showError(err.message);
+                }
+            }, function (err) {
+                log('HTTP error...');
+                log(err);
+                hideDlg();
+                var msg = err.statusText == '' ? $scope.resource.text_ConnectionTimeout : err.statusText;
+                showError(msg);
+            });
+        } catch (ex) {
+            showError(ex.message);
+        }
+    }
+
+    //*************************************************************************    
+    function updateProvinceActionView() {
+        if (selectProvince.download) {
+            $("#buttonDownload").css('display', 'none');
+            $("#buttonRedownload").css('display', 'table');
+            $("#buttonDeleteOffline").css('display', 'table');
+        } else {
+            $("#buttonDownload").css('display', 'table');
+            $("#buttonRedownload").css('display', 'none');
+            $("#buttonDeleteOffline").css('display', 'none');
+        }
     }
 
     //*************************************************************************
@@ -437,8 +809,9 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             //$scope.showCollapseButton = false;
             //$scope.showExpandButton = false;
             $scope.closeLeftPanel();
-            //$("#slider-left-content").css('right', '32px');                        
-            changeGPSTrackingStatus();
+            //$("#slider-left-content").css('right', '32px');
+            if (!firstStart)
+                changeGPSTrackingStatus();
         } else {
             //$scope.showListButton = false;
             //$scope.showCollapseButton = false;
@@ -447,63 +820,28 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             //$("#slider-left-content").css('right', '0');            
         }
     }    
-
-    //*************************************************************************
-    function tryCreateNewOutlet(lat, lng, address2, district) {
-        log($scope.outletTypes);
-        $scope.outlet = newOutlet();
-        $scope.outlet.AddLine2 = address2;
-        $scope.outlet.District = district;        
-        hideDlg();
-        $mdDialog.show({
-            scope: $scope.$new(),
-            controller: newOutletController,
-            templateUrl: 'views/outletCreate.html',
-            parent: angular.element(document.body),
-            clickOutsideToClose: false,
-            fullscreen: false,
-        })
-        .then(function (answer) {
-            if (answer) {
-                log('save outlet')
-                $scope.outlet.AuditStatus = ($scope.outlet.IsDraft) ? StatusNew : StatusPost;
-
-                log('Audit Status: ' + $scope.outlet.AuditStatus.toString());
-                showDlg(R.save_outlet, R.please_wait);
-                saveOutlet($scope.outlet,
-                       function (synced) {
-                           addOutletDB(config.tbl_outlet, $scope.outlet, synced,
-                               function () {
-                                   if (curOutletView == 1)
-                                       $scope.refresh();
-                                   else
-                                       $scope.changeOutletView(1);
-                                   hideDlg();
-                               }, function (dberr) {
-                                   hideDlg();
-                                   showError(dberr.message);
-                               });
-                       });
-            }
-        }, function () {
-        });
-    }
     
     //*************************************************************************
     function getOutletsByView(isbackground) {
+        if (requestingDisplayOutlet || rendringOutlets) return;
+
+        rendringOutlets = true;
+
         if (!isbackground)
             showDlg('Get ' + $scope.outletHeader, 'Please wait...');
 
         if (networkReady()) {
             queryOutletsOnline(isbackground, function (foundOutlets) {
+                if (isbackground && requestingDisplayOutlet) return;
                 loadOutlets(foundOutlets);
             });
         } else {
             queryOutlets(false, curOutletView, function (foundOutlets) {
+                if (isbackground && requestingDisplayOutlet) return;
                 loadOutlets(foundOutlets);
             });
-        }      
-    }       
+        }
+    }
 
     //*************************************************************************
     function queryOutletsOnline(isbackground, callback) {
@@ -529,9 +867,11 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                 method: config.http_method,
                 url: url
             }).then(function (resp) {
+                if (isbackground && requestingDisplayOutlet) return;
                 try {
                     var data = resp.data;
                     if (data.Status == -1) { // error
+                        rendringOutlets = false;
                         handleError(data.ErrorMessage);
                     } else {
                         nearByOutlets = data.Items;
@@ -539,12 +879,13 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                         if (!isbackground)
                             showDlg(R.get_near_by_outlets, R.found + nearByOutlets.length.toString() + R.outlets_loading);
 
+                        if (isbackground && requestingDisplayOutlet) return;
                         insertOutletsDB(user.id, config.tbl_outlet, nearByOutlets,
                             function () {
-                                log('Sync outlet from server completed');
+                                if (isbackground && requestingDisplayOutlet) return;
                                 callback(nearByOutlets);
-                            },
-                            function (dberr) {
+                            }, function (dberr) {
+                                rendringOutlets = false;
                                 if (!isbackground)
                                     showError(dberr.message);
                                 else
@@ -552,12 +893,14 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                             });
                     }
                 } catch (err) {
+                    rendringOutlets = false;
                     if (!isbackground)
                         showError(err.message);
                     else
                         log(err.message);
                 }
             }, function (err) {
+                rendringOutlets = false;
                 log('HTTP error...');
                 log(err);
                 hideDlg();
@@ -565,26 +908,27 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                     var msg = err.statusText == '' ? $scope.resource.text_ConnectionTimeout : err.statusText;
                     showError(msg);
                 }
+                
             });
         } catch (ex) {
+            rendringOutlets = false;
             showError(ex.message);
         }
     }
 
     //*************************************************************************
     function loadOutlets(outlets) {
-        $scope.outlets.length = 0;
-        log('Clear markers');
-        clearMarkers();
-
-        log('Set outlet list');
-        if (isMapReady && networkReady()){
-            loadMarkers(curOutletView == 1, outlets, 
-                function(){
-                    setOutletsToList(outlets);
-                });
-        } else{
-            setOutletsToList(outlets);
+        if (!requestingDisplayOutlet) {
+            $scope.outlets.length = 0;
+            log('Set outlet list');
+            if (isMapReady && networkReady()) {
+                loadMarkers(curOutletView == 1, outlets,
+                    function () {
+                        setOutletsToList(outlets);
+                    });
+            } else {
+                setOutletsToList(outlets);
+            }
         }
     }     
 
@@ -614,58 +958,96 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             $('.md-scroll-mask').remove();
             hideDlg();
 
-            if(firstStart){
+            if (firstStart) {
                 firstStart = false;
                 changeGPSTrackingStatus();
-            }  
+            }
+            rendringOutlets = false;
         }, 100);
     }
         
     //*************************************************************************
-    function changeGPSTrackingStatus(){
-        if($scope.enable_liveGPS){
+    function changeGPSTrackingStatus() {
+        //if(!registeredLocation)
+
+        if ($scope.config.enable_liveGPS) {
+            log('Register Location Service');
             startPositionWatching();
         } else {
+            log('Stop Location Service');
             stopPositionWatching();
         }
     }
 
     //*************************************************************************
-    function handleLocationChange(lat, lng, acc){
+    function handleLocationChange(lat, lng, acc) {
+        //return;
+        if (requestingDisplayOutlet) return;
         var distance = calcDistance({Lat: curlat, Lng : curlng}, {Lat : lat, Lng : lng});
         curacc = acc;
-        if(distance > 1){
-            curlat = lat;
-            curlng = lng;            
-            displayCurrentPostion();
+        curlat = lat;
+        curlng = lng;
+        displayCurrentPostion();
+
+        if (distance > $scope.config.liveGPS_distance) {
             getOutletsByView(true);
         }      
-        else 
-            displayAccuracy() 
     }
 
     //*************************************************************************
     function editOutlet(j, isPanTo) {
         log('Open outlet:' + j.toString());
+        requestingDisplayOutlet = true;
 
-        var orgOutlet;                
-        if(isPanTo){ // from left menu            
+        if (!rendringOutlets)
+            tryEditOutlet(j, isPanTo);
+        else {
+            waitCount = 0;
+            waitingToEditOutlet(j, isPanTo);
+        }
+    }
+    
+    //*************************************************************************
+    function waitingToEditOutlet(j, isPanTo) {
+        setTimeout(function () {
+            waitCount++;
+            if (!rendringOutlets)
+                tryEditOutlet(j, isPanTo);
+            else {
+                if (waitCount >= 15) {
+                    requestingDisplayOutlet = false;
+                } else {
+                    waitingToEditOutlet(j, isPanTo);
+                }
+            }
+        }, 300);
+    }
+
+    //*************************************************************************
+    function tryEditOutlet(j, isPanTo) {
+        // Still has issue if this outlet has been removed while user move
+        log('Open outlet:' + j.toString());
+        requestingDisplayOutlet = true;
+
+        var orgOutlet;
+        if (isPanTo) { // from left menu            
             orgOutlet = $scope.outlets[j + $scope.currentPage * $scope.pageSize];
         } else {
             orgOutlet = curOutlets[j];
-        }        
+        }
         var clonedOutlet = cloneObj(orgOutlet);
         var i = clonedOutlet.positionIndex;
-        log('display outlet ' + clonedOutlet.Name + ': ' + i.toString());    
-        if(isPanTo && isMapReady && networkReady()){            
-            marker = markers[i];                                       
+        log('display outlet ' + clonedOutlet.Name + ': ' + i.toString());
+        if (isPanTo && isMapReady && networkReady()) {
+            marker = markers[i];
             panToOutlet(marker.position.lat(), marker.position.lng(), i, orgOutlet);
         }
         //var clonedOutlet = cloneObj($scope.outlets[i]); //cloneObj($scope.outlets[i]);
         $scope.outlet = clonedOutlet;
-        initializeOutlet($scope.outlet);        
+        initializeOutlet($scope.outlet);
         log('draft: ' + $scope.outlet.IsDraft);
         var isEditDraft = $scope.outlet.IsDraft;
+        $scope.isNewOutlet = false;
 
         $mdDialog.show({
             scope: $scope.$new(),
@@ -675,40 +1057,46 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             clickOutsideToClose: true,
             fullscreen: false,
         })
-        .then(function (answer) {           
+        .then(function (answer) {
+            requestingDisplayOutlet = false;
             if (!answer) return;
 
-            if(isEditDraft) {                
-                if($scope.outlet.isDeleted)
+            if (isEditDraft) {
+                if ($scope.outlet.isDeleted)
                     $scope.outlet.AuditStatus = StatusDelete;
                 else
-                    $scope.outlet.AuditStatus = ($scope.outlet.IsDraft) ? StatusNew : StatusPost;                
-            } else{
-                if($scope.outlet.AuditStatus == StatusInitial)
+                    $scope.outlet.AuditStatus = ($scope.outlet.IsDraft) ? StatusNew : StatusPost;
+            } else {
+                if ($scope.outlet.AuditStatus == StatusInitial)
                     $scope.outlet.AuditStatus = StatusEdit;
                 else if ($scope.outlet.AuditStatus == StatusPost) {
-                    if($scope.outlet.IsDraft){
+                    if ($scope.outlet.IsDraft) {
                         $scope.outlet.AuditStatus = StatusNew;  //Revise
-                    }                    
+                    }
                 }
             }
 
-            if ($scope.outlet.IsTracked) $scope.outlet.Tracking = 1;
-            if ($scope.outlet.IsOpened) $scope.outlet.CloseDate = '';            
+            if ($scope.outlet.IsTracked)
+                $scope.outlet.Tracking = 1;
+            else
+                $scope.outlet.Tracking = 0;
+
+            if ($scope.outlet.IsOpened) $scope.outlet.CloseDate = '';
+
             $scope.outlet.AmendBy = user.id;
-            
+
             var isPost = $scope.outlet.IsDraft != orgOutlet.IsDraft;
             var isAuditChanged = $scope.outlet.AuditStatus != orgOutlet.AuditStatus;
 
             orgOutlet.AuditStatus = $scope.outlet.AuditStatus;
-            orgOutlet.AmendBy = $scope.outlet.AmendBy;                        
+            orgOutlet.AmendBy = $scope.outlet.AmendBy;
             orgOutlet.AddLine = $scope.outlet.AddLine;
-            orgOutlet.AddLine2 = $scope.outlet.AddLine2;            
+            orgOutlet.AddLine2 = $scope.outlet.AddLine2;
             orgOutlet.AuditStatus = $scope.outlet.AuditStatus;
             orgOutlet.CloseDate = $scope.outlet.CloseDate;
             orgOutlet.Distance = $scope.outlet.Distance;
             orgOutlet.District = $scope.outlet.District;
-            orgOutlet.FullAddress = $scope.outlet.FullAddress;            
+            orgOutlet.FullAddress = $scope.outlet.FullAddress;
             orgOutlet.IsOpened = $scope.outlet.IsOpened;
             orgOutlet.IsTracked = $scope.outlet.IsTracked;
             orgOutlet.Name = $scope.outlet.Name;
@@ -727,18 +1115,18 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             orgOutlet.Tracking = $scope.outlet.Tracking;
             orgOutlet.VBLVolume = $scope.outlet.VBLVolume;
             orgOutlet.PStatus = $scope.outlet.PStatus;
-                
+
             orgOutlet.modifiedImage1 = $scope.outlet.modifiedImage1;
             orgOutlet.modifiedImage2 = $scope.outlet.modifiedImage2;
             orgOutlet.modifiedImage3 = $scope.outlet.modifiedImage3;
 
             showDlg(R.saving_outlet, R.please_wait);
-            if($scope.outlet.isDeleted){
+            if ($scope.outlet.isDeleted) {
                 log('save outlet to server')
                 saveOutlet($scope.outlet, function (synced) {
                     log('Save outlet to local db')
-                    if(synced){
-                        deleteOutletDB($scope.config.tbl_outlet, orgOutlet, function(){
+                    if (synced) {
+                        deleteOutletDB($scope.config.tbl_outlet, orgOutlet, function () {
                             if (curOutletView == 1)
                                 $scope.refresh();
                             hideDlg();
@@ -746,23 +1134,30 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                             hideDlg();
                             showError(dberr.message);
                         })
-                    } else{
+                    } else {
                         saveOutletDB(config.tbl_outlet, orgOutlet, curOutletView, synced,
                         function () {
                             if (curOutletView == 1)
-                                $scope.refresh();                                   
+                                $scope.refresh();
                             hideDlg();
                         }, function (dberr) {
                             hideDlg();
                             showError(dberr.message);
                         });
-                    }                    
+                    }
                 });
             } else {
                 if (curOutletView != 1) { // new outlet
                     var iconUrl = getMarkerIcon($scope.outlet);
                     log('change marker ' + i.toString() + ' icon: ' + iconUrl);
-                    markers[i].setIcon(iconUrl);
+                    for (var m = 0; m < markers.length; m++) {
+                        var mk = markers[m];
+                        if (mk == null) continue;
+                        if (mk.outlet != null && mk.outlet.ID == $scope.outlet.ID) {
+                            mk.setIcon(iconUrl);
+                            break;
+                        }
+                    }
                 }
 
                 log('save outlet to server')
@@ -770,8 +1165,9 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                     log('save outlet to local db')
                     saveOutletDB(config.tbl_outlet, orgOutlet, curOutletView, synced,
                         function () {
-                            if (curOutletView == 1)
-                                $scope.refresh();                                   
+                            //if (curOutletView == 1)
+                            //    $scope.refresh();
+                            $scope.refresh();
                             hideDlg();
                         }, function (dberr) {
                             hideDlg();
@@ -780,6 +1176,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                 });
             }
         }, function () {
+            requestingDisplayOutlet = false;
         });
     }
 
@@ -1032,13 +1429,21 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 
         locationChangedCallback = handleLocationChange;
 
-        onNetworkChangedCallback = function (connected) {            
-            enableOffline(connected);
-            if (connected && !isMapReady) {
-                loadMapApi();
-                getCurPosition(true, function (lat, lng) {
-                    changeGPSTrackingStatus();
-                }, function (err) { });
+        onNetworkChangedCallback = function (networkStatus) {            
+            enableOffline(networkStatus);
+            if (networkStatus) {
+                if (!isMapReady) {
+                    loadMapApi();
+                    getCurPosition(true, function (lat, lng) {
+                        if (!firstStart)
+                            changeGPSTrackingStatus();
+                    }, function (err) { });
+                }
+                syncOutletMethod(function () {
+                    log('*** SYNC COMPLETED');
+                }, function () {
+                    log('*** SYNC ERROR');
+                });
             }
         }
 

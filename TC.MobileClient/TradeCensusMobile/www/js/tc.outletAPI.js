@@ -29,7 +29,7 @@ function newOutlet() {
         AmendBy: 11693,
         AmendDate: "",
         AreaID: user.areaID,
-        AuditStatus: StatusPost,
+        AuditStatus: StatusNew,
         CloseDate: "",
         CreateDate: "",
         Distance: 0,
@@ -44,7 +44,7 @@ function newOutlet() {
         Latitude: curlat,
         Longitude: curlng,
         Name: "",
-        Note: null,
+        Note: '',
         OTypeID: outletTypes[0].ID,
         OutletEmail: null,
         OutletSource: 1,
@@ -59,12 +59,16 @@ function newOutlet() {
         StringImage3: "",
         TotalVolume: 0,
         Tracking: 0,
-        VBLVolume: 0,
-        PStatus: StatusPost,
-        IsDraft: false,
+        VBLVolume: 0,        
+        PStatus: StatusNew,
+        IsDraft: true,
+        IsNew : true,
         ExtractName: '',
         PersonFirstName: '',
         PersonLastName: '',
+        auditResult: '',
+        viewAuditStatus : false,
+        marker : null,
     };
 }
 
@@ -110,12 +114,26 @@ function initializeOutlet(outlet) {
         exname = exname.concat('Unknown (', outlet.PersonID.toString(), ')');
     }
 
+    if (outlet.Note == null) outlet.Note = '';
     outlet.ExtractName = exname;
     outlet.IsOpened = isEmpty(outlet.CloseDate);
     outlet.IsTracked = outlet.Tracking == 1;      
     outlet.IsAuditApproved = outlet.AuditStatus == 1;
-    outlet.IsDraft = outlet.AuditStatus == StatusNew;
+    outlet.IsNew = outlet.AuditStatus == StatusNew || outlet.AuditStatus == StatusPost;
+    outlet.IsDraft = outlet.AuditStatus == StatusNew;    
+    outlet.canPost = outlet.AuditStatus == StatusNew;
+    outlet.canRevise = outlet.AuditStatus == StatusPost && outlet.PersonID == userID;
+
     outlet.IsSynced = (outlet.PSynced) && (outlet.PSynced == 1);
+    outlet.hasMarker = false;
+
+    if (outlet.AuditStatus == StatusAuditAccept) {
+        outlet.auditResult = 'Approved',
+        outlet.viewAuditStatus = true;
+    } else if (outlet.AuditStatus == StatusAuditDeny) {
+        outlet.auditResult = 'Denied',
+        outlet.viewAuditStatus = true;
+    }
 }
 
 function queryOutlets(isbackground, view, callback) {
@@ -130,7 +148,6 @@ function queryOutlets(isbackground, view, callback) {
 
         selectOutletsDB(config.tbl_outlet, bl.Lat, tl.Lat, bl.Lng, br.Lng, view, //config.province_id,
             function (dbres) {
-
                 var rowLen = dbres.rows.length;
                 log('Found outlets: ' + rowLen.toString());
                 if (rowLen) {
@@ -153,7 +170,7 @@ function queryOutlets(isbackground, view, callback) {
                         }
                         if (found >= count) break;
                     }
-                    foundOutlets.sort(function (a, b) { return a.Distance - b.Distance });
+                    foundOutlets.sort(function (a, b) { return a.Distance - b.Distance; });
                     callback(foundOutlets);
                 } else {
                     callback([]);

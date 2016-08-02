@@ -15,6 +15,196 @@
     z-index: 0;    
 }
 
+/**************** OUTLET TABLE *******************/
+.outlet-list-panel {
+    margin-left: 4px;   
+    margin-right: 4px;        
+    width: 100%;    
+    /*background: #2196F3;*/         
+}
+
+.outlet-table {
+    border-radius: 0px;   
+    border-bottom: 1px solid #E6E6E6; 
+    background: #fff;
+    padding: 12px;
+    margin-left: 0px;
+    margin-right: 0px;
+    margin-bottom: 0px;
+    min-height: 28px;
+    width: 100%;
+    display: table;
+}
+
+.outlet-table-1 {
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    background: #fff;
+    padding: 12px;
+    padding: 12px;
+    margin-left: 0px;
+    margin-right: 0px;
+    margin-bottom: 8px;
+    min-height: 28px;
+    width: 100%;
+    display: table;
+}
+
+.outlet-indicator {
+    width: 28px;
+    font-size: 14px;
+    vertical-align: top;
+}
+
+.outlet-header {
+    display: inline-block;
+    width:100%;
+    column-span: 4;
+}
+
+.outlet-header-right {
+    float: right;
+    margin-left: 4px;
+    vertical-align: bottom;
+}
+
+.outlet-header img{
+    height: 24px;
+    width: 24px;
+}
+
+.outlet-detail-table {
+    margin-top: -2px;
+    padding: 0px;
+    width: 100%;
+}
+
+.outlet-table-c2 {
+    margin-left: 28px;
+    margin-right: 8px;
+    background: lightskyblue;
+    width: 100%
+}
+
+.outlet-detail-table .thead{
+    height:0px;
+}
+
+.outlet-detail-table tr {
+    height: 28px;
+    vertical-align: top;
+}
+
+.outlet-detail-table .span-fix {
+    overflow: hidden;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+    max-width:200px;
+    display:inline-block;
+}
+
+.outlet-item-col2 .span-datetime {
+    color: rgb(128, 128, 128);    
+    font-size: 13px;
+    margin-bottom: 12px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    padding-right: 8px;
+}
+
+.content {
+    margin-top: 8px;
+    overflow: hidden;
+    display: block;
+}
+
+    .content .title {
+        color: #868686;
+        font-size: 14px;
+        margin-bottom: 12px;
+        padding-top: 8px;
+        padding-bottom: 8px;
+        padding-right: 8px;
+    }
+
+    .content .value {
+        font-size: 16px;
+        margin-right: 16px;
+        padding-right: 8px;
+    }
+
+    .content table {
+        margin: -2px;
+        padding: 0px;
+    }
+
+.outlet-item .header {
+    color: #2196F3;
+    font-size: 20px;
+}
+
+.outlet-item .header-right {
+    float: right;
+    color: #868686;
+    font-size: 14px;  
+    right: 8px;
+}
+
+.outlet-item .distance {
+    vertical-align:central;
+}
+
+.outlet-item .imgDelete {
+	 float: right;
+	 right:4px;
+	 top: 36px; 
+    width:24px;
+   height:24px;
+}
+
+/*.title {
+    line-height: 32px;
+    font-weight: bold;
+}*/
+
+.circle {
+    background: #2196F3;
+    width: 24px;
+    height: 24px;
+    line-height: 24px;
+    border-radius: 12px;
+    color: white;
+    text-align: center;
+}
+
+.circle-gray {
+    background: #757575;
+    width: 24px;
+    height: 24px;
+    line-height: 24px;
+    border-radius: 12px;
+    color: white;
+    text-align: center;
+}
+.circle-org {
+    background: #EF8E1B;
+    width: 24px;
+    height: 24px;
+    line-height: 24px;
+    border-radius: 12px;
+    color: white;
+    text-align: center;
+}      
+.circle-yellow {
+    background: #E4B727;
+    width: 24px;
+    height: 24px;
+    line-height: 24px;
+    border-radius: 12px;
+    color: white;
+    text-align: center;
+}    
+
+
 /**************** BUTTONS *******************/
 .square-box {
     border: 1px solid red;  
@@ -36,10 +226,10 @@
 .text-button{
     display: table;
     border: 0px;
-    width: 96px;
+    width: 100px;
     margin-right:10px;
     margin-left:10px;       
-    height:64px;
+    height:64px;    
 }
 
 .text-button img {
@@ -56,6 +246,46 @@
     color:#01541E;    
 }
 
+.m-flat-button {       
+    display: table;     
+    height: 42px;
+}
+    .m-flat-button span {                       
+        display: table-cell;            
+        padding-left: 12px;
+        padding-right: 12px;      
+        margin-top:12px;      
+        float:left;
+        vertical-align: middle;
+        color:#01541E;   
+    }
+
+    .m-flat-button img {
+        height: 24px;
+        width: 24px;
+        margin-top:9px;
+        margin-left: 4px;
+        margin-right: 0px;
+        float:left;
+    }
+
+.m-flat-button-small {       
+    display: table;     
+    height: 28px;
+    border-radius: 2px;
+    width:56px;
+}
+.m-flat-button-small span {                       
+    display: table-cell;            
+    padding-left: 4px;
+    padding-right: 4px;      
+    margin-top:3px;
+    vertical-align: middle;
+    text-align:center;
+    color:white;
+    font-size:13px;
+}
+
 .md-button-image{
     height: 24px;
     width: 24px;
@@ -63,19 +293,6 @@
     margin-right:4px; 
     padding: 0;
     float: left;
-}
-
-.float-left {
-    float: left; 
-    margin-right: 4px;
-}
-.float-right {
-    float: right; 
-    margin-left: 4px;
-}
-
-.float-top {     
-    margin-top: 4px;
 }
 
 .trans-button {
@@ -224,7 +441,7 @@
             border-top: 0px;
         }
 
-        #home-topleft .dropdown .dropdown-item span {                       
+        #home-topleft .dropdown .dropdown-item span {
             display: table-cell;            
             padding-left: 12px;
             padding-right: 12px;      
@@ -403,172 +620,6 @@
     overflow:scroll;
 }
 
-.outlet-list-panel {
-    margin-left: 4px;   
-    margin-right: 4px;        
-    width: 100%;    
-    /*background: #2196F3;*/         
-}
-
-.outlet-table {
-    border-radius: 0px;   
-    border-bottom: 1px solid #E6E6E6; 
-    background: #fff;
-    padding: 12px;
-    margin-left: 0px;
-    margin-right: 0px;
-    margin-bottom: 0px;
-    min-height: 28px;
-    width: 100%;
-    display: table;
-}
-
-.outlet-table-1 {
-    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
-    background: #fff;
-    padding: 12px;
-    padding: 12px;
-    margin-left: 0px;
-    margin-right: 0px;
-    margin-bottom: 8px;
-    min-height: 28px;
-    width: 100%;
-    display: table;
-}
-
-.outlet-indicator {
-    width: 28px;
-    font-size: 14px;
-    vertical-align: top;
-}
-
-.outlet-header {
-    display: inline-block;
-    width:100%;
-    column-span: 4;
-}
-
-.outlet-header-right {
-    float: right;
-    margin-left: 4px;
-    vertical-align: bottom;
-}
-
-.outlet-header img{
-    height: 24px;
-    width: 24px;
-}
-
-.outlet-detail-table {
-    margin-top: -2px;
-    padding: 0px;
-    width: 100%;
-}
-
-.outlet-table-c2 {
-    margin-left: 28px;
-    margin-right: 8px;
-    background: lightskyblue;
-    width: 100%
-}
-
-.outlet-detail-table tr {
-    height: 32px;
-    vertical-align: top;
-}
-
-.outlet-item-col2 .span-datetime {
-    color: rgb(128, 128, 128);    
-    font-size: 13px;
-    margin-bottom: 12px;
-    padding-top: 8px;
-    padding-bottom: 8px;
-    padding-right: 8px;
-}
-
-.content {
-    margin-top: 8px;
-    overflow: hidden;
-    display: block;
-}
-
-    .content .title {
-        color: #868686;
-        font-size: 14px;
-        margin-bottom: 12px;
-        padding-top: 8px;
-        padding-bottom: 8px;
-        padding-right: 8px;
-    }
-
-    .content .value {
-        font-size: 16px;
-        margin-right: 16px;
-        padding-right: 8px;
-    }
-
-    .content table {
-        margin: -2px;
-        padding: 0px;
-    }
-
-.outlet-item .header {
-    color: #2196F3;
-    font-size: 20px;
-}
-
-.outlet-item .header-right {
-    float: right;
-    color: #868686;
-    font-size: 14px;  
-    right: 8px;
-}
-
-.outlet-item .distance {
-    vertical-align:central;
-}
-
-.outlet-item .imgDelete {
-	 float: right;
-	 right:4px;
-	 top: 36px; 
-    width:24px;
-   height:24px;
-}
-
-/*.title {
-    line-height: 32px;
-    font-weight: bold;
-}*/
-
-.circle {
-    background: #2196F3;
-    width: 24px;
-    height: 24px;
-    line-height: 24px;
-    border-radius: 12px;
-    color: white;
-    text-align: center;
-}
-
-.circle-gray {
-    background: #757575;
-    width: 24px;
-    height: 24px;
-    line-height: 24px;
-    border-radius: 12px;
-    color: white;
-    text-align: center;
-}
-.circle-org {
-    background: #EF8E1B;
-    width: 24px;
-    height: 24px;
-    line-height: 24px;
-    border-radius: 12px;
-    color: white;
-    text-align: center;
-}        
 
 /********************* SLIDER-RIGHT ********************/
 .slider-right {    
@@ -603,3 +654,9 @@
     vertical-align: middle;
 }
 
+/*.view-marker{
+    padding:-12px;
+    margin:0px;
+    color:#fff;
+    background:#01541E;
+}*/

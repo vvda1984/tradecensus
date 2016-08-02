@@ -25,5 +25,10 @@ POST => visible for all
 AUDIT => visible for all
 - Action:
 Owner can delete NEW
-Owner can change POST => NEW
+Owner can change POST > NEW
 Owner cannot delete POST or AUDIT
+
+[1.0.16215.6] 2016-08-02
+Only owner can Revise (POST > NEW)
+POST => only change by auditor (approve/deny)
+Auditor can view NEW/EDIT outlets in New and Edited query

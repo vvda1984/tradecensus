@@ -1,16 +1,21 @@
-﻿var dlgCloseCallback;
+﻿var isLoadingDlgOpened = false;
+var cancelLoadingDlg = false;
+var dlgCloseCallback;
 var dlgAcceptCallback;
 var dlgDenyCallback;
+var loadigConfirmMsg;
+var loadingCloseCallback;
 
 function dlgClose() {
-	log('Close dialog.');
+    log('Close dialog.');
+    hideDlg();
 	if (dlgCloseCallback)
-		dlgCloseCallback();
-	hideDlg();	
+		dlgCloseCallback();	
 }
 
 function dlgConfirmClose(i) {
 	log('dlgConfirmClose: ' + i.toString());	
+	hideDlg();
 	if (i == 1) {
 		if (dlgAcceptCallback != null){
 			dlgAcceptCallback();
@@ -18,26 +23,50 @@ function dlgConfirmClose(i) {
 	} else {
 		if (dlgDenyCallback != null)
 			dlgDenyCallback();
-	}
-	hideDlg();
+	}	
+}
+
+function dlgLoadingClose() {    
+    log('dlgLoadingClose: ' + i.toString());
+    if (isDev) {
+        alert(loadigConfirmMsg);
+        hideDlg();
+        if (dlgCloseCallback)
+            dlgCloseCallback();        
+    } else {
+        navigator.notification.confirm(
+            loadigConfirmMsg, // message
+            function (i) {
+                if (i == 2) {
+                    hideLoadingDlg();
+                    if (loadingCloseCallback != null)
+                        loadingCloseCallback();
+                }
+            },              // callback to invoke with index of button pressed
+            'Confirm',      // title            
+            ['No', 'Yes']
+        );
+    }
 }
 
 function showDlg(title, message, callback) {
+    resetCallback();
 	log("show dlg: " + message);	
 	if (isDlgOpened) {
 		$('#dlg-title').html(title);
 		$('#dlg-message').html(message);
 	} else {
-		var cover = null;
+	    var cover = null;
+	    var t = (title === R.error ? 'style="color:red;">' : '>');
 		if (callback) {			
 			dlgCloseCallback = callback;
 			cover =
-                '<div id="loading-overlay">' +
+                '<div id="dlg-panel">' +
                     '<div class="loading-window">' +
                         '<div class="dialog">' +
                             '<div class="content">' +
                                 '<div id="dlg-title" class="title">' + title + '</div><br>' +
-                                '<div id="dlg-message">' + message + '</div>' +
+                                '<div id="dlg-message" ' + t + message + '</div>' +
                             '</div>' +
                             '<div class="button label-blue" onclick="dlgClose()">' +
                                	'<div class="center" fit>CLOSE</div>' +
@@ -52,7 +81,7 @@ function showDlg(title, message, callback) {
                 '</div>';
 		} else {
 			cover =
-                '<div id="loading-overlay">' +
+                '<div id="dlg-panel">' +
                     '<div class="loading-window">' +
                         '<div class="dialog">' +
                             '<div class="loading">' +
@@ -86,7 +115,7 @@ function hideDlg() {
 		//dlgCloseCallback = null;
 		//dlgAcceptCallback = null;
 		//dlgDenyCallback = null;
-		$('#loading-overlay').remove();
+		$('#dlg-panel').remove();
 		isDlgOpened = false;
 	}
 	catch (err) {
@@ -94,24 +123,31 @@ function hideDlg() {
 }
 
 function showError(message) {
-	//navigator.notification.alert(message, function () { }, "Error", 'Close');
-	hideDlg();
-	showDlg("Error", message, function () { });;
+    resetCallback();
+    hideDlg();
+    hideLoadingDlg();
+	showDlg(R.error, message, function () { });;
+}
+
+function showErrorAdv(message, onClose) {
+    resetCallback();
+    hideDlg();
+    showDlg(R.error, message, function () { onClose();});;
 }
 
 function showInfo(message) {
-	//navigator.notification.alert(message, function () { }, "Error", 'Close');
+    resetCallback();
 	hideDlg();
 	showDlg("Info", message, function () { });;
 }
 
 function showConfirm(title, message, onAccept, onDeny) {
-	//navigator.notification.alert(message, function () { }, "Error", 'Close');
+    resetCallback();
 	hideDlg();
 	dlgAcceptCallback = onAccept;
 	dlgDenyCallback = onDeny;
 	cover =
-        '<div id="loading-overlay">' +
+        '<div id="dlg-panel">' +
             '<div class="loading-window">' +
                 '<div class="dialog">' +
                     '<div class="content">' +
@@ -130,4 +166,64 @@ function showConfirm(title, message, onAccept, onDeny) {
                 '</div>' +
         '</div>';
 	$(cover).appendTo('body');
+}
+
+function showLoading(title, message, closeMsg, callback) {
+    log("show Loading: " + message);
+    resetCallback();
+    cancelLoadingDlg = false;
+    if (isLoadingDlgOpened) {
+        $('#loading-dlg-title').html(title);
+        $('#loading-dlg-message').html(message);
+    } else {
+        var cover = null;
+        loadingCloseCallback = callback;
+        loadigConfirmMsg = closeMsg;
+        cover =
+            '<div id="loading-panel">' +
+                '<div class="loading-window">' +
+                    '<div class="dialog">' +
+                        '<div class="content">' +
+                            '<div id="loading-dlg-title" class="title">' + title + '</div><br>' +
+                            '<div id="loading-dlg-message">' + message + '</div>' +
+                        '</div>' +
+                        '<div class="button label-blue" onclick="dlgLoadingClose()">' +
+                            '<div class="center" fit>CLOSE</div>' +
+                            '<paper-ripple fit></paper-ripple>' +
+                        '</div>' +
+                    '</div>' +
+                 '</div>' +
+            '</div>';
+        isLoadingDlgOpened = true;
+        $(cover).appendTo('body');
+    }
+}
+
+function SetLoadingMsg(title, message) {
+    try{
+        $('#loading-dlg-title').html(title);
+        $('#loading-dlg-message').html(message);
+    }catch(err){
+
+    }
+}
+
+function hideLoadingDlg() {
+    try {
+        //dlgCloseCallback = null;
+        //dlgAcceptCallback = null;
+        //dlgDenyCallback = null;
+        cancelLoadingDlg = true;
+        $('#loading-panel').remove();
+        isLoadingDlgOpened = false;
+    }
+    catch (err) {
+    }
+}
+
+function resetCallback() {
+    var dlgCloseCallback = null;
+    var dlgAcceptCallback = null;
+    var dlgDenyCallback = null;
+    var loadigConfirmMsg = null;
 }

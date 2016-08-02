@@ -1,18 +1,25 @@
-﻿function editOutletController($scope, $mdDialog) {
+﻿/// <reference path="tc.outletAPI.js" />
+
+function editOutletController($scope, $mdDialog) {
     log('view outlet ' + $scope.outlet.ID.toString());
     $scope.R = R;
+
+    $scope.isAuditor = user.hasAuditRole;
+
     $scope.needAudit = user.hasAuditRole &&
-                       $scope.outlet.AuditStatus == StatusPost &&
-                       $scope.outlet.InputBy != user.id;
+                       $scope.outlet.AuditStatus == StatusPost && $scope.outlet.PersonID != user.id;
+
     if ($scope.needAudit) {
         $scope.outlet.AuditAction = 1; //approve
     }
 
-    $scope.canRevise = $scope.outlet.AuditStatus == StatusPost && $scope.outlet.InputBy == user.id;
+    $scope.canRevise = $scope.outlet.AuditStatus == StatusPost && $scope.outlet.PersonID == user.id;
+    $scope.canChangeOpenClose = user.hasAuditRole || $scope.outlet.AuditStatus != StatusPost;
+    $scope.canChangeTrackNonTrack = user.hasAuditRole || $scope.outlet.AuditStatus != StatusPost;
 
-    $scope.allowCapture = isEmpty($scope.outlet.StringImage1) ||
-                          isEmpty($scope.outlet.StringImage2) ||
-                          isEmpty($scope.outlet.StringImage3);    
+    var allowCapture = user.hasAuditRole || $scope.outlet.AuditStatus != StatusPost;
+    $scope.allowCapture = allowCapture &&
+        (isEmpty($scope.outlet.StringImage1) || isEmpty($scope.outlet.StringImage2) || isEmpty($scope.outlet.StringImage3));
 
     $scope.showDraft = $scope.outlet.IsDraft;
     $scope.outlet.modifiedImage1 = false;
@@ -32,6 +39,7 @@
 
     $scope.capture = function (i) {
         if (i == 1) {
+            if (!allowCapture) return;
             if (!isEmpty($scope.outlet.StringImage1)) {
                 openImgViewer($scope.outlet.Name, $scope.image1URL, function (imageURI) {
                     log('Update imageURI 1: ' + imageURI);
@@ -45,6 +53,7 @@
                 });
             }
         } else if (i == 2) {
+            if (!allowCapture) return;
             if (!isEmpty($scope.outlet.StringImage2)) {
                 openImgViewer($scope.outlet.Name, $scope.image2URL, function (imageURI) {
                     log('Update imageURI 2: ' + imageURI);
@@ -58,6 +67,7 @@
                 });
             }                        
         } else if (i == 3) {
+            if (!allowCapture) return;
             if (!isEmpty($scope.outlet.StringImage3)) {
                 openImgViewer($scope.outlet.Name, $scope.image3URL, function (imageURI) {
                     log('Update imageURI 3: ' + imageURI);
@@ -104,15 +114,37 @@
             });
         }
     }
-    $scope.openedOptionVisible = !$scope.outlet.IsOpened;
-    $scope.trackedOptionVisible = !$scope.outlet.IsTracked;
+
     $scope.saveUpdate = function () {
+        log('Change open/close status: ' + $scope.outlet.IsOpened);
+        if($scope.outlet.IsOpened) {
+            $scope.outlet.CloseDate = '';
+        } else {
+            if( $scope.outlet.CloseDate == '')
+                $scope.outlet.CloseDate = currentDate();
+        }
+
         $mdDialog.hide(true);
     };
 
     $scope.cancelUpdate = function () {
         $mdDialog.cancel();
     };
+
+    $scope.reviseOutlet = function () {        
+        $scope.outlet.IsDraft = true; // POST
+        $mdDialog.hide(true);
+    }
+
+    //$scope.openCloseChanged = function () {
+    //    log('Change open/close status: ' + $scope.outlet.IsOpened);
+    //    if($scope.outlet.IsOpened) {
+    //        $scope.outlet.CloseDate = '';
+    //    } else {
+    //        if( $scope.outlet.CloseDate == '')
+    //            $scope.outlet.CloseDate = currentDate();
+    //    }
+    //}
 
     function captureImage(onSuccess, onError) {
         try {

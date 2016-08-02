@@ -14,7 +14,7 @@ function newOutletController($scope, $mdDialog) {
     $scope.outlet.modifiedImage2 = false;
     $scope.outlet.modifiedImage3 = false;
     $scope.createNew = $scope.outlet.AuditStatus == StatusNew;
-    $scope.showDraft = $scope.outlet.AuditStatus == StatusNew;
+    $scope.showDraft = $scope.outlet.IsDraft && !$scope.isNewOutlet;
     $scope.isDeleted = false;
 
     if (!isEmpty($scope.outlet.StringImage1)) {
@@ -111,35 +111,14 @@ function newOutletController($scope, $mdDialog) {
         }, function () { });                
     };
 
+    $scope.postOutlet = function () {
+        if (!validate()) return;
+        $scope.outlet.IsDraft = false; // POST
+        $mdDialog.hide(true);
+    }
+
     $scope.saveUpdate = function () {
-        if (isEmpty($scope.outlet.Name)) {
-            showError(R.outlet_name_is_empty);
-            return;
-        }
-        if (isEmpty($scope.outlet.AddLine)) {
-            showError(R.house_no_is_empty);
-            return;
-        }
-        if (isEmpty($scope.outlet.AddLine2)) {
-            showError(R.street_is_empty);
-            return;
-        }
-        if (isEmpty($scope.outlet.District)) {
-            showError(R.district_is_empty);
-            return;
-        }
-        if (isEmpty($scope.outlet.Phone)) {
-            showError(R.phone_is_empty);
-            return;
-        }
-        //if ($scope.outlet.TotalVolume ) {
-        //    showError('Total is empty!');
-        //    return;
-        //}
-        //if (isEmpty($scope.outlet.VBLVolume)) {
-        //    showError('VBL Volume is empty!');
-        //    return;
-        //}
+        if (!validate()) return;
 
         $mdDialog.hide(true);
     };
@@ -171,5 +150,38 @@ function newOutletController($scope, $mdDialog) {
             return imageUrl;
         }
         return '';
+    }
+
+    function validate() {
+        if (isEmpty($scope.outlet.Name)) {
+            showErrorAdv(R.outlet_name_is_empty, function () { $("#inputName").focus(); });
+
+            return false;
+        }
+        if ($scope.outlet.OTypeID == '-1') {
+            showErrorAdv(R.outlet_type_is_empty, function () { $("#inputOutletType").focus(); });
+            //showError(R.outlet_type_is_empty);
+            return false;
+        }
+
+        if (isEmpty($scope.outlet.Phone)) {
+            showErrorAdv(R.phone_is_empty, function () { $("#inputPhone").focus(); });
+            return false;
+        }
+
+        if (isEmpty($scope.outlet.AddLine)) {
+            showErrorAdv(R.house_no_is_empty, function () { $("#inputAdd1").focus(); });
+            return false;
+        }
+        if (isEmpty($scope.outlet.AddLine2)) {
+            showErrorAdv(R.street_is_empty, function () { $("#inputAdd2").focus(); });
+            return;
+        }
+        if (isEmpty($scope.outlet.District)) {
+            showErrorAdv(R.district_is_empty, function () { $("#inputDistrict").focus(); });
+            return false;
+        }
+
+        return true;
     }
 }

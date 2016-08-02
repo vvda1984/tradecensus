@@ -3,7 +3,9 @@
 */
 function initalizeDB(onSuccess) {
     //db = window.sqlitePlugin.openDatabase({ name: "td-v01.db", location: 'default' });
-    db = window.openDatabase("Database", "2.0", "tc-v1-01.db", 200000);
+    var dbName = 'tc-v1-02.db';
+    log('Open database: ' + dbName);
+    db = window.openDatabase("Database", "2.0", dbName, 200000);
     db.transaction(function (tx) {
         if (resetDB) {
             tx.executeSql('DROP TABLE IF EXISTS person');
@@ -175,10 +177,11 @@ function insertProvinces(items, onSuccess, onError) {
 function insertOutletTypes(items, onSuccess, onError) {
     db.transaction(function (tx) {
         outletTypes = [];
+        outletTypes[0] = { ID: '-1', Name: ' ' };
         var len = items.length;
         for (i = 0 ; i < len; i++) {
             var p = items[i];
-            outletTypes[i] = p;
+            outletTypes[i + 1] = p;
             var sql = "INSERT OR REPLACE INTO [outletType] VALUES (";
             sql = sql.concat("'", p.ID, "', ");
             sql = sql.concat("'", p.Name, "', ");
@@ -456,7 +459,7 @@ function syncWithStorageOutletDB(tx, userID, outletTbl, outlets, i, onSuccess, o
                 addNewOutlet(tx1, outletTbl, outlet, false, false, false, true, false);                
             }
 
-            if((i+1) < outlets.length){
+            if ((i + 1) < outlets.length && !requestingDisplayOutlet) {
                 syncWithStorageOutletDB(tx1, userID, outletTbl, outlets, i + 1, onSuccess, onError);
             } else{
                 onSuccess();
@@ -656,11 +659,21 @@ function selectOutletsDB(outletTbl, latMin, latMax, lngMin, lngMax, view, onSucc
         if (view == 0) {            
             sql = sql.concat('AuditStatus <> ' + StatusDelete.toString());
         } else if (view == 1) {
-            sql = sql.concat('AuditStatus in (' + StatusNew.toString(), ', ', StatusPost.toString(), ')');            
-            sql = sql.concat(' AND PersonID = ' + userID.toString());
+            if (user.hasAuditRole) {
+                sql = sql.concat('AuditStatus in (' + StatusNew.toString(), ', ', StatusPost.toString(), ')');
+                sql = sql.concat(' AND PersonID = ' + userID.toString());
+            } else {
+                sql = sql.concat('AuditStatus in (' + StatusNew.toString(), ', ', StatusPost.toString(), ')');
+                sql = sql.concat(' AND PersonID = ' + userID.toString());
+            }
         } else if (view == 2) {
-            sql = sql.concat('AuditStatus = ' + StatusEdit.toString());
-            sql = sql.concat(' AND PersonID = ' + userID.toString());
+            if (user.hasAuditRole) {
+                sql = sql.concat('AuditStatus = ' + StatusEdit.toString());
+                sql = sql.concat(' AND PersonID <> ' + userID.toString());
+            } else {
+                sql = sql.concat('AuditStatus = ' + StatusEdit.toString());
+                sql = sql.concat(' AND PersonID = ' + userID.toString());
+            }
         } else {
             sql = sql.concat('AuditStatus in (' + StatusAuditAccept.toString(), ', ', StatusAuditDeny.toString(), ')');
             sql = sql.concat(' AND PersonID = ' + userID.toString());
@@ -758,7 +771,32 @@ function insertOutletImages(userID, outlet, onSuccess, onError) {
 function selectUnsyncedOutlets(outletTbl, onSuccess, onError) {
     db.transaction(function (tx) {
         log('Select existing outlet')
-        var sql = 'SELECT * FROM ' + outletTbl + ' WHERE PSynced = 0 AND PStatus = 0';
+        var sql = 'SELECT * FROM ' + outletTbl + ' WHERE PSynced = 0';
+        logSqlCommand(sql);
+        tx.executeSql(sql, [], function (tx1, dbres) {
+            onSuccess(dbres);
+        }, onError);
+    }, onError);
+}
+
+function selectUnsyncedOutletsByView(outletTbl, view, onSuccess, onError) {
+    db.transaction(function (tx) {
+        log('Select unsynced outlets')
+        var sql = 'SELECT * FROM ' + outletTbl + ' WHERE PSynced = 0 AND ';
+
+        if (view == 0) {
+            sql = sql.concat('AuditStatus <> ' + StatusDelete.toString());
+        } else if (view == 1) {
+            sql = sql.concat('AuditStatus in (' + StatusNew.toString(), ', ', StatusPost.toString(), ')');
+            sql = sql.concat(' AND PersonID = ' + userID.toString());
+        } else if (view == 2) {
+            sql = sql.concat('AuditStatus = ' + StatusEdit.toString());
+            sql = sql.concat(' AND PersonID = ' + userID.toString());
+        } else {
+            sql = sql.concat('AuditStatus in (' + StatusAuditAccept.toString(), ', ', StatusAuditDeny.toString(), ')');
+            sql = sql.concat(' AND PersonID = ' + userID.toString());
+        }
+        
         logSqlCommand(sql);
         tx.executeSql(sql, [], function (tx1, dbres) {
             onSuccess(dbres);
@@ -833,6 +871,24 @@ function deleleDownloadProvinceDB(outletTableName, downloadTableName, provinceId
 function deleteOutletDB(outletTableName, outlet, onSuccess, onError) {
     db.transaction(function (tx) {      
         var sql = 'DELETE FROM ' + outletTableName + ' WHERE ID = ' + outlet.ID.toString();
+        logSqlCommand(sql);
+        tx.executeSql(sql, [], function () { onSuccess() }, onError);
+    }, onError);
+}
+
+function changeDownloadProvinceStatusDB(downloadTableName, provinceId, status, onSuccess, onError) {
+    db.transaction(function (tx) {
+        var sql = 'UPDATE ' + downloadTableName + ' SET download = ' + status.toString() + ' WHERE id = "' + provinceId + '"';        
+        tx.executeSql(sql, [], function ()  { onSuccess(); }, onError);        
+    }, onError);
+}
+
+function changeOutletStatusDB(outletTableName, outlet, status, synced, onSuccess, onError) {
+    db.transaction(function (tx) {
+        var sql = 'UPDATE ' + outletTableName +
+                 ' SET AuditStatus = ' + status.toString() + ', ' +
+                 ' PStatus = ' + synced.toString() +
+                 ' WHERE ID = ' + outlet.ID.toString();
         logSqlCommand(sql);
         tx.executeSql(sql, [], function () { onSuccess() }, onError);
     }, onError);

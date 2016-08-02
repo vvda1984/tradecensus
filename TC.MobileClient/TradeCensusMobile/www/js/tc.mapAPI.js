@@ -25,6 +25,7 @@ var curaccCircle;
 var panorama;
 var locationChangedCallback = null;
 var gpsWatchID = -1;
+var loadedMarkers = [];
 
 function loadMapApi() { 
     if (!networkReady()) {
@@ -121,6 +122,7 @@ function drawMarkers() {
 }
 
 function clearMarkers() {
+    //return;
     if (markerClusterer)
         markerClusterer.clearMarkers();    
     for (var i = 0; i < markers.length; i++) {
@@ -130,7 +132,7 @@ function clearMarkers() {
     // curInfoWindow = null;
 }
 
-function createMaker(outlet, position, i, isNew, bounds) {
+function createMaker(outlet, position, i, isNew) {
     var iconUrl = isNew ? 'assets/img/pin-new.png' : getMarkerIcon(outlet);
     var marker = new google.maps.Marker({
         position: position,
@@ -142,6 +144,7 @@ function createMaker(outlet, position, i, isNew, bounds) {
     log('Add marker: ' + outlet.Name);
     marker.setMap(map);
     marker.isLoadedToMap = true;
+    marker.outlet = outlet;
 
     markers[i] = marker;
     //var index = markers.indexOf(marker);
@@ -153,17 +156,18 @@ function createMaker(outlet, position, i, isNew, bounds) {
     //infoWindow.open(map, marker);
   
     marker.addListener('click', function () {
-        //editSelectedOutlet(markers.indexOf(marker));
-        var index = markers.indexOf(marker);
-        var outlet = curOutlets[index];
+        var outlet = marker.outlet; //curOutlets[index];
         var infoWindow = new google.maps.InfoWindow({
-            content: '<div class=\'view-marker\' onclick="javascript:editOutletCallback(' + index.toString() + ')">' + outlet.Name + '</div>',
+            content: '<div class=\'view-marker\' onclick="javascript:editOutletCallback(' + outlet.positionIndex.toString() + ')">' + outlet.Name + '</div>',
             closeBoxURL: '',
         });
         if(curInfoWin != null)
             curInfoWin.close();
         infoWindow.open(map, marker);
         curInfoWin = infoWindow;
+        if (editOutletCallback != null) {
+            editSelectedOutlet(outlet.positionIndex);
+        }
     });
 
     return marker;
@@ -227,23 +231,31 @@ function moveToCurrentLocation(){
     panTo(curlat, curlng);   
 }
 
-function displayCurrentPostion(){
-    if (homeMarker != null) homeMarker.setMap(null);
-    var position = new google.maps.LatLng(curlat, curlng);
-    homeMarker = new google.maps.Marker({
-        position: position,
-        icon: 'assets/img/pin-cur.png',
-        map: map,
-    });
-   
-   displayAccuracy(position);
+var lastLat;
+var lastLng;
+function displayCurrentPostion() {
+    if (!isMapReady) return;
+    if (Math.abs(lastLat - curlat) > 0.00001 && Math.abs(lastLng - curlng) > 0.00001) {
+        lastLat = curlat;
+        lastLng = curlng;
+        if (homeMarker != null) homeMarker.setMap(null);
+        var position = new google.maps.LatLng(curlat, curlng);
+        homeMarker = new google.maps.Marker({
+            position: position,
+            icon: 'assets/img/pin-cur.png',
+            map: map,
+        });
+    }
+    displayAccuracy(position);
 }
 
-function displayAccuracy(){
-    var position = new google.maps.LatLng(curlat, curlng);
-    if(curaccCircle) curaccCircle.setMap(null);
-    var cradius = (curacc > 500) ? 500 : curacc;
-    curaccCircle = new google.maps.Circle({
+function displayAccuracy() {
+    try{
+        var position = new google.maps.LatLng(curlat, curlng);
+        if(curaccCircle) curaccCircle.setMap(null);
+        var cradius = (curacc > 500) ? 500 : curacc;
+        lastAcc = cradius;
+        curaccCircle = new google.maps.Circle({
             center: position,
             radius: cradius,
             map: map,
@@ -253,12 +265,16 @@ function displayAccuracy(){
             strokeOpacity: 0,
         });
 
-    if (homeMarker != null) homeMarker.setMap(null);
-    homeMarker = new google.maps.Marker({
-        position: position,
-        icon: 'assets/img/pin-cur.png',
-        map: map,
-    });
+        if (homeMarker != null) homeMarker.setMap(null);
+        homeMarker = new google.maps.Marker({
+            position: position,
+            icon: 'assets/img/pin-cur.png',
+            map: map,
+        });
+    }
+    catch (er) {
+
+    }
 }
 
 function markerClick(i) {
@@ -266,18 +282,53 @@ function markerClick(i) {
         markerClicked(i);
 }
 
-function loadMarkers(isNew, outlets, callback) {   
-    log("Load outlets markers: " + outlets.length.toString());
-    var bounds = map.getBounds();
-    log('Current bound: ');
-    log(bounds);
+function loadMarkers(isNew, outlets, callback) {
+    if (!isMapReady) { callback(); return; }
+    //log('Clear markers');
+    //clearMarkers();
 
-    markers = [];  
+    var removedMarkers = [];
+    var removedMarkerCount = 0;
+    var keepMarkers = [];
+    var keepMarkerCount = 0;
+    for (var m = 0; m < markers.length; m++) {
+        var found = false;
+        var mk = markers[m];
+        if (mk == null) continue;
+        for (var o = 0; o < outlets.length; o++) {
+            if (outlets[o].ID == mk.outlet.ID) {
+                found = true;
+                outlets[o].hasMarker = true;
+                mk.outlet = outlets[o];
+                break;
+            }
+        }
+
+        if (!found) {
+            removedMarkers[removedMarkerCount] = mk;
+            removedMarkerCount++;
+        } else {
+            keepMarkers[keepMarkerCount] = mk;
+            keepMarkerCount++;
+        }
+    }
+
+    if (removedMarkers.length > 0 && markerClusterer)
+        markerClusterer.clearMarkers();
+
+    for (var i = 0; i < removedMarkers.length; i++) {
+        removedMarkers[i].setMap(null);
+    }
+    markers = keepMarkers;
+
     for (var i = 0; i < outlets.length; i++) {
         var outlet = outlets[i];
-        var position = new google.maps.LatLng(outlet.Latitude, outlet.Longitude);
-        //bounds.extend(position);
-        createMaker(outlet, position, i, isNew, bounds);
+        if (!outlet.hasMarker) {
+            var position = new google.maps.LatLng(outlet.Latitude, outlet.Longitude);
+            //bounds.extend(position);
+            createMaker(outlet, position, keepMarkerCount, isNew);
+            keepMarkerCount++;
+        }
     };
      
     var options = {
@@ -307,8 +358,8 @@ function getCurPosition(moveToCur, onSuccess, onError) {
             // AnVO: DEBUG
             if (isDev) {
                 log('***set debug location...');
-                lat = devNewLat + devNewDetlta;
-                lng = devNewLng + devNewDetlta;
+                lat = curlat;
+                lng = curlng;
             }
             curlat = lat;
             curlng = lng;
@@ -337,7 +388,7 @@ function startPositionWatching(){
                     locationChangedCallback(position.coords.latitude, position.coords.longitude, position.coords.accuracy);   
             }, 
             function(error){
-                log('GPW watching error code: ' + error.code  + '\n' + 'message: ' + error.message + '\n');
+                log('GPS watching error code: ' + error.code  + '\n message: ' + error.message + '\n');
             }, { 
                 enableHighAccuracy: true,
                 maximumAge: 3000,
@@ -351,7 +402,7 @@ function stopPositionWatching(){
         try{
             navigator.geolocation.clearWatch(gpsWatchID);
         } catch(err){
-            log('Stop GPW watching error: ' + err.message);
+            log('Stop GPS watching error: ' + err.message);
         }
     }
 }

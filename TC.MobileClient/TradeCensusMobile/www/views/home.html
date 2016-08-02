@@ -10,7 +10,7 @@
         </div>  
         <div class="square-bar float-left white">
             <span>{{R.distance}} (m):</span>
-            <input placeholder="meter" ng-model="config.distance" type="number" min="100" >
+            <input placeholder="meter" ng-model="config.distance" type="number" min="50" >
             <span>{{R.max_outlets}}:</span>
             <input placeholder="number" ng-model="config.item_count" min="1" >
             <span> </span>
@@ -37,37 +37,40 @@
             <img src="assets/img/arrow-left-white.svg" />
         </div>
         <div id="slider-left-content">
-            <div class="outlet-list-panel">
-                <span style="margin-left:0px; color:red" ng-show="showNoOutletFound">{{R.no_outlet_found}}</span>
+            <div class="outlet-list-panel" id="outlet-list" >
+                <span id="span-outlet" style="margin-left:0px; color:red" ng-show="showNoOutletFound">{{R.no_outlet_found}}</span>
+                <span id="span-outlet-top" style="float:left;left:0px;top:0px;width:0px;height:0px;"></span>
                 <table class="outlet-table" ng-repeat="outlet in outlets |  startFrom:currentPage*pageSize | limitTo:pageSize " ng-click="hideDropdown()">
                     <tr>
                         <td class="outlet-indicator">
-                            <div class="{{outlet.IsDraft ? 'circle-gray' : (outlet.IsSynced ? 'circle' : 'circle-org')}}">{{$index + 1 + (currentPage) * pageSize}}</div>
+                            <div class="{{outlet.IsNew ? 'circle-yellow' : (outlet.IsSynced ? 'circle' : 'circle-gray')}}">{{$index + 1 + (currentPage) * pageSize}}</div>
                         </td>
                         <td>
                             <table class="outlet-detail-table">
+                               
                                 <tr>
                                     <td colspan="4">
-                                        <span class="large-text blue-color" ng-click="openOutlet($index)">{{outlet.Name}}</span>					
-                                        <span class="normal-text black-color">({{outlet.ID}})</span>					
-                                        <img class="outlet-header-right small-text gray-color" style="height:24px; width:25px;" ng-show="outlet.IsDraft" src="assets/img/delete.svg" ng-click="deleteOutlet($index)" />
+                                        <span class="large-text blue-color span-fix" ng-hide="viewOutletFull" ng-click="openOutlet($index)">{{outlet.Name}} ({{outlet.ID}})</span>  
+                                        <span class="large-text blue-color" ng-show="viewOutletFull" ng-click="openOutlet($index)">{{outlet.Name}} ({{outlet.ID}})</span>   
                                         <span class="outlet-header-right small-text gray-color">
                                             {{outlet.Distance}} m
-                                        </span>                                        
+                                        </span>                             
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td class="normal-text black-color" colspan="2">
+                                    <td colspan="2">
                                         <span class="small-text gray-color" ng-show="viewOutletFull">{{R.address}}: </span>
                                         <span class="normal-text black-color">{{outlet.FullAddress}}</span>
                                     </td>
-                                    <td class="normal-text black-color" ng-show="viewOutletFull">
-                                        <span class="small-text gray-color">{{R.last_visit}}: </span>
-                                        <span class="normal-text black-color">{{outlet.LastVisit}}</span>
+                                   
+                                     <td>
+                                        <span class="small-text gray-color" ng-show="viewOutletFull">{{R.last_visit}}: </span>
+                                        <span class="normal-text black-color" ng-show="viewOutletFull">{{outlet.LastVisit}}</span>
                                     </td>
-                                    <td ng-show="viewOutletFull">
-                                        <span class="small-text gray-color">{{R.closed_date}}: </span>
-                                        <span class="normal-text black-color">{{outlet.CloseDate ? outlet.CloseDate : "-"}}</span>
+                                   
+                                    <td>
+                                        <span class="small-text gray-color" ng-show="viewOutletFull">{{R.closed_date}}: </span>
+                                        <span class="normal-text black-color" ng-show="viewOutletFull">{{outlet.CloseDate ? outlet.CloseDate : "-"}}</span>
                                     <td>
                                 </tr>
                                 <tr>
@@ -76,7 +79,7 @@
                                         <span class="normal-text black-color">{{outlet.OutletTypeName}}</span>
                                     </td>
                                     <td ng-show="viewOutletFull">
-                                        <span class="small-text gray-color">{{R.phone}}: </span>
+                                        <span class="small-text gray-color" >{{R.phone}}: </span>
                                         <span class="normal-text black-color">{{outlet.Phone}}</span>
                                     </td>
                                     <td ng-show="viewOutletFull">
@@ -89,16 +92,25 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td>
+                                    <td colspan="4">
                                         <span class="small-text gray-color" ng-show="viewOutletFull">{{R.name}}: </span>
                                         <span class="normal-text black-color">{{outlet.ExtractName}}</span>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td>
+                                    <td colspan="4">
                                         <span class="small-text gray-color" ng-show="viewOutletFull">{{R.last_change}}: </span>
                                         <span class="small-text gray-color">{{outlet.AmendDate ? outlet.AmendDate : "-"}}</span>
-                                    </td>                                   
+
+                                        <div class="m-flat-button-small float-right blue" ng-show="outlet.canPost" ng-click="postOutlet(outlet)"><span>Post</span></div>
+                                        <div class="m-flat-button-small float-right blue" ng-show="outlet.canRevise" ng-click="reviseOutlet(outlet)"><span>Revise</span></div>
+                                        <div class="m-flat-button-small float-right red" ng-show="outlet.IsDraft" ng-click="deleteOutlet(outlet)"><span>Delete</span></div>
+
+                                        <div class="float-right" ng-show="outlet.viewAuditStatus"><span class="small-text gray-color">{{outlet.auditResult}}</span></div>
+                                        <!--<img class="outlet-header-right small-text gray-color" style="height:24px; width:24px; margin-left:4px" ng-show="outlet.IsDraft" src="assets/img/clear.svg" ng-click="deleteOutlet($index)" />
+                                        <img class="outlet-header-right small-text gray-color" style="height:24px; width:24px;" ng-show="outlet.canPost" src="assets/img/post.svg" ng-click="postOutlet($index)" />
+                                        <img class="outlet-header-right small-text gray-color" style="height:24px; width:24px;" ng-show="outlet.canRevise" src="assets/img/unpost.svg" ng-click="reviseOutlet($index)" />-->
+                                    </td>                                                                   
                                 </tr>
                             </table>
                         </td>
@@ -125,14 +137,11 @@
         </div>        
     </div>
 
-    <div id="home-topright" >
-        <!--<div class="box" ng-show="showSetingExpand" ng-click="showhideRightPanel()">
-            <img src="assets/img/arrow-left.svg" />
-        </div>-->
-        <div class="cirle-button white float-right" ng-show="showSettingCollapse" ng-click="showRightPanel()">
+    <div id="home-topright" >        
+        <div class="cirle-button white float-right" ng-show="showSettingCollapse" ng-click="showHideRightPanel()">
             <img src="assets/img/arrow-right.svg" />
         </div>
-        <div class="cirle-button white float-right" ng-show="showSettingExpand" ng-click="showRightPanel()">
+        <div class="cirle-button white float-right" ng-show="showSettingExpand" ng-click="showHideRightPanel()">
             <img src="assets/img/setting-white.svg" />
         </div>    
     </div>
@@ -144,10 +153,10 @@
     </div>
 
      <div id="home-topright-test" ng-show="config.enable_devmode">      
-        <input placeholder="acc" ng-model="testacc" style="width:50px;height36px;" type="number">
-        <input placeholder="lat" ng-model="testlat" style="width:50px;height36px;" type="number">
-        <input placeholder="lng" ng-model="testlng" style="width:50px;height36px;" type="number">
-        <a ng-click="testChangeLocation()">SET<a/>
+        <input placeholder="acc" ng-model="testacc" style="width:40px;height:36px;" type="number">
+        <input placeholder="lat" ng-model="testlat" style="width:80px;height:36px;" type="number">
+        <input placeholder="lng" ng-model="testlng" style="width:80px;height:36px;" type="number">
+        <button ng-click="testChangeLocation()">SET</button>
     </div>
 
      <div id="home-topright-offline">      
@@ -163,41 +172,57 @@
                 <form name="configForm">                   
                     <md-input-container class="md-block" style="margin-bottom:4px;">
                         <label>{{R.distance}}</label>
-                        <input type="number" required="" name="distance" ng-model="config.distance">                    
+                        <input type="number" required="" name="distance" ng-model="config.distance" min="50">                    
                     </md-input-container>
 
                     <md-input-container class="md-block" style="margin-bottom:4px;">
                         <label>{{R.max_outlets}}</label>
-                        <input type="number" required="" name="item_count" ng-model="config.item_count">                   
+                        <input type="number" required="" name="item_count" ng-model="config.item_count" min="1">                   
                     </md-input-container>
 
                      <md-input-container class="md-block" style="margin-bottom:4px;">
                         <label>{{R.page_size}}</label>
-                        <input type="number" required="" name="page_size" ng-model="config.page_size">                  
+                        <input type="number" required="" name="page_size" ng-model="config.page_size"  min="5">                  
                     </md-input-container>
-
+                   
                     <md-input-container class="md-block" flex-gt-sm="" style="margin-bottom:20px;">
-                        <label>{{ resource.text_EnterProvince }}</label>
-                        <md-select ng-model="config.province_id">
-                            <md-option ng-repeat="p in provinces" value="{{p.id}}">
+                        <label>{{ R.working_province }}</label>
+                        <md-select ng-model="config.province_id" ng-change="provinceChanged(0)">
+                            <md-option ng-repeat="p in dprovinces" value="{{p.id}}">                                
                                 {{p.name}}
+                                <img ng-show="p.download" src="assets/img/check.svg" style="width:24px;height:24px;margin:0px;position:absolute;right:16px;" />
                             </md-option>
                         </md-select>
+                        <div id="buttonDownload" class="m-flat-button float-right margin-top-4" ng-click="downloadOutlets()">
+                            <img src="assets/img/download.svg">
+                            <span>{{R.btn_download}}</span>
+                        </div>
+                        <div id="buttonRedownload" class="m-flat-button float-right margin-top-4 display-none" ng-click="downloadOutlets()">
+                            <img src="assets/img/download.svg">
+                            <span>{{R.btn_redownload}}</span>
+                        </div>                
+                        <div id="buttonDeleteOffline" class="m-flat-button float-right margin-top-4 display-none" ng-click="deleteOfflineOutlets()">
+                            <img src="assets/img/clear.svg">
+                            <span>{{R.btn_deleteOffline}}</span>
+                        </div>
                     </md-input-container>
+
+                    <div class="md-block-item" style="margin-bottom:0px;margin-top:-16px;margin-left:4px" ng-show="config.enable_devmode">
+                        <div class="md-block-item-title small-text">Mode (Online/Offline)</div>
+                        <md-switch class="md-primary" ng-model="config.mode_online">{{config.mode_online ? "Online" : "Offline"}}</md-switch>
+                    </div>
                 </form>
             </md-content>
 
-            <div style="position:absolute; bottom:4px; right:8px; height:64px; left:8px;z-index:3">
-                 <div class="text-button float-left" ng-click="downloadOutlets()">
-                    <div><img src="assets/img/download.svg"></div>
-                    <div class="title">{{R.btn_download}}</div>
-                </div>
-
+            <div style="position:absolute; bottom:4px; right:0px; height:64px; left:12px;z-index:3;">
+                <div class="text-button float-left" ng-click="">
+                    <!--<div><img src="assets/img/download.svg"></div>
+                    <div class="title">{{R.btn_download}}</div>-->
+                </div>               
                 <div class="text-button float-left" ng-click="syncOutlets()">
                     <div><img src="assets/img/sync.svg"></div>
                     <div class="title">{{R.btn_sync}}</div>
                 </div>
-
                 <div class="text-button float-left" ng-click="changeView('login')">
                     <div><img src="assets/img/logout.svg"></div>
                     <div class="title">{{R.btn_logout}}</div>

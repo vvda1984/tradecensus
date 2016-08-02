@@ -1,6 +1,6 @@
 <div id="view-login" class="main-view">
     <div class="center-view">
-        <div id="loginscreen" class="box-right">
+        <div id="loginscreen" class="box">
             <img src="assets/img/setting.svg" id="login-setting-button" ng-click="changeMode()"/>
             <image id="login-logo" src="images/logo.png" />
             <div id="login-form">
@@ -31,7 +31,7 @@
             </div>
         </div>
 
-        <div id="configscreen" class="box-right" style="padding:0px;display:none">            
+        <div id="configscreen" class="box" style="padding:0px;display:none">            
             <md-toolbar class="md-hue-2">
                 <div class="md-toolbar-tools">                    
                     <h2>
@@ -47,7 +47,7 @@
             <div id="config-form">
                 <md-content layout-padding="" class="md-content-white">
                     <form name="configForm">
-                        <md-input-container class="md-block" style="margin-bottom:32px;" ng-show="config.enable_devmode">
+                        <md-input-container class="md-block" style="margin-bottom:32px;">
                             <label>{{ R.enter_protocol }}</label>
                             <md-select ng-model="config.protocol">
                                 <md-option value="http">
@@ -89,4 +89,5 @@
             </div>    
         </div>
     </div>
+    <div style="position:fixed; color:#ffffff; font-size:12px;bottom:4px;right:4px;">{{config.version}}</div>
 </div>
