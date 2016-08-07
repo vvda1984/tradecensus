@@ -1,4 +1,10 @@
-﻿var devCurLat = 10.775432;
+﻿/// <reference path="tc.outletAPI.js" />
+
+const START_LAT = 10.775432;
+const START_LNG = 106.705803;
+const earthR = 6378137;
+
+var devCurLat = 10.775432;
 var devCurLng = 106.705803;
 var devNewDetlta = 0.00001;
 var devNewLat = devCurLat + devNewDetlta;
@@ -17,18 +23,19 @@ var mapClickedCallback = null;
 var mapViewChangedCallback = null;
 var homeMarker = null;
 var curInfoWin = null;
-const earthR = 6378137;
-var curlat = 10.775432;
-var curlng = 106.705803;
+
+var curlat = START_LAT;
+var curlng = START_LNG;
 var curacc = 120;
 var curaccCircle;
 var panorama;
 var locationChangedCallback = null;
 var gpsWatchID = -1;
 var loadedMarkers = [];
+var lastRefreshDate;
 
 function loadMapApi() { 
-    if (!networkReady()) {
+    if (!getNetworkState()) {
 		initializeMap()
         return;
     }
@@ -39,26 +46,19 @@ function loadMapApi() {
     }
     loadedMapAPI = true;
 
-
+    showDlg(R.loading_map, R.please_wait);
     var url = 'https://maps.googleapis.com/maps/api/js?=v=3.exp&sensor=false&key=' + config.map_api_key + '&callback=initializeMap';
     log('Load map API: ' + url);
     $.getScript(url);
 }
 
 function initializeMap() {
-	/*
-    if (isMapReady) {
-        if (loadMapCallback) {
-            loadMapCallback();
-            loadMapCallback = null;
-        }
-        return;
-    }
-	*/
     isMapReady = true;	
 
     log('Create map instance');
     try {
+        homeMarker = null;
+        curaccCircle = null;
         map = new google.maps.Map(document.getElementById('map'), {
             zoom: config.map_zoom,
             center: { lat: curlat, lng: curlng },
@@ -117,10 +117,6 @@ function initializeMap() {
     }
 }
 
-function drawMarkers() {
-
-}
-
 function clearMarkers() {
     //return;
     if (markerClusterer)
@@ -175,32 +171,45 @@ function createMaker(outlet, position, i, isNew) {
 
 function getMarkerIcon(outlet) {
     if (outlet != null) {
-        if (outlet.AuditStatus == StatusNew || outlet.AuditStatus == StatusPost) {
+        if (outlet.AuditStatus == StatusNew || outlet.AuditStatus == StatusPost || outlet.AuditStatus == StatusAuditAccept) {
             return 'assets/img/pin-new.png';
+        } else if (outlet.AuditStatus == StatusAuditDeny) {
+            return 'assets/img/pin-new-error.png';
+        } else {
+            switch (outlet.OutletSource) {
+                case 0: //SR
+                    if (outlet.AuditStatus == StatusAuditDeny || outlet.AuditStatus == StatusExitingDeny) {
+                        return 'assets/img/pin-sr-audit-wrong.png';
+                    }
+                    if (outlet.AuditStatus == StatusAuditAccept || outlet.AuditStatus == StatusExitingAccept) {
+                        return 'assets/img/pin-sr-audit-right.png';
+                    }
+                    if (!outlet.IsTracked) {
+                        return 'assets/img/pin-sr-nontrack.png';
+                    }
+                    if (!outlet.IsOpened) {
+                        return 'assets/img/pin-sr-close.png';
+                    }
+                    return 'assets/img/pin-sr-open.png';
+
+                case 1: // DIS
+                    if (outlet.AuditStatus == StatusAuditDeny || outlet.AuditStatus == StatusExitingDeny) {
+                        return 'assets/img/pin-dis-audit-error.png';
+                    }
+                    if (outlet.AuditStatus == StatusAuditAccept || outlet.AuditStatus == StatusExitingAccept) {
+                        return 'assets/img/pin-dis-audit-right.png';
+                    }
+                    //if (!outlet.IsTracked) {
+                    //    return 'assets/img/pin-sr-nontrack.png';
+                    //}
+                    if (!outlet.IsOpened) {
+                        return 'assets/img/pin-dis-close.png';
+                    }
+                    return 'assets/img/pin-dis-open.png';
+            }
         }
 
-        switch (outlet.OutletSource) {
-            case 0: //SR
-                if (outlet.AuditStatus == StatusAuditDeny) {
-                    return 'assets/img/pin-sr-error.png';
-                }
-                if (!isEmpty(outlet.CloseDate)) {
-                    return 'assets/img/pin-sr-close.png';
-                }
-                if (outlet.Tracking) {
-                    return 'assets/img/pin-sr-track.png';
-                }
-                return 'assets/img/pin-sr-nontrack.png';
-
-            case 1: // DIS
-                if (outlet.AuditStatus == StatusAuditDeny) {
-                    return 'assets/img/pin-dis-error.png';
-                }
-                if (!isEmpty(outlet.CloseDate)) {
-                    return 'assets/img/pin-dis-close.png';
-                }
-                return 'assets/img/pin-dis-open.png';                
-        }
+       
     }
     return 'assets/img/pin-cur';
 }
@@ -235,10 +244,10 @@ var lastLat;
 var lastLng;
 function displayCurrentPostion() {
     if (!isMapReady) return;
-    if (Math.abs(lastLat - curlat) > 0.00001 && Math.abs(lastLng - curlng) > 0.00001) {
-        lastLat = curlat;
-        lastLng = curlng;
-        if (homeMarker != null) homeMarker.setMap(null);
+    if (homeMarker != null) {
+        homeMarker.setPosition(new google.maps.LatLng(curlat, curlng));
+    }
+    else {
         var position = new google.maps.LatLng(curlat, curlng);
         homeMarker = new google.maps.Marker({
             position: position,
@@ -252,25 +261,34 @@ function displayCurrentPostion() {
 function displayAccuracy() {
     try{
         var position = new google.maps.LatLng(curlat, curlng);
-        if(curaccCircle) curaccCircle.setMap(null);
         var cradius = (curacc > 500) ? 500 : curacc;
         lastAcc = cradius;
-        curaccCircle = new google.maps.Circle({
-            center: position,
-            radius: cradius,
-            map: map,
-            fillColor: '#2196F3',
-            fillOpacity: 0.18,
-            //strokeColor: '#0000FF',
-            strokeOpacity: 0,
-        });
+        if (curaccCircle != null) {
+            curaccCircle.radius = cradius;
+            curaccCircle.setCenter(position);
+        } else {
+            curaccCircle = new google.maps.Circle({
+                center: position,
+                radius: cradius,
+                map: map,
+                fillColor: '#2196F3',
+                fillOpacity: 0.18,
+                //strokeColor: '#0000FF',
+                strokeOpacity: 0,
+            });
+        }
 
-        if (homeMarker != null) homeMarker.setMap(null);
-        homeMarker = new google.maps.Marker({
-            position: position,
-            icon: 'assets/img/pin-cur.png',
-            map: map,
-        });
+        if (homeMarker != null) {
+            homeMarker.setPosition(new google.maps.LatLng(curlat, curlng));
+        }
+        else {
+            var position = new google.maps.LatLng(curlat, curlng);
+            homeMarker = new google.maps.Marker({
+                position: position,
+                icon: 'assets/img/pin-cur.png',
+                map: map,
+            });
+        }
     }
     catch (er) {
 
@@ -282,62 +300,88 @@ function markerClick(i) {
         markerClicked(i);
 }
 
+var isLoadingMarker = false;
 function loadMarkers(isNew, outlets, callback) {
     if (!isMapReady) { callback(); return; }
-    //log('Clear markers');
-    //clearMarkers();
+    if (isLoadingMarker) return;
+    isLoadingMarker = true;
+    try {
+        log('Clear markers');
+        clearMarkers();
 
-    var removedMarkers = [];
-    var removedMarkerCount = 0;
-    var keepMarkers = [];
-    var keepMarkerCount = 0;
-    for (var m = 0; m < markers.length; m++) {
-        var found = false;
-        var mk = markers[m];
-        if (mk == null) continue;
-        for (var o = 0; o < outlets.length; o++) {
-            if (outlets[o].ID == mk.outlet.ID) {
-                found = true;
-                outlets[o].hasMarker = true;
-                mk.outlet = outlets[o];
-                break;
+        for (var i = 0; i < outlets.length; i++) {
+            var outlet = outlets[i];
+            if (!outlet.hasMarker) {
+                var position = new google.maps.LatLng(outlet.Latitude, outlet.Longitude);
+                //bounds.extend(position);
+                createMaker(outlet, position, i, isNew);
+                //keepMarkerCount++;
             }
-        }
+        };
+        var options = {
+            gridSize: config.cluster_size,
+            maxZoom: config.cluster_max_zoom,
+            imagePath: 'assets/img/m'
+        };
+        markerClusterer = new MarkerClusterer(map, markers, options);  
+        callback();
 
-        if (!found) {
-            removedMarkers[removedMarkerCount] = mk;
-            removedMarkerCount++;
-        } else {
-            keepMarkers[keepMarkerCount] = mk;
-            keepMarkerCount++;
-        }
+
+        //var removedMarkers = [];
+        //var removedMarkerCount = 0;
+        //var keepMarkers = [];
+        //var keepMarkerCount = 0;
+        //for (var m = 0; m < markers.length; m++) {
+        //    var found = false;
+        //    var mk = markers[m];
+        //    if (mk == null) continue;
+        //    for (var o = 0; o < outlets.length; o++) {
+        //        if (outlets[o].ID == mk.outlet.ID) {
+        //            found = true;
+        //            outlets[o].hasMarker = true;
+        //            mk.outlet = outlets[o];
+        //            break;
+        //        }
+        //    }
+
+        //    if (!found) {
+        //        removedMarkers[removedMarkerCount] = mk;
+        //        removedMarkerCount++;
+        //    } else {
+        //        keepMarkers[keepMarkerCount] = mk;
+        //        keepMarkerCount++;
+        //    }
+        //}
+
+        //if (removedMarkers.length > 0 && markerClusterer)
+        //    markerClusterer.clearMarkers();
+
+        //for (var i = 0; i < removedMarkers.length; i++) {
+        //    removedMarkers[i].setMap(null);
+        //}
+        //markers = keepMarkers;
+
+        //for (var i = 0; i < outlets.length; i++) {
+        //    var outlet = outlets[i];
+        //    if (!outlet.hasMarker) {
+        //        var position = new google.maps.LatLng(outlet.Latitude, outlet.Longitude);
+        //        //bounds.extend(position);
+        //        createMaker(outlet, position, keepMarkerCount, isNew);
+        //        keepMarkerCount++;
+        //    }
+        //};
+
+        //var options = {
+        //    gridSize: config.cluster_size,
+        //    maxZoom: config.cluster_max_zoom,
+        //    imagePath: 'assets/img/m'
+        //};
+        //markerClusterer = new MarkerClusterer(map, markers, options);
+        //callback();
+    } catch (er) {
+
     }
-
-    if (removedMarkers.length > 0 && markerClusterer)
-        markerClusterer.clearMarkers();
-
-    for (var i = 0; i < removedMarkers.length; i++) {
-        removedMarkers[i].setMap(null);
-    }
-    markers = keepMarkers;
-
-    for (var i = 0; i < outlets.length; i++) {
-        var outlet = outlets[i];
-        if (!outlet.hasMarker) {
-            var position = new google.maps.LatLng(outlet.Latitude, outlet.Longitude);
-            //bounds.extend(position);
-            createMaker(outlet, position, keepMarkerCount, isNew);
-            keepMarkerCount++;
-        }
-    };
-     
-    var options = {
-        gridSize: config.cluster_size,
-        maxZoom: config.cluster_max_zoom,
-        imagePath: 'assets/img/m'
-    };
-    markerClusterer = new MarkerClusterer(map, markers, options);  
-    callback();
+    isLoadingMarker = false;
 }
 
 function editSelectedOutlet(i) {
@@ -391,8 +435,8 @@ function startPositionWatching(){
                 log('GPS watching error code: ' + error.code  + '\n message: ' + error.message + '\n');
             }, { 
                 enableHighAccuracy: true,
-                maximumAge: 3000,
-                timeout: 10000 
+                maximumAge: 30000,
+                timeout: 27000,
             });
     }
 }

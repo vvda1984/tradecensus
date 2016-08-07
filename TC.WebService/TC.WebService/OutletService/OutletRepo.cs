@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
+using System.Data.Entity;
 using System.IO;
 using System.Linq;
-using System.Reflection;
+using System.Text;
 using System.Web;
 using TradeCensus.Shared;
 
@@ -34,6 +33,17 @@ namespace TradeCensus
                     v = false;
                 }
                 return v;
+            }
+        }
+
+        private string ImagesPath
+        {
+            get
+            {
+                string path = AppDomain.CurrentDomain.BaseDirectory;
+                path = Path.GetDirectoryName(path) + "\\Images";
+                EnsureDirExist(path);
+                return path;
             }
         }
 
@@ -122,32 +132,48 @@ namespace TradeCensus
             }
             else if (status == 1) // new
             {
-                if (AuditorNewMode)
-                {
-                    if (auditor)
-                        query = from i in _entities.Outlets
-                                where i.Latitude >= bl.Lat && i.Latitude <= tl.Lat &&
-                                      i.Longitude >= bl.Lng && i.Longitude <= br.Lng &&
-                                      i.AuditStatus == Constants.StatusPost &&
-                                      i.PersonID != personID
-                                select i;
-                    else
-                        query = from i in _entities.Outlets
-                                where i.Latitude >= bl.Lat && i.Latitude <= tl.Lat &&
-                                      i.Longitude >= bl.Lng && i.Longitude <= br.Lng &&
-                                      (i.AuditStatus == Constants.StatusNew || i.AuditStatus == Constants.StatusPost) &&
-                                      i.PersonID == personID
-                                select i;
-                }
-                else
-                {
+                if (auditor)
                     query = from i in _entities.Outlets
                             where i.Latitude >= bl.Lat && i.Latitude <= tl.Lat &&
                                   i.Longitude >= bl.Lng && i.Longitude <= br.Lng &&
-                                  (i.AuditStatus == Constants.StatusNew || i.AuditStatus == Constants.StatusPost) &&
-                                  i.PersonID == personID
+                                  ((i.AuditStatus == Constants.StatusNew && i.PersonID == personID) || i.AuditStatus == Constants.StatusPost || i.AuditStatus == Constants.StatusAuditAccept || i.AuditStatus == Constants.StatusAuditDeny) //&&
+                                  //i.PersonID != personID
                             select i;
-                }
+                else
+                    query = from i in _entities.Outlets
+                            where i.Latitude >= bl.Lat && i.Latitude <= tl.Lat &&
+                                  i.Longitude >= bl.Lng && i.Longitude <= br.Lng &&
+                                  (i.AuditStatus == Constants.StatusNew || i.AuditStatus == Constants.StatusPost
+                                  || i.AuditStatus == Constants.StatusAuditAccept || i.AuditStatus == Constants.StatusAuditDeny) //&&
+                                  //i.PersonID == personID
+                            select i;
+
+                //if (AuditorNewMode)
+                //{
+                //    if (auditor)
+                //        query = from i in _entities.Outlets
+                //                where i.Latitude >= bl.Lat && i.Latitude <= tl.Lat &&
+                //                      i.Longitude >= bl.Lng && i.Longitude <= br.Lng &&
+                //                      i.AuditStatus == Constants.StatusPost &&
+                //                      i.PersonID != personID
+                //                select i;
+                //    else
+                //        query = from i in _entities.Outlets
+                //                where i.Latitude >= bl.Lat && i.Latitude <= tl.Lat &&
+                //                      i.Longitude >= bl.Lng && i.Longitude <= br.Lng &&
+                //                      (i.AuditStatus == Constants.StatusNew || i.AuditStatus == Constants.StatusPost) &&
+                //                      i.PersonID == personID
+                //                select i;
+                //}
+                //else
+                //{
+                //    query = from i in _entities.Outlets
+                //            where i.Latitude >= bl.Lat && i.Latitude <= tl.Lat &&
+                //                  i.Longitude >= bl.Lng && i.Longitude <= br.Lng &&
+                //                  (i.AuditStatus == Constants.StatusNew || i.AuditStatus == Constants.StatusPost) &&
+                //                  i.PersonID == personID
+                //            select i;
+                //}
             }
             else if (status == 2) // edit
             {
@@ -155,14 +181,14 @@ namespace TradeCensus
                     query = from i in _entities.Outlets
                             where i.Latitude >= bl.Lat && i.Latitude <= tl.Lat &&
                                   i.Longitude >= bl.Lng && i.Longitude <= br.Lng &&
-                                  i.AuditStatus == Constants.StatusEdit &&
+                                  (i.AuditStatus == Constants.StatusEdit) &&
                                   i.PersonID != personID
                             select i;
                 else
                     query = from i in _entities.Outlets
                             where i.Latitude >= bl.Lat && i.Latitude <= tl.Lat &&
                                   i.Longitude >= bl.Lng && i.Longitude <= br.Lng &&
-                                  i.AuditStatus == Constants.StatusEdit &&
+                                  (i.AuditStatus == Constants.StatusEdit || i.AuditStatus == Constants.StatusExitingAccept || i.AuditStatus == Constants.StatusExitingDeny) &&  
                                   i.AmendBy == personID
                             select i;
             }
@@ -171,7 +197,8 @@ namespace TradeCensus
                 query = from i in _entities.Outlets
                         where i.Latitude >= bl.Lat && i.Latitude <= tl.Lat &&
                               i.Longitude >= bl.Lng && i.Longitude <= br.Lng &&
-                              (i.AuditStatus == Constants.StatusAuditAccept || i.AuditStatus == Constants.StatusAuditDeny) &&
+                              (i.AuditStatus == Constants.StatusAuditAccept || i.AuditStatus == Constants.StatusAuditDeny
+                              || i.AuditStatus == Constants.StatusExitingAccept || i.AuditStatus == Constants.StatusExitingDeny) &&
                               i.AmendBy == personID
                         select i;
             }
@@ -202,6 +229,7 @@ namespace TradeCensus
                     if (isMatched)
                     {
                         var foundOutlet = ToOutletModel(outlet);
+                       
                         foundOutlet.Distance = distance;
                         res.Add(foundOutlet);
                         found++;
@@ -250,11 +278,14 @@ namespace TradeCensus
                 StringImage1 = "",
                 StringImage2 = "",
                 StringImage3 = "",
+                TotalVolume = outlet.TotalVolume,
+                VBLVolume = outlet.VBLVolume,
             };
-            if (outlet.DEDISID > 0)
-                foundOutlet.OutletSource = 1;
-            else if (outlet.DISAlias != null)
-                foundOutlet.OutletSource = string.IsNullOrEmpty(outlet.DISAlias.Trim()) ? 0 : 1;
+           
+            //if (outlet.DEDISID > 0)
+            //    foundOutlet.OutletSource = 1;
+            //else if (outlet.DISAlias != null)
+            //    foundOutlet.OutletSource = string.IsNullOrEmpty(outlet.DISAlias.Trim()) ? 0 : 1;
 
             foundOutlet.FullAddress = string.Format("{0} {1} {2} {3}", outlet.AddLine, outlet.AddLine2, outlet.District, foundOutlet.ProvinceName);
             foundOutlet.FullAddress = foundOutlet.FullAddress.Trim().Replace("  ", " ");
@@ -284,12 +315,14 @@ namespace TradeCensus
             {
                 foundOutlet.PersonLastName = person.LastName;
                 foundOutlet.PersonFirstName = person.FirstName;
+                foundOutlet.PersonIsDSM = person.IsDSM;
+                foundOutlet.OutletSource = person.IsDSM ? 1 : 0;
             }
 
             return foundOutlet;
         }
 
-        public string SaveOutlet(OutletModel outlet)
+        public Outlet SaveOutlet(OutletModel outlet, bool saveChanged = true)
         {
             Outlet existingOutlet = null;
             if (!string.IsNullOrEmpty(outlet.PRowID))
@@ -298,9 +331,10 @@ namespace TradeCensus
             if (existingOutlet == null)
                 existingOutlet = _entities.Outlets.FirstOrDefault(i => i.ID == outlet.ID);
 
-           
+            //bool isNewOutlet = false;
             if (existingOutlet == null && outlet.AuditStatus != Constants.StatusDelete)
-            {                
+            {
+                //isNewOutlet = true;
                 existingOutlet = new Outlet
                 {
                     ID = outlet.ID,
@@ -327,17 +361,25 @@ namespace TradeCensus
                     LegalName = null,
                     PIsDeleted = false,
                     PRowID = Guid.NewGuid(),
+                    AuditStatus = Constants.StatusNew,
                 };
                 _entities.Outlets.Add(existingOutlet);
             }
-           
+
             if (outlet.AuditStatus == Constants.StatusDelete)
             {
                 DeleteOutlet(outlet.PersonID, outlet.ID);
-                return outlet.PRowID;
+                return null;
             }
             else
             {
+                //if (!isNewOutlet && outlet.AuditStatus == Constants.StatusNew && (
+                //    existingOutlet.AuditStatus != Constants.StatusPost ||
+                //    existingOutlet.AuditStatus != Constants.StatusNew))
+                //{
+                //    throw new Exception("Cannot Revise outlet, the data is out of synced. Click Refresh button to reload data");
+                //}
+
                 string note = "";
                 byte action = ActionUpdate;
                 switch (outlet.AuditStatus)
@@ -373,10 +415,20 @@ namespace TradeCensus
                 existingOutlet.ProvinceID = outlet.ProvinceID;
                 existingOutlet.Phone = outlet.Phone;
                 if (!string.IsNullOrEmpty(outlet.CloseDate))
-                    try {
+                    try
+                    {
                         existingOutlet.CloseDate = DateTime.ParseExact(outlet.CloseDate, "yyyy-MM-dd HH:mm:ss", null);
-                    } catch {
-                        existingOutlet.CloseDate = DateTime.ParseExact(outlet.CloseDate, "yyyy-MM-dd", null);
+                    }
+                    catch
+                    {
+                        try
+                        {
+                            existingOutlet.CloseDate = DateTime.ParseExact(outlet.CloseDate, "yyyy-MM-dd", null);
+                        }
+                        catch
+                        {
+                            existingOutlet.CloseDate = DateTime.Now;
+                        }
                     }
                 else
                     existingOutlet.CloseDate = null;
@@ -394,30 +446,62 @@ namespace TradeCensus
                 if (!string.IsNullOrEmpty(outlet.PRowID))
                     existingOutlet.PRowID = new Guid(outlet.PRowID);
 
+                OutletImage outletImage;
                 if (existingOutlet.OutletImages.Count() > 0)
+                    outletImage = existingOutlet.OutletImages.FirstOrDefault();
+                else
                 {
-                    var outletImage = existingOutlet.OutletImages.FirstOrDefault();
-                    if (string.IsNullOrEmpty(outlet.StringImage1))
-                    {
-                        outletImage.Image1 = "";
-                        outletImage.ImageData1 = null;
-                    }
-                    if (string.IsNullOrEmpty(outlet.StringImage2))
-                    {
-                        outletImage.Image2 = "";
-                        outletImage.ImageData2 = null;
-                    }
-                    if (string.IsNullOrEmpty(outlet.StringImage3))
-                    {
-                        outletImage.Image3 = "";
-                        outletImage.ImageData3 = null;
-                    }
+                    outletImage = new OutletImage();
+                    existingOutlet.OutletImages.Add(outletImage);
+                }
+
+                if (string.IsNullOrEmpty(outlet.StringImage1))
+                {
+                    outletImage.Image1 = "";
+                    outletImage.ImageData1 = null;
+                }
+                else if (!outlet.StringImage1.ToUpper().StartsWith("/IMAGE"))
+                {
+                    byte[] data;
+                    string relativePath;
+                    SaveToFile(existingOutlet.ID, 1, outlet.StringImage1, out relativePath, out data);
+                    outletImage.Image1 = relativePath;
+                    outletImage.ImageData1 = data;
+                }
+
+                if (string.IsNullOrEmpty(outlet.StringImage2))
+                {
+                    outletImage.Image2 = "";
+                    outletImage.ImageData2 = null;
+                }
+                else if (!outlet.StringImage2.ToUpper().StartsWith("/IMAGE"))
+                {
+                    byte[] data;
+                    string relativePath;
+                    SaveToFile(existingOutlet.ID, 2, outlet.StringImage2, out relativePath, out data);
+                    outletImage.Image2 = relativePath;
+                    outletImage.ImageData2 = data;
+                }
+
+                if (string.IsNullOrEmpty(outlet.StringImage3))
+                {
+                    outletImage.Image3 = "";
+                    outletImage.ImageData3 = null;
+                }
+                else if (!outlet.StringImage3.ToUpper().StartsWith("/IMAGE"))
+                {
+                    byte[] data;
+                    string relativePath;
+                    SaveToFile(existingOutlet.ID, 3, outlet.StringImage3, out relativePath, out data);
+                    outletImage.Image3 = relativePath;
+                    outletImage.ImageData3 = data;
                 }
 
                 TrackOutletChanged(existingOutlet.PRowID, outlet.AmendBy, note, 0, action);
                 AppendOutletHistory(outlet.AmendBy, outlet.ID, outlet.PAction, outlet.PNote);
-                _entities.SaveChanges();
-                return existingOutlet.PRowID.ToString();
+                if (saveChanged)
+                    _entities.SaveChanges();
+                return existingOutlet; ;
             }
         }
 
@@ -569,6 +653,156 @@ namespace TradeCensus
 
             _entities.SaveChanges();
         }
+
+        public List<OutletModel> DownloadOutlets(int personID, string provinceID, int from, int to)
+        {
+            ValidatePerson(personID);
+            //Person person = _entities.People.FirstOrDefault(i => i.ID == personID);
+            //if (person == null)
+            //    throw new Exception("User doesn't exist");
+
+            List<OutletModel> outlets = new List<OutletModel>();
+            //var query =  //from i in _entities.Outlets where i.ProvinceID == provinceID orderby i.ID select i
+            var query = _entities.Outlets.Where(i => i.ProvinceID == provinceID).OrderBy(i => i.ID).Skip(from).Take(to - from).Include(im => im.OutletImages);
+            if (query.Any())
+            {
+                StringBuilder sb = new StringBuilder();
+                foreach (var outlet in query)
+                {
+                    var outletModel = ToOutletModel(outlet);
+                    //outletModel.PersonFirstName = person.FirstName;
+                    //outletModel.PersonLastName = person.LastName;
+                    //outletModel.PersonIsDSM = person.IsDSM;
+                    var oimg = outlet.OutletImages.FirstOrDefault();
+                    if (oimg != null)
+                    {
+                        if(!string.IsNullOrEmpty(oimg.Image1) && oimg.ImageData1 != null)
+                            outletModel.StringImage1 = FormatBase64(Convert.ToBase64String(oimg.ImageData1));
+
+                        if (!string.IsNullOrEmpty(oimg.Image2) && oimg.ImageData3 != null)
+                            outletModel.StringImage2 = FormatBase64(Convert.ToBase64String(oimg.ImageData2));
+
+                        if (!string.IsNullOrEmpty(oimg.Image3) && oimg.ImageData3 != null)
+                            outletModel.StringImage3 = FormatBase64(Convert.ToBase64String(oimg.ImageData3));
+                    }
+                    outlets.Add(outletModel);
+                }
+            }
+            return outlets;
+        }
+
+        public string DownloadImageBase64(int personID, int outletID, int index)
+        {
+            ValidatePerson(personID);
+            string imageDir = ImagesPath;
+            string imagePath = Path.Combine(imageDir, string.Format("{0}_{1}.jpg", outletID, index));
+            if (File.Exists(imagePath))
+            {
+                return Convert.ToBase64String(File.ReadAllBytes(imagePath));
+            }
+            else
+            {
+                var outlet = _entities.Outlets.FirstOrDefault(o => o.ID == outletID);
+                if (outlet != null)
+                {
+                    var outletImg = outlet.OutletImages.FirstOrDefault();
+                    if (outletImg != null)
+                    {
+                        if (index == 1 && outletImg.ImageData1 != null)
+                            return FormatBase64(Convert.ToBase64String(outletImg.ImageData1));
+
+                        if (index == 2 && outletImg.ImageData2 != null)
+                            return FormatBase64(Convert.ToBase64String(outletImg.ImageData2));
+
+                        if (index == 3 && outletImg.ImageData3 != null)
+                            return FormatBase64(Convert.ToBase64String(outletImg.ImageData3));
+                    }
+                }
+            }
+            return "";
+        }
+
+        public void UploadImageBase64(int personID, int outletID, int index, string image)
+        {
+          
+            byte[] data;
+            string relativePath;
+            SaveToFile(outletID, index, image, out relativePath, out data);
+
+            Outlet outlet = _entities.Outlets.FirstOrDefault(i => i.ID == outletID);
+            if (outlet != null)
+            {
+                OutletImage outletImage = null;
+                if (outlet.OutletImages.Count() > 0)
+                    outletImage = outlet.OutletImages.FirstOrDefault();
+                else
+                {
+                    outletImage = new OutletImage() { OutletID = outlet.ID, };
+                    outlet.OutletImages.Add(outletImage);
+                }
+
+                if (index == 1)
+                {
+                    outletImage.ImageData1 = data;
+                    outletImage.Image1 = relativePath;
+                }
+                else if (index == 2)
+                {
+                    outletImage.ImageData2 = data;
+                    outletImage.Image2 = relativePath;
+                }
+                else if (index == 3)
+                {
+                    outletImage.ImageData3 = data;
+                    outletImage.Image3 = relativePath;
+                }
+                outlet.AmendBy = personID;
+                outlet.AmendDate = DateTime.Now;
+
+                TrackOutletChanged(outlet.PRowID, personID, "Save image", 0, ActionUpdateImage);
+
+                _entities.SaveChanges();
+            }
+        }
+
+        public List<SyncOutlet> SaveOutlets(OutletModel[] outlets)
+        {
+            List<SyncOutlet> res = new List<SyncOutlet>();
+
+            List<Outlet> dboutlets = new List<Outlet>();
+            foreach (var outlet in outlets)
+            {
+                dboutlets.Add(SaveOutlet(outlet, false));
+            }
+            _entities.SaveChanges();
+            foreach(var outlet in dboutlets)
+                res.Add(new SyncOutlet { ID = outlet.ID, RowID = outlet.PRowID.ToString() });
+
+            return res;
+        }
+
+        private string FormatBase64(string s)
+        {
+            return s;//Constants.Base64 + Constants.FieldDelimeter + s;
+        }
+
+        private void SaveToFile(int outletID, int index, string image, out string relativePath, out byte[] data)
+        {
+            relativePath = string.Format("{0}_{1}.jpg", outletID, index);
+            string imageDir = ImagesPath;
+            string imagePath = Path.Combine(imageDir, relativePath);
+
+            data = Convert.FromBase64String(image);
+            try
+            {
+                File.WriteAllBytes(imagePath, data);
+            }
+            catch (Exception ex)
+            {
+                _logger.Warn(string.Format("Cannot save image of outlet {0} to {1}: {2}", outletID, imagePath, ex.ToString()));
+            }
+            relativePath = "/Images/" + relativePath;
+        }
     }
 
     public class Point
@@ -625,5 +859,151 @@ namespace TradeCensus
     partial class Outlet
     {
         public double Distance { get; set; }
+    }
+
+    public static class OutletExtend
+    {
+        public static string ToDownloadString(this Outlet outlet, Person person, string img1, string img2, string img3)
+        {
+            StringBuilder sb = new StringBuilder();
+            //(65002226, 
+            // "HRC", 
+            // " ",
+            // "KA", 
+            // "KARAOKE E2 - NH THIÊN HỒNG", 
+            // "199", 
+            // "Điện Biên Phủ", 
+            // "Q.3", 
+            // "50", 
+            // "0838248798", 
+            // 0, 
+            // "", 
+            // "2009-04-10 00:00:00", 
+            // 1, 
+            // " ",
+            // " ",
+            // " ",
+            // " ",
+            // " ",
+            // 0, 
+            // "mr nghia", 
+            // "", 
+            // 12594, 
+            // "Tăng Minh Gia", 
+            // "Bảo", 
+            // "", 
+            // 106.692777, 
+            // 10.785563, 
+            // " ", 
+            // 0, 
+            // 0, 
+            // " ", 
+            // 11655, 
+            // "2016-07-05 11:54:11", 
+            // " ", 
+            // 0, 
+            // 0, 
+            // 0, 
+            // "", 
+            // "", 
+            // "", 
+            // 0, 
+            // "7a72490b-b3e6-4101-a5d8-14f8ec3cb045", 
+            // 0, 
+            // 0, 
+            // 0, 
+            // 1,
+            // 0,
+            // 1470384228911, 
+            // 0)
+            var ts = outlet.AmendDate.Subtract(new DateTime(1970, 1, 1));
+
+
+            sb.Append(outlet.ID).Append(Constants.DataDelimeter);
+            sb.Append(outlet.PRowID).Append(Constants.DataDelimeter);
+
+            sb.Append(ToSql(outlet.ID)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(outlet.AreaID)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(outlet.TerritoryID)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(outlet.OTypeID)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(outlet.Name)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(outlet.AddLine)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(outlet.AddLine2)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(outlet.District)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(outlet.ProvinceID)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(outlet.Phone)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(outlet.CloseDate)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(outlet.CreateDate)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(outlet.Tracking)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(outlet.Class)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(outlet.Open1st)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(outlet.Close1st)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(outlet.Open2nd)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(outlet.Close2nd)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(outlet.SpShift)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(outlet.LastContact)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(outlet.LastVisit)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(outlet.PersonID)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(person.FirstName)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(person.LastName)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(outlet.Note)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(outlet.Longitude)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(outlet.Latitude)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(outlet.TaxID)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(outlet.ModifiedStatus)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(outlet.InputBy)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(outlet.InputDate)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(outlet.AmendBy)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(outlet.AmendDate)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(outlet.OutletEmail)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(outlet.AuditStatus)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(outlet.TotalVolume)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(outlet.VBLVolume)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(img1)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(img2)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(img3)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(outlet.PRowID)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(1)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(1)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(1)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(1)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(0)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(0)).Append(Constants.FieldDelimeter);
+            sb.Append(ToSql(0));
+
+            return sb.ToString();
+        }
+
+        private static string ToSql(object value)
+        {
+            if (value == null) return "\" \"";
+            if (value is String)
+            {
+                // quoted text
+                return "\"" + value + "\"";
+            }
+            else if (value is bool)
+            {
+                return (bool)value ? "1" : "0";
+            }
+            else if (value is long)
+            {
+                return value.ToString();
+            }
+            else if (value is int)
+            {
+                return value.ToString();
+            }
+            else if (value is decimal)
+            {
+                return value.ToString();
+            }
+            else if (value is DateTime)
+            {
+                return "\"" + ((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss") + "\""; 
+            }
+            else
+                return value.ToString();
+        }
     }
 }

@@ -10,5 +10,7 @@ namespace TradeCensus
         IConfigService,
         IOutletService
     {
+        [OperationContract]
+        Response Ping(string deviceinfo);
     }    
 }

@@ -1,27 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+﻿using NLog;
 
 namespace TradeCensusService.Shared
 {
-    public class LogManager
+    public class LogUtil
     {
         public static Logger GetLogger(string name)
         {
-            return new Logger() { Name = name };
+            return NLog.LogManager.GetLogger(name);
         }
     }   
 
-    public class Logger
+    public static class LoggerEx
     {
-        public string Name { get; set; }
-        public void Write(string message)
+        public static void Write(this Logger log, string message)
         {
+            log.Info(message);
         }
-        public void Write(string message, params object[] args)
+
+        public static void Write(this Logger log, string message, params object[] args)
         {
-            Write(string.Format(message, args));
+            log.Info(string.Format(message, args));
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.ServiceModel;
 
 namespace TradeCensus
@@ -27,5 +26,17 @@ namespace TradeCensus
 
         [OperationContract]
         GetImageResponse GetImage(string outletID, string index);
+
+        [OperationContract]
+        GetOutletListResponse DownloadOutlets(string personID, string provinceID, string from, string to);
+
+        [OperationContract]
+        GetImageResponse DownloadImageBase64(string personID, string outletID, string index);
+
+        [OperationContract]
+        Response UploadImageBase64(string personID, string outletID, string index, string image);
+
+        [OperationContract]
+        SyncOutletResponse SyncOutlets(OutletModel[] outlets);
     }
 }

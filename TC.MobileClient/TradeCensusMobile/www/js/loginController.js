@@ -18,6 +18,8 @@ function loginController($scope, $http) {
     var port = $scope.config.port;
     var province_id = $scope.config.province_id;        
     var online = $scope.config.mode_online;
+    var timeo = $scope.config.time_out;
+    var dist = $scope.config.liveGPS_distance;
 
     $scope.exit = function () {
         navigator.app.exitApp();
@@ -30,6 +32,8 @@ function loginController($scope, $http) {
             config.port = port;
             config.province_id = province_id;
             config.mode_online = online;
+            $scope.config.time_out = timeo;
+            $scope.config.liveGPS_distance = dist;
 
             $("#loginscreen").css('display', 'block');
             $("#configscreen").css('display', 'none');
@@ -41,6 +45,16 @@ function loginController($scope, $http) {
 
             if (isEmpty($scope.config.port)) {
                 showError(R.port_is_empty);
+                return;
+            }
+
+            if (isEmpty($scope.config.time_out)) {
+                showError(R.timeout_is_empty);
+                return;
+            }
+
+            if (isEmpty($scope.config.liveGPS_distance)) {
+                showError('Refresh Distance is empty!');
                 return;
             }
 
@@ -90,11 +104,8 @@ function loginController($scope, $http) {
         }
     };
     
-    var markedCert = false;
     function loginOnline(retry, onSuccess, onError) {
-        
-
-        log('Login online');
+        log('Login online ' + retry.toString());
         var url = baseURL + '/login/' + $scope.userName + '/' + $scope.password;
         log('Call service api: ' + url);
         $http({
@@ -124,8 +135,10 @@ function loginController($scope, $http) {
             }
         }, function (err) {                        
             log(err);
-            if (retry == 0) {
-                loginOnline(1, onSuccess, onError);
+            if (retry < $scope.config.time_out) {
+                setTimeout(function () {
+                    loginOnline(retry+1, onSuccess, onError);
+                }, 1000);
             } else {
                 try {
                     var errormg = 'Cannot connect to: ' + baseURL + ' : ' + R.connection_timeout;
@@ -204,10 +217,12 @@ function loginController($scope, $http) {
         config.tbl_downloadProvince = 'outlet_province_' + $scope.user.id;
         
         log($scope.user.hasAuditRole);
-		enableSync = true;
+        enableSync = true;
+        resetLocal = user.Role == 101 || user.Role == 100;
 
-        log('create outlet tables');
-        ensureUserOutletDBExist(user.Role == 101 || user.Role == 100, config.tbl_outletSync, config.tbl_outlet, config.tbl_downloadProvince,
+		log('create outlet tables');
+
+		ensureUserOutletDBExist(resetLocal, config.tbl_outletSync, config.tbl_outlet, config.tbl_downloadProvince,
             function () {
                 if (networkReady()) {
                     showDlg(R.download_settings, R.please_wait);
@@ -327,8 +342,31 @@ function loginController($scope, $http) {
                         config.sync_time = parseInt(p.Value);
                     } else if (p.Key == 'protocol') {
                         config.protocol = p.Value;
-                    } else if (p.Key == 'max_oulet_download') {
+                    } else if (p.Key == 'max_province_download') {
                         config.max_oulet_download = p.Value;
+                    } else if (p.Key == 'map_zoom') {
+                        config.map_zoom = parseInt(p.Value);
+                        if (config.map_zoom > 21) config.map_zoom = 21;
+                    } else if (p.Key == 'cluster_size') {
+                        config.cluster_size = p.Value;
+                    } else if (p.Key == 'cluster_max_zoom') {
+                        config.cluster_max_zoom = p.Value;
+                    } else if (p.Key == 'audit_range') {
+                        config.audit_range = parseInt(p.Value);
+                    } else if (p.Key == 'download_batch_size') {
+                        config.download_batch_size = parseInt(p.Value);
+                    } else if (p.Key == 'sync_time') {
+                        config.sync_time = parseInt(p.Value);
+                    } else if (p.Key == 'sync_time_out') {
+                        config.sync_time_out = parseInt(p.Value);
+                    } else if (p.Key == 'sync_batch_size') {
+                        config.sync_batch_size = parseInt(p.Value);
+                    } else if (p.Key == 'ping_time') {
+                        config.ping_time = parseInt(p.Value);
+                    } else if (p.Key == 'refresh_time') {
+                        config.refresh_time = parseInt(p.Value);
+                    } else if (p.Key == 'refresh_time_out') {
+                        config.refresh_time_out = parseInt(p.Value);
                     }
                 }
 

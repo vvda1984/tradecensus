@@ -11,11 +11,18 @@ Date.prototype.timeNow = function () {
 /** 
 * checkConnection
 */
+var serverConnected = true;
 function networkReady() {
+    return serverConnected && getNetworkState();
+}
+
+/** 
+* checkConnection
+*/
+function getNetworkState() {
     if (!config.mode_online) return false;
-    // ANVO: DEBUG
     if (isDev)
-        return true;   
+        return true;
     try {
         //states[Connection.UNKNOWN] = 'Unknown connection';
         //states[Connection.ETHERNET] = 'Ethernet connection';
@@ -30,12 +37,10 @@ function networkReady() {
         log('Network status: ' + networkState);
         return (networkState !== Connection.NONE && networkState !== Connection.UNKNOWN)
     }
-    catch(err){
+    catch (err) {
         return true;
     }
 }
-
-
 
 /** 
 * log
@@ -85,6 +90,24 @@ function buildURL(protocol, ip, port, serviceName) {
 }
 
 /** 
+* buildURL
+*/
+function imageURL(protocol, ip, port, image) {
+    var host = ip;
+    var subhost = '';
+    var positionS = ip.indexOf('/');
+    if (positionS > 0) { //can't start with /
+        host = ip.substr(0, positionS);
+        subhost = ip.substr(positionS);
+    }
+
+    var url = protocol + '://' + host + ':' + port.toString() + subhost + '/' + image;
+    log(url);
+    return url;
+    //return protocol + '://' + ip + ':' + port + '/' + serviceName;
+}
+
+/** 
 * handleError
 */
 function handleError(err) {
@@ -121,7 +144,7 @@ function cloneObj(i) {
 * Clone object
 */
 function guid() {
-    return randomString4() + randomString4() + '-' + randomString4() + '-' + s4randomString4 + '-' + randomString4() + '-' + randomString4() + randomString4() + randomString4();
+    return randomString4() + randomString4() + '-' + randomString4() + '-' + randomString4 + '-' + randomString4() + '-' + randomString4() + randomString4() + randomString4();
 }
 
 /**
@@ -257,12 +280,51 @@ function captureImage(onSuccess, onError) {
         try {
             navigator.camera.getPicture(onSuccess, onError,
                 {
-                    quality: 50,
+                    quality: 30,
+                    targetWidth: 800,
+                    targetHeight: 600,
                     correctOrientation: true,
-                    destinationType: Camera.DestinationType.FILE_URI // DATA_URL for base64 => not recommend due to memory issue
+                    destinationType: Camera.DestinationType.FILE_URI, // DATA_URL for base64 => not recommend due to memory issue
                 });
         } catch (err) {
             showError(err);
         }
+    }
+}
+
+function getDifTime(st, en) {
+    return (en - st) / 1000;
+}
+
+function changeAlias(alias) {
+    var str = alias;
+    str = str.toLowerCase();
+    str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ  |ặ|ẳ|ẵ/g, "a");
+    str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
+    str = str.replace(/ì|í|ị|ỉ|ĩ/g, "i");
+    str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ  |ợ|ở|ỡ/g, "o");
+    str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
+    str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
+    str = str.replace(/đ/g, "d");
+    return str;
+}
+
+function getFileContentAsBase64(path, callback) {
+    window.resolveLocalFileSystemURL(path, gotFile, fail);
+
+    function fail(e) {
+        alert('Cannot found requested file');
+    }
+
+    function gotFile(fileEntry) {
+        fileEntry.file(function (file) {
+            var reader = new FileReader();
+            reader.onloadend = function (e) {
+                var content = this.result;
+                callback(content);
+            };
+            // The most important point, use the readAsDatURL Method from the file plugin
+            reader.readAsDataURL(file);
+        });
     }
 }

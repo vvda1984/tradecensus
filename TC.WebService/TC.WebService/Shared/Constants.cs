@@ -17,5 +17,12 @@
         public const int StatusNew = 10;
         public const int StatusPost = 11;
         public const int StatusDelete = 21;
+
+        public const int StatusExitingAccept = 32;
+        public const int StatusExitingDeny = 33;
+
+        public const string FieldDelimeter = ",";
+        public const string DataDelimeter = "|||";
+        public const string Base64 = "base64";
     }
 }

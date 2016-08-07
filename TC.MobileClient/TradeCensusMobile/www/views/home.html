@@ -25,7 +25,7 @@
             <div class="dropdown-item" ng-click="changeOutletView(0)"><img src="assets/img/outlet-near.svg"/><span>{{R.near_by_outlets}}</span></div>
             <div class="dropdown-item" ng-click="changeOutletView(1)"><img src="assets/img/outlet-new.svg" /><span>{{R.new_outlets}}</span></div>
             <div class="dropdown-item" ng-click="changeOutletView(2)"><img src="assets/img/outlet-edit.svg" /><span>{{R.updated_outlets}}</span></div>
-            <div class="dropdown-item" ng-show="hasAuditRole" ng-click="changeOutletView(4)"><img src="assets/img/outlet-audit.svg" /><span>{{R.auditted_outlets}}</span></div>
+            <div class="dropdown-item" ng-show="hasAuditRole" ng-click="changeOutletView(3)"><img src="assets/img/outlet-audit.svg" /><span>{{R.auditted_outlets}}</span></div>
         </div>
     </div>
 
@@ -43,7 +43,7 @@
                 <table class="outlet-table" ng-repeat="outlet in outlets |  startFrom:currentPage*pageSize | limitTo:pageSize " ng-click="hideDropdown()">
                     <tr>
                         <td class="outlet-indicator">
-                            <div class="{{outlet.IsNew ? 'circle-yellow' : (outlet.IsSynced ? 'circle' : 'circle-gray')}}">{{$index + 1 + (currentPage) * pageSize}}</div>
+                            <div class="{{outlet.IsNew ? 'circle-yellow' : (outlet.IsDenied ? 'circle-gray' : 'circle-green')}}">{{$index + 1 + (currentPage) * pageSize}}</div>
                         </td>
                         <td>
                             <table class="outlet-detail-table">
@@ -106,7 +106,10 @@
                                         <div class="m-flat-button-small float-right blue" ng-show="outlet.canRevise" ng-click="reviseOutlet(outlet)"><span>Revise</span></div>
                                         <div class="m-flat-button-small float-right red" ng-show="outlet.IsDraft" ng-click="deleteOutlet(outlet)"><span>Delete</span></div>
 
-                                        <div class="float-right" ng-show="outlet.viewAuditStatus"><span class="small-text gray-color">{{outlet.auditResult}}</span></div>
+                                        <div class="float-right" ng-show="outlet.viewAuditStatus">
+                                            <span class="small-text green-color" ng-show="outlet.IsAudited">{{outlet.auditResult}}</span>
+                                            <span class="small-text gray-color" ng-hide="outlet.IsAudited">{{outlet.auditResult}}</span>
+                                        </div>
                                         <!--<img class="outlet-header-right small-text gray-color" style="height:24px; width:24px; margin-left:4px" ng-show="outlet.IsDraft" src="assets/img/clear.svg" ng-click="deleteOutlet($index)" />
                                         <img class="outlet-header-right small-text gray-color" style="height:24px; width:24px;" ng-show="outlet.canPost" src="assets/img/post.svg" ng-click="postOutlet($index)" />
                                         <img class="outlet-header-right small-text gray-color" style="height:24px; width:24px;" ng-show="outlet.canRevise" src="assets/img/unpost.svg" ng-click="reviseOutlet($index)" />-->
@@ -144,7 +147,20 @@
         <div class="cirle-button white float-right" ng-show="showSettingExpand" ng-click="showHideRightPanel()">
             <img src="assets/img/setting-white.svg" />
         </div>    
+        <div class="cirle-button blue float-right" style="z-index:2" ng-click="createNewOutlet()">
+            <img src="assets/img/add.svg" />
+        </div>
+
+        <div class="square-box-red float-right">
+            <span id="status" class="blue-color"></span>
+        </div>   
     </div>
+
+    <!--<div id="home-topright-sub1">
+        <div class="cirle-button blue float-top-right" style="z-index:2" ng-click="createNewOutlet()">
+            <img src="assets/img/add.svg" />
+        </div>
+    </div>-->
 
     <div id="home-topright-street">      
         <div class="square-button blue" ng-click="closeStreetViewMode()">
@@ -159,8 +175,8 @@
         <button ng-click="testChangeLocation()">SET</button>
     </div>
 
-     <div id="home-topright-offline">      
-       <div class="square-box float-right">
+    <div id="home-topright-offline">      
+       <div class="square-box-red float-right">
             <span>{{R.you_are_in_offline_mode}}</span>
         </div>         
     </div>
@@ -236,9 +252,9 @@
     </div>
 
     <div id="home-bottomright" >
-        <div class="square-button-small float-top blue" ng-click="createNewOutlet()">
+        <!--<div class="square-button-small float-top blue" ng-click="createNewOutlet()">
             <img src="assets/img/add.svg" />
-        </div>
+        </div>-->
          <div class="square-button-small float-top white" ng-click="panToCurLocation()">
             <img src="assets/img/curloccation.svg" />
         </div>        

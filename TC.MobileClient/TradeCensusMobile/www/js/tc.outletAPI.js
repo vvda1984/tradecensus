@@ -7,20 +7,38 @@ const StatusAuditDeny = 3;
 const StatusNew = 10;
 const StatusPost = 11;
 const StatusDelete = 21;
+const StatusDone = 30;
+const StatusExitingAccept = 32;
+const StatusExitingDeny = 33;
 
 var nearByOutlets = [];
 var curOutlets = [];
 var firstStart = true;
+var openOutletDlg = false;
 
-function newOutlet() {
-    var provineName  = '';
-	log('province id: ' + config.province_id);
-    for (p = 0; p < provinces.length; p++)
-        if (provinces[p].id === config.province_id) {
-            provinceName = provinces[p].name;
-            break;
-        }
-	log('provineName: ' + provineName);
+function newOutlet(provinceName) {
+    //var provineName  = '';
+	//log('province id: ' + config.province_id);
+    //for (p = 0; p < provinces.length; p++)
+    //    if (provinces[p].id === config.province_id) {
+    //        provinceName = provinces[p].name;
+    //        break;
+    //    }
+    //log('provineName: ' + provineName);
+    var provinceId = config.province_id;
+    if (isEmpty(provinceName)) {
+        for (p = 0; p < provinces.length; p++)
+            if (provinces[p].id === config.province_id) {
+                provinceName = provinces[p].name;
+                break;
+            }
+    } else {
+        for (p = 0; p < provinces.length; p++)
+            if (provinces[p].name === provinceName) {
+                provineId = provinces[p].id;
+                break;
+            }
+    }
 
     return {
         Action: 0,
@@ -35,7 +53,7 @@ function newOutlet() {
         Distance: 0,
         District: '',
         FullAddress: "",
-        ID: parseInt('65' + config.province_id + (Math.random() * 100000)),
+        ID: parseInt('6' + provinceId + (Math.random() * 1000000)),
         InputBy: user.id,
         IsOpened: true,
         IsTracked: false,
@@ -47,20 +65,19 @@ function newOutlet() {
         Note: '',
         OTypeID: outletTypes[0].ID,
         OutletEmail: null,
-        OutletSource: 1,
+        OutletSource: 0,
         OutletTypeName: outletTypes[0].Name,
         PRowID: '',
         PersonID: user.id,
         Phone: "",
-        ProvinceID : config.province_id,
+        ProvinceID: provinceId,
         ProvinceName: provinceName,
         StringImage1: "",
         StringImage2: "",
         StringImage3: "",
         TotalVolume: 0,
         Tracking: 0,
-        VBLVolume: 0,        
-        PStatus: StatusNew,
+        VBLVolume: 0,
         IsDraft: true,
         IsNew : true,
         ExtractName: '',
@@ -68,7 +85,8 @@ function newOutlet() {
         PersonLastName: '',
         auditResult: '',
         viewAuditStatus : false,
-        marker : null,
+        marker: null,
+        PStatus : 0
     };
 }
 
@@ -104,7 +122,7 @@ function initializeOutlet(outlet) {
         exname = exname.concat(outlet.PersonFirstName, ' ');
     }
     if (outlet.PersonLastName) {
-        exname = exname.concat(outlet.PersonFirstName, ' ');
+        exname = exname.concat(outlet.PersonLastName, ' ');
     }    
     exname = exname.trim();
 
@@ -119,7 +137,8 @@ function initializeOutlet(outlet) {
     outlet.IsOpened = isEmpty(outlet.CloseDate);
     outlet.IsTracked = outlet.Tracking == 1;      
     outlet.IsAuditApproved = outlet.AuditStatus == 1;
-    outlet.IsNew = outlet.AuditStatus == StatusNew || outlet.AuditStatus == StatusPost;
+    outlet.IsNew = outlet.AuditStatus == StatusNew || outlet.AuditStatus == StatusPost || outlet.AuditStatus == StatusAuditAccept;
+    outlet.IsDenied = outlet.AuditStatus == StatusAuditDeny || outlet.AuditStatus == StatusExitingDeny;
     outlet.IsDraft = outlet.AuditStatus == StatusNew;    
     outlet.canPost = outlet.AuditStatus == StatusNew;
     outlet.canRevise = outlet.AuditStatus == StatusPost && outlet.PersonID == userID;
@@ -127,10 +146,12 @@ function initializeOutlet(outlet) {
     outlet.IsSynced = (outlet.PSynced) && (outlet.PSynced == 1);
     outlet.hasMarker = false;
 
-    if (outlet.AuditStatus == StatusAuditAccept) {
+    if (outlet.AuditStatus == StatusAuditAccept || outlet.AuditStatus == StatusExitingAccept) {
+        outlet.IsAudited = true;
         outlet.auditResult = 'Approved',
         outlet.viewAuditStatus = true;
-    } else if (outlet.AuditStatus == StatusAuditDeny) {
+    } else if (outlet.AuditStatus == StatusAuditDeny || outlet.AuditStatus == StatusExitingDeny) {
+        outlet.IsAudited = false;
         outlet.auditResult = 'Denied',
         outlet.viewAuditStatus = true;
     }
@@ -161,6 +182,7 @@ function queryOutlets(isbackground, view, callback) {
                         log('Distance to Outlet ' + outlet.ID.toString() + ': ' + distance.toString());
 
                         if (distance <= meter) {
+                            outlet.Distance = distance;
                             log('Add outlet ' + outlet.ID.toString() + ' to list');
                             initializeOutlet(outlet);
                             outlet.positionIndex = foundOutlets.length;
@@ -171,16 +193,19 @@ function queryOutlets(isbackground, view, callback) {
                         if (found >= count) break;
                     }
                     foundOutlets.sort(function (a, b) { return a.Distance - b.Distance; });
-                    callback(foundOutlets);
+                    callback(true, foundOutlets);
                 } else {
-                    callback([]);
+                    callback(true, []);
                 }
-            }, function (dberr) {              
+            }, function (dberr) {
+                rendringOutlets = false;
                 showError(dberr.message);
+                callback(false, null);
             });
     } catch (err) {
         log(err);        
         showError(err.message);
+        callback(false, null);
     }
 }
 

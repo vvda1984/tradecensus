@@ -75,6 +75,23 @@
                             </div>-->
                         </md-input-container>   
 
+                        <md-input-container class="md-block" style="margin-bottom:0px;">
+                            <label>{{ R.enter_time_out }}</label>
+                            <input required="" name="ipAddress" ng-model="config.time_out">
+                            <!--<div ng-messages="configForm.ipAddress.$error" role="alert">
+                                <div ng-message="required">{{ R.text_ValRequired }}</div>
+                            </div>-->
+                        </md-input-container>
+
+                        <md-input-container class="md-block" style="margin-bottom:0px;">
+                            <label>Refresh Distance (m)</label>
+                            <input required="" name="ipAddress" ng-model="config.liveGPS_distance">
+                                        <!--<div ng-messages="configForm.ipAddress.$error" role="alert">
+                        <div ng-message="required">{{ R.text_ValRequired }}</div>
+                    </div>-->
+                        </md-input-container>
+
+
                         <div class="md-block-item" style="margin-bottom:0px;margin-top:-16px;margin-left:4px" ng-show="config.enable_devmode">
                             <div class="md-block-item-title small-text">Mode (Online/Offline)</div>
                             <md-switch class="md-primary" ng-model="config.mode_online">{{config.mode_online ? "Online" : "Offline"}}</md-switch>

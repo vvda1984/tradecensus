@@ -69,4 +69,13 @@ namespace TradeCensus
         [DataMember]
         public string Image { get; set; }
     }
+
+    [DataContract]
+    public class SyncOutletResponse : Response
+    {
+        [DataMember]
+        public List<SyncOutlet> Outlets { get; set; }
+       
+    }
+
 }

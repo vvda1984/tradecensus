@@ -130,6 +130,7 @@
           <Property Name="AmendBy" Type="int" Nullable="false" />
           <Property Name="AmendDate" Type="datetime" Nullable="false" />
           <Property Name="IsDefaultSA" Type="bit" />
+          <Property Name="IsDSM" Type="bit" Nullable="false" />
         </EntityType>
         <EntityType Name="PersonRole">
           <Key>
@@ -346,6 +347,7 @@
           <Property Name="AmendBy" Type="Int32" Nullable="false" />
           <Property Name="AmendDate" Type="DateTime" Nullable="false" Precision="3" />
           <Property Name="IsDefaultSA" Type="Boolean" />
+          <Property Name="IsDSM" Type="Boolean" Nullable="false" />
         </EntityType>
         <EntityType Name="PersonRole">
           <Key>
@@ -555,6 +557,7 @@
           <EntitySetMapping Name="People">
             <EntityTypeMapping TypeName="tradecensusModel.Person">
               <MappingFragment StoreEntitySet="Person">
+                <ScalarProperty Name="IsDSM" ColumnName="IsDSM" />
                 <ScalarProperty Name="ID" ColumnName="ID" />
                 <ScalarProperty Name="FirstName" ColumnName="FirstName" />
                 <ScalarProperty Name="LastName" ColumnName="LastName" />

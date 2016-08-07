@@ -202,12 +202,44 @@
     border-radius: 12px;
     color: white;
     text-align: center;
-}    
+}   
+.circle-red {
+    background: red;
+    width: 24px;
+    height: 24px;
+    line-height: 24px;
+    border-radius: 12px;
+    color: white;
+    text-align: center;
+}   
+.circle-green {
+    background: #01541E;
+    width: 24px;
+    height: 24px;
+    line-height: 24px;
+    border-radius: 12px;
+    color: white;
+    text-align: center;
+}   
+ 
 
 
 /**************** BUTTONS *******************/
+.square-box-red {
+    border-radius: 2px;
+    height: 38px;   
+    display: table;   
+}
+.square-box-red span{
+    display: table-cell;
+    vertical-align: middle;
+    padding-left: 12px;
+    padding-right: 12px;
+    color: red;
+    font-weight: bold; 
+}
+
 .square-box {
-    border: 1px solid red;  
     border-radius: 2px;
     height: 38px;   
     display: table; 
@@ -219,7 +251,6 @@
     vertical-align: middle;
     padding-left: 12px;
     padding-right: 12px;
-    color: red;
     font-weight: bold; 
 }
 
@@ -490,11 +521,20 @@
     display: inline-block;
 } 
 
+#home-topright-sub1 {
+    position: fixed;
+    top: 54px;
+    right: 3px;    
+    z-index: 3;
+    border: 0px;
+    display: inline-block;
+} 
+
 
 #home-topright-offline {
     position: fixed;
     top: 4px;
-    right: 64px;    
+    right: 96px;    
     z-index: 3;
     border: 0px;
     display: none;

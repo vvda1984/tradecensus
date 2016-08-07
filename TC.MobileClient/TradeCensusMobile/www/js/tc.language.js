@@ -18,17 +18,23 @@ function language_en() {
         btn_logout: 'LOGOUT',
         btn_post: 'POST',
         btn_revise: 'REVISE',
+        btn_approve: 'APPROVE',
+        btn_deny: 'DENY',
 		
+        connecting_server: 'Connecting to server',
+        loading_map : 'Loading map',
         please_wait: 'Please wait...',
         enter_username: 'Enter Username',
         enter_password: 'Enter Password',
         
         password_is_empty: 'Password is empty!',
         username_is_empty: 'Username is empty!',
+        timeout_is_empty: 'Timeout is empty!',
 		settings: 'SETTINGS',
         enter_ip_address: 'Enter IP Address',
         enter_port: 'Enter Port',
         enter_protocol: 'Enter Protocol',
+        enter_time_out : 'Timeout',
         mode_online_offline: 'Mode (Online/Offline)',
         working_province: 'Working Province',
         ip_is_empty: 'IP is empty!',
@@ -58,6 +64,7 @@ function language_en() {
         search: 'Search',
 
         you_are_in_offline_mode: 'You are in Offline mode!',
+        cannot_approve_or_deny: 'Cannot get current location to verify!',
       
         download_outlets: 'DOWNLOAD OUTLETS',
         create_new_outlet: 'NEW OUTLET',
@@ -70,8 +77,8 @@ function language_en() {
         district: 'District',
         province: 'Province',
 
-        volumn: 'Volumn',
-        create_cartoons_avg_month: '(create/cartoons.Avg/month)',
+        volumn: 'Avg Volume/Month',
+        create_cartoons_avg_month: '(crates/cartons)',
         total: 'TOTAL',
         vbl_product: 'VBL Product',
 
@@ -110,20 +117,25 @@ function language_en() {
         cannot_get_current_location: 'Cannot get current location',
 
         delete_outlet: 'Delete Outlet',
-        delete_outlet_confirm: 'Are you sure you want to delete outlet ',
+        delete_outlet_confirm: 'Are you sure you want to delete outlet "{outletname}"?',
 
         post_outlet: 'Post Outlet',
-        post_outlet_confirm: 'Are you sure you want to POST outlet ',
+        post_outlet_confirm: 'Are you sure you want to POST outlet "{outletname}"?',
 
         revise_outlet: 'Revise Outlet',
-        revise_outlet_confirm: 'Are you sure you want to REVISE outlet ',
+        revise_outlet_confirm: 'Are you sure you want to REVISE outlet "{outletname}"?',
 		
         outlet_type_is_empty: 'Outlet type is empty!',
 		outlet_name_is_empty : 'Outlet name is empty!',
 		house_no_is_empty : 'House number is empty!',
 		street_is_empty : 'Street is empty!',
 		district_is_empty : 'District is empty!',
-		phone_is_empty : 'Phone is empty!',
+		phone_is_empty: 'Phone is empty!',
+		comment_is_empty: 'Comment is empty!',
+		ovar_audit_distance: 'Outlet is out of audit range ({distance} m).',
+		total_is_invald: 'TOTAL must be number!',
+		vbl_is_invald: 'VBL product must be number!',
+		vbl_cannot_greater_than_total: 'TOTAL must be greater than VBL.',
 
 		confirm : 'CONFIRM',
 		delete_offline_outlets_of : 'Delete offline outlets of ',
@@ -134,7 +146,10 @@ function language_en() {
         error: 'Warning',        
         download_outlets_confim: 'Download offline outlet of ',
 
-        downloading_outlet: 'DOWNLOADING OUTLETS ',	
+        downloading_outlet: 'DOWNLOADING OUTLETS ',
+        downloading_outlet_msg: 'DOWNLOADING OUTLETS...{percent}%',
+        downloading_outlet_get_outlets: 'Getting outlets...Please wait',
+        downloading_outlet_save_outlets: 'Saving outlets to db...Please wait',
 		check_network_connection : 'Please check network connection!',
 		connection_timeout : 'Connection timeout',
 		invalid_user_password : 'Invalid User/Password',

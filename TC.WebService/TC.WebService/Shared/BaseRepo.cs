@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.Linq;
 using TradeCensusService.Shared;
 
@@ -22,7 +23,7 @@ namespace TradeCensus.Shared
         {            
             _entities = new tradecensusEntities(); // throw error
             _name = name;
-            _logger = LogManager.GetLogger(name);
+            _logger = LogUtil.GetLogger(name);
         }        
         public void Dispose()
         {

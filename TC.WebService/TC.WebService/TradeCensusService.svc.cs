@@ -1,10 +1,9 @@
 ﻿using System;
-using System.IO;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 using System.Web;
-using Newtonsoft.Json.Linq;
 using TradeCensus.Shared;
+using TradeCensusService.Shared;
 
 namespace TradeCensus
 {
@@ -165,7 +164,12 @@ namespace TradeCensus
                 try
                 {
                     resp.ID = item.ID;
-                    resp.RowID = repo.SaveOutlet(item); ;
+                    var outlet = repo.SaveOutlet(item);
+                    if(outlet != null)
+                    {
+                        resp.ID = outlet.ID;
+                        resp.RowID = outlet.PRowID.ToString();
+                    } 
                 }
                 catch (Exception ex)
                 {
@@ -176,10 +180,10 @@ namespace TradeCensus
             }
         }
         
-        //public SaveImageResponse SaveImage(string fileKey, string outletID, string index, Stream stream)
         [WebInvoke(Method = "POST", UriTemplate = "outlet/uploadimage", ResponseFormat = WebMessageFormat.Json, BodyStyle = WebMessageBodyStyle.Wrapped)]
         public SaveImageResponse SaveImage()
         {
+            //public SaveImageResponse SaveImage(string fileKey, string outletID, string index, Stream stream)
             using (var repo = new OutletRepo())
             {
                 var resp = new SaveImageResponse();
@@ -219,6 +223,97 @@ namespace TradeCensus
                 }
                 return resp;
             }
+        }
+
+        [WebInvoke(Method = "POST", UriTemplate = "outlet/download/{personID}/{provinceID}/{from}/{to}", ResponseFormat = WebMessageFormat.Json)]
+        public GetOutletListResponse DownloadOutlets(string personID, string provinceID, string from, string to)
+        {
+            using (var repo = new OutletRepo())
+            {
+                var resp = new GetOutletListResponse();
+                try
+                {
+                    resp.Items = repo.DownloadOutlets(int.Parse(personID), provinceID, int.Parse(from), int.Parse(to));
+                }
+                catch (Exception ex)
+                {
+                    resp.Status = Constants.ErrorCode;
+                    resp.ErrorMessage = ex.Message;
+                }
+                return resp;
+            }
+        }
+
+        [WebInvoke(Method = "POST", UriTemplate = "outlet/downloadimagebase54/{personID}/{outletID}/{index}", ResponseFormat = WebMessageFormat.Json)]
+        public GetImageResponse DownloadImageBase64(string personID, string outletID, string index)
+        {
+            using (var repo = new OutletRepo())
+            {
+                var resp = new GetImageResponse();
+                try
+                {
+                    resp.Image = repo.DownloadImageBase64(int.Parse(personID), int.Parse(outletID), int.Parse(index));
+                }
+                catch (Exception ex)
+                {
+                    resp.Status = Constants.ErrorCode;
+                    resp.ErrorMessage = ex.Message;
+                }
+                return resp;
+            }
+        }
+
+        [WebInvoke(Method = "POST", UriTemplate = "outlet/uploadmagebase54/{personID}/{outletID}/{index}/{image}", ResponseFormat = WebMessageFormat.Json)]
+        public Response UploadImageBase64(string personID, string outletID, string index, string image)
+        {
+            using (var repo = new OutletRepo())
+            {
+                var resp = new Response();
+                try
+                {
+                    repo.UploadImageBase64(int.Parse(personID), int.Parse(outletID), int.Parse(index), image);
+                }
+                catch (Exception ex)
+                {
+                    resp.Status = Constants.ErrorCode;
+                    resp.ErrorMessage = ex.Message;
+                }
+                return resp;
+            }
+        }
+
+        [WebInvoke(Method = "POST", UriTemplate = "outlet/saveoutlets", ResponseFormat = WebMessageFormat.Json)]
+        public SyncOutletResponse SyncOutlets(OutletModel[] items)
+        {
+            using (var repo = new OutletRepo())
+            {
+                var resp = new SyncOutletResponse();
+                try
+                {
+                    resp.Outlets = repo.SaveOutlets(items);
+                }
+                catch (Exception ex)
+                {
+                    resp.Status = Constants.ErrorCode;
+                    resp.ErrorMessage = ex.Message;
+                }
+                return resp;
+            }
+        }
+
+        [WebInvoke(Method = "POST", UriTemplate = "ping/{deviceinfo}", ResponseFormat = WebMessageFormat.Json)]
+        public Response Ping(string deviceinfo)
+        {
+            Response res = new Response();
+            try {
+                var log = LogUtil.GetLogger("service");
+                log.Debug(string.Format("Received ping from {0}", deviceinfo));
+            }
+            catch (Exception ex){
+                res.ErrorMessage = ex.Message;
+                res.Status = Constants.ErrorCode;
+            }
+            return res;
         }
     }
 }

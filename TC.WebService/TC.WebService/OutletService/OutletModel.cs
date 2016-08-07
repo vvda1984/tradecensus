@@ -50,6 +50,8 @@ namespace TradeCensus
         [DataMember]
         public string PersonLastName { get; set; }
         [DataMember]
+        public bool PersonIsDSM { get; set; }
+        [DataMember]
         public string CreateDate { get; set; }
         [DataMember]
         public string Note { get; set; }
@@ -82,16 +84,26 @@ namespace TradeCensus
         [DataMember]
         public string PRowID { get; set; }
         [DataMember]
-        public int PAction { get; set; }        
+        public int PAction { get; set; }
         [DataMember]
         public string PNote { get; set; }
     }
 
+    [DataContract]
     public class OutletShort
     {
         [DataMember]
         public int ID { get; set; }
         [DataMember]
         public string Name { get; set; }
+    }
+
+    [DataContract]
+    public class SyncOutlet
+    {
+        [DataMember]
+        public int ID { get; set; }
+        [DataMember]
+        public string RowID { get; set; }
     }
 }

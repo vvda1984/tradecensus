@@ -1,7 +1,7 @@
 ﻿<md-dialog aria-label="Edit" ng-cloak>
     <md-toolbar>
         <div class="md-toolbar-tools">
-            <div>{{R.name}}: {{outlet.Name}}</div>
+            <div>{{outlet.Name}} ({{outlet.ID}})</div>
             <span flex=""></span>
             <div>{{R.distance}}: {{outlet.Distance}} m</div>
         </div>
@@ -51,36 +51,37 @@
 
                 <div class="md-block-item" flex-gt-sm="" ng-show="canChangeOpenClose">
                     <span class="md-block-item-title">{{R.open_close}}</span>
-                    <md-checkbox md-no-ink="" aria-label="Is Opened" ng-model="outlet.IsOpened" class="md-primary">
-                        {{outlet.IsOpened ? R.opened : R.closed}}
+                    <md-checkbox md-no-ink="" aria-label="Is Opened" ng-model="isOutletClosed" ng-disabled="{{disableOpenClose}}" class="md-primary">
+                        {{R.closed}}
                     </md-checkbox>
                 </div>
 
                 <div class="md-block-item" flex-gt-sm="" ng-show="canChangeTrackNonTrack">
                     <span class="md-block-item-title">{{R.tracking_status}}</span>
-                    <md-checkbox md-no-ink="" aria-label="Is Tracked" ng-model="outlet.IsTracked" class="md-primary" style="margin-bottom:0px;" >
+                    <md-checkbox md-no-ink="" aria-label="Is Tracked" ng-model="outlet.IsTracked" ng-disabled="{{disableTracking}}" class="md-primary" style="margin-bottom:0px;" >
                         {{outlet.IsTracked ? R.tracking : R.non_tracking}}
                     </md-checkbox>
                 </div>
             </div>
 
             <div layout-gt-sm="row" style="margin-bottom:0px;">
-                <div class="md-block-item" ng-show="needAudit" style="margin-top:-12px;">
+                <!--<div class="md-block-item" ng-show="needAudit" style="margin-top:-12px;">
                     <div class="md-block-item-title" style="min-width:80px">{{R.audit_status}}</div>
                       <md-radio-group ng-model="outlet.AuditStatus">
                         <md-radio-button value="2" class="md-primary" style="margin-bottom:8px;">{{R.approve}}</md-radio-button>
                         <md-radio-button value="3" class="md-primary" style="margin-bottom:4px;">{{R.deny}}</md-radio-button>                        
                     </md-radio-group>                    
-                </div>
+                </div>-->
                 <md-input-container class="md-block" flex-gt-sm="" ng-show="isAuditor" >
                     <label>{{R.comment}}</label>
-                    <textarea ng-model="outlet.Note" md-maxlength="150" rows="2" md-select-on-focus="" style="margin-bottom:0px;"></textarea>
+                    <textarea id="inputComment" ng-model="outlet.Note" md-maxlength="150" rows="2" md-select-on-focus="" ng-disabled="{{disableComment}}" style="margin-bottom:0px;" required=""></textarea>
                 </md-input-container>                           
             </div>
            
             <div layout-gt-sm="row" style="margin-bottom:24px;">
                 <div flex-gt-sm="" style="margin-left:8px;" class="outlet-image-container">
-                    <img id="outletImg1" class="outlet-image" ng-click="capture(1);" src="{{image1URL}}" alt="Outlet Image" />
+                    <img id="outletImg1" class="outlet-image" ng-click="capture(1);" src="{{image1URL}}" alt="Outlet Image"/>
+                    <!--<span id="outletImg1loading">Loading...</span>-->                    
                 </div>
                 <div flex-gt-sm="" class="outlet-image-container">
                     <img id="outletImg2" class="outlet-image" ng-click="capture(2);" src="{{image2URL}}" alt="Outlet Image" />
@@ -100,9 +101,13 @@
             </div>
 
             <div layout-gt-xs="row" layout-margin layout-align="center" style="margin-bottom:0px;">   
-                <md-button class="md-raised md-primary blue1" ng-click="reviseOutlet()" ng-show="canRevise">{{R.btn_revise}}</md-button>           
-                <md-button class="md-raised md-primary" ng-click="saveUpdate()">{{R.btn_save}}</md-button>
-                <md-button class="md-raised" ng-click="cancelUpdate()">{{R.btn_cancel}}</md-button>
+                <md-button class="md-raised md-primary" ng-show="viewApprove" ng-click="approve()">{{R.btn_approve}}</md-button>
+                <md-button class="md-raised" ng-show="viewDeny" ng-click="deny()">{{R.btn_deny}}</md-button>
+
+                <md-button class="md-raised md-primary blue1" ng-show="canRevise" ng-click="reviseOutlet()">{{R.btn_revise}}</md-button>           
+                <md-button class="md-raised md-primary" ng-show="viewSave" ng-click="saveUpdate()">{{R.btn_save}}</md-button>
+
+                <md-button class="md-raised" ng-show="viewCancel" ng-click="cancelUpdate()">{{isViewOnly ? R.btn_cancel : R.btn_close}}</md-button>
             </div>
         </form>
     </md-content>

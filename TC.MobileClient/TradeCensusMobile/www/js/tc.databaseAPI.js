@@ -1,7 +1,4 @@
-﻿/**
-* Initialize database
-*/
-function initalizeDB(onSuccess) {
+﻿function initalizeDB(onSuccess) {
     //db = window.sqlitePlugin.openDatabase({ name: "td-v01.db", location: 'default' });
     var dbName = 'tc-v1-02.db';
     log('Open database: ' + dbName);
@@ -12,7 +9,7 @@ function initalizeDB(onSuccess) {
             tx.executeSql('DROP TABLE IF EXISTS config');
             tx.executeSql('DROP TABLE IF EXISTS province');
             tx.executeSql('DROP TABLE IF EXISTS outletType');        
-            tx.executeSql('DROP TABLE IF EXISTS outletImage');        
+            tx.executeSql('DROP TABLE IF EXISTS [outletImage1]');        
         }
 
         log("ensure table [user] exist");
@@ -27,8 +24,8 @@ function initalizeDB(onSuccess) {
         log("ensure table [outletType] exist");
         tx.executeSql('CREATE TABLE IF NOT EXISTS [outletType] ( [ID] text PRIMARY KEY NOT NULL, [Name] text COLLATE NOCASE, [OGroupID] text COLLATE NOCASE, [KPIType] int NOT NULL)');
 
-        log("ensure table [outletImage] exist");
-        tx.executeSql('CREATE TABLE IF NOT EXISTS [outletImage] ( [ID] text PRIMARY KEY NOT NULL, [OutletID] int NOT NULL, [ImageIndex] int NOT NULL, [ImagePath] text NOT NULL, [Uploaded] int NOT NULL, [CreatedDate] text NOT NULL, [CreatedBy] int NOT NULL )');
+        log("ensure table [outletImage1] exist");
+        tx.executeSql('CREATE TABLE IF NOT EXISTS [outletImage1] ( [ID] text NOT NULL, [OutletID] text NOT NULL, [ImageIndex] text NOT NULL, [ImagePath] text NOT NULL, [Uploaded] text NOT NULL, [CreatedDate] text NOT NULL, [CreatedBy] text NOT NULL )');
 
         //log("ensure table [outletSync] exist");
         //tx.executeSql('CREATE TABLE IF NOT EXISTS [outletSync] ( [ID] text PRIMARY KEY NOT NULL, [PersonID] integer NOT NULL, [LastSyncTS] text NOT NULL)');
@@ -45,12 +42,12 @@ function logSqlCommand(sql) {
 function resetLocalDB(tx, outlettable, outletdownloadtable){
     log('Reset local data');
     tx.executeSql('DROP TABLE IF EXISTS [config]');    
-    tx.executeSql('DROP TABLE IF EXISTS [outletImage]');
+    tx.executeSql('DROP TABLE IF EXISTS [outletImage1]');
     tx.executeSql('DROP TABLE IF EXISTS ' + outlettable);
     tx.executeSql('DROP TABLE IF EXISTS ' + outletdownloadtable);          
 
     tx.executeSql('CREATE TABLE IF NOT EXISTS [config] ( [Name] text PRIMARY KEY NOT NULL COLLATE NOCASE, [Value] text)');                
-    tx.executeSql('CREATE TABLE IF NOT EXISTS [outletImage] ( [ID] text PRIMARY KEY NOT NULL, [OutletID] int NOT NULL, [ImageIndex] int NOT NULL, [ImagePath] text NOT NULL, [Uploaded] int NOT NULL, [CreatedDate] text NOT NULL, [CreatedBy] int NOT NULL )');
+    tx.executeSql('CREATE TABLE IF NOT EXISTS [outletImage1] ( [ID] text PRIMARY KEY NOT NULL, [OutletID] int NOT NULL, [ImageIndex] int NOT NULL, [ImagePath] text NOT NULL, [Uploaded] int NOT NULL, [CreatedDate] text NOT NULL, [CreatedBy] int NOT NULL )');
     tx.executeSql('CREATE TABLE IF NOT EXISTS [' + outletdownloadtable + '] ( [id] text PRIMARY KEY NOT NULL, [name] text COLLATE NOCASE NOT NULL, download int NOT NULL))');            
     sql = ('CREATE TABLE IF NOT EXISTS ' + outlettable + '(' +
                     '[ID] int NOT NULL,' +
@@ -108,29 +105,33 @@ function resetLocalDB(tx, outlettable, outletdownloadtable){
 
 function insertUserDB(person, userName, password, onSuccess, onError) {
     db.transaction(function (tx) {
-        log(person);        
-        var sql = "INSERT OR REPLACE INTO [user] VALUES (";
-        sql = sql.concat(person.ID.toString(), ", ");
-        sql = sql.concat("'", userName, "', ");
-        sql = sql.concat("'", person.FirstName, "', ");
-        sql = sql.concat("'", person.LastName, "', ");
-        sql = sql.concat("'", person.IsTerminate ? "1" : "0", "', ");
-        sql = sql.concat("'", person.HasAuditRole ? "1" : "0", "', ");
-        sql = sql.concat("'", person.PosID.toString(), "', ");
-        sql = sql.concat("'", person.ZoneID, "', ");
-        sql = sql.concat("'", person.AreaID, "', ");
-        sql = sql.concat("'", person.ProvinceID, "', ");
-        sql = sql.concat("'", toStr(person.Email), "', ");
-        sql = sql.concat("'", toStr(person.EmailTo), "', ");
-        sql = sql.concat("'", toStr(person.HouseNo), "', ");
-        sql = sql.concat("'", toStr(person.Street), "', ");
-        sql = sql.concat("'", toStr(person.District), "', ");
-        sql = sql.concat("'", toStr(person.HomeAddress), "', ");
-        sql = sql.concat("'", toStr(person.WorkAddress), "', ");
-        sql = sql.concat("'", toStr(person.Phone), "', ");
-        sql = sql.concat("'", hashString(password), "')");
+        log(person);
+        var sql = 'DELETE FROM [user]';
         logSqlCommand(sql);
-        tx.executeSql(sql, [], onSuccess, onError);
+        tx.executeSql(sql, [], function (tx1) {
+            var sql = "INSERT OR REPLACE INTO [user] VALUES (";
+            sql = sql.concat(person.ID.toString(), ", ");
+            sql = sql.concat("'", userName, "', ");
+            sql = sql.concat("'", person.FirstName, "', ");
+            sql = sql.concat("'", person.LastName, "', ");
+            sql = sql.concat("'", person.IsTerminate ? "1" : "0", "', ");
+            sql = sql.concat("'", person.HasAuditRole ? "1" : "0", "', ");
+            sql = sql.concat("'", person.PosID.toString(), "', ");
+            sql = sql.concat("'", person.ZoneID, "', ");
+            sql = sql.concat("'", person.AreaID, "', ");
+            sql = sql.concat("'", person.ProvinceID, "', ");
+            sql = sql.concat("'", toStr(person.Email), "', ");
+            sql = sql.concat("'", toStr(person.EmailTo), "', ");
+            sql = sql.concat("'", toStr(person.HouseNo), "', ");
+            sql = sql.concat("'", toStr(person.Street), "', ");
+            sql = sql.concat("'", toStr(person.District), "', ");
+            sql = sql.concat("'", toStr(person.HomeAddress), "', ");
+            sql = sql.concat("'", toStr(person.WorkAddress), "', ");
+            sql = sql.concat("'", toStr(person.Phone), "', ");
+            sql = sql.concat("'", hashString(password), "')");
+            logSqlCommand(sql);
+            tx1.executeSql(sql, [], onSuccess, onError);
+        }, onError);
     });
 }
 
@@ -421,7 +422,12 @@ function ensureUserOutletDBExist(isReset, outletSyncTbl, outletTbl, provinceDown
     });
 }
 
-function syncWithStorageOutletDB(tx, userID, outletTbl, outlets, i, onSuccess, onError) {  
+function syncWithStorageOutletDB(tx, userID, outletTbl, outlets, i, onSuccess, onError) {
+    if (i == outlets.length) {
+        onSuccess();
+        return;
+    }
+
     var outlet = outlets[i];
     log('*** (' + (i + 1).toString() + '/' + outlets.length.toString() + ') Sync: ' + outlet.Name);
 
@@ -459,7 +465,7 @@ function syncWithStorageOutletDB(tx, userID, outletTbl, outlets, i, onSuccess, o
                 addNewOutlet(tx1, outletTbl, outlet, false, false, false, true, false);                
             }
 
-            if ((i + 1) < outlets.length && !requestingDisplayOutlet) {
+            if ((i + 1) < outlets.length) {
                 syncWithStorageOutletDB(tx1, userID, outletTbl, outlets, i + 1, onSuccess, onError);
             } else{
                 onSuccess();
@@ -480,6 +486,44 @@ function insertOutletsDB(userID, outletTbl, outlets, onSuccess, onError) {
         syncWithStorageOutletDB(tx, userID, outletTbl, outlets, 0, onSuccess, onError);
     }, onError);
 }
+
+function insertDownloadedOutletsDB(outletTbl, outlets, onSuccess, onError) {
+    if (outlets.length == 0) {
+        onSuccess();
+        return;
+    }
+    db.transaction(function (tx) {
+        insertDownloadedOutletDB(tx, outletTbl, outlets, 0, onSuccess, onError);
+    }, onError);
+}
+
+function insertDownloadedOutletDB(tx, outletTbl, outlets, i, onSuccess, onError) {
+    if (i == outlets.length) {
+        onSuccess();
+        return;
+    }
+    var outlet = outlets[i];
+    outlet.PSynced = 1; // synced
+    outlet.positionIndex = i;
+    outlet.PStatus = 0;
+    var sql = 'DELETE FROM ' + outletTbl + ' WHERE ID = ' + outlet.ID.toString();
+    logSqlCommand(sql);
+    tx.executeSql(sql, [],
+        function (tx1, dbres) {
+            addNewOutlet(tx1, outletTbl, outlet, false, false, false, true, false);
+
+            if ((i + 1) < outlets.length) {
+                insertDownloadedOutletDB(tx1, outletTbl, outlets, i + 1, onSuccess, onError);
+            } else {
+                onSuccess();
+            }
+        },
+        function (dberr) {
+            log('select outlet error: ' + dberr.message);
+            onError('Cannot sync outlet ' + outlet.Name + ': ' + dberr.message);
+        });
+}
+
 
 function addNewOutlet(tx, outletTbl, outlet, isAdd, isMod, isAud, synced, marked) {
     log('add new outlet');
@@ -588,9 +632,34 @@ function updateOutlet(tx, outletTbl, outlet, state, synced) {
     sql = sql.concat('AuditStatus=', outlet.AuditStatus.toString(), ', ');
     sql = sql.concat('TotalVolume=', outlet.TotalVolume.toString(), ', ');
     sql = sql.concat('VBLVolume=', outlet.VBLVolume.toString(), ', ');
-    sql = sql.concat('StringImage1="', outlet.StringImage1, '", ');
-    sql = sql.concat('StringImage2="', outlet.StringImage2, '", ');
-    sql = sql.concat('StringImage3="', outlet.StringImage3, '", ');
+
+    if (!isEmpty(outlet.StringImage1)) {
+        if (outlet.StringImage1.toUpperCase().indexOf('/IMAGES') > -1) {
+            // ignore this value is URL link
+        } else {
+            sql = sql.concat('StringImage1="', outlet.StringImage1, '", ');
+        }
+    } else
+        sql = sql.concat('StringImage1="",');
+
+    if (!isEmpty(outlet.StringImage2)) {
+        if (outlet.StringImage2.toUpperCase().indexOf('/IMAGES') > -1) {
+            // ignore this value is URL link
+        } else {
+            sql = sql.concat('StringImage2="', outlet.StringImage2, '", ');
+        }
+    } else
+        sql = sql.concat('StringImage2="",');
+
+    if (!isEmpty(outlet.StringImage3)) {
+        if (outlet.StringImage3.toUpperCase().indexOf('/IMAGES') > -1) {
+            // ignore this value is URL link
+        } else {
+            sql = sql.concat('StringImage3="', outlet.StringImage3, '", ');
+        }
+    } else
+        sql = sql.concat('StringImage3="", ');
+
     sql = sql.concat('OutletSource=', outlet.OutletSource, ', ');
     //[PRowID] text NULL
     if (state == 1) sql = sql.concat('PIsAdd=1, ');
@@ -630,6 +699,31 @@ function saveOutletDB(outletTbl, outlet, state, synced, onSuccess, onError) {
     }, onError);
 }
 
+function setSyncStatusDB(outletTbl, outlets, synced, onSuccess, onError) {
+    db.transaction(function (tx) {
+        var isErr = false;
+        var errMsg = '';
+        try {
+            var s = synced ? '1' : '0';
+            for (var i = 0; i < outlets.length; i++) {
+                var outlet = outlets[i];
+                var sql = 'UPDATE ' + outletTbl + ' SET PSynced = ' + s + ' WHERE ID = ' + outlet.ID.toString();
+                tx.executeSql(sql, [], function () { }, function (dberr) {
+                    errMsg = dberr.message;
+                    isErr = true;
+                });
+            }
+        } catch (err) {
+            errMsg = err.message;
+            isErr = true;
+        }
+        if (isErr)
+            onError(errMsg);
+        else
+            onSuccess();
+    }, onError);
+}
+
 function addOutletDB(outletTbl, outlet, synced, onSuccess, onError) {
     db.transaction(function (tx) {
         try {
@@ -660,19 +754,19 @@ function selectOutletsDB(outletTbl, latMin, latMax, lngMin, lngMax, view, onSucc
             sql = sql.concat('AuditStatus <> ' + StatusDelete.toString());
         } else if (view == 1) {
             if (user.hasAuditRole) {
-                sql = sql.concat('AuditStatus in (' + StatusNew.toString(), ', ', StatusPost.toString(), ')');
-                sql = sql.concat(' AND PersonID = ' + userID.toString());
+                sql = sql.concat('AuditStatus in ( ', StatusPost.toString(), ', ', StatusAuditAccept.toString(), ', ', StatusAuditDeny.toString(), ')');
+                //sql = sql.concat(' AND PersonID = ' + userID.toString());
             } else {
-                sql = sql.concat('AuditStatus in (' + StatusNew.toString(), ', ', StatusPost.toString(), ')');
-                sql = sql.concat(' AND PersonID = ' + userID.toString());
+                sql = sql.concat('AuditStatus in ( ',  StatusNew.toString(), ', ', StatusPost.toString(), ', ', StatusAuditAccept.toString(), ', ', StatusAuditDeny.toString(), ')');
+                //sql = sql.concat(' AND PersonID = ' + userID.toString());
             }
         } else if (view == 2) {
             if (user.hasAuditRole) {
-                sql = sql.concat('AuditStatus = ' + StatusEdit.toString());
+                sql = sql.concat('AuditStatus in ( ', StatusEdit.toString(), ', ', StatusDone.toString(), ')');
                 sql = sql.concat(' AND PersonID <> ' + userID.toString());
             } else {
-                sql = sql.concat('AuditStatus = ' + StatusEdit.toString());
-                sql = sql.concat(' AND PersonID = ' + userID.toString());
+                sql = sql.concat('AuditStatus in ( ', StatusEdit.toString(), ', ', StatusDone.toString(), ')');
+                sql = sql.concat(' AND AmendBy = ' + userID.toString());
             }
         } else {
             sql = sql.concat('AuditStatus in (' + StatusAuditAccept.toString(), ', ', StatusAuditDeny.toString(), ')');
@@ -714,7 +808,7 @@ function setOutletSyncStatus(tx, outletTbl, outletID, synced, onSuccess, onError
 
 function insertImageUploadingInfo(tx, userID, outletID, index, imagePath, now) {
     var id = outletID.toString() + '_' + index.toString();
-    var sql = 'INSERT OR REPLACE INTO [outletImage] VALUES (' +
+    var sql = 'INSERT INTO [outletImage1] ([ID], [OutletID], [ImageIndex] , [ImagePath], [Uploaded], [CreatedDate], [CreatedBy] ) VALUES (' +
         '"' + id + '", ' +
         outletID.toString() + ', ' +
         index.toString() + ', ' +
@@ -737,14 +831,40 @@ function insertImageUploadingInfo(tx, userID, outletID, index, imagePath, now) {
 
 function removeUploadingInfo(id, onSuccess, onError) {
     db.transaction(function (tx) {
+        //onSuccess(tx);
         try {
-            var sql = 'DELETE FROM outletImage WHERE ID = "' + id + '"';
+            var sql = 'DELETE FROM [outletImage1] WHERE ID = "' + id + '"';
             log(sql);
             tx.executeSql(sql, [], onSuccess, onError);
         } catch (err) {
             onError(err);
         }
     }, onError);    
+
+    onSuccess();
+    //db.transaction(function (tx) {
+    //    try {
+    //        var sql = 'DELETE FROM [outletImage] WHERE ID = "' + id + '"';
+    //        log(sql);
+    //        tx.executeSql(sql, [], onSuccess, onError);
+    //    } catch (err) {
+    //        onError(err);
+    //    }
+    //}, onError);    
+}
+
+function insertImageUploadingInfoDB(tx, userID, outletID, index, imagePath, now) {
+    var id = outletID.toString() + '_' + index.toString();
+    var sql = 'INSERT INTO [outletImage1] ([ID], [OutletID], [ImageIndex] , [ImagePath], [Uploaded], [CreatedDate], [CreatedBy] ) VALUES (';
+    sql = sql.concat('"', id, '"');
+    sql = sql.concat('"', outletID.toString(), '"');
+    sql = sql.concat('"', index.toString(), '"');
+    sql = sql.concat('"', imagePath, '"');
+    sql = sql.concat('"', '0', '"');
+    sql = sql.concat('"', now, '"');
+    sql = sql.concat('"', userID.toString(), '")');
+    log(sql);
+    tx.executeSql(sql, [], function () { log('store upload info of image1'); }, function (dberr) { log(dberr.message); });
 }
 
 function insertOutletImages(userID, outlet, onSuccess, onError) {
@@ -771,7 +891,7 @@ function insertOutletImages(userID, outlet, onSuccess, onError) {
 function selectUnsyncedOutlets(outletTbl, onSuccess, onError) {
     db.transaction(function (tx) {
         log('Select existing outlet')
-        var sql = 'SELECT * FROM ' + outletTbl + ' WHERE PSynced = 0';
+        var sql = 'SELECT * FROM ' + outletTbl + ' WHERE PSynced = 0 LIMIT ' + config.sync_batch_size.toString();
         logSqlCommand(sql);
         tx.executeSql(sql, [], function (tx1, dbres) {
             onSuccess(dbres);
@@ -818,7 +938,7 @@ function selectUnsyncedOutletsOfProvince(outletTbl, provinceid, onSuccess, onErr
 function selectUnsyncedOutletImage(userID, outletID, onSuccess, onError) {
     db.transaction(function (tx) {
         log('Select existing outlet')
-        var sql = 'SELECT * FROM outletImage WHERE' +
+        var sql = 'SELECT * FROM [outletImage1] WHERE' +
                   ' OutletID = ' + outletID.toString() +
                   ' AND CreatedBy = ' + userID.toString() +
                   ' AND Uploaded = 0';

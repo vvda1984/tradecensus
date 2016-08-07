@@ -1,7 +1,7 @@
 ﻿<md-dialog aria-label="New Outlet" ng-cloak>
     <md-toolbar class="md-hue-2">
         <div class="md-toolbar-tools" id="toolbar">
-            <div>{{createNew ? R.create_new_outlet : R.edit_outlet}} </div>
+            <div>{{title}}</div>
             <span flex=""></span>
             <div>{{R.location}}: {{outlet.Latitude}}, {{outlet.Longitude}}</div>
         </div>
@@ -11,7 +11,7 @@
             <div layout-gt-sm="row">
                 <md-input-container class="md-block" flex-gt-sm="">
                     <label>{{R.code}}</label>
-                    <input id="inputID" ng-model="outlet.ID" name="name" required="">
+                    <input id="inputID" ng-model="outlet.ID" name="name" required="" ng-change="codeChanged()">
                     <div ng-messages="createOutletForm.ID.$error" role="alert">
                         <div ng-message="required">{{ resource.text_ValRequired }}</div>
                     </div>
@@ -19,7 +19,7 @@
 
                 <md-input-container class="md-block" flex-gt-sm="">
                     <label>{{R.name}}</label>
-                    <input id="inputName" ng-model="outlet.Name" name="name" required="">
+                    <input id="inputName" ng-model="outlet.Name" name="name" required="" ng-change="nameChanged()">
                     <div ng-messages="createOutletForm.name.$error" role="alert">
                         <div ng-message="required">{{ resource.text_ValRequired }}</div>
                     </div>
@@ -67,7 +67,12 @@
                 </md-input-container>
                 <md-input-container class="md-block" flex-gt-sm="">
                     <label>{{R.province}}</label>
-                    <input ng-model="outlet.ProvinceName" disabled="">
+                    <!--<input ng-model="outlet.ProvinceName" disabled="">-->
+                    <md-select id="inputOutletType" ng-model="outlet.ProvinceID">
+                        <md-option ng-repeat="p in provinces" value="{{p.id}}">
+                            {{p.name}}
+                        </md-option>
+                    </md-select>
                 </md-input-container>
             </div>
 
@@ -80,14 +85,14 @@
                 </div>    
                 <md-input-container class="md-block" flex-gt-sm="">
                     <label style="color:#103B68">{{R.total}}</label>
-                    <input ng-model="outlet.TotalVolume" name="total" type="number" required="">
+                    <input ng-model="outlet.TotalVolume" name="total" type="number" min="0" step="1" pattern="\d*" required="">
                     <!--<div ng-messages="createOutletForm.total.$error" role="alert">
                         <div ng-message="required">{{ resource.text_ValRequired }}</div>
                     </div>-->
                 </md-input-container>
                 <md-input-container class="md-block" flex-gt-sm="">
                     <label style="color:#103B68">{{R.vbl_product}}</label>
-                    <input ng-model="outlet.VBLVolume" type="number" name="vblvolume" required="">
+                    <input ng-model="outlet.VBLVolume" type="number" name="vblvolume" min="0" step="1" pattern="\d*" required="">
                     <!--<div ng-messages="createOutletForm.vblvolume.$error" role="alert">
                         <div ng-message="required">{{ resource.text_ValRequired }}</div>
                     </div>-->

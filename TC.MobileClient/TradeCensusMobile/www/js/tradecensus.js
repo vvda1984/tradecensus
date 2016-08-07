@@ -1,4 +1,5 @@
 ﻿/// <reference path="tc.language.js" />
+/// <reference path="tc.appAPI.js" />
 
 var resetDB = false;                // force reset database - testing only
 var db;                             // database instance
@@ -20,6 +21,7 @@ var dprovinces = [];
 var outletTypes = [];
 var R = useLanguage();
 var baseURL = '';
+var sessionID = guid();
 
 var isNetworkAvailable = true;      // Network monitoring status
 var onNetworkChangedCallback;       // Network monitoring callback
@@ -87,6 +89,8 @@ var app = angular.module('TradeCensus', ['ngRoute', 'ngMaterial', 'ngMessages'])
     //document.addEventListener("deviceready", onDeviceReady, false);
 })(window);
 
+showDlg(R.connecting_server, R.please_wait, null);
+
 function newResource() {
     return {
         text_AppName: 'Trade Censue',
@@ -114,6 +118,8 @@ function newResource() {
 }
 
 function newConfig() {
+    //ip: 'localhost', //'27.0.15.234',
+    //port: '33334',//'3001',
     return {
         page_size: 20,
         cluster_size: 50,
@@ -122,21 +128,27 @@ function newConfig() {
         protocol: 'https',
         ip: '203.34.144.29/trade-census',
         port: '443',
-        //ip: 'localhost', //'27.0.15.234',
-        //port: '33334',//'3001',
-        service_name: 'TradeCensusService.svc',
+        service_name: 'TradeCensusService.svc', // absolute
         enable_liveGPS: true,
         liveGPS_distance: 10,
         enable_devmode: isDev,
-        map_zoom: 16,
+        map_zoom: 17,
         distance: 200,
+        audit_range: 50,
         item_count: 20,
-        sync_time: 1 * 60 * 1000,
         province_id: 50, // HCM
         http_method: 'POST',
         calc_distance_algorithm: 'circle',
         map_api_key: 'AIzaSyDpKidHSrPMfErXLJSts9R6pam7iUOr_W0',
-        max_oulet_download: 2,
+        max_oulet_download: 1,
+        download_batch_size: 3000,
+        time_out: 15,               // Connection timeout
+        sync_time: 1 * 60 * 1000,   // Sync delay...
+        sync_time_out: 5 * 60,      // Sync timeout
+        sync_batch_size: 50,        // Sync timeout
+        ping_time: 5,               // Time
+        refresh_time: 30,           // Time to get outlet
+        refresh_time_out: 3 * 60,   // Time to get outlet
         tbl_area_ver: '0',
         tbl_outlettype_ver: '0',
         tbl_province_ver: '1',
@@ -144,7 +156,7 @@ function newConfig() {
         tbl_outletSync: 'uos',
         tbl_outlet: 'uo',
         tbl_downloadProvince: 'udp',
-        version: 'Version 1.0.16215.12'
+        version: 'Version 1.1.16220.5'
     };
 }
 
@@ -173,7 +185,6 @@ function newUser() {
 
 function initializeEnvironment(callback) {
     initalizeDB(function () {
-        showDlg('Starting Application', 'Please wait...', null);      
         db.transaction(function (tx) {
             loadOutletTypes(tx, function(tx1){
                 loadProvinces(tx1, function(tx2){
@@ -305,51 +316,17 @@ function loadSettings(tx, callback) {
 }
 
 function initializeApp() {
-    log('Initialize angular app.');    
-    hideDlg();    
-    startSyncProgress();
-    startNetworkMonitor();
+    log('Initialize angular app.');
+    ping(function (r) {
+        serverConnected = r;
+        hideDlg();
+        startPingProgress();
+        startSyncProgress();
+    });
 };
 
-function onNetworkConnected() {
-    //states[Connection.UNKNOWN] = 'Unknown connection';
-    //states[Connection.ETHERNET] = 'Ethernet connection';
-    //states[Connection.WIFI] = 'WiFi connection';
-    //states[Connection.CELL_2G] = 'Cell 2G connection';
-    //states[Connection.CELL_3G] = 'Cell 3G connection';
-    //states[Connection.CELL_4G] = 'Cell 4G connection';
-    //states[Connection.CELL] = 'Cell generic connection';
-    //states[Connection.NONE] = 'No network connection';
-
-    var networkState = navigator.connection.type;
-    isNetworkAvailable = (networkState !== Connection.NONE && networkState !== Connection.UNKNOWN)
-    log('Network status: ' + networkState);
-    if (onNetworkChangedCallback)
-        onNetworkChangedCallback(true);
-}
-
-function onNetworkDisconnected() {
-    log('Network disconnected');
-    isNetworkAvailable = false
-    if (onNetworkChangedCallback)
-        onNetworkChangedCallback(false);
-}
-
-//******************************************
-function startNetworkMonitor() {
-    setTimeout(function () {
-        var s = networkReady();
-        if(isNetworkAvailable != s){
-            isNetworkAvailable = s;
-            if (onNetworkChangedCallback != null)
-                onNetworkChangedCallback(isNetworkAvailable);
-        }
-        startNetworkMonitor();
-    }, 10 * 1000);
-}
-
-//******************************************
-var syncExecuter;
+/****************************************************************/
+var syncOutletsCallback;
 function startSyncProgress() {
     setTimeout(function () {
         runSync(function () { startSyncProgress(); });
@@ -358,8 +335,10 @@ function startSyncProgress() {
 
 function runSync(callback) {
     log('*** BEGIN SYNC');
-    if(syncExecuter == null){
+    if (syncOutletsCallback == null) {
         log('*** SYNC Ignored: sycn exe was not set');
+        callback();
+        return;
     }
 
     if(!enableSync || !networkReady()) {
@@ -368,7 +347,7 @@ function runSync(callback) {
         return;
     }
     try{
-        syncExecuter(function(){
+        syncOutletsCallback(function () {
             log('*** SYNC COMPLETED');									
             callback();
         }, function(err){
@@ -380,3 +359,72 @@ function runSync(callback) {
         callback();
     }
 }
+
+/****************************************************************/
+var isPausePing = false;
+var connectionChangedCallback;
+var refreshOutletListCallback;
+var pingTimeout = 5;
+function startPingProgress () {
+    startPingTimer();
+}
+
+function startPingTimer() {
+    setTimeout(function () {
+        if (isPausePing)
+        {
+            startPingTimer();
+            return;
+        } else {
+            ping(function (b) {
+                try {
+                    log('ping...' + baseURL);
+                    if (b != serverConnected) {
+                        serverConnected = b;
+                        if (connectionChangedCallback != null)
+                            connectionChangedCallback(b);
+                    }
+
+                    if (refreshOutletListCallback != null)
+                        refreshOutletListCallback();
+                }
+                catch(e){
+                }
+                startPingTimer();
+            });
+        }
+    }, config.ping_time * 1000);
+}
+
+function ping(callback) {
+    if (!getNetworkState()) {
+        callback(false);
+        return;
+    }
+    else {
+        callback(true);
+        return;
+    }
+    //return;
+
+    // ignore
+    var devideInfo = userID.toString();
+    var url = baseURL + '/ping/' + devideInfo;
+    $.ajax({
+        type: "POST",
+        contentType: "application/json; charset=utf-8",
+        url: url,
+        data: '',
+        processData: false,
+        dataType: "json",
+        timeout: config.time_out * 1000, // sets timeout to 3 seconds
+        success: function (response) {
+            callback(true);
+        },
+        error: function (a, b, c) {
+            callback(false);
+            //alert(a.responseText);
+        }
+    });
+}
+/****************************************************************/
