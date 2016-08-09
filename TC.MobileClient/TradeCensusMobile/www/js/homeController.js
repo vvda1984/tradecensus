@@ -8,6 +8,7 @@
 
 var isOutletDlgOpen = false;
 var isLoadingOutlet = false;
+var dialogClosedCallback;
 
 function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     log('Enter Home page');
@@ -417,24 +418,21 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             return;
         }
         showDlg(R.synchronize_outlets, R.please_wait);
-        selectUnsyncedOutlets(config.tbl_outlet,
+        selectAllUnsyncedOutlets(config.tbl_outlet,
             function (dbres) {
-                log('Number of unsynced outlets: ' + dbres.rows.length.toString());
+                log('Found unsynced outlets: ' + dbres.rows.length.toString());
                 if (dbres.rows.length == 0) {
-                    showInfo(R.all_outlets_have_been_synced);
+                    onSuccess();
                     return;
                 }
-                var i;
                 unsyncedOutlets = [];
-                for (i = 0; i < dbres.rows.length; i++) {
+                for (var i = 0; i < dbres.rows.length; i++) {
                     unsyncedOutlets[i] = dbres.rows.item(i);
                 }
-                trySyncOutlets(unsyncedOutlets, 0, function () {
-                    showInfo(R.synchronize_completed);
-                    $scope.showSyncButton = false;
-                }, function(err){
-					 showError(err);
-				});
+                //outlet/saveoutlets
+                //trySyncOutlets(unsyncedOutlets, 0, onSuccess, onError);
+
+                submitUnsyncedOutlets(unsyncedOutlets, onSuccess, onError);
             }, handleDBError);
     }
    
@@ -449,54 +447,128 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 
     //*************************************************************************    
     $scope.postOutlet = function (outlet) {
-        //var outlet = $scope.outlets[i];
-        var confirmText = R.post_outlet_confirm.replace("{outletname}", outlet.Name);
-        showConfirm(R.post_outlet, confirmText, function () {
-            outlet.IsDraft = false;
-            outlet.AuditStatus = StatusPost;
+        showDlg(R.get_current_location, R.please_wait);
+        getCurPosition(false, function (lat, lng) {
+            hideDlg();
+            var confirmText = R.post_outlet_confirm.replace("{outletname}", outlet.Name);
+            showConfirm(R.post_outlet, confirmText, function () {
+                if (outlet.AuditStatus == StatusNew) {
+                    outlet.IsDraft = false;
+                    outlet.AuditStatus = StatusPost;
+                } else {
+                    outlet.IsExistingDraft = false;
+                    outlet.AuditStatus = StatusExitingPost;
+                }
 
-            log('Post outlet ' + outlet.ID.toString());
-            outlet.AuditStatus = StatusPost;
+                //log('Post outlet ' + outlet.ID.toString());
+                //outlet.AuditStatus = StatusPost;
 
-            log('Save outlet to server')
-            saveOutlet(outlet, function (synced) {
-                log('Save outlet to local db')
-                changeOutletStatusDB($scope.config.tbl_outlet, outlet, StatusPost, synced ? 1 : 0, function () {
-                    hideDlg();
-                    $scope.refresh();
-                }, function (dberr) {
-                    hideDlg();
-                    showError(dberr.message);
+                log('Save outlet to server')
+                saveOutlet(outlet, function (synced) {
+                    log('Save outlet to local db')
+                    changeOutletStatusDB($scope.config.tbl_outlet, outlet, StatusPost, synced ? 1 : 0, function () {
+                        hideDlg();
+                        $scope.refresh();
+                    }, function (dberr) {
+                        hideDlg();
+                        showError(dberr.message);
+                    });
                 });
-            });
 
-        }, function () { });
+            }, function () { });
+        }, function () {
+            hideDlg();
+            showError(R.cannot_approve_or_deny);
+        })
     }
 
     //*************************************************************************    
     $scope.reviseOutlet = function (outlet) {
-        //var outlet = $scope.outlets[i];
-        var confirmText = R.revise_outlet_confirm.replace("{outletname}", outlet.Name);
-        showConfirm(R.revise_outlet, confirmText, function () {
-            outlet.IsDraft = false;
-            outlet.AuditStatus = StatusPost;
+        showDlg(R.get_current_location, R.please_wait);
+        getCurPosition(false, function (lat, lng) {
+            hideDlg();
+            var confirmText = R.revise_outlet_confirm.replace("{outletname}", outlet.Name);
+            showConfirm(R.revise_outlet, confirmText, function () {
+                if (outlet.AuditStatus == StatusPost) {
+                    outlet.IsDraft = true;
+                    outlet.AuditStatus = StatusNew;
+                } else {
+                    outlet.IsExistingDraft = true;
+                    outlet.AuditStatus = StatusEdit;
+                }
 
-            log('Revise outlet ' + outlet.ID.toString());
-            outlet.AuditStatus = StatusNew;
+                log('Revise outlet ' + outlet.ID.toString());
 
-            log('Save outlet to server')
-            saveOutlet(outlet, function (synced) {
-                log('Save outlet to local db')
-                changeOutletStatusDB($scope.config.tbl_outlet, outlet, StatusNew, synced ? 1 : 0, function () {
-                    hideDlg();
-                    $scope.refresh();
-                }, function (dberr) {
-                    hideDlg();
-                    showError(dberr.message);
+                log('Save outlet to server')
+                saveOutlet(outlet, function (synced) {
+                    log('Save outlet to local db')
+                    changeOutletStatusDB($scope.config.tbl_outlet, outlet, StatusNew, synced ? 1 : 0, function () {
+                        hideDlg();
+                        $scope.refresh();
+                    }, function (dberr) {
+                        hideDlg();
+                        showError(dberr.message);
+                    });
                 });
-            });
 
-        }, function () { });
+            }, function () { });
+        }, function () {
+            hideDlg();
+            showError(R.cannot_approve_or_deny);
+        })
+
+
+        //if (!networkReady()) {
+        //    if (outlet.IsSynced)
+        //    {
+        //        showError(R.cannot_revise);
+        //        return;
+        //    } else {
+        //        var confirmText = R.revise_outlet_confirm.replace("{outletname}", outlet.Name);
+        //        showConfirm(R.revise_outlet, confirmText, function () {
+        //            outlet.IsDraft = false;
+        //            outlet.AuditStatus = StatusPost;
+
+        //            log('Revise outlet ' + outlet.ID.toString());
+        //            outlet.AuditStatus = StatusNew;
+
+        //            log('Save outlet to server')
+        //            saveOutlet(outlet, function (synced) {
+        //                log('Save outlet to local db')
+        //                changeOutletStatusDB($scope.config.tbl_outlet, outlet, StatusNew, synced ? 1 : 0, function () {
+        //                    hideDlg();
+        //                    $scope.refresh();
+        //                }, function (dberr) {
+        //                    hideDlg();
+        //                    showError(dberr.message);
+        //                });
+        //            });
+
+        //        }, function () { });
+        //    }
+        //} else {
+        //    var confirmText = R.revise_outlet_confirm.replace("{outletname}", outlet.Name);
+        //    showConfirm(R.revise_outlet, confirmText, function () {
+        //        outlet.IsDraft = false;
+        //        outlet.AuditStatus = StatusPost;
+
+        //        log('Revise outlet ' + outlet.ID.toString());
+        //        outlet.AuditStatus = StatusNew;
+
+        //        log('Save outlet to server')
+        //        saveOutlet(outlet, function (synced) {
+        //            log('Save outlet to local db')
+        //            changeOutletStatusDB($scope.config.tbl_outlet, outlet, StatusNew, synced ? 1 : 0, function () {
+        //                hideDlg();
+        //                $scope.refresh();
+        //            }, function (dberr) {
+        //                hideDlg();
+        //                showError(dberr.message);
+        //            });
+        //        });
+
+        //    }, function () { });
+        //}
     }
 
     //*************************************************************************    
@@ -546,13 +618,30 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         }, function () { });
     }
     
+    function validateRange(lat, lng) {
+        var d = calcDistance({ Lat: lat, Lng: lng }, { Lat: $scope.outlet.Latitude, Lng: $scope.outlet.Longitude });
+        if (d > $scope.config.audit_range) {
+            var errMsg = R.ovar_audit_distance.replace('{distance}', $scope.config.audit_range.toString());
+            showError(errMsg);
+            return false;
+        }
+        return true;
+    }
+
     //*************************************************************************
+    var lastDownloadProvinceTS = new Date();
+    var downloadSession = 1;
     $scope.downloadOutlets = function () {
+        var now = new Date();
+
+        if (getDifTime(lastDownloadProvinceTS, now) < 5) {
+            return;
+        }
+
         if (!networkReady()) {
             showError(R.download_network_warn);
             return;
         }
-
         var p = selectProvince;
         var downloadedCount = 0;       
         for (var i = 0; i < $scope.dprovinces.length; i++) {
@@ -565,102 +654,128 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             }
         }
 
+        showDlg(R.validate_unsynced_outlets, R.please_wait);
         selectUnsyncedOutletsOfProvince($scope.config.tbl_outlet, p.id, function (dbres) {
+            hideDlg();
             if (dbres.rows.length > 0) {
                 showDlg(R.error, R.unsynced_outlet_in_province);
                 return;
             }
+            isOutletDlgOpen = true;
 
             showConfirm(R.download_outlets, R.download_outlets_confim + selectProvince.name + '?', function () {
                 setTimeout(function () {
+                  
+                    downloadSession++;
                     try {
                         showLoading(R.downloading_outlet, R.please_wait, R.cancel_download_confirm,
                             function () {
+                                isOutletDlgOpen = false;
+                                if (dialogClosedCallback) dialogClosedCallback();
                                 log('*** CANCEL download');
                                 cancelLoadingDlg = true;
+                                downloadSession++;
                             }
                         );
-                        //downloadProvinceOutlets(selectProvince.id, 0,
-                        //    function () {
-                        //        changeDownloadProvinceStatusDB(config.tbl_downloadProvince, selectProvince.id, 1, function () {
-                        //            selectProvince.download = 1;
-                        //            hideLoadingDlg();
-                        //            showInfo('Download outlets completed!');
-                        //            if (selectProvince.download) {
-                        //                $("#buttonDownload").css('display', 'none');
-                        //                $("#buttonRedownload").css('display', 'table');
-                        //                $("#buttonDeleteOffline").css('display', 'table');
-                        //            }
-                        //        }, function (dberr) {
-                        //            showError(dberr.message);
-                        //        });
-                        //    }, function (errMsg) {
-                        //        showError(errMsg);
-                        //    }, function () {
-                        //        hideLoadingDlg();
-                        //    })
-
-                        var url = baseURL + '/outlet/getbyprovince/' + userID + '/' + selectProvince.id;
+                        var sessionID = downloadSession;
+                        var url = baseURL + '/outlet/gettotalbyprovince/' + userID + '/' + selectProvince.id;
                         log('Call service api: ' + url);
                         $http({
                             method: config.http_method,
                             url: url
                         }).then(function (resp) {
+                            if (cancelLoadingDlg || sessionID != downloadSession) {
+                                lastDownloadProvinceTS = new Date();
+                                isOutletDlgOpen = false;
+                                if (dialogClosedCallback) dialogClosedCallback();
+                                return;
+                            }
                             try {
-                                var data = resp.data;
-                                if (data.Status == -1) { // error
-                                    showError(data.ErrorMessage);
-                                } else {
-                                    var outletHeaders = data.Outlets;
-                                    if (outletHeaders.length > 0) {
-                                        log('Found ' + outletHeaders.length.toString() + ' outlets');
-                                        var maxPage1 = parseInt(outletHeaders.length / $scope.config.download_batch_size)
-                                        var maxPage2 = outletHeaders.length % $scope.config.download_batch_size;
-                                        var maxPage = maxPage1 + (maxPage2 > 0 ? 1 : 0);
+                                var outletCount = resp.data;
+                                if (outletCount > 0) {
+                                    deleleOutletsDB(config.tbl_outlet, selectProvince.id,
+                                        function () {
+                                            log('Found ' + outletCount.toString() + ' outlets');
+                                            var maxPage1 = parseInt(outletCount / $scope.config.download_batch_size)
+                                            var maxPage2 = outletCount % $scope.config.download_batch_size;
+                                            var maxPage = maxPage1 + (maxPage2 > 0 ? 1 : 0);
 
-                                        downloadProvinceOutlets(selectProvince.id, 0, maxPage,
-                                            function () {
-                                                changeDownloadProvinceStatusDB(config.tbl_downloadProvince, selectProvince.id, 1, function () {
-                                                    selectProvince.download = 1;
-                                                    hideLoadingDlg();
-                                                    showInfo('Download outlets completed!');
-                                                    if (selectProvince.download) {
-                                                        $("#buttonDownload").css('display', 'none');
-                                                        $("#buttonRedownload").css('display', 'table');
-                                                        $("#buttonDeleteOffline").css('display', 'table');
+                                            downloadProvinceOutletsZip(selectProvince.id, sessionID, 0, maxPage,
+                                                function () {
+                                                    isOutletDlgOpen = false;
+                                                    if (dialogClosedCallback) dialogClosedCallback();
+                                                    if (sessionID == downloadSession) {
+                                                        changeDownloadProvinceStatusDB(config.tbl_downloadProvince, selectProvince.id, 1, function () {
+                                                            selectProvince.download = 1;
+                                                            hideLoadingDlg();
+                                                            showInfo('Download outlets completed!');
+                                                            if (selectProvince.download) {
+                                                                $("#buttonDownload").css('display', 'none');
+                                                                $("#buttonRedownload").css('display', 'table');
+                                                                $("#buttonDeleteOffline").css('display', 'table');
+                                                            }
+                                                        }, function (dberr) {
+                                                            showError(dberr.message);
+                                                        });
                                                     }
-                                                }, function (dberr) {
-                                                    showError(dberr.message);
-                                                });
-                                            }, function (errMsg) {
-                                                showError(errMsg);
-                                            }, function () {
-                                                hideLoadingDlg();
-                                            })
-                                    }
-                                    else {
+                                                }, function (errMsg) {
+                                                    isOutletDlgOpen = false;
+                                                    if (dialogClosedCallback) dialogClosedCallback();
+                                                    if (sessionID == downloadSession) {
+                                                        showError(errMsg);
+                                                    }
+                                                }, function () {
+                                                    isOutletDlgOpen = false;
+                                                    if (dialogClosedCallback) dialogClosedCallback();
+                                                    try {
+                                                        hideLoadingDlg();
+                                                    }
+                                                    catch (er) { };
+                                                })
+                                        },
+                                        function (err) {
+                                            if (sessionID == downloadSession) {
+                                                showError(err.message);
+                                            }
+                                        });
+                                }
+                                else {
+                                    if (sessionID == downloadSession) {
                                         hideLoadingDlg();
                                         showInfo(R.no_outlet_found);
                                     }
                                 }
                             } catch (err) {
                                 showError(err.message);
+                                isOutletDlgOpen = false;
+                                if (dialogClosedCallback) dialogClosedCallback();
                             }
                         }, function (err) {
-                            log('HTTP error...');
-                            log(err);
-                            hideDlg();
-                            var msg = err.statusText == '' ? $scope.resource.text_ConnectionTimeout : err.statusText;
-                            showError(msg);
+                            if (sessionID == downloadSession) {
+                                isOutletDlgOpen = false;
+                                if (dialogClosedCallback) dialogClosedCallback();
+                                showError($scope.R.text_ConnectionTimeout);
+                                log('HTTP error...');
+                                log(err);
+                                //hideDlg();
+                                //var msg = err.statusText == '' ? $scope.R.text_ConnectionTimeout : err.statusText;
+                            }
                         });
                     } catch (ex) {
                         showError(ex.message);
+                        isOutletDlgOpen = false;
+                        if (dialogClosedCallback) dialogClosedCallback();
                     }
+                    lastDownloadProvinceTS = new Date();
                 }, 500);               
             }, function () {
+                isOutletDlgOpen = false;
+                if (dialogClosedCallback) dialogClosedCallback();
             });
         }, function (dberr) {
             showError(dberr.message);
+            isOutletDlgOpen = false;
+            if (dialogClosedCallback) dialogClosedCallback();
         });
     }
 
@@ -728,6 +843,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             })
             .then(function (answer) {
                 isOutletDlgOpen = false;
+                if (dialogClosedCallback) dialogClosedCallback();
                 if (answer) {
                     log('save outlet')
                     $scope.outlet.AuditStatus = ($scope.outlet.IsDraft) ? StatusNew : StatusPost;
@@ -750,14 +866,19 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                 }
             }, function () {
                 isOutletDlgOpen = false;
+                if (dialogClosedCallback) dialogClosedCallback();
             });
             try { $scope.$apply(); } catch (er) { }
         });
     }
 
     //*************************************************************************
-    function downloadProvinceOutlets(provinceID, page, maxPage, onSuccess, onError, onCancel) {
+    function downloadProvinceOutlets(provinceID, sessionID, page, maxPage, onSuccess, onError, onCancel) {
         try {
+            if (cancelLoadingDlg || sessionID != downloadSession) {
+                onCancel();
+                return;
+            }
             var percent = (page + 1) * 100 / maxPage;
             var downloadMessage = R.downloading_outlet_msg.replace("{percent}", parseInt(percent).toString());
             //downloadMessage = downloadMessage.replace('{total}', maxPage.toString());
@@ -779,7 +900,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                         onError(data.ErrorMessage);
                     } else {
                         var items = data.Items;
-                        if (cancelLoadingDlg) {
+                        if (cancelLoadingDlg || sessionID != downloadSession) {
                             onCancel();
                             return;
                         }
@@ -788,12 +909,11 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                             showLoading(downloadMessage, R.downloading_outlet_save_outlets);
                             insertDownloadedOutletsDB(config.tbl_outlet, items,
                                 function () {
-                                    if (cancelLoadingDlg) {
+                                    if (cancelLoadingDlg || sessionID != downloadSession) {
                                         onCancel();
-                                    }
-                                    else {
+                                    } else {
                                         if (page + 1 <= maxPage)
-                                            downloadProvinceOutlets(provinceID, page + 1, maxPage, onSuccess, onError, onCancel);
+                                            downloadProvinceOutlets(provinceID, sessionID, page + 1, maxPage, onSuccess, onError, onCancel);
                                         else
                                             onSuccess();
                                     }
@@ -803,6 +923,69 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                         } else {
                             onSuccess();
                         }
+                    }
+                } catch (err) {
+                    onError(err.message);
+                }
+            }, function (err) {
+                log('HTTP error...');
+                log(err);
+                hideDlg();
+                var msg = err.statusText == '' ? $scope.R.text_ConnectionTimeout : err.statusText;
+                onError(msg);
+            });
+        } catch (ex) {
+            onError(ex.message);
+        }
+    }
+
+    //*************************************************************************
+    function downloadProvinceOutletsZip(provinceID, sessionID, page, maxPage, onSuccess, onError, onCancel) {
+        try {
+            if (cancelLoadingDlg || sessionID != downloadSession) {
+                onCancel();
+                return;
+            }
+            var percent = (page + 1) * 100 / maxPage;
+            var downloadMessage = R.downloading_outlet_msg.replace("{percent}", parseInt(percent).toString());
+            //downloadMessage = downloadMessage.replace('{total}', maxPage.toString());
+
+            var from = page * $scope.config.download_batch_size;
+            var to = from + $scope.config.download_batch_size;
+
+            showLoading(downloadMessage, R.downloading_outlet_get_outlets);
+            //outlet/download/{personID}/{provinceID}/{from}/{to}
+            var url = baseURL + '/outlet/downloadzip/' + userID + '/' + provinceID + '/' + from.toString() + '/' + to.toString();
+            log('Call service api: ' + url);
+            $http({
+                method: config.http_method,
+                url: url
+            }).then(function (resp) {
+                try {
+                    if (cancelLoadingDlg || sessionID != downloadSession) {
+                        onCancel();
+                        return;
+                    }
+
+                    items = JSON.parse(resp.data);
+                    //items = JArray.Parse(resp.data); // parse as array  
+                    if (items.length > 0) {
+                        showLoading(downloadMessage, R.downloading_outlet_save_outlets);
+                        addDownloadOutletsDB(config.tbl_outlet, items,
+                            function () {
+                                if (cancelLoadingDlg || sessionID != downloadSession) {
+                                    onCancel();
+                                } else {
+                                    if (page + 1 < maxPage)
+                                        downloadProvinceOutletsZip(provinceID, sessionID, page + 1, maxPage, onSuccess, onError, onCancel);
+                                    else
+                                        onSuccess();
+                                }
+                            }, function (tx11, dberr) {
+                                onError(dberr.message);
+                            });
+                    } else {
+                        onSuccess();
                     }
                 } catch (err) {
                     onError(err.message);
@@ -924,7 +1107,9 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                         insertOutletsDB(user.id, config.tbl_outlet, nearByOutlets,
                             function () {
                                 callback(true, nearByOutlets);
+                                hideDlg();
                             }, function (dberr) {
+                                hideDlg();
                                 if (!isbackground)
                                     showError(dberr.message);
                                 else
@@ -1037,16 +1222,24 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         var dif =getDifTime(lastLoadLocationTS, now); 
         if (dif > $scope.config.ping_time) {
             lastLoadLocationTS = now;
+
+            var adjdistance = calcDistance({ Lat: lat, Lng: lng }, { Lat: curlat, Lng: curlng });
+
             curacc = acc;
             curlat = lat;
             curlng = lng;
             displayCurrentPostion();
-        }
+
+            if (adjdistance > $scope.config.liveGPS_distance) {
+                refreshOutletList();
+            }
+        } 
     }
 
     //*************************************************************************
     var lastRefreshTS = new Date();
     function refreshOutletList() {
+        //return; // disable auto refersh 
         if (!appReady) return;
 
         var now = new Date();
@@ -1061,6 +1254,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 
         if (getDifTime(startGetOutletTS, now) > $scope.config.refresh_time_out) {
             isLoadingOutlet = false;
+            startGetOutletTS = now;
         }
 
         if (isLoadingOutlet) {
@@ -1094,21 +1288,22 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             $scope.outlet = clonedOutlet;
             initializeOutlet($scope.outlet);
             log('draft: ' + $scope.outlet.IsDraft);
-            var isEditDraft = $scope.outlet.IsDraft;
+            var isEditNewOutlet = $scope.outlet.AuditStatus == StatusNew;
             $scope.isNewOutlet = false;
             $mdDialog.show({
                 scope: $scope.$new(),
-                controller: isEditDraft ? newOutletController : editOutletController,
-                templateUrl: isEditDraft ? 'views/outletCreate.html' : 'views/outletEdit.html',
+                controller: isEditNewOutlet ? newOutletController : editOutletController,
+                templateUrl: isEditNewOutlet ? 'views/outletCreate.html' : 'views/outletEdit.html',
                 parent: angular.element(document.body),
                 clickOutsideToClose: true,
                 fullscreen: false,
             })
             .then(function (answer) {
                 isOutletDlgOpen = false;
+                if (dialogClosedCallback) dialogClosedCallback();
                 if (!answer) return;
 
-                if (isEditDraft) {
+                if (isEditNewOutlet) {
                     if ($scope.outlet.isDeleted)
                         $scope.outlet.AuditStatus = StatusDelete;
                     else
@@ -1119,6 +1314,14 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                     else if ($scope.outlet.AuditStatus == StatusPost) {
                         if ($scope.outlet.IsDraft) {
                             $scope.outlet.AuditStatus = StatusNew;  //Revise
+                        }
+                    } else if ($scope.outlet.AuditStatus == StatusExitingPost) {
+                        if ($scope.outlet.IsExistingDraft) {
+                            $scope.outlet.AuditStatus = StatusEdit;  //Revise
+                        }
+                    } else if ($scope.outlet.AuditStatus == StatusEdit) {
+                        if (!$scope.outlet.IsExistingDraft) {
+                            $scope.outlet.AuditStatus = StatusExitingPost;  //Post
                         }
                     }
                 }
@@ -1229,6 +1432,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                 }
             }, function () {
                 isOutletDlgOpen = false;
+                if (dialogClosedCallback) dialogClosedCallback();
             });
             try { $scope.$apply(); } catch (er) { }
         });
@@ -1497,7 +1701,10 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 	            if (data.Status == -1) { // error
 	                onError(data.ErrorMessage);
 	            } else {
-	                setSyncStatusDB($scope.config.tbl_outlet, unsyncedOutlets, true,
+	                if (data.Status == 1) { // warning
+	                    onError(data.ErrorMessage);
+	                }
+	                setSyncStatusDB($scope.config.tbl_outlet, data.Outlets, true,
                         function () {
                             onSuccess();
                         },
@@ -1525,16 +1732,15 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 	}
 
     //*************************************************************************
+  
 	function handleConnectionChanged(networkStatus) {
 	    enableOffline(networkStatus);
 	    if (networkStatus) {
-	        if (!isMapReady) {
-	            loadMapApi();
-	            getCurPosition(true, function (lat, lng) {
-	                if (appReady)
-	                    changeGPSTrackingStatus();
-	            }, function (err) { });
-	        }
+	        if (appReady)
+	            changeGPSTrackingStatus();
+
+	        loadMapCallback = handleMapLoaded;
+	        loadMapApi();
 
 	        //if (!isSyncing) {
 	        //    setTimeout(function () {
@@ -1552,14 +1758,63 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 	    }
 	}
 
+	function handleMapLoaded() {
+	    showDlg(R.get_near_by_outlets, R.please_wait);
+	    getCurPosition(true, function (lat, lng) {
+	        hideDlg();
+	        if (networkReady()) {
+	            if (isMapReady) {
+	                log('Move to current location');
+	                moveToCurrentLocation();
+	            }
+	            if (appReady)
+	                changeGPSTrackingStatus();
+
+	            if (!isOutletDlgOpen) {
+	                log('Get outlets');
+	                queryOutletsOnline(false, function (r, foundOutlets) {
+	                    if (r) loadOutlets(foundOutlets);
+	                });
+	            } else {
+	                log('Dialog is opened, refresh later');
+	                dialogClosedCallback = function () {
+	                    queryOutletsOnline(false, function (r, foundOutlets) {
+	                        if (r) loadOutlets(foundOutlets);
+	                    });
+	                    dialogClosedCallback = null;
+	                }
+	            }  
+	        } else {
+	            if (!isOutletDlgOpen) {
+	                queryOutlets(false, curOutletView, function (r, foundOutlets) {
+	                    if (r) loadOutlets(foundOutlets);
+	                });
+	            } else {
+	                dialogClosedCallback = function () {
+	                    queryOutlets(false, curOutletView, function (r, foundOutlets) {
+	                        if (r) loadOutlets(foundOutlets);
+	                    });
+	                    dialogClosedCallback = null;
+	                }
+	            }
+	        }
+	    }, function (err) { hideDlg(); });
+
+	  
+	    loadMapCallback = null;
+	};
+
+
     //*********************************** START APPLICATION **************************************           
     try {
         enableOffline(networkReady());
 
         locationChangedCallback = handleLocationChange;
         connectionChangedCallback = handleConnectionChanged;
-        refreshOutletListCallback = refreshOutletList;
+        //refreshOutletListCallback = refreshOutletList;
         syncOutletsCallback = autoSyncOutlets;
+        loadMapCallback = handleMapLoaded;
+
         enableSync = true;
 
         mapClickedCallback = function(){ 
@@ -1592,24 +1847,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         initializeView();
         editOutletCallback = function (i) { editOutlet(i, false);};   
 
-        loadMapCallback = function () {
-            showDlg(R.get_near_by_outlets, R.please_wait);
-            if (networkReady()) {
-                if(isMapReady)
-                {
-                    log('Move to current location');
-                    moveToCurrentLocation();
-                }
-                queryOutletsOnline(false, function (r, foundOutlets) {
-                    if(r) loadOutlets( foundOutlets);
-                });
-            } else {
-                queryOutlets(false, curOutletView, function (r, foundOutlets) {
-                    if (r) loadOutlets(foundOutlets);
-                });
-            }
-            loadMapCallback = null;
-        };
+       
         showDlg(R.get_current_location, R.please_wait);
         getCurPosition(true, function (lat, lng) {            
             loadMapApi();

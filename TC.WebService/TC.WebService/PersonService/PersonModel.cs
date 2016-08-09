@@ -43,5 +43,7 @@ namespace TradeCensus
         public string Phone { get; set; }
         [DataMember]
         public int Role { get; set; }
+        [DataMember]
+        public bool IsDSM { get; set; }
     }
 }

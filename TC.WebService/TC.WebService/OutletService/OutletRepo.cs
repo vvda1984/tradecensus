@@ -1,8 +1,12 @@
-﻿using System;
+﻿using Ionic.Zip;
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Data.Entity.SqlServer;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Web;
 using TradeCensus.Shared;
@@ -11,12 +15,22 @@ namespace TradeCensus
 {
     public class OutletRepo : BaseRepo
     {
-        const byte ActionAdd = 0;
-        const byte ActionUpdate = 1;
-        const byte ActionUpdateImage = 2;
-        const byte ActionAudit = 3;
-        const byte ActionDelete = 4;
-        const byte ActionRevise = 5;
+        static object Locker = new object(); 
+        //const byte ActionAdd = 0;
+        //const byte ActionUpdate = 1;
+        //const byte ActionUpdateImage = 2;   // absoluted
+        //const byte ActionAudit = 3;
+        //const byte ActionDelete = 4;
+        //const byte ActionRevise = 5;
+
+        //const byte OActionNew = 10;
+        //const byte OActionPost = 11;
+        //const byte OActionRevise = 12;
+        //const byte OActionEdit = 13;
+        //const byte OActionAuditApprove = 14;
+        //const byte OActionAuditDeny = 15;
+        //const byte OActionDelete = 16;
+        const byte OActionDenyUpdate = 17;
 
         private bool AuditorNewMode
         {
@@ -181,14 +195,17 @@ namespace TradeCensus
                     query = from i in _entities.Outlets
                             where i.Latitude >= bl.Lat && i.Latitude <= tl.Lat &&
                                   i.Longitude >= bl.Lng && i.Longitude <= br.Lng &&
-                                  (i.AuditStatus == Constants.StatusEdit) &&
+                                  (i.AuditStatus == Constants.StatusExistingPost) &&
                                   i.PersonID != personID
                             select i;
                 else
                     query = from i in _entities.Outlets
                             where i.Latitude >= bl.Lat && i.Latitude <= tl.Lat &&
                                   i.Longitude >= bl.Lng && i.Longitude <= br.Lng &&
-                                  (i.AuditStatus == Constants.StatusEdit || i.AuditStatus == Constants.StatusExitingAccept || i.AuditStatus == Constants.StatusExitingDeny) &&  
+                                  (i.AuditStatus == Constants.StatusEdit ||
+                                    i.AuditStatus == Constants.StatusExistingPost ||
+                                    i.AuditStatus == Constants.StatusExistingAccept 
+                                    || i.AuditStatus == Constants.StatusExistingDeny) &&  
                                   i.AmendBy == personID
                             select i;
             }
@@ -198,7 +215,7 @@ namespace TradeCensus
                         where i.Latitude >= bl.Lat && i.Latitude <= tl.Lat &&
                               i.Longitude >= bl.Lng && i.Longitude <= br.Lng &&
                               (i.AuditStatus == Constants.StatusAuditAccept || i.AuditStatus == Constants.StatusAuditDeny
-                              || i.AuditStatus == Constants.StatusExitingAccept || i.AuditStatus == Constants.StatusExitingDeny) &&
+                              || i.AuditStatus == Constants.StatusExistingAccept || i.AuditStatus == Constants.StatusExistingDeny) &&
                               i.AmendBy == personID
                         select i;
             }
@@ -249,11 +266,11 @@ namespace TradeCensus
                 AddLine = outlet.AddLine,
                 AddLine2 = outlet.AddLine2,
                 AreaID = outlet.AreaID,
-                CloseDate = outlet.CloseDate == null ? "" : outlet.CloseDate.Value.ToString("yyyy-mm-dd"),
+                CloseDate = outlet.CloseDate == null ? "" : outlet.CloseDate.Value.ToString("yyyy-MM-dd"),
                 IsOpened = outlet.CloseDate == null,
                 District = outlet.District,
                 LastContact = outlet.LastContact,
-                LastVisit = outlet.LastVisit != null ? outlet.LastVisit.Value.ToString("yyyy-mm-dd") : "",
+                LastVisit = outlet.LastVisit != null ? outlet.LastVisit.Value.ToString("yyyy-MM-dd") : "",
                 Latitude = outlet.Latitude,
                 Longitude = outlet.Longitude,
                 Note = outlet.Note,
@@ -322,48 +339,114 @@ namespace TradeCensus
             return foundOutlet;
         }
 
+        private string ToActionMsg(int auditStatus)
+        {
+            if (auditStatus == Constants.StatusEdit)
+            {
+                return "Edit existed outlet";
+            }
+            else if (auditStatus == Constants.StatusNew)
+            {
+                return "Create new outlet";
+            }
+            else if (auditStatus == Constants.StatusPost)
+            {
+                return "Post new outlet";
+            }
+            else if (auditStatus == Constants.StatusAuditAccept)
+            {
+                return "Approve new outlet (audit)";
+            }
+            else if (auditStatus == Constants.StatusAuditDeny)
+            {
+                return "Deny new outlet (audit)";
+            }
+            else if (auditStatus == Constants.StatusExistingAccept)
+            {
+                return "Approve existing outlet (audit)";
+            }
+            else if (auditStatus == Constants.StatusExistingDeny)
+            {
+                return "Deny existing outlet (audit)";
+            }
+            else if (auditStatus == Constants.StatusDelete)
+            {
+                return "Delete outlet";
+            }
+            else if (auditStatus == Constants.StatusDeny)
+            {
+                return "Deny update outlet";
+            }
+            else
+            {
+                return "Unknown";
+            }
+        }
+
         public Outlet SaveOutlet(OutletModel outlet, bool saveChanged = true)
         {
             Outlet existingOutlet = null;
             if (!string.IsNullOrEmpty(outlet.PRowID))
                 existingOutlet = _entities.Outlets.FirstOrDefault(i => i.PRowID.ToString() == outlet.PRowID);
 
-            if (existingOutlet == null)
+            if (existingOutlet == null && outlet.ID != 600000000)
                 existingOutlet = _entities.Outlets.FirstOrDefault(i => i.ID == outlet.ID);
 
-            //bool isNewOutlet = false;
-            if (existingOutlet == null && outlet.AuditStatus != Constants.StatusDelete)
+            if (existingOutlet == null)
             {
-                //isNewOutlet = true;
-                existingOutlet = new Outlet
+                if (outlet.AuditStatus == Constants.StatusDelete) return null; // already delete
+                lock (Locker)
                 {
-                    ID = outlet.ID,
-                    TerritoryID = "",
-                    CallRate = 0,
-                    CloseDate = null,
-                    CreateDate = DateTime.Now,
-                    LastContact = "",
-                    Tracking = 0,
-                    Class = "",
-                    Open1st = null,
-                    Close1st = null,
-                    Open2nd = null,
-                    Close2nd = null,
-                    SpShift = 0,
-                    LastVisit = null,
-                    TaxID = null,
-                    ModifiedStatus = 0,
-                    InputBy = outlet.InputBy,
-                    InputDate = DateTime.Now,
-                    OutletEmail = null,
-                    DEDISID = 0,
-                    DISAlias = null,
-                    LegalName = null,
-                    PIsDeleted = false,
-                    PRowID = Guid.NewGuid(),
-                    AuditStatus = Constants.StatusNew,
-                };
-                _entities.Outlets.Add(existingOutlet);
+                    if (outlet.ID == 600000000)
+                        outlet.ID = GetNextOutletID(int.Parse(outlet.ProvinceID));
+                    existingOutlet = new Outlet
+                    {
+                        ID = outlet.ID,
+                        TerritoryID = "",
+                        CallRate = 0,
+                        CloseDate = null,
+                        CreateDate = DateTime.Now,
+                        LastContact = "",
+                        Tracking = 0,
+                        Class = "",
+                        Open1st = null,
+                        Close1st = null,
+                        Open2nd = null,
+                        Close2nd = null,
+                        SpShift = 0,
+                        LastVisit = null,
+                        TaxID = null,
+                        ModifiedStatus = 0,
+                        InputBy = outlet.InputBy,
+                        InputDate = DateTime.Now,
+                        OutletEmail = null,
+                        DEDISID = 0,
+                        DISAlias = null,
+                        LegalName = null,
+                        PIsDeleted = false,
+                        PRowID = Guid.NewGuid(),
+                        AuditStatus = Constants.StatusNew,
+                    };
+                    _entities.Outlets.Add(existingOutlet);
+                    return UpdateOutlet(outlet, existingOutlet, saveChanged);
+                }
+            }
+            else
+                return UpdateOutlet(outlet, existingOutlet, saveChanged);
+        }
+
+        private Outlet UpdateOutlet(OutletModel outlet, Outlet existingOutlet, bool saveChanged = true)
+        {
+            if (existingOutlet.AuditStatus == Constants.StatusAuditAccept ||
+                existingOutlet.AuditStatus == Constants.StatusAuditDeny ||
+                existingOutlet.AuditStatus == Constants.StatusExistingAccept ||
+                existingOutlet.AuditStatus == Constants.StatusExistingDeny ||
+                existingOutlet.AuditStatus == Constants.StatusDone)
+            {
+                AppendOutletHistory(outlet.AmendBy, outlet.ID, Constants.StatusAuditDeny, "Cannot update audited outlet");
+                if (saveChanged)
+                    _entities.SaveChanges();
+                throw new DeniedException("Cannot update because outlet(s) audited!");
             }
 
             if (outlet.AuditStatus == Constants.StatusDelete)
@@ -379,32 +462,6 @@ namespace TradeCensus
                 //{
                 //    throw new Exception("Cannot Revise outlet, the data is out of synced. Click Refresh button to reload data");
                 //}
-
-                string note = "";
-                byte action = ActionUpdate;
-                switch (outlet.AuditStatus)
-                {
-                    case Constants.StatusAuditAccept:
-                        action = ActionAudit;
-                        note = "Audit Accept";
-                        break;
-                    case Constants.StatusAuditDeny:
-                        action = ActionAudit;
-                        note = "Audit Deny";
-                        break;
-                    case Constants.StatusDelete:
-                        action = ActionDelete;
-                        note = "Delete Outlet";
-                        break;
-                    case Constants.StatusPost:
-                        action = ActionDelete;
-                        note = "Post Outlet";
-                        break;
-                    case Constants.StatusNew:
-                        action = ActionDelete;
-                        note = "New Outlet";
-                        break;
-                }
 
                 existingOutlet.AreaID = outlet.AreaID;
                 existingOutlet.Name = outlet.Name;
@@ -446,12 +503,11 @@ namespace TradeCensus
                 if (!string.IsNullOrEmpty(outlet.PRowID))
                     existingOutlet.PRowID = new Guid(outlet.PRowID);
 
-                OutletImage outletImage;
-                if (existingOutlet.OutletImages.Count() > 0)
-                    outletImage = existingOutlet.OutletImages.FirstOrDefault();
-                else
+                OutletImage outletImage = existingOutlet.OutletImages.FirstOrDefault();
+                if (outletImage == null)
                 {
                     outletImage = new OutletImage();
+                    outletImage.Outlet = existingOutlet;
                     existingOutlet.OutletImages.Add(outletImage);
                 }
 
@@ -497,12 +553,20 @@ namespace TradeCensus
                     outletImage.ImageData3 = data;
                 }
 
-                TrackOutletChanged(existingOutlet.PRowID, outlet.AmendBy, note, 0, action);
-                AppendOutletHistory(outlet.AmendBy, outlet.ID, outlet.PAction, outlet.PNote);
+                AppendOutletHistory(outlet.AmendBy, outlet.ID, (byte)outlet.AuditStatus, ToActionMsg(outlet.AuditStatus));
                 if (saveChanged)
                     _entities.SaveChanges();
                 return existingOutlet; ;
             }
+        }
+
+        private int GetNextOutletID(int provinceID)
+        {
+            var proId = provinceID.ToString("D2");
+            var q = _entities.Database.SqlQuery<int>(string.Format("select top 1 dbo.ufn_GetNewOCode('{0}')", proId));
+            if (q.Any()) return q.FirstOrDefault();
+            var num = (new Random()).Next(10000, 99999);
+            return int.Parse("6" + proId + num.ToString("D5"));
         }
 
         private string GetOutletType(string id)
@@ -558,7 +622,7 @@ namespace TradeCensus
                 outlet.AmendBy = amendby;
                 outlet.AmendDate = DateTime.Now;
 
-                TrackOutletChanged(outlet.PRowID, amendby, "Save image", 0, ActionUpdateImage);
+                //TrackOutletChanged(outlet.PRowID, amendby, "Save image", 0, ActionUpdateImage);
 
                 _entities.SaveChanges();
             }
@@ -602,22 +666,23 @@ namespace TradeCensus
 
         private void TrackOutletChanged(Guid rowID, int personID,  string note, byte status, byte action)
         {
-            SyncHistory hist = new SyncHistory()
-            {
-                TableName = "Outlet",
-                SyncDateTime = DateTime.Now,
-                SyncBy = personID,
-                Note = note,
-                Status = status,
-            };
-            _entities.SyncHistories.Add(hist);
-            var detail = new SyncDetail()
-            {
-                Action = action,
-                RowID = rowID,
-                SyncHistory = hist,
-            };
-            hist.SyncDetails.Add(detail);
+            return;
+            //SyncHistory hist = new SyncHistory()
+            //{
+            //    TableName = "Outlet",
+            //    SyncDateTime = DateTime.Now,
+            //    SyncBy = personID,
+            //    Note = note,
+            //    Status = status,
+            //};
+            //_entities.SyncHistories.Add(hist);
+            //var detail = new SyncDetail()
+            //{
+            //    Action = action,
+            //    RowID = rowID,
+            //    SyncHistory = hist,
+            //};
+            //hist.SyncDetails.Add(detail);
         }
 
         private void AppendOutletHistory(int personID, int outletID, int action, string note)
@@ -648,7 +713,7 @@ namespace TradeCensus
 
                 _entities.Outlets.Remove(existingOutlet);
 
-                AppendOutletHistory(personID, outletID, ActionDelete, string.Format("Delete {0}", existingOutlet.Name));
+                AppendOutletHistory(personID, outletID, Constants.StatusDelete, ToActionMsg(Constants.StatusDelete));
             }
 
             _entities.SaveChanges();
@@ -661,34 +726,132 @@ namespace TradeCensus
             //if (person == null)
             //    throw new Exception("User doesn't exist");
 
+            StringBuilder sb = new StringBuilder();
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+            //var persons = from p in _entities.People select p;
+
             List<OutletModel> outlets = new List<OutletModel>();
+            Stopwatch sw1 = new Stopwatch();
+            sw1.Start();
             //var query =  //from i in _entities.Outlets where i.ProvinceID == provinceID orderby i.ID select i
-            var query = _entities.Outlets.Where(i => i.ProvinceID == provinceID).OrderBy(i => i.ID).Skip(from).Take(to - from).Include(im => im.OutletImages);
+            var query = _entities.Outlets.Where(i => i.ProvinceID == provinceID)
+                .OrderBy(i => i.ID).Skip(from).Take(to - from)
+                //.Include(p => p.)
+                .Include(im => im.OutletImages);
+            sw1.Stop();
             if (query.Any())
             {
-                StringBuilder sb = new StringBuilder();
                 foreach (var outlet in query)
                 {
+                    Stopwatch sw2 = new Stopwatch();
+                    sw2.Start();
                     var outletModel = ToOutletModel(outlet);
-                    //outletModel.PersonFirstName = person.FirstName;
-                    //outletModel.PersonLastName = person.LastName;
-                    //outletModel.PersonIsDSM = person.IsDSM;
                     var oimg = outlet.OutletImages.FirstOrDefault();
                     if (oimg != null)
                     {
                         if(!string.IsNullOrEmpty(oimg.Image1) && oimg.ImageData1 != null)
                             outletModel.StringImage1 = FormatBase64(Convert.ToBase64String(oimg.ImageData1));
 
-                        if (!string.IsNullOrEmpty(oimg.Image2) && oimg.ImageData3 != null)
+                        if (!string.IsNullOrEmpty(oimg.Image2) && oimg.ImageData2 != null)
                             outletModel.StringImage2 = FormatBase64(Convert.ToBase64String(oimg.ImageData2));
 
                         if (!string.IsNullOrEmpty(oimg.Image3) && oimg.ImageData3 != null)
                             outletModel.StringImage3 = FormatBase64(Convert.ToBase64String(oimg.ImageData3));
                     }
                     outlets.Add(outletModel);
+                    sw2.Stop();
+                    sb.AppendLine(string.Format("{0},{1}", outlet.ID, sw2.ElapsedMilliseconds));
                 }
             }
+            sw.Stop();
+            _logger.Info(string.Format("Query outlet times: {0}", sw.ElapsedMilliseconds));
+
+            //Stopwatch sw3 = new Stopwatch();
+            //sw3.Start();
+            //string data = Newtonsoft.Json.JsonConvert.SerializeObject(outlets);
+            //sw3.Stop();
+
             return outlets;
+        }
+
+        public string DownloadOutletsZip(int personID, string provinceID, int from, int to)
+        {
+            //ValidatePerson(personID);
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+            var command = string.Format(@"select * from (
+                            select Row_Number() over(order by Outlet.ID) as RowNo,
+                                   Outlet.*,
+                                   Person.FirstName as PersonFirstName, 
+                                        Person.LastName as PersonLastName, 
+                                        Person.IsDSM as PersonIsDSM, 
+                                        Person.IsDSM as OutletSource, 
+                                   ot.Name as OutletTypeName,
+                                   oi.ImageData1, 
+                                   oi.ImageData2, 
+                                   oi.ImageData3
+                              from outlet
+                              left join OutletType as ot on ot.ID = Outlet.OTypeID 
+                              left join Person on Person.ID = Outlet.PersonID 
+                              left join OutletImage as oi on oi.OutletID = Outlet.ID
+                              where outlet.ProvinceID = {2}
+                        ) as tmp
+                        where RowNo between {0} and {1}", from + 1, to, provinceID);
+
+            var query = _entities.Database.SqlQuery<DownloadOutlet>(command);
+            var results = query.ToArray();
+            var outletHasImages = results.Where(o => (o.ImageData1 != null || o.ImageData2 != null || o.ImageData3 != null));
+            //var test = results.FirstOrDefault(o => o.ID == 65000070);
+            if (outletHasImages.Count() > 0)
+                foreach (var o in outletHasImages)
+                {
+                    if (o.ImageData1 != null)
+                        o.StringImage1 = FormatBase64(Convert.ToBase64String(o.ImageData1));
+
+                    if (o.ImageData2 != null)
+                        o.StringImage2 = FormatBase64(Convert.ToBase64String(o.ImageData2));
+
+                    if (o.ImageData3 != null)
+                        o.StringImage3 = FormatBase64(Convert.ToBase64String(o.ImageData3));
+                }
+
+            Stopwatch sw3 = new Stopwatch();
+            sw3.Start();
+            string data = Newtonsoft.Json.JsonConvert.SerializeObject(results);
+            sw3.Stop();
+
+            sw.Stop();
+            _logger.Info(string.Format("Query outlet times: {0}", sw.ElapsedMilliseconds));
+            return data;
+
+            //using (MemoryStream ms = new MemoryStream())
+            //{
+            //    using (ZipFile zipper = new ZipFile())
+            //    {
+            //        zipper.AddEntry("outlets.txt", data);
+            //        zipper.Save(ms);
+            //        ms.Flush();
+            //    }
+            //    return ms.ToArray();
+            //    // string zipData = Convert.ToBase64String(ms.ToArray());
+            //}
+        }
+
+        public byte[] DownloadOutletsZipByte(int personID, string provinceID, int from, int to)
+        {
+            var data = DownloadOutletsZipByte(personID, provinceID, from, to);
+            using (MemoryStream ms = new MemoryStream())
+            {
+                using (ZipFile zipper = new ZipFile())
+                {
+                    zipper.AddEntry("outlets.txt", data);
+                    zipper.Save(ms);
+                    ms.Flush();
+                }
+                return ms.ToArray();
+                // string zipData = Convert.ToBase64String(ms.ToArray());
+            }
         }
 
         public string DownloadImageBase64(int personID, int outletID, int index)
@@ -759,26 +922,38 @@ namespace TradeCensus
                 outlet.AmendBy = personID;
                 outlet.AmendDate = DateTime.Now;
 
-                TrackOutletChanged(outlet.PRowID, personID, "Save image", 0, ActionUpdateImage);
+                //TrackOutletChanged(outlet.PRowID, personID, "Save image", 0, ActionUpdateImage);
 
                 _entities.SaveChanges();
             }
         }
 
-        public List<SyncOutlet> SaveOutlets(OutletModel[] outlets)
+        public DeniedException SaveOutlets(OutletModel[] outlets, List<SyncOutlet> dboutlets)
         {
-            List<SyncOutlet> res = new List<SyncOutlet>();
-
-            List<Outlet> dboutlets = new List<Outlet>();
+            StringBuilder sb = new StringBuilder();
             foreach (var outlet in outlets)
             {
-                dboutlets.Add(SaveOutlet(outlet, false));
-            }
-            _entities.SaveChanges();
-            foreach(var outlet in dboutlets)
-                res.Add(new SyncOutlet { ID = outlet.ID, RowID = outlet.PRowID.ToString() });
+                try
+                {
+                    var o = SaveOutlet(outlet, true);
+                    dboutlets.Add(new SyncOutlet { ID = o.ID, RowID = outlet.PRowID.ToString() });
+                }
+                catch (DeniedException ex)
+                {
+                    if (sb.Length == 0)
+                    {
+                        sb.AppendLine(ex.Message);
+                        sb.AppendFormat("{0} ({1})", outlet.Name, outlet.ID);
+                    }
+                    else
+                        sb.Append(", ").AppendFormat("{0} ({1})", outlet.Name, outlet.ID);
 
-            return res;
+                    dboutlets.Add(new SyncOutlet { ID = outlet.ID, RowID = outlet.PRowID.ToString() });
+                }
+            }
+            if (sb.Length > 0)
+                return new DeniedException(sb.ToString());
+            else return null;
         }
 
         private string FormatBase64(string s)
@@ -802,6 +977,18 @@ namespace TradeCensus
                 _logger.Warn(string.Format("Cannot save image of outlet {0} to {1}: {2}", outletID, imagePath, ex.ToString()));
             }
             relativePath = "/Images/" + relativePath;
+        }
+
+        public int GetTotalProvincesCount(int personID, string provinceID)
+        {
+            try
+            {
+                return _entities.Outlets.Count(i => i.ProvinceID == provinceID);
+            }
+            catch
+            {
+                return 0;
+            }
         }
     }
 
@@ -1004,6 +1191,38 @@ namespace TradeCensus
             }
             else
                 return value.ToString();
+        }
+    }
+
+    [Serializable]
+    public class DownloadOutlet : Outlet
+    {
+        public long RowNo { get; set; }
+        public string PersonFirstName { get; set; }
+        public string PersonLastName { get; set; }
+        public bool? PersonIsDSM { get; set; }
+
+        [IgnoreDataMember]
+        public byte[] ImageData1 { get; set; }
+        [IgnoreDataMember]
+        public byte[] ImageData2 { get; set; }
+        [IgnoreDataMember]
+        public byte[] ImageData3 { get; set; }
+
+        public string StringImage1 { get; set; }
+        public string StringImage2 { get; set; }
+        public string StringImage3 { get; set; }
+    }
+
+    public class DeniedException : Exception
+    {
+        public DeniedException() : base()
+        {
+
+        }
+        public DeniedException(string msg): base(msg)
+        {
+
         }
     }
 }

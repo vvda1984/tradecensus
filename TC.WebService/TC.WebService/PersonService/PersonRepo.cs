@@ -62,6 +62,7 @@ namespace TradeCensus
                 Street = person.Street,
                 WorkAddress = person.WorkAddress,
                 ZoneID = person.ZoneID,
+                IsDSM = person.IsDSM,
             };            
         }
     }

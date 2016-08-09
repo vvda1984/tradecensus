@@ -2,7 +2,11 @@
 
 function loginController($scope, $http) {
     log('Enter Login Controller');
-   
+    editOutletCallback = null;
+    mapClickedCallback = null;
+    mapViewChangedCallback = null;
+    locationChangedCallback = null;
+    connectionChangedCallback = null;
     $scope.R = R;
     $scope.config = config;
     $scope.user = user;
@@ -83,26 +87,34 @@ function loginController($scope, $http) {
     };
    
     $scope.login = function () {
-        log($scope.user.id);        
+        log($scope.user.id);
         // validate user id
         if (isEmpty($scope.userName)) {
             showError(R.username_is_empty);
             return;
         }
-        
+
         // validate password
         if (isEmpty($scope.password)) {
             showError(R.password_is_empty);
             return;
-        }       
+        }
 
-        showDlg(R.btn_login, R.please_wait);    
-        if (networkReady()) {
-            loginOnline(0, loginSuccess, loginError);
+        showDlg(R.btn_login, R.please_wait);
+        if (getNetworkState()) {
+            loginOnline(0, loginSuccess, function (msg) {
+                if (msg == R.connection_timeout) {
+                    loginOffline(loginSuccess, function (err) {
+                        loginError(msg);
+                    });
+                } else {
+                    loginError(msg);
+                }
+            });
         } else {
             loginOffline(loginSuccess, loginError);
         }
-    };
+    }
     
     function loginOnline(retry, onSuccess, onError) {
         log('Login online ' + retry.toString());
@@ -141,10 +153,10 @@ function loginController($scope, $http) {
                 }, 1000);
             } else {
                 try {
-                    var errormg = 'Cannot connect to: ' + baseURL + ' : ' + R.connection_timeout;
-                    onError(errormg);
+                    //var errormg = 'Cannot connect to: ' + baseURL + ' : ' + R.connection_timeout;
+                    onError(R.connection_timeout);
                 } catch (ex) {
-                    onError(err);
+                    onError(ex.message);
                 }
             }
         });
@@ -211,6 +223,7 @@ function loginController($scope, $http) {
         $scope.user.homeAddress = user.HomeAddress;
         $scope.user.workAddress = user.WorkAddress;
         $scope.user.phone = user.Phone;
+        $scope.user.isDSM = user.isDSM;
         
         config.tbl_outletSync = 'outletsync_' + $scope.user.id;
         config.tbl_outlet = 'outlet_' + $scope.user.id;
@@ -224,20 +237,27 @@ function loginController($scope, $http) {
 
 		ensureUserOutletDBExist(resetLocal, config.tbl_outletSync, config.tbl_outlet, config.tbl_downloadProvince,
             function () {
-                if (networkReady()) {
-                    showDlg(R.download_settings, R.please_wait);
-                    downloadServerConfig(function () {                        
-                        log('Navigate to home (online)');
+                showDlg(R.loading, R.please_wait);
+                ping(function (r) {
+                    hideDlg();
+                    serverConnected = r;
+                    if (r) {
+                        showDlg(R.download_settings, R.please_wait);
+                        downloadServerConfig(function () {
+                            log('Navigate to home (online)');
+                            finailizeLoginView();
+                        }, function (dberr) {
+                            log(dberr);
+                            finailizeLoginView();
+                            //hideDlg();
+                            //showError(dberr.message);
+                        });
+                    }
+                    else {
+                        log('Navigate to home (offline)');
                         finailizeLoginView();
-                    }, function (dberr) {
-                        hideDlg();
-                        showError(dberr.message);
-                    });
-                }
-                else {
-                    log('Navigate to home (offline)');
-                    finailizeLoginView();
-                }
+                    }
+                })
             });
     }
 

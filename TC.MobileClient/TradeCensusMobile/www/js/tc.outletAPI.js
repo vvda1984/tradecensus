@@ -8,6 +8,7 @@ const StatusNew = 10;
 const StatusPost = 11;
 const StatusDelete = 21;
 const StatusDone = 30;
+const StatusExitingPost = 31;
 const StatusExitingAccept = 32;
 const StatusExitingDeny = 33;
 
@@ -53,7 +54,7 @@ function newOutlet(provinceName) {
         Distance: 0,
         District: '',
         FullAddress: "",
-        ID: parseInt('6' + provinceId + (Math.random() * 1000000)),
+        ID: 600000000,
         InputBy: user.id,
         IsOpened: true,
         IsTracked: false,
@@ -65,9 +66,9 @@ function newOutlet(provinceName) {
         Note: '',
         OTypeID: outletTypes[0].ID,
         OutletEmail: null,
-        OutletSource: 0,
+        OutletSource: (user.isDSM) ? 1 :0,
         OutletTypeName: outletTypes[0].Name,
-        PRowID: '',
+        PRowID: guid(),
         PersonID: user.id,
         Phone: "",
         ProvinceID: provinceId,
@@ -81,8 +82,8 @@ function newOutlet(provinceName) {
         IsDraft: true,
         IsNew : true,
         ExtractName: '',
-        PersonFirstName: '',
-        PersonLastName: '',
+        PersonFirstName: user.firstName,
+        PersonLastName: user.lastName,
         auditResult: '',
         viewAuditStatus : false,
         marker: null,
@@ -134,16 +135,23 @@ function initializeOutlet(outlet) {
 
     if (outlet.Note == null) outlet.Note = '';
     outlet.ExtractName = exname;
+    outlet.IsSynced = (outlet.PSynced) && (outlet.PSynced == 1);
     outlet.IsOpened = isEmpty(outlet.CloseDate);
     outlet.IsTracked = outlet.Tracking == 1;      
     outlet.IsAuditApproved = outlet.AuditStatus == 1;
     outlet.IsNew = outlet.AuditStatus == StatusNew || outlet.AuditStatus == StatusPost || outlet.AuditStatus == StatusAuditAccept;
     outlet.IsDenied = outlet.AuditStatus == StatusAuditDeny || outlet.AuditStatus == StatusExitingDeny;
-    outlet.IsDraft = outlet.AuditStatus == StatusNew;    
-    outlet.canPost = outlet.AuditStatus == StatusNew;
-    outlet.canRevise = outlet.AuditStatus == StatusPost && outlet.PersonID == userID;
-
-    outlet.IsSynced = (outlet.PSynced) && (outlet.PSynced == 1);
+    outlet.IsDraft = outlet.AuditStatus == StatusNew;
+    outlet.IsExistingDraft = outlet.AuditStatus == StatusEdit;
+    outlet.canPost = outlet.AuditStatus == StatusNew || outlet.AuditStatus == StatusEdit;
+    //if (networkReady()) {
+    //    outlet.canRevise = outlet.AuditStatus == StatusPost && outlet.PersonID == userID;
+    //} else {
+    //    outlet.canRevise = outlet.AuditStatus == StatusPost && outlet.PersonID == userID && !outlet.IsSynced;
+    //}
+    outlet.canRevise = (outlet.AuditStatus == StatusPost && outlet.PersonID == userID) ||
+                       (outlet.AuditStatus == StatusExitingPost && outlet.AmendBy == userID);
+ 
     outlet.hasMarker = false;
 
     if (outlet.AuditStatus == StatusAuditAccept || outlet.AuditStatus == StatusExitingAccept) {
@@ -155,6 +163,11 @@ function initializeOutlet(outlet) {
         outlet.auditResult = 'Denied',
         outlet.viewAuditStatus = true;
     }
+
+    if (outlet.ID == 60000000)
+        outlet.IDalias = '';
+    else
+        outlet.IDalias = '(' + outlet.ID.toString() + ')';
 }
 
 function queryOutlets(isbackground, view, callback) {
@@ -176,6 +189,11 @@ function queryOutlets(isbackground, view, callback) {
                     var found = 0;
                     for (i = 0; i < rowLen; i++) {
                         var outlet = dbres.rows.item(i);
+
+                        if (outlet.Name == 'Aaaa') {
+                            log('');
+                        }
+
                         var distance = 10000000;
                         if (config.calc_distance_algorithm == "circle")
                             distance = calcDistance(saleLoc, { Lat: outlet.Latitude, Lng: outlet.Longitude });

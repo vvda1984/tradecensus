@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 using System.Web;
@@ -290,7 +292,14 @@ namespace TradeCensus
                 var resp = new SyncOutletResponse();
                 try
                 {
-                    resp.Outlets = repo.SaveOutlets(items);
+                    List<SyncOutlet> dboutlets = new List<SyncOutlet>();
+                    var error = repo.SaveOutlets(items, dboutlets);
+                    resp.Outlets = dboutlets;
+                    if (error !=null)
+                    {
+                        resp.Status = Constants.Warning;
+                        resp.ErrorMessage = error.Message;
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -314,6 +323,78 @@ namespace TradeCensus
                 res.Status = Constants.ErrorCode;
             }
             return res;
+        }
+
+        [WebInvoke(Method = "POST", UriTemplate = "outlet/downloadzip/{personID}/{provinceID}/{from}/{to}", ResponseFormat = WebMessageFormat.Json)]
+
+        public string DownloadOutletsZip(string personID, string provinceID, string from, string to)
+        {
+            using (var repo = new OutletRepo())
+            {
+                Stopwatch sw = new Stopwatch();
+                sw.Start();
+                try
+                {
+                  
+                    return repo.DownloadOutletsZip(int.Parse(personID), provinceID, int.Parse(from), int.Parse(to));
+                }
+                catch
+                {
+                    return null;
+                }
+                finally
+                {
+                    sw.Stop();
+                }
+            }
+        }
+
+        [WebInvoke(Method = "POST", UriTemplate = "outlet/gettotalbyprovince/{personID}/{provinceID}", ResponseFormat = WebMessageFormat.Json)]
+        public int GetTotalProvincesCount(string personID, string provinceID)
+        {
+            using (var repo = new OutletRepo())
+            {
+                Stopwatch sw = new Stopwatch();
+                sw.Start();
+                try
+                {
+
+                    return repo.GetTotalProvincesCount(int.Parse(personID), provinceID);
+                }
+                catch
+                {
+                    return 0;
+                }
+                finally
+                {
+                    sw.Stop();
+                }
+            }
+        }
+
+
+        [WebInvoke(Method = "POST", UriTemplate = "outlet/downloadzipbyte/{personID}/{provinceID}/{from}/{to}", ResponseFormat = WebMessageFormat.Json)]
+
+        public byte[] DownloadOutletsZipByte(string personID, string provinceID, string from, string to)
+        {
+            using (var repo = new OutletRepo())
+            {
+                Stopwatch sw = new Stopwatch();
+                sw.Start();
+                try
+                {
+
+                    return repo.DownloadOutletsZipByte(int.Parse(personID), provinceID, int.Parse(from), int.Parse(to));
+                }
+                catch
+                {
+                    return null;
+                }
+                finally
+                {
+                    sw.Stop();
+                }
+            }
         }
     }
 }

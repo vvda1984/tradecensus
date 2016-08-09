@@ -9,13 +9,13 @@
     <md-content layout-padding="" class="popup-content" style="margin-bottom:-8px;">
         <form name="createOutletForm" style="margin-bottom:0px;">
             <div layout-gt-sm="row">
-                <md-input-container class="md-block" flex-gt-sm="">
+                <!--<md-input-container class="md-block" flex-gt-sm="">
                     <label>{{R.code}}</label>
-                    <input id="inputID" ng-model="outlet.ID" name="name" required="" ng-change="codeChanged()">
+                    <input id="inputID" ng-model="outlet.ID" name="name" required="" ng-change="codeChanged()" ng-disabled="true">
                     <div ng-messages="createOutletForm.ID.$error" role="alert">
                         <div ng-message="required">{{ resource.text_ValRequired }}</div>
                     </div>
-                </md-input-container>
+                </md-input-container>-->
 
                 <md-input-container class="md-block" flex-gt-sm="">
                     <label>{{R.name}}</label>
@@ -24,7 +24,13 @@
                         <div ng-message="required">{{ resource.text_ValRequired }}</div>
                     </div>
                 </md-input-container>
-
+                <md-input-container class="md-block" flex-gt-sm="">
+                    <label>{{R.phone}}</label>
+                    <input id="inputPhone" ng-model="outlet.Phone" name="phone" required="">
+                    <!--<div ng-messages="createOutletForm.phone.$error" role="alert">
+                        <div ng-message="required">{{ resource.text_ValRequired }}</div>
+                    </div>-->
+                </md-input-container>
                 <md-input-container class="md-block" flex-gt-sm="">
                     <label>{{R.outlet_type}}</label>
                     <md-select id="inputOutletType" ng-model="outlet.OTypeID">
@@ -32,14 +38,6 @@
                             {{o.Name}}
                         </md-option>
                     </md-select>
-                </md-input-container>
-               
-                <md-input-container class="md-block" flex-gt-sm="">
-                    <label>{{R.phone}}</label>
-                    <input id="inputPhone" ng-model="outlet.Phone" name="phone" required="">
-                    <!--<div ng-messages="createOutletForm.phone.$error" role="alert">
-                        <div ng-message="required">{{ resource.text_ValRequired }}</div>
-                    </div>-->
                 </md-input-container>
             </div>
 

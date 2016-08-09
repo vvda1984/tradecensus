@@ -1,7 +1,7 @@
 ﻿<md-dialog aria-label="Edit" ng-cloak>
     <md-toolbar>
         <div class="md-toolbar-tools">
-            <div>{{outlet.Name}} ({{outlet.ID}})</div>
+            <div>{{title}}</div>
             <span flex=""></span>
             <div>{{R.distance}}: {{outlet.Distance}} m</div>
         </div>
@@ -103,7 +103,7 @@
             <div layout-gt-xs="row" layout-margin layout-align="center" style="margin-bottom:0px;">   
                 <md-button class="md-raised md-primary" ng-show="viewApprove" ng-click="approve()">{{R.btn_approve}}</md-button>
                 <md-button class="md-raised" ng-show="viewDeny" ng-click="deny()">{{R.btn_deny}}</md-button>
-
+                <md-button class="md-raised md-primary" ng-click="postOutlet()" ng-show="canPost">{{R.btn_post}}</md-button>
                 <md-button class="md-raised md-primary blue1" ng-show="canRevise" ng-click="reviseOutlet()">{{R.btn_revise}}</md-button>           
                 <md-button class="md-raised md-primary" ng-show="viewSave" ng-click="saveUpdate()">{{R.btn_save}}</md-button>
 

@@ -32,7 +32,6 @@ function newOutletController($scope, $mdDialog) {
     }
     $scope.provinces = downloadProvinces;
     
-
     if (!isEmpty($scope.outlet.StringImage1)) {
         $scope.image1URL = getImageURL($scope.outlet.StringImage1);
     }
@@ -154,12 +153,26 @@ function newOutletController($scope, $mdDialog) {
 
     $scope.postOutlet = function () {
         if (!validate()) return;
+        showDlg(R.get_current_location, R.please_wait);
+        getCurPosition(false, function (lat, lng) {
+            hideDlg();
+            if (!validateRange(lat, lng)) return;
 
-        var confirmText = R.post_outlet_confirm.replace("{outletname}", $scope.outlet.Name);
-        showConfirm(R.post_outlet, confirmText, function () {
-            $scope.outlet.IsDraft = false; // POST
-            $mdDialog.hide(true);
-        }, function () { });
+            var confirmText = R.post_outlet_confirm.replace("{outletname}", $scope.outlet.Name);
+            showConfirm(R.post_outlet, confirmText, function () {
+                $scope.outlet.IsDraft = false; // POST
+                $mdDialog.hide(true);
+            }, function () { });
+        }, function () {
+            hideDlg();
+            showError(R.cannot_approve_or_deny);
+        })
+
+        //var confirmText = R.post_outlet_confirm.replace("{outletname}", $scope.outlet.Name);
+        //showConfirm(R.post_outlet, confirmText, function () {
+        //    $scope.outlet.IsDraft = false; // POST
+        //    $mdDialog.hide(true);
+        //}, function () { });
     }
 
     $scope.saveUpdate = function () {
@@ -188,7 +201,7 @@ function newOutletController($scope, $mdDialog) {
                     correctOrientation: true,
                     targetWidth: 800,
                     targetHeight: 600,
-                    destinationType: Camera.DestinationType.DATA_URL, //FILE_URI // DATA_URL for base64 => not recommend due to memory issue,
+                    destinationType: Camera.DestinationType.FILE_URI, // // DATA_URL for base64 => not recommend due to memory issue,
                   
                 });
         } catch (err) {
@@ -246,8 +259,19 @@ function newOutletController($scope, $mdDialog) {
             showErrorAdv(R.total_is_invald, function () { $("#total").focus(); });
             return false;
         }
+
+        if ($scope.outlet.TotalVolume == 0) {
+            showErrorAdv(R.total_is_empty, function () { $("#total").focus(); });
+            return false;
+        }
+
         if ($scope.outlet.VBLVolume == undefined || $scope.outlet.VBLVolume == null) {
             showErrorAdv(R.vbl_is_invald, function () { $("#vblvolume").focus(); });
+            return false;
+        }
+
+        if ($scope.outlet.VBLVolume == 0) {
+            showErrorAdv(R.vbl_is_empty, function () { $("#vblvolume").focus(); });
             return false;
         }
 
@@ -256,6 +280,16 @@ function newOutletController($scope, $mdDialog) {
             return false;
         }
 
+        return true;
+    }
+
+    function validateRange(lat, lng) {
+        var d = calcDistance({ Lat: lat, Lng: lng }, { Lat: $scope.outlet.Latitude, Lng: $scope.outlet.Longitude });
+        if (d > $scope.config.audit_range) {
+            var errMsg = R.ovar_audit_distance.replace('{distance}', $scope.config.audit_range.toString());
+            showError(errMsg);
+            return false;
+        }
         return true;
     }
 
@@ -269,12 +303,47 @@ function newOutletController($scope, $mdDialog) {
             }
         }
 
-        if (!isEmpty($scope.outlet.ID)) {
-            t = t.concat(' (', $scope.outlet.ID, ')');
-        } else {
-            t = t.concat(' (', $scope.outlet.ID, ')');
-        }
+        //if (!isEmpty($scope.outlet.ID)) {
+        //    t = t.concat(' (', $scope.outlet.ID, ')');
+        //} else {
+        //    t = t.concat(' (', $scope.outlet.ID, ')');
+        //}
         
         return t;
     }
+
+    function loadImages() {
+        findOutlet(config.tbl_outlet, $scope.outlet.PRowID, function (localOut) {
+            if (localOut == null) {
+                if (!isEmpty($scope.outlet.StringImage1)) {
+                    $scope.image1URL = getImageURL($scope.outlet.StringImage1);
+                    log($scope.image1URL);
+                }
+
+                if (!isEmpty($scope.outlet.StringImage2)) {
+                    $scope.image2URL = getImageURL($scope.outlet.StringImage2);
+                }
+                if (!isEmpty($scope.outlet.StringImage3)) {
+                    $scope.image3URL = getImageURL($scope.outlet.StringImage3);
+                }
+            } else {
+                if (!isEmpty(localOut.StringImage1 !== '')) {
+                    $scope.image1URL = getImageURL(localOut.StringImage1);
+                    log($scope.image1URL);
+                }
+
+                if (!isEmpty(localOut.StringImage2 !== '')) {
+                    $scope.image2URL = getImageURL(localOut.StringImage2);
+                    log($scope.image2URL);
+                }
+
+                if (!isEmpty(localOut.StringImage3 !== '')) {
+                    $scope.image3URL = getImageURL(localOut.StringImage3);
+                    log($scope.image3URL);
+                }
+            }
+        })
+    }
+    loadImages();
+
 }

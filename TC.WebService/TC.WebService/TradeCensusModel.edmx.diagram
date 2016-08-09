@@ -7,8 +7,6 @@
       <Diagram DiagramId="52f04e5ff3a14e939742f73f8536efaf" Name="Diagram1" ZoomLevel="77">
         <EntityTypeShape EntityType="tradecensusModel.Area" Width="1.5" PointX="2.75" PointY="4.75" IsExpanded="true" />
         <EntityTypeShape EntityType="tradecensusModel.Config" Width="1.5" PointX="4.75" PointY="4.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="tradecensusModel.Outlet" Width="1.5" PointX="0.75" PointY="5.25" IsExpanded="true" />
-        <EntityTypeShape EntityType="tradecensusModel.OutletImage" Width="1.5" PointX="3" PointY="8.5" IsExpanded="true" />
         <EntityTypeShape EntityType="tradecensusModel.OutletType" Width="1.5" PointX="6.75" PointY="4.75" IsExpanded="true" />
         <EntityTypeShape EntityType="tradecensusModel.Person" Width="1.5" PointX="5.75" PointY="7.75" IsExpanded="true" />
         <EntityTypeShape EntityType="tradecensusModel.PersonRole" Width="1.5" PointX="7.75" PointY="0.75" IsExpanded="true" />
@@ -16,9 +14,11 @@
         <EntityTypeShape EntityType="tradecensusModel.SyncDetail" Width="1.5" PointX="3" PointY="1.125" IsExpanded="true" />
         <EntityTypeShape EntityType="tradecensusModel.SyncHistory" Width="1.5" PointX="0.75" PointY="1" IsExpanded="true" />
         <EntityTypeShape EntityType="tradecensusModel.Zone" Width="1.5" PointX="8.75" PointY="4.75" IsExpanded="true" />
-        <AssociationConnector Association="tradecensusModel.FK_OutletImage_Outlet" ManuallyRouted="false" />
         <AssociationConnector Association="tradecensusModel.FK_SyncDetail_SyncHistory" ManuallyRouted="false" />
         <EntityTypeShape EntityType="tradecensusModel.OutletHistory" Width="1.5" PointX="10.375" PointY="0.75" />
+        <EntityTypeShape EntityType="tradecensusModel.Outlet" Width="1.5" PointX="10.375" PointY="8.25" />
+        <EntityTypeShape EntityType="tradecensusModel.OutletImage" Width="1.5" PointX="12.625" PointY="11.5" />
+        <AssociationConnector Association="tradecensusModel.FK_OutletImage_Outlet" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

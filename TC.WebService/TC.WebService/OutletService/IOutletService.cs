@@ -31,6 +31,15 @@ namespace TradeCensus
         GetOutletListResponse DownloadOutlets(string personID, string provinceID, string from, string to);
 
         [OperationContract]
+        int GetTotalProvincesCount(string personID, string provinceID);
+
+        [OperationContract]
+        string DownloadOutletsZip(string personID, string provinceID, string from, string to);
+
+        [OperationContract]
+        byte[] DownloadOutletsZipByte(string personID, string provinceID, string from, string to);
+
+        [OperationContract]
         GetImageResponse DownloadImageBase64(string personID, string outletID, string index);
 
         [OperationContract]

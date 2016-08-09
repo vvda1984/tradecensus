@@ -144,16 +144,13 @@ function cloneObj(i) {
 * Clone object
 */
 function guid() {
-    return randomString4() + randomString4() + '-' + randomString4() + '-' + randomString4 + '-' + randomString4() + '-' + randomString4() + randomString4() + randomString4();
-}
-
-/**
-* random text 4 characters
-*/
-function randomString4() {
-    return Math.floor((1 + Math.random()) * 0x10000)
-      .toString(16)
-      .substring(1);
+    function s4() {
+        return Math.floor((1 + Math.random()) * 0x10000)
+          .toString(16)
+          .substring(1);
+    }
+    return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+      s4() + '-' + s4() + s4() + s4();
 }
 
 /**
@@ -310,6 +307,10 @@ function changeAlias(alias) {
 }
 
 function getFileContentAsBase64(path, callback) {
+    if (isEmpty(path)) {
+        callback('');
+        return;
+    }
     window.resolveLocalFileSystemURL(path, gotFile, fail);
 
     function fail(e) {
@@ -328,3 +329,42 @@ function getFileContentAsBase64(path, callback) {
         });
     }
 }
+
+
+/*******************************************************/
+//function requestWriteFile(name, onSuccess, onError) {
+//    window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fileSystem) {
+//        fileSystem.root.getFile(name, { create: true, exclusive: false }, function (fileEntry) {
+//            fileEntry.createWriter(function (writer) {
+//            }, fail);
+//        }, fail);
+//    }, fail);
+//}
+
+//function gotFS(fileSystem) {
+   
+//}
+
+//function gotFileEntry(fileEntry) {
+//    fileEntry.createWriter(gotFileWriter, fail);
+//}
+
+//function gotFileWriter(writer) {
+//    writer.onwriteend = function (evt) {
+//        console.log("contents of file now 'some sample text'");
+//        writer.truncate(11);
+//        writer.onwriteend = function (evt) {
+//            console.log("contents of file now 'some sample'");
+//            writer.seek(4);
+//            writer.write(" different text");
+//            writer.onwriteend = function (evt) {
+//                console.log("contents of file now 'some different text'");
+//            }
+//        };
+//    };
+//    writer.write("some sample text");
+//}
+
+//function fail(error) {
+//    console.log(error.code);
+//}

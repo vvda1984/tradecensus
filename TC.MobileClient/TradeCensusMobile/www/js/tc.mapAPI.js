@@ -21,6 +21,7 @@ var loadMapCallback = null;
 var editOutletCallback = null;
 var mapClickedCallback = null;
 var mapViewChangedCallback = null;
+var locationChangedCallback = null;
 var homeMarker = null;
 var curInfoWin = null;
 
@@ -29,19 +30,28 @@ var curlng = START_LNG;
 var curacc = 120;
 var curaccCircle;
 var panorama;
-var locationChangedCallback = null;
+
 var gpsWatchID = -1;
 var loadedMarkers = [];
 var lastRefreshDate;
 
-function loadMapApi() { 
+var isloadingGGapi = false;
+function loadMapApi() {
+    if (isloadingGGapi) return;
+    isloadingGGapi = true;
+
     if (!getNetworkState()) {
-		initializeMap()
+        isloadingGGapi = false;
+        if (loadMapCallback) {
+            loadMapCallback();
+            loadMapCallback = null;
+        }
         return;
     }
 	
 	if (loadedMapAPI) {
-        initializeMap()
+	    initializeMap()
+	    isloadingGGapi = false;
         return;
     }
     loadedMapAPI = true;
@@ -50,11 +60,12 @@ function loadMapApi() {
     var url = 'https://maps.googleapis.com/maps/api/js?=v=3.exp&sensor=false&key=' + config.map_api_key + '&callback=initializeMap';
     log('Load map API: ' + url);
     $.getScript(url);
+    isloadingGGapi = false;
 }
 
 function initializeMap() {
+    isloadingGGapi = false;
     isMapReady = true;	
-
     log('Create map instance');
     try {
         homeMarker = null;
@@ -100,6 +111,7 @@ function initializeMap() {
             }         
         });
 
+        hideDlg();
         isMapReady = true;
         if (loadMapCallback) {
             log('Map is ready');
@@ -108,6 +120,7 @@ function initializeMap() {
         }			
     }
     catch (err) {
+        hideDlg();
         isMapReady = false;
         log(err);
         if (loadMapCallback) {
@@ -130,10 +143,15 @@ function clearMarkers() {
 
 function createMaker(outlet, position, i, isNew) {
     var iconUrl = isNew ? 'assets/img/pin-new.png' : getMarkerIcon(outlet);
+    var zindexval = google.maps.Marker.MAX_ZINDEX + 1;
+    if (!outlet.IsOpened || !outlet.IsTracked)
+        zindexval = google.maps.Marker.MAX_ZINDEX + 2;
+
     var marker = new google.maps.Marker({
         position: position,
         title: outlet.Name,
         icon: iconUrl,
+        zIndex: zindexval
         //map: map,
     });
     

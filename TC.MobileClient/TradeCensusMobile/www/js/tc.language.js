@@ -64,7 +64,7 @@ function language_en() {
         search: 'Search',
 
         you_are_in_offline_mode: 'You are in Offline mode!',
-        cannot_approve_or_deny: 'Cannot get current location to verify!',
+        cannot_approve_or_deny: 'Cannot get current location!',
       
         download_outlets: 'DOWNLOAD OUTLETS',
         create_new_outlet: 'NEW OUTLET',
@@ -100,6 +100,7 @@ function language_en() {
         loading: 'Loading',
         save_outlet: 'Save Outlet',
 
+        cannot_revise : 'The action is NOT allowed in offline mode',
         get: 'Get ',
         get_near_by_outlets: 'Get near-by outlets',
         found: 'Found ',
@@ -133,13 +134,16 @@ function language_en() {
 		phone_is_empty: 'Phone is empty!',
 		comment_is_empty: 'Comment is empty!',
 		ovar_audit_distance: 'Outlet is out of audit range ({distance} m).',
-		total_is_invald: 'TOTAL must be number!',
-		vbl_is_invald: 'VBL product must be number!',
-		vbl_cannot_greater_than_total: 'TOTAL must be greater than VBL.',
+		total_is_invald: 'TOTAL must be whole number!',
+		total_is_empty: 'Total must greater than 0!',
+		vbl_is_invald: ' VBL volume must be whole number!',
+		vbl_is_empty: 'VBL volume must greater than 0!',
+		vbl_cannot_greater_than_total: 'VBL volume cannot greater than Total volume.',
 
 		confirm : 'CONFIRM',
 		delete_offline_outlets_of : 'Delete offline outlets of ',
-        unsynced_outlet_in_province: 'There are unsynced outlet(s). Please sync outlet(s) and try again!',
+		unsynced_outlet_in_province: 'There are unsynced outlet(s). Please sync outlet(s) and try again!',
+		validate_unsynced_outlets: 'Validating unsynced outlets',
 
         reach_maximum_download: 'Reach maximum download, please delete Provinces downloaded and try again!',
 
@@ -151,7 +155,7 @@ function language_en() {
         downloading_outlet_get_outlets: 'Getting outlets...Please wait',
         downloading_outlet_save_outlets: 'Saving outlets to db...Please wait',
 		check_network_connection : 'Please check network connection!',
-		connection_timeout : 'Connection timeout',
+		connection_timeout: 'Could not reach to the server, please try again!',
 		invalid_user_password : 'Invalid User/Password',
 		user_terminated: 'User has been terminated',
 		download_network_warn: 'Please try again because network was not stable!',

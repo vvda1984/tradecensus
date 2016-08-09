@@ -104,5 +104,14 @@
         },
         "is_top_level": true,
         "variables": {}
+    },
+    "cordova-plugin-zip": {
+        "source": {
+            "type": "git",
+            "url": "https://github.com/MobileChromeApps/cordova-plugin-zip",
+            "subdir": "."
+        },
+        "is_top_level": true,
+        "variables": {}
     }
 }

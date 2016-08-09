@@ -118,9 +118,11 @@ function newResource() {
 }
 
 function newConfig() {
+    var isHttp = true;
     //ip: 'localhost', //'27.0.15.234',
     //port: '33334',//'3001',
-    return {
+    var c = {
+        enable_devmode: false,
         page_size: 20,
         cluster_size: 50,
         cluster_max_zoom: 15.5,
@@ -131,21 +133,20 @@ function newConfig() {
         service_name: 'TradeCensusService.svc', // absolute
         enable_liveGPS: true,
         liveGPS_distance: 10,
-        enable_devmode: isDev,
         map_zoom: 17,
         distance: 200,
-        audit_range: 50,
+        audit_range: 50, //50
         item_count: 20,
         province_id: 50, // HCM
         http_method: 'POST',
         calc_distance_algorithm: 'circle',
         map_api_key: 'AIzaSyDpKidHSrPMfErXLJSts9R6pam7iUOr_W0',
         max_oulet_download: 1,
-        download_batch_size: 3000,
-        time_out: 15,               // Connection timeout
+        download_batch_size: 8000,
+        time_out: 30,               // Connection timeout
         sync_time: 1 * 60 * 1000,   // Sync delay...
         sync_time_out: 5 * 60,      // Sync timeout
-        sync_batch_size: 50,        // Sync timeout
+        sync_batch_size: 100,       // Number of uploaded outlets in sync request
         ping_time: 5,               // Time
         refresh_time: 30,           // Time to get outlet
         refresh_time_out: 3 * 60,   // Time to get outlet
@@ -156,8 +157,14 @@ function newConfig() {
         tbl_outletSync: 'uos',
         tbl_outlet: 'uo',
         tbl_downloadProvince: 'udp',
-        version: 'Version 1.1.16220.5'
+        version: 'Version 1.1.16221.8'
     };
+    if (isHttp) {
+        c.protocol = 'http';
+        c.port = '80';
+    }
+
+    return c;
 }
 
 function newUser() {
@@ -180,6 +187,7 @@ function newUser() {
         homeAddress: '',
         workAddress: '',
         phone: '',
+        isDSM: false,
     }
 }
 
@@ -401,10 +409,10 @@ function ping(callback) {
         callback(false);
         return;
     }
-    else {
-        callback(true);
-        return;
-    }
+    //else {
+    //    callback(true);
+    //    return;
+    //}
     //return;
 
     // ignore
@@ -417,7 +425,7 @@ function ping(callback) {
         data: '',
         processData: false,
         dataType: "json",
-        timeout: config.time_out * 1000, // sets timeout to 3 seconds
+        timeout: config.time_out * 100, // sets timeout to 3 seconds
         success: function (response) {
             callback(true);
         },
