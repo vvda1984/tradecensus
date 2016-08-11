@@ -531,7 +531,7 @@
 } 
 
 
-#home-topright-offline {
+#home-topright-offline, #home-topright-sync-hint {
     position: fixed;
     top: 4px;
     right: 96px;    

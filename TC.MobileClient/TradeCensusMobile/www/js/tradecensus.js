@@ -3,10 +3,11 @@
 
 var resetDB = false;                // force reset database - testing only
 var db;                             // database instance
-var isDev = false;                   // enable DEV mode
+var devLat = START_LAT;
+var devLng = START_LNG;
 
 var userOutletTable = 'outlet';     // outlet table name for current user
-var isDlgOpened = false;            //  
+var isDlgOpened = false;             
 var isInitialize = false;
 var enableSync = false;
 var onImageViewerClose;
@@ -144,6 +145,7 @@ function newConfig() {
         max_oulet_download: 1,
         download_batch_size: 8000,
         time_out: 30,               // Connection timeout
+        auto_sync: 0,                // Sync delay...
         sync_time: 1 * 60 * 1000,   // Sync delay...
         sync_time_out: 5 * 60,      // Sync timeout
         sync_batch_size: 100,       // Number of uploaded outlets in sync request
@@ -157,7 +159,7 @@ function newConfig() {
         tbl_outletSync: 'uos',
         tbl_outlet: 'uo',
         tbl_downloadProvince: 'udp',
-        version: 'Version 1.1.16221.8'
+        version: 'Version 1.1.16222.12',
     };
     if (isHttp) {
         c.protocol = 'http';
@@ -303,6 +305,10 @@ function loadSettings(tx, callback) {
                     config.map_api_key = value;
                 } else if (name == 'sync_time') {
                     config.sync_time = parseInt(value);
+                } else if (name == 'sync_time_out') {
+                    config.sync_time_out = parseInt(value);
+                } else if (name == 'sync_batch_size') {
+                    config.sync_batch_size = parseInt(value);
                 } else if (name == 'cluster_size') {
                     config.cluster_size = parseInt(value);
                 } else if (name == 'cluster_max_zoom') {
@@ -313,6 +319,14 @@ function loadSettings(tx, callback) {
                     config.map_api_key = value;
                 } else if (name == 'max_oulet_download') {
                     config.max_oulet_download = parseInt(value);
+                } else if (name == 'audit_range') {
+                    config.audit_range = parseInt(value);
+                } else if (name == 'ping_time') {
+                    config.ping_time = parseInt(value);
+                } else if (name == 'refresh_time') {
+                    config.refresh_time = parseInt(value);
+                } else if (name == 'refresh_time_out') {
+                    config.refresh_time_out = parseInt(value);
                 }
             }
         }     
@@ -379,7 +393,7 @@ function startPingProgress () {
 
 function startPingTimer() {
     setTimeout(function () {
-        if (isPausePing)
+        if (isPausePing || isOutletDlgOpen)
         {
             startPingTimer();
             return;
@@ -405,17 +419,45 @@ function startPingTimer() {
 }
 
 function ping(callback) {
+    tryping(0, callback);
+
+    //if (!getNetworkState()) {
+    //    callback(false);
+    //    return;
+    //}
+    ////else {
+    ////    callback(true);
+    ////    return;
+    ////}
+    ////return;
+
+    // ignore
+    //var devideInfo = userID.toString();
+    //var url = baseURL + '/ping/' + devideInfo;
+    //$.ajax({
+    //    type: "POST",
+    //    contentType: "application/json; charset=utf-8",
+    //    url: url,
+    //    data: '',
+    //    processData: false,
+    //    dataType: "json",
+    //    timeout: config.time_out * 100, // sets timeout to 3 seconds
+    //    success: function (response) {
+    //        callback(true);
+    //    },
+    //    error: function (a, b, c) {
+    //        callback(false);
+    //        //alert(a.responseText);
+    //    }
+    //});
+}
+
+function tryping(retry, callback) {
     if (!getNetworkState()) {
         callback(false);
         return;
     }
-    //else {
-    //    callback(true);
-    //    return;
-    //}
-    //return;
 
-    // ignore
     var devideInfo = userID.toString();
     var url = baseURL + '/ping/' + devideInfo;
     $.ajax({
@@ -425,14 +467,18 @@ function ping(callback) {
         data: '',
         processData: false,
         dataType: "json",
-        timeout: config.time_out * 100, // sets timeout to 3 seconds
+        timeout: config.time_out * 1000, // sets timeout to 3 seconds
         success: function (response) {
             callback(true);
         },
         error: function (a, b, c) {
-            callback(false);
-            //alert(a.responseText);
+            if (retry >= 1)
+                callback(false);
+            else {
+                setTimeout(function () { tryping(retry + 1, callback);}, 300);
+            }
         }
     });
 }
+
 /****************************************************************/

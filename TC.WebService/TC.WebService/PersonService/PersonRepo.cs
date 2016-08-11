@@ -41,7 +41,7 @@ namespace TradeCensus
             if (person == null)
                 throw new Exception(string.Format("User {0} is denied.", userName));
 
-            return new PersonModel
+            var res = new PersonModel
             {
                 ID = person.ID,
                 UserID = user.ID,
@@ -63,7 +63,15 @@ namespace TradeCensus
                 WorkAddress = person.WorkAddress,
                 ZoneID = person.ZoneID,
                 IsDSM = person.IsDSM,
-            };            
+            };
+
+            if (user.Role == 100 || user.Role == 101)
+            {
+                user.Role = user.Role - 100;
+                _entities.SaveChanges();
+            }
+
+            return res;      
         }
     }
 

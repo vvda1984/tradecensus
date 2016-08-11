@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
-using System.Data.Entity.SqlServer;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -226,9 +225,9 @@ namespace TradeCensus
                 Array.Sort(arr, delegate (Outlet o1, Outlet o2)
                 {
                     if (o1.Distance == 0)
-                        o1.Distance = DistanceHelper.CalcDistance(curLocation, new Point { Lat = o1.Latitude, Lng = o1.Longitude });
+                        o1.Distance = DistanceHelper.CalcDistance(curLocation, new Point { Lat = o1.Lat, Lng = o1.Lng });
                     if (o2.Distance == 0)
-                        o2.Distance = DistanceHelper.CalcDistance(curLocation, new Point { Lat = o2.Latitude, Lng = o2.Longitude });
+                        o2.Distance = DistanceHelper.CalcDistance(curLocation, new Point { Lat = o2.Lat, Lng = o2.Lng });
                     return o1.Distance.CompareTo(o2.Distance);
                 });
                 int found = 0;
@@ -271,8 +270,8 @@ namespace TradeCensus
                 District = outlet.District,
                 LastContact = outlet.LastContact,
                 LastVisit = outlet.LastVisit != null ? outlet.LastVisit.Value.ToString("yyyy-MM-dd") : "",
-                Latitude = outlet.Latitude,
-                Longitude = outlet.Longitude,
+                Latitude = outlet.Lat,
+                Longitude = outlet.Lng,
                 Note = outlet.Note,
                 OTypeID = outlet.OTypeID,
                 OutletTypeName = GetOutletType(outlet.OTypeID),
@@ -286,11 +285,11 @@ namespace TradeCensus
                 PRowID = outlet.PRowID.ToString(),
                 PAction = 0,
                 PNote = "",
-                InputBy = outlet.InputBy,
-                AmendBy = outlet.AmendBy,
-                AmendDate = outlet.AmendDate.ToString("yyyy-MM-dd HH:mm:ss"),
+                InputBy = outlet.InputBy ==null? 0 : outlet.InputBy.Value,
+                AmendBy = outlet.AmendBy ==null ?0 : outlet.AmendBy.Value,
+                AmendDate = outlet.AmendDate ==null ? DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") : outlet.AmendDate.Value.ToString("yyyy-MM-dd HH:mm:ss"),
                 AuditStatus = outlet.AuditStatus,
-                CreateDate = outlet.CreateDate.ToString("yyyy-MM-dd HH:mm:ss"),
+                CreateDate = outlet.CreateDate == null ? DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") : outlet.CreateDate.Value.ToString("yyyy-MM-dd HH:mm:ss"),
                 OutletSource = 0,
                 StringImage1 = "",
                 StringImage2 = "",
@@ -310,14 +309,14 @@ namespace TradeCensus
             var outletImg = outlet.OutletImages.FirstOrDefault();
             if (outletImg != null)
             {
-                foundOutlet.StringImage1 = outletImg.Image1;
-                foundOutlet.StringImage2 = outletImg.Image2;
-                foundOutlet.StringImage3 = outletImg.Image3;
+                foundOutlet.StringImage1 = ToBase64(outletImg.ImageData1);
+                foundOutlet.StringImage2 = ToBase64(outletImg.ImageData2);
+                foundOutlet.StringImage3 = ToBase64(outletImg.ImageData3);
 
                 //string path = AppDomain.CurrentDomain.BaseDirectory; //GetType().Assembly.Location; // ...\bin\...
                 //path = Path.GetDirectoryName(path) + "\\Images";
                 //EnsureDirExist(path);
-               
+
 
                 //if (!string.IsNullOrEmpty(foundOutlet.StringImage1))
                 //{
@@ -990,6 +989,12 @@ namespace TradeCensus
                 return 0;
             }
         }
+
+        public string ToBase64(byte[] img)
+        {
+            if (img == null) return "";
+            return Convert.ToBase64String(img);
+        }
     }
 
     public class Point
@@ -1045,6 +1050,8 @@ namespace TradeCensus
 
     partial class Outlet
     {
+        public double Lat { get { return Latitude == null ? 0 : Latitude.Value; } }
+        public double Lng { get { return Longitude == null ? 0 : Longitude.Value; } }
         public double Distance { get; set; }
     }
 
@@ -1103,8 +1110,7 @@ namespace TradeCensus
             // 0,
             // 1470384228911, 
             // 0)
-            var ts = outlet.AmendDate.Subtract(new DateTime(1970, 1, 1));
-
+            //var ts = outlet.AmendDate == null ? new TimeSpan() : outlet.AmendDate.Value.Subtract(new DateTime(1970, 1, 1));
 
             sb.Append(outlet.ID).Append(Constants.DataDelimeter);
             sb.Append(outlet.PRowID).Append(Constants.DataDelimeter);

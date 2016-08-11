@@ -28,7 +28,7 @@ function dlgConfirmClose(i) {
 
 function dlgLoadingClose() {    
     log('dlgLoadingClose: ' + i.toString());
-    if (isDev) {
+    if (config.enable_devmode) {
         alert(loadigConfirmMsg);
         hideDlg();
         if (dlgCloseCallback)
@@ -122,11 +122,25 @@ function hideDlg() {
 	}
 }
 
+function showValidationErr(message) {
+    resetCallback();
+    hideDlg();
+    hideLoadingDlg();
+    showDlg(R.validate_error, message, function () { });;
+}
+
+function showValidationErrAdv(message, onClose) {
+    resetCallback();
+    hideDlg();
+    hideLoadingDlg();
+    showDlg(R.validate_error, message, function () { });;
+}
+
 function showError(message) {
     resetCallback();
     hideDlg();
     hideLoadingDlg();
-	showDlg(R.error, message, function () { });;
+    showDlg(R.error, message, function () { });;
 }
 
 function showErrorAdv(message, onClose) {
@@ -137,16 +151,16 @@ function showErrorAdv(message, onClose) {
 
 function showInfo(message) {
     resetCallback();
-	hideDlg();
-	showDlg("Info", message, function () { });;
+    hideDlg();
+    showDlg("Info", message, function () { });;
 }
 
 function showConfirm(title, message, onAccept, onDeny) {
     resetCallback();
-	hideDlg();
-	dlgAcceptCallback = onAccept;
-	dlgDenyCallback = onDeny;
-	cover =
+    hideDlg();
+    dlgAcceptCallback = onAccept;
+    dlgDenyCallback = onDeny;
+    cover =
         '<div id="dlg-panel">' +
             '<div class="loading-window">' +
                 '<div class="dialog">' +
@@ -165,7 +179,7 @@ function showConfirm(title, message, onAccept, onDeny) {
                 '</div>' +
                 '</div>' +
         '</div>';
-	$(cover).appendTo('body');
+    $(cover).appendTo('body');
 }
 
 function showLoading(title, message, closeMsg, callback) {
@@ -192,7 +206,7 @@ function showLoading(title, message, closeMsg, callback) {
                             '<paper-ripple fit></paper-ripple>' +
                         '</div>' +
                     '</div>' +
-                 '</div>' +
+                    '</div>' +
             '</div>';
         isLoadingDlgOpened = true;
         $(cover).appendTo('body');

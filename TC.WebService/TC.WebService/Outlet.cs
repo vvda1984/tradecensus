@@ -31,7 +31,7 @@ namespace TradeCensus
         public string ProvinceID { get; set; }
         public string Phone { get; set; }
         public int CallRate { get; set; }
-        public System.DateTime CreateDate { get; set; }
+        public Nullable<System.DateTime> CreateDate { get; set; }
         public Nullable<System.DateTime> CloseDate { get; set; }
         public byte Tracking { get; set; }
         public string Class { get; set; }
@@ -39,18 +39,18 @@ namespace TradeCensus
         public string Close1st { get; set; }
         public string Open2nd { get; set; }
         public string Close2nd { get; set; }
-        public byte SpShift { get; set; }
+        public Nullable<byte> SpShift { get; set; }
         public string LastContact { get; set; }
         public Nullable<System.DateTime> LastVisit { get; set; }
         public int PersonID { get; set; }
         public string Note { get; set; }
-        public double Longitude { get; set; }
-        public double Latitude { get; set; }
+        public Nullable<double> Longitude { get; set; }
+        public Nullable<double> Latitude { get; set; }
         public string OutletEmail { get; set; }
-        public int InputBy { get; set; }
-        public System.DateTime InputDate { get; set; }
-        public int AmendBy { get; set; }
-        public System.DateTime AmendDate { get; set; }
+        public Nullable<int> InputBy { get; set; }
+        public Nullable<System.DateTime> InputDate { get; set; }
+        public Nullable<int> AmendBy { get; set; }
+        public Nullable<System.DateTime> AmendDate { get; set; }
         public byte AuditStatus { get; set; }
         public int TotalVolume { get; set; }
         public int VBLVolume { get; set; }

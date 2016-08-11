@@ -63,8 +63,9 @@ function language_en() {
         last_change: 'Last Changed',
         search: 'Search',
 
-        you_are_in_offline_mode: 'You are in Offline mode!',
-        cannot_approve_or_deny: 'Cannot get current location!',
+        you_are_in_offline_mode: 'You are in Offline mode',
+        hint_do_sync : 'Please do SYNC to apply changes',
+        cannot_approve_or_deny: 'Cannot validate your location!',
       
         download_outlets: 'DOWNLOAD OUTLETS',
         create_new_outlet: 'NEW OUTLET',
@@ -134,11 +135,12 @@ function language_en() {
 		phone_is_empty: 'Phone is empty!',
 		comment_is_empty: 'Comment is empty!',
 		ovar_audit_distance: 'Outlet is out of audit range ({distance} m).',
-		total_is_invald: 'TOTAL must be whole number!',
-		total_is_empty: 'Total must greater than 0!',
-		vbl_is_invald: ' VBL volume must be whole number!',
-		vbl_is_empty: 'VBL volume must greater than 0!',
+		total_is_invald: 'TOTAL volume must be whole number',
+		total_is_empty: 'TOTAL volume must greater than zero.',
+		vbl_is_invald: ' VBL volume must be whole number',
+		vbl_is_empty: 'VBL volume must greater than zero',
 		vbl_cannot_greater_than_total: 'VBL volume cannot greater than Total volume.',
+		need_to_capture: 'Please capture images',
 
 		confirm : 'CONFIRM',
 		delete_offline_outlets_of : 'Delete offline outlets of ',
@@ -147,6 +149,7 @@ function language_en() {
 
         reach_maximum_download: 'Reach maximum download, please delete Provinces downloaded and try again!',
 
+        validate_error: 'Error',
         error: 'Warning',        
         download_outlets_confim: 'Download offline outlet of ',
 

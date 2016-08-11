@@ -4,11 +4,11 @@ const START_LAT = 10.775432;
 const START_LNG = 106.705803;
 const earthR = 6378137;
 
-var devCurLat = 10.775432;
-var devCurLng = 106.705803;
-var devNewDetlta = 0.00001;
-var devNewLat = devCurLat + devNewDetlta;
-var devNewLng = devCurLng + devNewDetlta;
+//var devCurLat = 10.775432;
+//var devCurLng = 106.705803;
+//var devNewDetlta = 0.00001;
+//var devNewLat = devCurLat + devNewDetlta;
+//var devNewLng = devCurLng + devNewDetlta;
 
 var map = null;
 var markerClusterer;
@@ -74,17 +74,17 @@ function initializeMap() {
             zoom: config.map_zoom,
             center: { lat: curlat, lng: curlng },
             mapTypeId: google.maps.MapTypeId.ROADMAP,
-            mapTypeControl: false,
-            mapTypeControlOptions: {
-                style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
-                position: google.maps.ControlPosition.TOP_CENTER
-            },
             streetViewControlOptions: {
                 position: google.maps.ControlPosition.RIGHT_BOTTOM
             },
             zoomControl: true,
             zoomControlOptions: {
                 position: google.maps.ControlPosition.RIGHT_BOTTOM
+            },
+            mapTypeControl: true,
+            mapTypeControlOptions: {
+                style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+                position: google.maps.ControlPosition.BOTTOM_CENTER
             },
             scaleControl: true,
             streetViewControl: true,
@@ -202,11 +202,11 @@ function getMarkerIcon(outlet) {
                     if (outlet.AuditStatus == StatusAuditAccept || outlet.AuditStatus == StatusExitingAccept) {
                         return 'assets/img/pin-sr-audit-right.png';
                     }
-                    if (!outlet.IsTracked) {
-                        return 'assets/img/pin-sr-nontrack.png';
-                    }
                     if (!outlet.IsOpened) {
                         return 'assets/img/pin-sr-close.png';
+                    }
+                    if (!outlet.IsTracked) {
+                        return 'assets/img/pin-sr-nontrack.png';
                     }
                     return 'assets/img/pin-sr-open.png';
 
@@ -271,6 +271,12 @@ function displayCurrentPostion() {
             position: position,
             icon: 'assets/img/pin-cur.png',
             map: map,
+        });
+        homeMarker.addListener('click', function () {
+            var infoWindow = new google.maps.InfoWindow({
+                content: '<div class=\'view-marker\'>' + curlat.toString() + ', ' + curlng.toString() + '</div>',
+            });
+            infoWindow.open(map, homeMarker);
         });
     }
     displayAccuracy(position);
@@ -418,10 +424,10 @@ function getCurPosition(moveToCur, onSuccess, onError) {
             log('Accuracy:'+ curacc.toString());
 
             // AnVO: DEBUG
-            if (isDev) {
+            if (config.enable_devmode) {
                 log('***set debug location...');
-                lat = curlat;
-                lng = curlng;
+                lat = devLat;
+                lng = devLng;
             }
             curlat = lat;
             curlng = lng;
@@ -433,7 +439,24 @@ function getCurPosition(moveToCur, onSuccess, onError) {
             log('Found location: lat=' + lat.toString() + ',lng=' + lng.toString());
             onSuccess(lat, lng);
         },
-        onError,
+        function (err) {
+            if (config.enable_devmode) {
+                // AnVO: DEBUG
+                log('***set debug location...');
+                lat = devLat;
+                lng = devLng;
+
+                curlat = lat;
+                curlng = lng;
+                if (isMapReady && moveToCur) {
+                    log('Move to current location');
+                    moveToCurrentLocation();
+                }
+                onSuccess(lat, lng);
+            }
+            else
+                onError(err);
+        },
         { maximumAge: 3000, timeout: 5000, enableHighAccuracy: true });
     } catch (err) {
         log(err);
@@ -442,12 +465,21 @@ function getCurPosition(moveToCur, onSuccess, onError) {
 }
 
 function startPositionWatching(){
-    if (isDev) return;    
+    //if (config.enable_devmode) return;    
     if(gpsWatchID == -1){
         gpsWatchID = navigator.geolocation.watchPosition(
-            function(position){
+            function (position) {
+                var foundLat = position.coords.latitude;
+                var foundLng = position.coords.longitude;
+                var foundAcc = position.coords.accuracy;
+
+                if (config.enable_devmode) {
+                    foundLat = devLat;
+                    foundLng = devLng;
+                }
+
                 if(locationChangedCallback)
-                    locationChangedCallback(position.coords.latitude, position.coords.longitude, position.coords.accuracy);   
+                    locationChangedCallback(foundLat, foundLng, foundAcc);
             }, 
             function(error){
                 log('GPS watching error code: ' + error.code  + '\n message: ' + error.message + '\n');

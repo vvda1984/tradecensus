@@ -1,12 +1,13 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace TestConsole
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main1(string[] args)
         {
             string file = @"E:\Personal\Work\Mobiles.TradeCensus\Github\tradecensus\database\temp.txt";
             string[] lines = File.ReadAllLines(file);
@@ -71,6 +72,22 @@ namespace TestConsole
                 sb.Append("0").Append(",");                 // DEDISID
                 sb.Append("NULL").Append(",");              // LegalName
             };
+            Console.WriteLine("Press any key to exit...");
+            Console.ReadLine();
+        }
+
+        static void Main(string[] args)
+        {
+            test_db_tcEntities db = new test_db_tcEntities();
+            foreach(var o in db.Outlets)
+            {
+                var per = db.People.FirstOrDefault(p=>p.ID == o.PersonID);
+                if(per == null)
+                {
+                    
+                }
+            }
+
             Console.WriteLine("Press any key to exit...");
             Console.ReadLine();
         }

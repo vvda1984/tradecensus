@@ -36,7 +36,7 @@
           <Property Name="ProvinceID" Type="nvarchar" MaxLength="3" Nullable="false" />
           <Property Name="Phone" Type="nvarchar" MaxLength="20" />
           <Property Name="CallRate" Type="int" Nullable="false" />
-          <Property Name="CreateDate" Type="datetime" Nullable="false" />
+          <Property Name="CreateDate" Type="datetime" />
           <Property Name="CloseDate" Type="datetime" />
           <Property Name="Tracking" Type="tinyint" Nullable="false" />
           <Property Name="Class" Type="nvarchar" MaxLength="3" Nullable="false" />
@@ -44,18 +44,18 @@
           <Property Name="Close1st" Type="nvarchar" MaxLength="3" />
           <Property Name="Open2nd" Type="nvarchar" MaxLength="3" />
           <Property Name="Close2nd" Type="nvarchar" MaxLength="3" />
-          <Property Name="SpShift" Type="tinyint" Nullable="false" />
+          <Property Name="SpShift" Type="tinyint" />
           <Property Name="LastContact" Type="nvarchar" MaxLength="255" />
           <Property Name="LastVisit" Type="datetime" />
           <Property Name="PersonID" Type="int" Nullable="false" />
           <Property Name="Note" Type="nvarchar" MaxLength="512" />
-          <Property Name="Longitude" Type="float" Nullable="false" />
-          <Property Name="Latitude" Type="float" Nullable="false" />
+          <Property Name="Longitude" Type="float" />
+          <Property Name="Latitude" Type="float" />
           <Property Name="OutletEmail" Type="nvarchar" MaxLength="512" />
-          <Property Name="InputBy" Type="int" Nullable="false" />
-          <Property Name="InputDate" Type="datetime" Nullable="false" />
-          <Property Name="AmendBy" Type="int" Nullable="false" />
-          <Property Name="AmendDate" Type="datetime" Nullable="false" />
+          <Property Name="InputBy" Type="int" />
+          <Property Name="InputDate" Type="datetime" />
+          <Property Name="AmendBy" Type="int" />
+          <Property Name="AmendDate" Type="datetime" />
           <Property Name="AuditStatus" Type="tinyint" Nullable="false" />
           <Property Name="TotalVolume" Type="int" Nullable="false" />
           <Property Name="VBLVolume" Type="int" Nullable="false" />
@@ -125,10 +125,10 @@
           <Property Name="Email" Type="nvarchar" MaxLength="40" />
           <Property Name="OnLeave" Type="nvarchar" MaxLength="1" />
           <Property Name="EmailTo" Type="nvarchar" MaxLength="255" />
-          <Property Name="InputBy" Type="int" Nullable="false" />
-          <Property Name="InputDate" Type="datetime" Nullable="false" />
-          <Property Name="AmendBy" Type="int" Nullable="false" />
-          <Property Name="AmendDate" Type="datetime" Nullable="false" />
+          <Property Name="InputBy" Type="int" />
+          <Property Name="InputDate" Type="datetime" />
+          <Property Name="AmendBy" Type="int" />
+          <Property Name="AmendDate" Type="datetime" />
           <Property Name="IsDefaultSA" Type="bit" />
           <Property Name="IsDSM" Type="bit" Nullable="false" />
         </EntityType>
@@ -260,37 +260,6 @@
           <Property Name="OGroupID" Type="String" MaxLength="5" FixedLength="false" Unicode="false" Nullable="false" />
           <Property Name="KPIType" Type="Int32" Nullable="false" />
         </EntityType>
-        <EntityType Name="Person">
-          <Key>
-            <PropertyRef Name="ID" />
-          </Key>
-          <Property Name="ID" Type="Int32" Nullable="false" />
-          <Property Name="FirstName" Type="String" MaxLength="40" FixedLength="false" Unicode="true" Nullable="false" />
-          <Property Name="LastName" Type="String" MaxLength="255" FixedLength="false" Unicode="true" Nullable="false" />
-          <Property Name="PosID" Type="Int32" Nullable="false" />
-          <Property Name="HomeAddress" Type="String" MaxLength="123" FixedLength="false" Unicode="true" />
-          <Property Name="WorkAddress" Type="String" MaxLength="40" FixedLength="false" Unicode="true" />
-          <Property Name="DOB" Type="DateTime" Precision="3" />
-          <Property Name="Phone" Type="String" MaxLength="20" FixedLength="false" Unicode="true" />
-          <Property Name="HireDate" Type="DateTime" Precision="3" />
-          <Property Name="ReportTo" Type="Int32" />
-          <Property Name="TerminateDate" Type="DateTime" Precision="3" />
-          <Property Name="ZoneID" Type="String" MaxLength="3" FixedLength="false" Unicode="true" Nullable="false" />
-          <Property Name="AreaID" Type="String" MaxLength="3" FixedLength="false" Unicode="true" Nullable="false" />
-          <Property Name="HouseNo" Type="String" MaxLength="40" FixedLength="false" Unicode="true" />
-          <Property Name="Street" Type="String" MaxLength="40" FixedLength="false" Unicode="true" />
-          <Property Name="District" Type="String" MaxLength="40" FixedLength="false" Unicode="true" />
-          <Property Name="ProvinceID" Type="String" MaxLength="3" FixedLength="false" Unicode="true" />
-          <Property Name="Email" Type="String" MaxLength="40" FixedLength="false" Unicode="true" />
-          <Property Name="OnLeave" Type="String" MaxLength="1" FixedLength="false" Unicode="true" />
-          <Property Name="EmailTo" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="InputBy" Type="Int32" Nullable="false" />
-          <Property Name="InputDate" Type="DateTime" Nullable="false" Precision="3" />
-          <Property Name="AmendBy" Type="Int32" Nullable="false" />
-          <Property Name="AmendDate" Type="DateTime" Nullable="false" Precision="3" />
-          <Property Name="IsDefaultSA" Type="Boolean" />
-          <Property Name="IsDSM" Type="Boolean" Nullable="false" />
-        </EntityType>
         <EntityType Name="PersonRole">
           <Key>
             <PropertyRef Name="ID" />
@@ -359,7 +328,6 @@
           <EntitySet Name="Areas" EntityType="Self.Area" />
           <EntitySet Name="Configs" EntityType="Self.Config" />
           <EntitySet Name="OutletTypes" EntityType="Self.OutletType" />
-          <EntitySet Name="People" EntityType="Self.Person" />
           <EntitySet Name="PersonRoles" EntityType="Self.PersonRole" />
           <EntitySet Name="Provinces" EntityType="Self.Province" />
           <EntitySet Name="SyncDetails" EntityType="Self.SyncDetail" />
@@ -372,6 +340,7 @@
           <EntitySet Name="OutletHistories" EntityType="tradecensusModel.OutletHistory" />
           <EntitySet Name="Outlets" EntityType="tradecensusModel.Outlet" />
           <EntitySet Name="OutletImages" EntityType="tradecensusModel.OutletImage" />
+          <EntitySet Name="People" EntityType="tradecensusModel.Person" />
           <AssociationSet Name="FK_OutletImage_Outlet" Association="tradecensusModel.FK_OutletImage_Outlet">
             <End Role="Outlet" EntitySet="Outlets" />
             <End Role="OutletImage" EntitySet="OutletImages" />
@@ -404,7 +373,7 @@
           <Property Name="ProvinceID" Type="String" Nullable="false" MaxLength="3" FixedLength="false" Unicode="true" />
           <Property Name="Phone" Type="String" MaxLength="20" FixedLength="false" Unicode="true" />
           <Property Name="CallRate" Type="Int32" Nullable="false" />
-          <Property Name="CreateDate" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="CreateDate" Type="DateTime" Precision="3" />
           <Property Name="CloseDate" Type="DateTime" Precision="3" />
           <Property Name="Tracking" Type="Byte" Nullable="false" />
           <Property Name="Class" Type="String" Nullable="false" MaxLength="3" FixedLength="false" Unicode="true" />
@@ -412,18 +381,18 @@
           <Property Name="Close1st" Type="String" MaxLength="3" FixedLength="false" Unicode="true" />
           <Property Name="Open2nd" Type="String" MaxLength="3" FixedLength="false" Unicode="true" />
           <Property Name="Close2nd" Type="String" MaxLength="3" FixedLength="false" Unicode="true" />
-          <Property Name="SpShift" Type="Byte" Nullable="false" />
+          <Property Name="SpShift" Type="Byte" />
           <Property Name="LastContact" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="LastVisit" Type="DateTime" Precision="3" />
           <Property Name="PersonID" Type="Int32" Nullable="false" />
           <Property Name="Note" Type="String" MaxLength="512" FixedLength="false" Unicode="true" />
-          <Property Name="Longitude" Type="Double" Nullable="false" />
-          <Property Name="Latitude" Type="Double" Nullable="false" />
+          <Property Name="Longitude" Type="Double" />
+          <Property Name="Latitude" Type="Double" />
           <Property Name="OutletEmail" Type="String" MaxLength="512" FixedLength="false" Unicode="true" />
-          <Property Name="InputBy" Type="Int32" Nullable="false" />
-          <Property Name="InputDate" Type="DateTime" Nullable="false" Precision="3" />
-          <Property Name="AmendBy" Type="Int32" Nullable="false" />
-          <Property Name="AmendDate" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="InputBy" Type="Int32" />
+          <Property Name="InputDate" Type="DateTime" Precision="3" />
+          <Property Name="AmendBy" Type="Int32" />
+          <Property Name="AmendDate" Type="DateTime" Precision="3" />
           <Property Name="AuditStatus" Type="Byte" Nullable="false" />
           <Property Name="TotalVolume" Type="Int32" Nullable="false" />
           <Property Name="VBLVolume" Type="Int32" Nullable="false" />
@@ -449,6 +418,37 @@
           <Property Name="ImageData2" Type="Binary" MaxLength="Max" FixedLength="false" />
           <Property Name="ImageData3" Type="Binary" MaxLength="Max" FixedLength="false" />
           <NavigationProperty Name="Outlet" Relationship="tradecensusModel.FK_OutletImage_Outlet" FromRole="OutletImage" ToRole="Outlet" />
+        </EntityType>
+        <EntityType Name="Person">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="Int32" Nullable="false" />
+          <Property Name="FirstName" Type="String" Nullable="false" MaxLength="40" FixedLength="false" Unicode="true" />
+          <Property Name="LastName" Type="String" Nullable="false" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="PosID" Type="Int32" Nullable="false" />
+          <Property Name="HomeAddress" Type="String" MaxLength="123" FixedLength="false" Unicode="true" />
+          <Property Name="WorkAddress" Type="String" MaxLength="40" FixedLength="false" Unicode="true" />
+          <Property Name="DOB" Type="DateTime" Precision="3" />
+          <Property Name="Phone" Type="String" MaxLength="20" FixedLength="false" Unicode="true" />
+          <Property Name="HireDate" Type="DateTime" Precision="3" />
+          <Property Name="ReportTo" Type="Int32" />
+          <Property Name="TerminateDate" Type="DateTime" Precision="3" />
+          <Property Name="ZoneID" Type="String" Nullable="false" MaxLength="3" FixedLength="false" Unicode="true" />
+          <Property Name="AreaID" Type="String" Nullable="false" MaxLength="3" FixedLength="false" Unicode="true" />
+          <Property Name="HouseNo" Type="String" MaxLength="40" FixedLength="false" Unicode="true" />
+          <Property Name="Street" Type="String" MaxLength="40" FixedLength="false" Unicode="true" />
+          <Property Name="District" Type="String" MaxLength="40" FixedLength="false" Unicode="true" />
+          <Property Name="ProvinceID" Type="String" MaxLength="3" FixedLength="false" Unicode="true" />
+          <Property Name="Email" Type="String" MaxLength="40" FixedLength="false" Unicode="true" />
+          <Property Name="OnLeave" Type="String" MaxLength="1" FixedLength="false" Unicode="true" />
+          <Property Name="EmailTo" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="InputBy" Type="Int32" />
+          <Property Name="InputDate" Type="DateTime" Precision="3" />
+          <Property Name="AmendBy" Type="Int32" />
+          <Property Name="AmendDate" Type="DateTime" Precision="3" />
+          <Property Name="IsDefaultSA" Type="Boolean" />
+          <Property Name="IsDSM" Type="Boolean" Nullable="false" />
         </EntityType>
         <Association Name="FK_OutletImage_Outlet">
           <End Type="tradecensusModel.Outlet" Role="Outlet" Multiplicity="1" />
@@ -493,38 +493,6 @@
                 <ScalarProperty Name="Name" ColumnName="Name" />
                 <ScalarProperty Name="OGroupID" ColumnName="OGroupID" />
                 <ScalarProperty Name="KPIType" ColumnName="KPIType" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="People">
-            <EntityTypeMapping TypeName="tradecensusModel.Person">
-              <MappingFragment StoreEntitySet="Person">
-                <ScalarProperty Name="IsDSM" ColumnName="IsDSM" />
-                <ScalarProperty Name="ID" ColumnName="ID" />
-                <ScalarProperty Name="FirstName" ColumnName="FirstName" />
-                <ScalarProperty Name="LastName" ColumnName="LastName" />
-                <ScalarProperty Name="PosID" ColumnName="PosID" />
-                <ScalarProperty Name="HomeAddress" ColumnName="HomeAddress" />
-                <ScalarProperty Name="WorkAddress" ColumnName="WorkAddress" />
-                <ScalarProperty Name="DOB" ColumnName="DOB" />
-                <ScalarProperty Name="Phone" ColumnName="Phone" />
-                <ScalarProperty Name="HireDate" ColumnName="HireDate" />
-                <ScalarProperty Name="ReportTo" ColumnName="ReportTo" />
-                <ScalarProperty Name="TerminateDate" ColumnName="TerminateDate" />
-                <ScalarProperty Name="ZoneID" ColumnName="ZoneID" />
-                <ScalarProperty Name="AreaID" ColumnName="AreaID" />
-                <ScalarProperty Name="HouseNo" ColumnName="HouseNo" />
-                <ScalarProperty Name="Street" ColumnName="Street" />
-                <ScalarProperty Name="District" ColumnName="District" />
-                <ScalarProperty Name="ProvinceID" ColumnName="ProvinceID" />
-                <ScalarProperty Name="Email" ColumnName="Email" />
-                <ScalarProperty Name="OnLeave" ColumnName="OnLeave" />
-                <ScalarProperty Name="EmailTo" ColumnName="EmailTo" />
-                <ScalarProperty Name="InputBy" ColumnName="InputBy" />
-                <ScalarProperty Name="InputDate" ColumnName="InputDate" />
-                <ScalarProperty Name="AmendBy" ColumnName="AmendBy" />
-                <ScalarProperty Name="AmendDate" ColumnName="AmendDate" />
-                <ScalarProperty Name="IsDefaultSA" ColumnName="IsDefaultSA" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -653,6 +621,38 @@
                 <ScalarProperty Name="Image2" ColumnName="Image2" />
                 <ScalarProperty Name="Image1" ColumnName="Image1" />
                 <ScalarProperty Name="OutletID" ColumnName="OutletID" />
+                <ScalarProperty Name="ID" ColumnName="ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="People">
+            <EntityTypeMapping TypeName="tradecensusModel.Person">
+              <MappingFragment StoreEntitySet="Person">
+                <ScalarProperty Name="IsDSM" ColumnName="IsDSM" />
+                <ScalarProperty Name="IsDefaultSA" ColumnName="IsDefaultSA" />
+                <ScalarProperty Name="AmendDate" ColumnName="AmendDate" />
+                <ScalarProperty Name="AmendBy" ColumnName="AmendBy" />
+                <ScalarProperty Name="InputDate" ColumnName="InputDate" />
+                <ScalarProperty Name="InputBy" ColumnName="InputBy" />
+                <ScalarProperty Name="EmailTo" ColumnName="EmailTo" />
+                <ScalarProperty Name="OnLeave" ColumnName="OnLeave" />
+                <ScalarProperty Name="Email" ColumnName="Email" />
+                <ScalarProperty Name="ProvinceID" ColumnName="ProvinceID" />
+                <ScalarProperty Name="District" ColumnName="District" />
+                <ScalarProperty Name="Street" ColumnName="Street" />
+                <ScalarProperty Name="HouseNo" ColumnName="HouseNo" />
+                <ScalarProperty Name="AreaID" ColumnName="AreaID" />
+                <ScalarProperty Name="ZoneID" ColumnName="ZoneID" />
+                <ScalarProperty Name="TerminateDate" ColumnName="TerminateDate" />
+                <ScalarProperty Name="ReportTo" ColumnName="ReportTo" />
+                <ScalarProperty Name="HireDate" ColumnName="HireDate" />
+                <ScalarProperty Name="Phone" ColumnName="Phone" />
+                <ScalarProperty Name="DOB" ColumnName="DOB" />
+                <ScalarProperty Name="WorkAddress" ColumnName="WorkAddress" />
+                <ScalarProperty Name="HomeAddress" ColumnName="HomeAddress" />
+                <ScalarProperty Name="PosID" ColumnName="PosID" />
+                <ScalarProperty Name="LastName" ColumnName="LastName" />
+                <ScalarProperty Name="FirstName" ColumnName="FirstName" />
                 <ScalarProperty Name="ID" ColumnName="ID" />
               </MappingFragment>
             </EntityTypeMapping>

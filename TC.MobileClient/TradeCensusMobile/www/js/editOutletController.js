@@ -6,6 +6,8 @@ function editOutletController($scope, $mdDialog) {
     log($scope.outlet);
     $scope.R = R;
     isOutletDlgOpen = true;
+    var orgIsOpen = $scope.outlet.IsOpened;
+    var orgTracked = $scope.outlet.IsTracked;
     $scope.isOutletClosed = !$scope.outlet.IsOpened;
     $scope.isAuditor = user.hasAuditRole;
     $scope.isSaler = !user.hasAuditRole;
@@ -13,6 +15,11 @@ function editOutletController($scope, $mdDialog) {
     var title = $scope.outlet.Name;
     if ($scope.outlet.ID != 60000000) {
         title = title + ' (' + $scope.outlet.ID.toString() + ')';
+    }
+    if ($scope.outlet.AuditStatus == StatusAuditAccept || $scope.outlet.AuditStatus == StatusExitingAccept) {
+        title = title + ' - Approved';
+    } else if ($scope.outlet.AuditStatus == StatusAuditDeny || $scope.outlet.AuditStatus == StatusAuditDeny) {
+        title = title + ' - Denied';
     }
     $scope.title = title;
     
@@ -49,7 +56,7 @@ function editOutletController($scope, $mdDialog) {
                 $scope.disableOpenClose = $scope.outlet.IsOpened;
                 $scope.disableTracking = $scope.outlet.Tracking == 1;
                 $scope.disableComment = false;
-                $scope.allowCapture = false;//$scope.outlet.AuditStatus != StatusInitial;
+                $scope.allowCapture = true; //$scope.outlet.AuditStatus != StatusInitial;
             } else if ($scope.outlet.AuditStatus == StatusNew) {
                 // show not display here
             } else if ($scope.outlet.AuditStatus == StatusPost) {
@@ -59,10 +66,12 @@ function editOutletController($scope, $mdDialog) {
                 $scope.canPost = true;
                 $scope.canChangeOpenClose = true;
                 $scope.canChangeTrackNonTrack = true;
-                $scope.disableOpenClose = false;
-                $scope.disableTracking = false;
+                //$scope.disableOpenClose = false;
+                //$scope.disableTracking = false;
+                $scope.disableOpenClose = $scope.outlet.IsOpened;
+                $scope.disableTracking = $scope.outlet.Tracking == 1;
                 $scope.disableComment = false;
-                $scope.allowCapture = false;
+                $scope.allowCapture = true;
                 $scope.canRevise = $scope.outlet.canRevise;//$scope.outlet.AuditStatus == StatusPost && $scope.outlet.PersonID == user.id;
             } else if ($scope.outlet.AuditStatus == StatusExitingPost) {
                 setViewOnly();
@@ -90,23 +99,15 @@ function editOutletController($scope, $mdDialog) {
     $scope.outlet.modifiedImage3 = false;
     $scope.isDeleted = false;
 
-    if (!isEmpty($scope.outlet.StringImage1)) {        
-        $scope.image1URL = getImageURL($scope.outlet.StringImage1);
-        log($scope.image1URL);
-    } 
-    if (!isEmpty($scope.outlet.StringImage2)) {
-        $scope.image2URL = getImageURL($scope.outlet.StringImage2);        
-    }
-    if (!isEmpty($scope.outlet.StringImage3)) {
-        $scope.image3URL = getImageURL($scope.outlet.StringImage3);
-    }
-    loadImages();
+    $scope.image1URL = getImageURL($scope.outlet.StringImage1);
+    $scope.image2URL = getImageURL($scope.outlet.StringImage2);
+    $scope.image3URL = getImageURL($scope.outlet.StringImage3);
 
     $scope.capture = function (i) {
         if (i == 1) {
-            if (!allowCapture) return;
+            //if (!allowCapture) return;
             if (!isEmpty($scope.outlet.StringImage1)) {
-                openImgViewer($scope.outlet.Name, $scope.image1URL, function (imageURI) {
+                openImgViewer($scope.outlet.Name, !allowCapture, $scope.image1URL, function (imageURI) {
                     log('Update imageURI 1: ' + imageURI);
                     if (imageURI != null) {
                         $scope.outlet.StringImage1 = imageURI;
@@ -122,9 +123,9 @@ function editOutletController($scope, $mdDialog) {
                 });
             }
         } else if (i == 2) {
-            if (!allowCapture) return;
+            //if (!allowCapture) return;
             if (!isEmpty($scope.outlet.StringImage2)) {
-                openImgViewer($scope.outlet.Name, $scope.image2URL, function (imageURI) {
+                openImgViewer($scope.outlet.Name, !allowCapture, $scope.image2URL, function (imageURI) {
                     log('Update imageURI 2: ' + imageURI);
                     if (imageURI != null) {
                         $scope.outlet.StringImage2 = imageURI;
@@ -140,9 +141,9 @@ function editOutletController($scope, $mdDialog) {
                 });
             }                        
         } else if (i == 3) {
-            if (!allowCapture) return;
+            //if (!allowCapture) return;
             if (!isEmpty($scope.outlet.StringImage3)) {
-                openImgViewer($scope.outlet.Name, $scope.image3URL, function (imageURI) {
+                openImgViewer($scope.outlet.Name, !allowCapture, $scope.image3URL, function (imageURI) {
                     log('Update imageURI 3: ' + imageURI);
                     if (imageURI != null) {
                         $scope.outlet.StringImage3 = imageURI;
@@ -206,13 +207,33 @@ function editOutletController($scope, $mdDialog) {
     }
 
     $scope.saveUpdate = function () {
-        log('Change open/close status: ' + $scope.outlet.IsOpened);
-        setOpenCloseValue();
-        if ($scope.isAuditor && $scope.outlet.AuditStatus == StatusExitingPost)
-            $scope.outlet.AuditStatus = StatusDone;
+        showDlg(R.get_current_location, R.please_wait);
+        getCurPosition(false, function (lat, lng) {
+            hideDlg();
+            if (!validateRange(lat, lng)) return;
+            log('Change open/close status: ' + $scope.outlet.IsOpened);
+            setOpenCloseValue();
+
+            if (!validate())
+                return;
+
+            if ($scope.isAuditor && $scope.outlet.AuditStatus == StatusExitingPost)
+                $scope.outlet.AuditStatus = StatusDone;
+
+            $mdDialog.hide(true);
+            try { $scope.$apply(); } catch (er) { }
+        }, function () {
+            hideDlg();
+            showError(R.cannot_approve_or_deny);
+        })
+
+        //log('Change open/close status: ' + $scope.outlet.IsOpened);
+        //setOpenCloseValue();
+        //if ($scope.isAuditor && $scope.outlet.AuditStatus == StatusExitingPost)
+        //    $scope.outlet.AuditStatus = StatusDone;
      
-        $mdDialog.hide(true);
-        try { $scope.$apply(); } catch (er) { }
+        //$mdDialog.hide(true);
+        //try { $scope.$apply(); } catch (er) { }
     };
 
     $scope.cancelUpdate = function () {
@@ -263,26 +284,26 @@ function editOutletController($scope, $mdDialog) {
     }
 
     $scope.postOutlet = function () {
-        showDlg(R.get_current_location, R.please_wait);
-        getCurPosition(false, function (lat, lng) {
-            hideDlg();
-            if (!validateRange(lat, lng)) return;
-            setOpenCloseValue();
-            var confirmText = R.post_outlet_confirm.replace("{outletname}", $scope.outlet.Name);
-            showConfirm(R.post_outlet, confirmText, function () {
-                $scope.outlet.IsExistingDraft = false; // POST
-                $mdDialog.hide(true);
-            }, function () { });
-        }, function () {
-            hideDlg();
-            showError(R.cannot_approve_or_deny);
-        })
+        //showDlg(R.get_current_location, R.please_wait);
+        //getCurPosition(false, function (lat, lng) {
+        //    hideDlg();
+        //    if (!validateRange(lat, lng)) return;
+        //    setOpenCloseValue();
+        //    var confirmText = R.post_outlet_confirm.replace("{outletname}", $scope.outlet.Name);
+        //    showConfirm(R.post_outlet, confirmText, function () {
+        //        $scope.outlet.IsExistingDraft = false; // POST
+        //        $mdDialog.hide(true);
+        //    }, function () { });
+        //}, function () {
+        //    hideDlg();
+        //    showError(R.cannot_approve_or_deny);
+        //})
 
-        //var confirmText = R.post_outlet_confirm.replace("{outletname}", $scope.outlet.Name);
-        //showConfirm(R.post_outlet, confirmText, function () {
-        //    $scope.outlet.IsDraft = false; // POST
-        //    $mdDialog.hide(true);
-        //}, function () { });
+        var confirmText = R.post_outlet_confirm.replace("{outletname}", $scope.outlet.Name);
+        showConfirm(R.post_outlet, confirmText, function () {
+            $scope.outlet.IsDraft = false; // POST
+            $mdDialog.hide(true);
+        }, function () { });
     }
 
     $scope.approve = function () {
@@ -354,7 +375,7 @@ function editOutletController($scope, $mdDialog) {
         var d = calcDistance({ Lat: lat, Lng: lng }, { Lat: $scope.outlet.Latitude, Lng: $scope.outlet.Longitude });
         if (d > $scope.config.audit_range) {
             var errMsg = R.ovar_audit_distance.replace('{distance}', $scope.config.audit_range.toString());
-            showError(errMsg);
+            showValidationErr(errMsg);
             return false;
         }
         return true;
@@ -392,7 +413,7 @@ function editOutletController($scope, $mdDialog) {
 
     function captureImage(onSuccess, onError) {
         try {
-			if(isDev){
+			if(config.enable_devmode){
 				onSuccess('D:\\Untitled.png ');
 			}else{
 			    navigator.camera.getPicture(onSuccess, onError,
@@ -426,35 +447,55 @@ function editOutletController($scope, $mdDialog) {
     }
 
     function loadImages() {
-        findOutlet(config.tbl_outlet, $scope.outlet.PRowID, function (localOut) {
-            if (localOut == null) {
-                if (!isEmpty($scope.outlet.StringImage1)) {
-                    $scope.image1URL = getImageURL($scope.outlet.StringImage1);
-                    log($scope.image1URL);
-                }
+        return;
+        $scope.image1URL = getImageURL($scope.outlet.StringImage1);
 
-                if (!isEmpty($scope.outlet.StringImage2)) {
-                    $scope.image2URL = getImageURL($scope.outlet.StringImage2);
-                }
-                if (!isEmpty($scope.outlet.StringImage3)) {
-                    $scope.image3URL = getImageURL($scope.outlet.StringImage3);
-                }
-            } else {
-                if (!isEmpty(localOut.StringImage1 !== '')) {
-                    $scope.image1URL = getImageURL(localOut.StringImage1);
-                    log($scope.image1URL);
-                }
+        $scope.image2URL = getImageURL($scope.outlet.StringImage2);
 
-                if (!isEmpty(localOut.StringImage2 !== '')) {
-                    $scope.image2URL = getImageURL(localOut.StringImage2);
-                    log($scope.image2URL);
-                }
+        $scope.image3URL = getImageURL($scope.outlet.StringImage3);
 
-                if (!isEmpty(localOut.StringImage3 !== '')) {
-                    $scope.image3URL = getImageURL(localOut.StringImage3);
-                    log($scope.image3URL);
-                }
+        //findOutlet(config.tbl_outlet, $scope.outlet.PRowID, function (localOut) {
+        //    if (localOut == null) {
+        //        if (!isEmpty($scope.outlet.StringImage1)) {
+        //            $scope.image1URL = getImageURL($scope.outlet.StringImage1);
+        //            log($scope.image1URL);
+        //        }
+
+        //        if (!isEmpty($scope.outlet.StringImage2)) {
+        //            $scope.image2URL = getImageURL($scope.outlet.StringImage2);
+        //        }
+
+        //        if (!isEmpty($scope.outlet.StringImage3)) {
+        //            $scope.image3URL = getImageURL($scope.outlet.StringImage3);
+        //        }
+        //    } else {
+        //        log('Found local outlet');
+        //        if (!isEmpty(localOut.StringImage1 !== '')) {
+        //            $scope.image1URL = getImageURL(localOut.StringImage1);
+        //            log($scope.image1URL);
+        //        }
+
+        //        if (!isEmpty(localOut.StringImage2 !== '')) {
+        //            $scope.image2URL = getImageURL(localOut.StringImage2);
+        //            log($scope.image2URL);
+        //        }
+
+        //        if (!isEmpty(localOut.StringImage3 !== '')) {
+        //            $scope.image3URL = getImageURL(localOut.StringImage3);
+        //            log($scope.image3URL);
+        //        }
+        //    }
+        //})
+    }
+
+    function validate() {
+        if ($scope.outlet.IsOpened != orgIsOpen || $scope.outlet.IsTracked != orgTracked) {
+            if (isEmpty($scope.outlet.StringImage1) && isEmpty($scope.outlet.StringImage2) || isEmpty($scope.outlet.StringImage3)) {
+                showValidationErr(R.need_to_capture);
+                return false;
             }
-        })
+        }
+
+        return true;
     }
 }

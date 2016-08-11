@@ -21,8 +21,8 @@ function networkReady() {
 */
 function getNetworkState() {
     if (!config.mode_online) return false;
-    if (isDev)
-        return true;
+    if (config.enable_devmode) return true;
+
     try {
         //states[Connection.UNKNOWN] = 'Unknown connection';
         //states[Connection.ETHERNET] = 'Ethernet connection';
@@ -68,6 +68,9 @@ function toStr(text) {
 * isEmpty
 */
 function isEmpty(text) {
+    if (text == undefined) return true;
+    if (text == null) return true;
+    if (text == 'null') return true;
     return (!text || 0 === text.length);
 }
 
@@ -201,7 +204,7 @@ function compareDate(date1, date2, dateformat) {
 }
 
 
-function openImgViewer(title, url, callback) {
+function openImgViewer(title, viewOnly, url, callback) {
     newImageFile = null;
     onImageViewerClose = callback;
     log('Open image: ' + url + ' ' + title);
@@ -228,6 +231,26 @@ function openImgViewer(title, url, callback) {
                 '</div>' +
             '</div>' +
         '</div>';
+
+    if (viewOnly) {
+        dlg =
+        '<div id="image-overlay">' +
+            '<div class="loading-window">' +
+                '<div class="dialog" style="margin-left:20%;margin-right:20%;">' +
+                    '<div class="content">' +
+                        '<div class="title">' + title + '</div><br>' +
+                        '<div><img id="curOutletImage" class="outlet-image-large" src="' + url + '"/></div>' +
+                    '</div>' +
+                    '<div class="button label-blue" onclick="closeImgViewer()">' +
+                        '<div class="center" fit>CLOSE</div>' +
+                        '<paper-ripple fit></paper-ripple>' +
+                    '</div>' +
+                '</div>' +
+            '</div>' +
+        '</div>';
+    }
+
+
     try {      
         $(dlg).appendTo('body');
     } catch (err) {
@@ -271,7 +294,7 @@ function deleteImage() {
 }
 
 function captureImage(onSuccess, onError) {
-    if (isDev) {
+    if (config.enable_devmode) {
         onSuccess("test url");
     } else {
         try {

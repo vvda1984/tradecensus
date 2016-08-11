@@ -8,27 +8,36 @@
     </md-toolbar>
     <md-content layout-padding="" class="popup-content" style="margin-bottom:-8px;">
         <form name="userForm" style="margin-bottom:0px;">
-            <div layout-gt-sm="row" style="margin-bottom:2px;">
-                <div class="md-block-item">
+            <div layout-gt-sm="row" style="margin-bottom:-8px;">
+                <!--<div class="md-block-item">
                     <div class="md-block-item-title">{{R.code}}</div>
                     <div class="md-block-item-value">{{outlet.ID}}</div>
-                </div>
+                </div>-->
                 <div class="md-block-item" flex-gt-sm="">
                     <div class="md-block-item-title">{{R.address}}</div>
                     <div class="md-block-item-value">{{outlet.FullAddress}}</div>
                 </div>
+              
+                <!--<div class="md-block-item" >
+                    <div class="md-block-item-title">{{R.total}}</div>
+                    <div class="md-block-item-value">{{outlet.TotalVolume}}</div>
+                </div>
+                <div class="md-block-item">
+                    <div class="md-block-item-title">{{R.vbl_product}}</div>
+                    <div class="md-block-item-value">{{outlet.VBLVolume}}</div>
+                </div>-->
+                <div class="md-block-item">
+                    <div class="md-block-item-title">{{R.phone}}</div>
+                    <div class="md-block-item-value">{{outlet.Phone}}</div>
+                </div>
+
                 <div class="md-block-item">
                     <div class="md-block-item-title">{{R.outlet_type}}</div>
                     <div class="md-block-item-value">{{outlet.OutletTypeName}}</div>
                 </div>  
             </div>
 
-            <div layout-gt-sm="row" style="margin-bottom:2px;">
-                <div class="md-block-item" flex-gt-sm="">
-                    <div class="md-block-item-title">{{R.phone}}</div>
-                    <div class="md-block-item-value">{{outlet.Phone}}</div>
-                </div>
-
+            <div layout-gt-sm="row" style="margin-bottom:-8px;">
                 <div class="md-block-item" flex-gt-sm="">
                     <div class="md-block-item-title">{{R.last_contact}}</div>
                     <div class="md-block-item-value">{{outlet.LastContact ? outlet.LastContact : "-"}}</div>
@@ -36,7 +45,7 @@
 
                 <div class="md-block-item" flex-gt-sm="">
                     <div class="md-block-item-title">{{R.last_visit}}</div>
-                    <div class="md-block-item-value">{{outlet.LastContact ? outlet.LastContact : "-"}}</div>
+                    <div class="md-block-item-value">{{outlet.LastVisit ? outlet.LastVisit : "-"}}</div>
                 </div>
 
                 <!--<div class="md-block-item" flex-gt-sm="">
@@ -65,6 +74,23 @@
             </div>
 
             <div layout-gt-sm="row" style="margin-bottom:0px;">
+                <div flex-gt-sm="" style="margin-left:12px;margin-top:-8px;">
+                    <p>
+                        {{R.volumn}}<br />
+                        {{R.create_cartoons_avg_month}}
+                    </p>
+                </div>
+                <div class="md-block-item">
+                     <div class="md-block-item-title">{{R.total}}</div>
+                     <div class="md-block-item-value">{{outlet.TotalVolume}}</div>
+                 </div>
+                 <div class="md-block-item">
+                     <div class="md-block-item-title">{{R.vbl_product}}</div>
+                     <div class="md-block-item-value">{{outlet.VBLVolume}}</div>
+                 </div>
+            </div>
+
+            <div layout-gt-sm="row" style="margin-bottom:0px;">
                 <!--<div class="md-block-item" ng-show="needAudit" style="margin-top:-12px;">
                     <div class="md-block-item-title" style="min-width:80px">{{R.audit_status}}</div>
                       <md-radio-group ng-model="outlet.AuditStatus">
@@ -78,7 +104,7 @@
                 </md-input-container>                           
             </div>
            
-            <div layout-gt-sm="row" style="margin-bottom:24px;">
+            <div layout-gt-sm="row" style="margin-bottom:24px;margin-top:4px;">
                 <div flex-gt-sm="" style="margin-left:8px;" class="outlet-image-container">
                     <img id="outletImg1" class="outlet-image" ng-click="capture(1);" src="{{image1URL}}" alt="Outlet Image"/>
                     <!--<span id="outletImg1loading">Loading...</span>-->                    

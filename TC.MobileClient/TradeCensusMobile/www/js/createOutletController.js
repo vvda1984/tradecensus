@@ -32,20 +32,14 @@ function newOutletController($scope, $mdDialog) {
     }
     $scope.provinces = downloadProvinces;
     
-    if (!isEmpty($scope.outlet.StringImage1)) {
-        $scope.image1URL = getImageURL($scope.outlet.StringImage1);
-    }
-    if (!isEmpty($scope.outlet.StringImage2)) {
-        $scope.image2URL = getImageURL($scope.outlet.StringImage2);
-    }
-    if (!isEmpty($scope.outlet.StringImage3)) {
-        $scope.image3URL = getImageURL($scope.outlet.StringImage3);
-    }
+    $scope.image1URL = getImageURL($scope.outlet.StringImage1);
+    $scope.image2URL = getImageURL($scope.outlet.StringImage2);
+    $scope.image3URL = getImageURL($scope.outlet.StringImage3);
     
     $scope.capture = function (i) {
         if (i == 1) {
             if (!isEmpty($scope.outlet.StringImage1)) {              
-                openImgViewer($scope.outlet.Name, $scope.image1URL, function (imageURI) {
+                openImgViewer($scope.outlet.Name, false, $scope.image1URL, function (imageURI) {
                     log('Update imageURI 1: ' + imageURI);
                     if (imageURI != null) {
                         $scope.outlet.StringImage1 = imageURI;
@@ -62,7 +56,7 @@ function newOutletController($scope, $mdDialog) {
             }
         } else if (i == 2) {
             if (!isEmpty($scope.outlet.StringImage2)) {
-                openImgViewer($scope.outlet.Name, $scope.image2URL, function (imageURI) {
+                openImgViewer($scope.outlet.Name, false, $scope.image2URL, function (imageURI) {
                     log('Update imageURI 2: ' + imageURI);
                     if (imageURI != null) {
                         $scope.outlet.StringImage2 = imageURI;
@@ -79,7 +73,7 @@ function newOutletController($scope, $mdDialog) {
             }
         } else if (i == 3) {
             if (!isEmpty($scope.outlet.StringImage3)) {
-                openImgViewer($scope.outlet.Name, $scope.image3URL, function (imageURI) {
+                openImgViewer($scope.outlet.Name, false, $scope.image3URL, function (imageURI) {
                     log('Update imageURI 3: ' + imageURI);
                     if (imageURI != null) {
                         $scope.outlet.StringImage3 = imageURI;
@@ -153,32 +147,41 @@ function newOutletController($scope, $mdDialog) {
 
     $scope.postOutlet = function () {
         if (!validate()) return;
-        showDlg(R.get_current_location, R.please_wait);
-        getCurPosition(false, function (lat, lng) {
-            hideDlg();
-            if (!validateRange(lat, lng)) return;
+        //showDlg(R.get_current_location, R.please_wait);
+        //getCurPosition(false, function (lat, lng) {
+        //    hideDlg();
+        //    if (!validateRange(lat, lng)) return;
 
-            var confirmText = R.post_outlet_confirm.replace("{outletname}", $scope.outlet.Name);
-            showConfirm(R.post_outlet, confirmText, function () {
-                $scope.outlet.IsDraft = false; // POST
-                $mdDialog.hide(true);
-            }, function () { });
-        }, function () {
-            hideDlg();
-            showError(R.cannot_approve_or_deny);
-        })
+        //    var confirmText = R.post_outlet_confirm.replace("{outletname}", $scope.outlet.Name);
+        //    showConfirm(R.post_outlet, confirmText, function () {
+        //        $scope.outlet.IsDraft = false; // POST
+        //        $mdDialog.hide(true);
+        //    }, function () { });
+        //}, function () {
+        //    hideDlg();
+        //    showError(R.cannot_approve_or_deny);
+        //})
 
-        //var confirmText = R.post_outlet_confirm.replace("{outletname}", $scope.outlet.Name);
-        //showConfirm(R.post_outlet, confirmText, function () {
-        //    $scope.outlet.IsDraft = false; // POST
-        //    $mdDialog.hide(true);
-        //}, function () { });
+        var confirmText = R.post_outlet_confirm.replace("{outletname}", $scope.outlet.Name);
+        showConfirm(R.post_outlet, confirmText, function () {
+            $scope.outlet.IsDraft = false; // POST
+            $mdDialog.hide(true);
+        }, function () { });
     }
 
     $scope.saveUpdate = function () {
         if (!validate()) return;
 
-        $mdDialog.hide(true);
+        showDlg(R.get_current_location, R.please_wait);
+        getCurPosition(false, function (lat, lng) {
+            hideDlg();
+            if (!validateRange(lat, lng)) return;
+
+            $mdDialog.hide(true);
+        }, function () {
+            hideDlg();
+            showError(R.cannot_approve_or_deny);
+        });
     };
 
     $scope.cancelUpdate = function () {
@@ -227,27 +230,27 @@ function newOutletController($scope, $mdDialog) {
 
     function validate() {
         if (isEmpty($scope.outlet.Name)) {
-            showErrorAdv(R.outlet_name_is_empty, function () { $("#inputName").focus(); });
+            showValidationErr(R.outlet_name_is_empty, function () { $("#inputName").focus(); });
 
             return false;
         }
         if ($scope.outlet.OTypeID == '-1') {
-            showErrorAdv(R.outlet_type_is_empty, function () { $("#inputOutletType").focus(); });
+            showValidationErr(R.outlet_type_is_empty, function () { $("#inputOutletType").focus(); });
             //showError(R.outlet_type_is_empty);
             return false;
         }
 
         if (isEmpty($scope.outlet.Phone)) {
-            showErrorAdv(R.phone_is_empty, function () { $("#inputPhone").focus(); });
+            showValidationErr(R.phone_is_empty, function () { $("#inputPhone").focus(); });
             return false;
         }
 
         if (isEmpty($scope.outlet.AddLine)) {
-            showErrorAdv(R.house_no_is_empty, function () { $("#inputAdd1").focus(); });
+            showValidationErr(R.house_no_is_empty, function () { $("#inputAdd1").focus(); });
             return false;
         }
         if (isEmpty($scope.outlet.AddLine2)) {
-            showErrorAdv(R.street_is_empty, function () { $("#inputAdd2").focus(); });
+            showValidationErr(R.street_is_empty, function () { $("#inputAdd2").focus(); });
             return;
         }
         if (isEmpty($scope.outlet.District)) {
@@ -256,12 +259,12 @@ function newOutletController($scope, $mdDialog) {
         }
 
         if ($scope.outlet.TotalVolume == undefined || $scope.outlet.TotalVolume == null) {
-            showErrorAdv(R.total_is_invald, function () { $("#total").focus(); });
+            showValidationErr(R.total_is_invald, function () { $("#total").focus(); });
             return false;
         }
 
         if ($scope.outlet.TotalVolume == 0) {
-            showErrorAdv(R.total_is_empty, function () { $("#total").focus(); });
+            showValidationErr(R.total_is_empty, function () { $("#total").focus(); });
             return false;
         }
 
@@ -270,13 +273,13 @@ function newOutletController($scope, $mdDialog) {
             return false;
         }
 
-        if ($scope.outlet.VBLVolume == 0) {
-            showErrorAdv(R.vbl_is_empty, function () { $("#vblvolume").focus(); });
-            return false;
-        }
+        //if ($scope.outlet.VBLVolume == 0) {
+        //    showErrorAdv(R.vbl_is_empty, function () { $("#vblvolume").focus(); });
+        //    return false;
+        //}
 
         if ($scope.outlet.VBLVolume > $scope.outlet.TotalVolume) {
-            showErrorAdv(R.vbl_cannot_greater_than_total, function () { $("#total").focus(); });
+            showValidationErr(R.vbl_cannot_greater_than_total, function () { $("#total").focus(); });
             return false;
         }
 
@@ -287,7 +290,7 @@ function newOutletController($scope, $mdDialog) {
         var d = calcDistance({ Lat: lat, Lng: lng }, { Lat: $scope.outlet.Latitude, Lng: $scope.outlet.Longitude });
         if (d > $scope.config.audit_range) {
             var errMsg = R.ovar_audit_distance.replace('{distance}', $scope.config.audit_range.toString());
-            showError(errMsg);
+            showValidation(errMsg);
             return false;
         }
         return true;
@@ -313,36 +316,42 @@ function newOutletController($scope, $mdDialog) {
     }
 
     function loadImages() {
-        findOutlet(config.tbl_outlet, $scope.outlet.PRowID, function (localOut) {
-            if (localOut == null) {
-                if (!isEmpty($scope.outlet.StringImage1)) {
-                    $scope.image1URL = getImageURL($scope.outlet.StringImage1);
-                    log($scope.image1URL);
-                }
+        $scope.image1URL = getImageURL($scope.outlet.StringImage1);
+       
+        $scope.image2URL = getImageURL($scope.outlet.StringImage2);
+       
+        $scope.image3URL = getImageURL($scope.outlet.StringImage3);
+        
+        //findOutlet(config.tbl_outlet, $scope.outlet.PRowID, function (localOut) {
+        //    if (localOut == null) {
+        //        if (!isEmpty($scope.outlet.StringImage1)) {
+        //            $scope.image1URL = getImageURL($scope.outlet.StringImage1);
+        //            log($scope.image1URL);
+        //        }
 
-                if (!isEmpty($scope.outlet.StringImage2)) {
-                    $scope.image2URL = getImageURL($scope.outlet.StringImage2);
-                }
-                if (!isEmpty($scope.outlet.StringImage3)) {
-                    $scope.image3URL = getImageURL($scope.outlet.StringImage3);
-                }
-            } else {
-                if (!isEmpty(localOut.StringImage1 !== '')) {
-                    $scope.image1URL = getImageURL(localOut.StringImage1);
-                    log($scope.image1URL);
-                }
+        //        if (!isEmpty($scope.outlet.StringImage2)) {
+        //            $scope.image2URL = getImageURL($scope.outlet.StringImage2);
+        //        }
+        //        if (!isEmpty($scope.outlet.StringImage3)) {
+        //            $scope.image3URL = getImageURL($scope.outlet.StringImage3);
+        //        }
+        //    } else {
+        //        if (!isEmpty(localOut.StringImage1 !== '')) {
+        //            $scope.image1URL = getImageURL(localOut.StringImage1);
+        //            log($scope.image1URL);
+        //        }
 
-                if (!isEmpty(localOut.StringImage2 !== '')) {
-                    $scope.image2URL = getImageURL(localOut.StringImage2);
-                    log($scope.image2URL);
-                }
+        //        if (!isEmpty(localOut.StringImage2 !== '')) {
+        //            $scope.image2URL = getImageURL(localOut.StringImage2);
+        //            log($scope.image2URL);
+        //        }
 
-                if (!isEmpty(localOut.StringImage3 !== '')) {
-                    $scope.image3URL = getImageURL(localOut.StringImage3);
-                    log($scope.image3URL);
-                }
-            }
-        })
+        //        if (!isEmpty(localOut.StringImage3 !== '')) {
+        //            $scope.image3URL = getImageURL(localOut.StringImage3);
+        //            log($scope.image3URL);
+        //        }
+        //    }
+        //})
     }
     loadImages();
 

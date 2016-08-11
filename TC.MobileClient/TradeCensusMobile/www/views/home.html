@@ -92,9 +92,17 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td colspan="4">
+                                    <td colspan="2">
                                         <span class="small-text gray-color" ng-show="viewOutletFull">{{R.name}}: </span>
                                         <span class="normal-text black-color">{{outlet.ExtractName}}</span>
+                                    </td>
+                                    <td>
+                                        <span class="small-text gray-color" ng-show="viewOutletFull">{{R.total}}: </span>
+                                        <span class="normal-text black-color" ng-show="viewOutletFull">{{outlet.TotalVolume}}</span>
+                                    </td>
+                                    <td>
+                                        <span class="small-text gray-color" ng-show="viewOutletFull">{{R.vbl_product}}: </span>
+                                        <span class="normal-text black-color" ng-show="viewOutletFull">{{outlet.VBLVolume}}</span>
                                     </td>
                                 </tr>
                                 <tr>
@@ -147,7 +155,7 @@
         <div class="cirle-button white float-right" ng-show="showSettingExpand" ng-click="showHideRightPanel()">
             <img src="assets/img/setting-white.svg" />
         </div>    
-        <div class="cirle-button blue float-right" style="z-index:2" ng-click="createNewOutlet()">
+        <div class="cirle-button blue float-right" ng-show="canAddNewOutlet" style="z-index:2" ng-click="createNewOutlet()">
             <img src="assets/img/add.svg" />
         </div>
 
@@ -172,13 +180,18 @@
         <input placeholder="acc" ng-model="testacc" style="width:40px;height:36px;" type="number">
         <input placeholder="lat" ng-model="testlat" style="width:80px;height:36px;" type="number">
         <input placeholder="lng" ng-model="testlng" style="width:80px;height:36px;" type="number">
-        <button ng-click="testChangeLocation()">SET</button>
+        <button ng-click="testChangeLocation()">Set</button>
     </div>
 
     <div id="home-topright-offline">      
-       <div class="square-box-red float-right">
-            <span>{{R.you_are_in_offline_mode}}</span>
+       <div class="square-box-red float-right normal-text">
+           <span>{{R.you_are_in_offline_mode}}</span>
         </div>         
+    </div>
+    <div id="home-topright-sync-hint">
+        <div class="square-box-red float-right normal-text">
+            <span>{{R.hint_do_sync}}</span>
+        </div>
     </div>
 
     <div id="configPanel" class="slider-right" >

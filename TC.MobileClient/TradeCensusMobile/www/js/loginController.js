@@ -12,7 +12,7 @@ function loginController($scope, $http) {
     $scope.user = user;
     $scope.password = '';
 
-    if (isDev) {
+    if (config.enable_devmode) {
         $scope.userName = 'sale1';
         $scope.password = '1';
     }
@@ -375,6 +375,8 @@ function loginController($scope, $http) {
                         config.audit_range = parseInt(p.Value);
                     } else if (p.Key == 'download_batch_size') {
                         config.download_batch_size = parseInt(p.Value);
+                    } else if (p.Key == 'auto_sync') {
+                        config.auto_sync = parseInt(p.Value);
                     } else if (p.Key == 'sync_time') {
                         config.sync_time = parseInt(p.Value);
                     } else if (p.Key == 'sync_time_out') {

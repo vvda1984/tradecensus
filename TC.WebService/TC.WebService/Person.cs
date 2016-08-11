@@ -34,10 +34,10 @@ namespace TradeCensus
         public string Email { get; set; }
         public string OnLeave { get; set; }
         public string EmailTo { get; set; }
-        public int InputBy { get; set; }
-        public System.DateTime InputDate { get; set; }
-        public int AmendBy { get; set; }
-        public System.DateTime AmendDate { get; set; }
+        public Nullable<int> InputBy { get; set; }
+        public Nullable<System.DateTime> InputDate { get; set; }
+        public Nullable<int> AmendBy { get; set; }
+        public Nullable<System.DateTime> AmendDate { get; set; }
         public Nullable<bool> IsDefaultSA { get; set; }
         public bool IsDSM { get; set; }
     }

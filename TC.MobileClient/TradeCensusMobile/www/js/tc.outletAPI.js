@@ -1,16 +1,20 @@
 ﻿/// <reference path="tc.databaseAPI.js" />
 
 const StatusInitial = 0;
-const StatusEdit = 1;
-const StatusAuditAccept = 2;
-const StatusAuditDeny = 3;
+
 const StatusNew = 10;
 const StatusPost = 11;
-const StatusDelete = 21;
-const StatusDone = 30;
+const StatusAuditAccept = 12;
+const StatusAuditDeny = 13;
+
+const StatusDone = 40;
+
+const StatusEdit = 30;
 const StatusExitingPost = 31;
 const StatusExitingAccept = 32;
 const StatusExitingDeny = 33;
+
+const StatusDelete = 100;
 
 var nearByOutlets = [];
 var curOutlets = [];
@@ -115,8 +119,8 @@ function initializeOutlet(outlet) {
     if (outlet.Distance == null)
         outlet.Distance = 0;
 
-    if (outlet.FullAddress == null || isEmpty(outlet.FullAddress))
-        outlet.FullAddress = outlet.AddLine + ' ' + outlet.AddLine2 + ' ' + outlet.District + ' ' + provinceName;
+    //if (outlet.FullAddress == null || isEmpty(outlet.FullAddress))
+        outlet.FullAddress = outlet.AddLine + ' ' + outlet.AddLine2 + ', ' + outlet.District + ', ' + outlet.ProvinceName;
 
     var exname = '';
     if (outlet.PersonFirstName) {
@@ -129,11 +133,12 @@ function initializeOutlet(outlet) {
 
     if (exname != '') {
         exname = exname.concat(' (', outlet.PersonID.toString(), ')');
-    } else {
-        exname = exname.concat('Unknown (', outlet.PersonID.toString(), ')');
-    }
+    } 
 
     if (outlet.Note == null) outlet.Note = '';
+    if (outlet.LastVisit == null) outlet.LastVisit = "";
+    if (outlet.CloseDate == null) outlet.CloseDate = "";
+
     outlet.ExtractName = exname;
     outlet.IsSynced = (outlet.PSynced) && (outlet.PSynced == 1);
     outlet.IsOpened = isEmpty(outlet.CloseDate);
@@ -185,32 +190,59 @@ function queryOutlets(isbackground, view, callback) {
                 var rowLen = dbres.rows.length;
                 log('Found outlets: ' + rowLen.toString());
                 if (rowLen) {
-                    var foundOutlets = [];
                     var found = 0;
+                    var queryOutlets = [];
+                    var foundOutlets = [];
                     for (i = 0; i < rowLen; i++) {
                         var outlet = dbres.rows.item(i);
+                        outlet.Distance = calcDistance(saleLoc, { Lat: outlet.Latitude, Lng: outlet.Longitude });
+                        log('Distance from outlet ' + outlet.ID.toString() + ": " + outlet.Distance.toString());
+                        queryOutlets[i] = outlet;
+                    }
+                    queryOutlets.sort(function (a, b) { return a.Distance - b.Distance });
 
-                        if (outlet.Name == 'Aaaa') {
-                            log('');
-                        }
-
-                        var distance = 10000000;
+                    for (i = 0; i < queryOutlets.length && i <= count; i++) {
+                        var isMatched = true;
                         if (config.calc_distance_algorithm == "circle")
-                            distance = calcDistance(saleLoc, { Lat: outlet.Latitude, Lng: outlet.Longitude });
-                        log('Distance to Outlet ' + outlet.ID.toString() + ': ' + distance.toString());
+                            isMatched = queryOutlets[i].Distance <= meter;
 
-                        if (distance <= meter) {
-                            outlet.Distance = distance;
-                            log('Add outlet ' + outlet.ID.toString() + ' to list');
+                        if (isMatched) {
+                            var outlet = queryOutlets[i];
+                            log('Found outlet: ' + outlet.ID.toString());
+                            
                             initializeOutlet(outlet);
-                            outlet.positionIndex = foundOutlets.length;
-                            log('Set ' + outlet.Name + ': ' + outlet.positionIndex.toString());                            
+                            outlet.positionIndex = found;
                             foundOutlets[found] = outlet;
                             found++;
                         }
-                        if (found >= count) break;
                     }
-                    foundOutlets.sort(function (a, b) { return a.Distance - b.Distance; });
+
+                    //var foundOutlets = [];
+                    //var found = 0;
+                    //for (i = 0; i < rowLen; i++) {
+                    //    var outlet = dbres.rows.item(i);
+
+                    //    if (outlet.Name == 'Aaaa') {
+                    //        log('');
+                    //    }
+
+                    //    var distance = 10000000;
+                    //    if (config.calc_distance_algorithm == "circle")
+                    //        distance = calcDistance(saleLoc, { Lat: outlet.Latitude, Lng: outlet.Longitude });
+                    //    log('Distance to Outlet ' + outlet.ID.toString() + ': ' + distance.toString());
+
+                    //    if (distance <= meter) {
+                    //        outlet.Distance = distance;
+                    //        log('Add outlet ' + outlet.ID.toString() + ' to list');
+                    //        initializeOutlet(outlet);
+                    //        outlet.positionIndex = foundOutlets.length;
+                    //        log('Set ' + outlet.Name + ': ' + outlet.positionIndex.toString());                            
+                    //        foundOutlets[found] = outlet;
+                    //        found++;
+                    //    }
+                    //    if (found >= count) break;
+                    //}
+                    //foundOutlets.sort(function (a, b) { return a.Distance - b.Distance; });
                     callback(true, foundOutlets);
                 } else {
                     callback(true, []);

@@ -19,7 +19,7 @@
     $scope.isOnline = function () {
         if (!config.mode_online) return false;
         // ANVO: DEBUG
-        if (isDev)
+        if (config.enable_devmode)
             return true;
         var networkState = navigator.connection.type;
         return (networkState != 'Unknown connection' && networkState != 'no network connection')

@@ -29,6 +29,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     $scope.testlng = curlng;
     $scope.testacc = curacc;
 
+    $scope.canAddNewOutlet = !user.hasAuditRole;
     $scope.dprovinces = dprovinces;
     $scope.config = config;
     $scope.editOutletFull = false;
@@ -66,7 +67,9 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     }
 
     //*************************************************************************
-    $scope.testChangeLocation = function(){
+    $scope.testChangeLocation = function () {
+        devLat = $scope.testlat;
+        devLng = $scope.testlng;
         if(locationChangedCallback)
             locationChangedCallback($scope.testlat, $scope.testlng, $scope.testacc);   
     }
@@ -196,7 +199,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         } else{
             $scope.showNaviBar =  true;         
         }                           
-        $("#outletPanel").css('width', '40%');
+        $("#outletPanel").css('width', '42%');
         if($scope.showNaviBar)
             $("#slider-left-content").css('margin-bottom', '48px');
         else
@@ -224,7 +227,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             $scope.viewOutletFull = false;            
             $scope.showNaviBar = $scope.outlets.length > $scope.pageSize;     
                                                            
-            $("#outletPanel").css('width', '40%');
+            $("#outletPanel").css('width', '42%');
             if($scope.showNaviBar)
                 $("#slider-left-content").css('margin-bottom', '48px');
             else
@@ -422,7 +425,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             function (dbres) {
                 log('Found unsynced outlets: ' + dbres.rows.length.toString());
                 if (dbres.rows.length == 0) {
-                    onSuccess();
+                    showInfo(R.synchronize_completed);
                     return;
                 }
                 unsyncedOutlets = [];
@@ -432,7 +435,12 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                 //outlet/saveoutlets
                 //trySyncOutlets(unsyncedOutlets, 0, onSuccess, onError);
 
-                submitUnsyncedOutlets(unsyncedOutlets, onSuccess, onError);
+                submitUnsyncedOutlets(unsyncedOutlets, function () {
+                    showInfo(R.synchronize_completed);
+                    $("#home-topright-sync-hint").css('display', 'none');
+                }, function(err){
+                        showInfo(err);
+                    });
             }, handleDBError);
     }
    
@@ -447,76 +455,136 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 
     //*************************************************************************    
     $scope.postOutlet = function (outlet) {
-        showDlg(R.get_current_location, R.please_wait);
-        getCurPosition(false, function (lat, lng) {
-            hideDlg();
-            var confirmText = R.post_outlet_confirm.replace("{outletname}", outlet.Name);
-            showConfirm(R.post_outlet, confirmText, function () {
-                if (outlet.AuditStatus == StatusNew) {
-                    outlet.IsDraft = false;
-                    outlet.AuditStatus = StatusPost;
-                } else {
-                    outlet.IsExistingDraft = false;
-                    outlet.AuditStatus = StatusExitingPost;
-                }
+        //showDlg(R.get_current_location, R.please_wait);
+        //getCurPosition(false, function (lat, lng) {
+        //    hideDlg();
+        //    var confirmText = R.post_outlet_confirm.replace("{outletname}", outlet.Name);
+        //    showConfirm(R.post_outlet, confirmText, function () {
+        //        var clonedOutlet = cloneObj(outlet);
+        //        clonedOutlet.positionIndex = outlet.positionIndex;
+        //        if (clonedOutlet.AuditStatus == StatusNew) {
+        //            clonedOutlet.IsDraft = false;
+        //            clonedOutlet.AuditStatus = StatusPost;
+        //        } else {
+        //            clonedOutlet.IsExistingDraft = false;
+        //            clonedOutlet.AuditStatus = StatusExitingPost;
+        //        }
+        //        clonedOutlet.AmendBy = userID;
+        //        //log('Post outlet ' + outlet.ID.toString());
+        //        //outlet.AuditStatus = StatusPost;
+        //        log('Save outlet to server')
+        //        saveOutlet(clonedOutlet, function (synced) {
+        //            log('Save outlet to local db')
+        //            changeOutletStatusDB($scope.config.tbl_outlet, clonedOutlet, clonedOutlet.AuditStatus, synced ? 1 : 0, function () {
+        //                hideDlg();
+        //                $scope.refresh();
+        //            }, function (dberr) {
+        //                hideDlg();
+        //                showError(dberr.message);
+        //            });
+        //        });
+        //    }, function () { });
+        //}, function () {
+        //    hideDlg();
+        //    showError(R.cannot_approve_or_deny);
+        //})
 
-                //log('Post outlet ' + outlet.ID.toString());
-                //outlet.AuditStatus = StatusPost;
+        var confirmText = R.post_outlet_confirm.replace("{outletname}", outlet.Name);
+        showConfirm(R.post_outlet, confirmText, function () {
 
-                log('Save outlet to server')
-                saveOutlet(outlet, function (synced) {
-                    log('Save outlet to local db')
-                    changeOutletStatusDB($scope.config.tbl_outlet, outlet, StatusPost, synced ? 1 : 0, function () {
-                        hideDlg();
-                        $scope.refresh();
-                    }, function (dberr) {
-                        hideDlg();
-                        showError(dberr.message);
-                    });
+            var clonedOutlet = cloneObj(outlet);
+            clonedOutlet.positionIndex = outlet.positionIndex;
+
+            if (clonedOutlet.AuditStatus == StatusNew) {
+                clonedOutlet.IsDraft = false;
+                clonedOutlet.AuditStatus = StatusPost;
+            } else {
+                clonedOutlet.IsExistingDraft = false;
+                clonedOutlet.AuditStatus = StatusExitingPost;
+            }
+            clonedOutlet.AmendBy = userID;
+
+            //log('Post outlet ' + outlet.ID.toString());
+            //outlet.AuditStatus = StatusPost;
+
+            log('Save outlet to server')
+            saveOutlet(clonedOutlet, function (synced) {
+                log('Save outlet to local db')
+                changeOutletStatusDB($scope.config.tbl_outlet, clonedOutlet, clonedOutlet.AuditStatus, synced ? 1 : 0, function () {
+                    hideDlg();
+                    $scope.refresh();
+                }, function (dberr) {
+                    hideDlg();
+                    showError(dberr.message);
                 });
+            });
 
-            }, function () { });
-        }, function () {
-            hideDlg();
-            showError(R.cannot_approve_or_deny);
-        })
+        }, function () { });
     }
 
     //*************************************************************************    
     $scope.reviseOutlet = function (outlet) {
-        showDlg(R.get_current_location, R.please_wait);
-        getCurPosition(false, function (lat, lng) {
-            hideDlg();
-            var confirmText = R.revise_outlet_confirm.replace("{outletname}", outlet.Name);
-            showConfirm(R.revise_outlet, confirmText, function () {
-                if (outlet.AuditStatus == StatusPost) {
-                    outlet.IsDraft = true;
-                    outlet.AuditStatus = StatusNew;
-                } else {
-                    outlet.IsExistingDraft = true;
-                    outlet.AuditStatus = StatusEdit;
-                }
+        //showDlg(R.get_current_location, R.please_wait);
+        //getCurPosition(false, function (lat, lng) {
+        //    hideDlg();
+        //    var confirmText = R.revise_outlet_confirm.replace("{outletname}", outlet.Name);
+        //    showConfirm(R.revise_outlet, confirmText, function () {
+        //        var clonedOutlet = cloneObj(outlet);
+        //        clonedOutlet.positionIndex = outlet.positionIndex;
+        //        if (clonedOutlet.AuditStatus == StatusNew) {
+        //            clonedOutlet.IsDraft = true;
+        //            clonedOutlet.AuditStatus = StatusNew;
+        //        } else {
+        //            clonedOutlet.IsExistingDraft = true;
+        //            clonedOutlet.AuditStatus = StatusEdit;
+        //        }
+        //        clonedOutlet.AmendBy = userID;
+        //        log('Revise outlet ' + outlet.ID.toString());
+        //        log('Save outlet to server')
+        //        saveOutlet(outlet, function (synced) {
+        //            log('Save outlet to local db')
+        //            changeOutletStatusDB($scope.config.tbl_outlet, outlet, clonedOutlet.AuditStatus, synced ? 1 : 0, function () {
+        //                hideDlg();
+        //                $scope.refresh();
+        //            }, function (dberr) {
+        //                hideDlg();
+        //                showError(dberr.message);
+        //            });
+        //        });
+        //    }, function () { });
+        //}, function () {
+        //    hideDlg();
+        //    showError(R.cannot_approve_or_deny);
+        //})
 
-                log('Revise outlet ' + outlet.ID.toString());
+        var confirmText = R.revise_outlet_confirm.replace("{outletname}", outlet.Name);
+        showConfirm(R.revise_outlet, confirmText, function () {
+            var clonedOutlet = cloneObj(outlet);
+            clonedOutlet.positionIndex = outlet.positionIndex;
 
-                log('Save outlet to server')
-                saveOutlet(outlet, function (synced) {
-                    log('Save outlet to local db')
-                    changeOutletStatusDB($scope.config.tbl_outlet, outlet, StatusNew, synced ? 1 : 0, function () {
-                        hideDlg();
-                        $scope.refresh();
-                    }, function (dberr) {
-                        hideDlg();
-                        showError(dberr.message);
-                    });
+            if (clonedOutlet.AuditStatus == StatusNew) {
+                clonedOutlet.IsDraft = true;
+                clonedOutlet.AuditStatus = StatusNew;
+            } else {
+                clonedOutlet.IsExistingDraft = true;
+                clonedOutlet.AuditStatus = StatusEdit;
+            }
+            clonedOutlet.AmendBy = userID;
+            log('Revise outlet ' + outlet.ID.toString());
+
+            log('Save outlet to server')
+            saveOutlet(outlet, function (synced) {
+                log('Save outlet to local db')
+                changeOutletStatusDB($scope.config.tbl_outlet, outlet, clonedOutlet.AuditStatus, synced ? 1 : 0, function () {
+                    hideDlg();
+                    $scope.refresh();
+                }, function (dberr) {
+                    hideDlg();
+                    showError(dberr.message);
                 });
+            });
 
-            }, function () { });
-        }, function () {
-            hideDlg();
-            showError(R.cannot_approve_or_deny);
-        })
-
+        }, function () { });
 
         //if (!networkReady()) {
         //    if (outlet.IsSynced)
@@ -528,10 +596,8 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         //        showConfirm(R.revise_outlet, confirmText, function () {
         //            outlet.IsDraft = false;
         //            outlet.AuditStatus = StatusPost;
-
         //            log('Revise outlet ' + outlet.ID.toString());
         //            outlet.AuditStatus = StatusNew;
-
         //            log('Save outlet to server')
         //            saveOutlet(outlet, function (synced) {
         //                log('Save outlet to local db')
@@ -543,7 +609,6 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         //                    showError(dberr.message);
         //                });
         //            });
-
         //        }, function () { });
         //    }
         //} else {
@@ -551,10 +616,8 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         //    showConfirm(R.revise_outlet, confirmText, function () {
         //        outlet.IsDraft = false;
         //        outlet.AuditStatus = StatusPost;
-
         //        log('Revise outlet ' + outlet.ID.toString());
         //        outlet.AuditStatus = StatusNew;
-
         //        log('Save outlet to server')
         //        saveOutlet(outlet, function (synced) {
         //            log('Save outlet to local db')
@@ -566,7 +629,6 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         //                showError(dberr.message);
         //            });
         //        });
-
         //    }, function () { });
         //}
     }
@@ -1333,7 +1395,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 
                 if ($scope.outlet.IsOpened) $scope.outlet.CloseDate = '';
 
-                $scope.outlet.AmendBy = user.id;
+                $scope.outlet.AmendBy = userID;
 
                 var isPost = $scope.outlet.IsDraft != orgOutlet.IsDraft;
                 var isAuditChanged = $scope.outlet.AuditStatus != orgOutlet.AuditStatus;
@@ -1663,6 +1725,11 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 	var isSyncing = false;
 	var lastAutoSyncTS = new Date();
 	function autoSyncOutlets(onSuccess, onError) {
+	    if (!config.auto_sync) {
+	        log('Auto sync is OFF');
+	        onSuccess();
+	        return;
+	    }
 	    log('Select unsynced outlets');
 	    selectUnsyncedOutlets(config.tbl_outlet,
 			function (dbres) {
@@ -1726,8 +1793,18 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 	function enableOffline(isOnline) {
 	    if (isOnline) {
 	        $("#home-topright-offline").css('display', 'none');
+	        selectAllUnsyncedOutlets(config.tbl_outlet,
+              function (dbres) {
+                  if (dbres.rows.length > 0) {
+                      $("#home-topright-sync-hint").css('display', 'inline-block');
+                  } else {
+                      $("#home-topright-sync-hint").css('display', 'none');
+                  }
+              }, function (dberr) { });
+          
 	    } else {	        
 	        $("#home-topright-offline").css('display', 'inline-block');
+	        $("#home-topright-sync-hint").css('display', 'none');
 	    }
 	}
 
