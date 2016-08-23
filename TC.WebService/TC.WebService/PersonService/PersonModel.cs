@@ -45,5 +45,7 @@ namespace TradeCensus
         public int Role { get; set; }
         [DataMember]
         public bool IsDSM { get; set; }
+        [DataMember]
+        public string Token { get; set; }
     }
 }

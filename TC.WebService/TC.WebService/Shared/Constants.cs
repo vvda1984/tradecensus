@@ -17,17 +17,20 @@
         public const int StatusPost = 11;
         public const int StatusAuditAccept = 12;
         public const int StatusAuditDeny = 13;
+        public const int StatusAuditorNew = 14;
+        public const int StatusAuditorAccept = 15;
 
         public const int StatusEdit = 30;
         public const int StatusExistingPost = 31;
         public const int StatusExistingAccept = 32;
         public const int StatusExistingDeny = 33;
-
         public const int StatusDone = 40;
-
         public const int StatusDelete = 100;
         public const int StatusDeny = 101;
-       
+        public const int StatusRevert = 102;
+
+        //public const int New
+
         public const string FieldDelimeter = ",";
         public const string DataDelimeter = "|||";
         public const string Base64 = "base64";

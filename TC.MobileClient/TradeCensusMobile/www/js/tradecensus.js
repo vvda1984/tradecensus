@@ -15,6 +15,7 @@ var newImageFile;
 var userID = 0;
 var user = newUser();
 var config = newConfig();
+var deviceInfo = newDeviceInfo();
 var provinces = [];
 var outletTypes = [];
 var provinces = [];
@@ -26,6 +27,8 @@ var sessionID = guid();
 
 var isNetworkAvailable = true;      // Network monitoring status
 var onNetworkChangedCallback;       // Network monitoring callback
+
+showDlg(R.connecting_server, R.please_wait, null);
 
 var app = angular.module('TradeCensus', ['ngRoute', 'ngMaterial', 'ngMessages'])
 .config(['$routeProvider', appRouter])
@@ -90,7 +93,6 @@ var app = angular.module('TradeCensus', ['ngRoute', 'ngMaterial', 'ngMessages'])
     //document.addEventListener("deviceready", onDeviceReady, false);
 })(window);
 
-showDlg(R.connecting_server, R.please_wait, null);
 
 function newResource() {
     return {
@@ -123,13 +125,13 @@ function newConfig() {
     //ip: 'localhost', //'27.0.15.234',
     //port: '33334',//'3001',
     var c = {
-        enable_devmode: false,
+        enable_devmode: true,
         page_size: 20,
         cluster_size: 50,
         cluster_max_zoom: 15.5,
         mode_online: true,
         protocol: 'https',
-        ip: '203.34.144.29/trade-census',
+        ip: '203.34.144.29/tc-test', //'203.34.144.29/trade-census', //tc-test
         port: '443',
         service_name: 'TradeCensusService.svc', // absolute
         enable_liveGPS: true,
@@ -149,7 +151,7 @@ function newConfig() {
         sync_time: 1 * 60 * 1000,   // Sync delay...
         sync_time_out: 5 * 60,      // Sync timeout
         sync_batch_size: 100,       // Number of uploaded outlets in sync request
-        ping_time: 5,               // Time
+        ping_time: 30,               // Time
         refresh_time: 30,           // Time to get outlet
         refresh_time_out: 3 * 60,   // Time to get outlet
         tbl_area_ver: '0',
@@ -159,12 +161,15 @@ function newConfig() {
         tbl_outletSync: 'uos',
         tbl_outlet: 'uo',
         tbl_downloadProvince: 'udp',
-        version: 'Version 1.1.16222.12',
+        version: '1.2a.16235.2',
     };
     if (isHttp) {
         c.protocol = 'http';
         c.port = '80';
     }
+
+    if (c.enable_devmode)
+        c.audit_range = 5000;
 
     return c;
 }
@@ -172,7 +177,7 @@ function newConfig() {
 function newUser() {
     return {
         id: 0, // dev 
-        userName: '',       
+        userName: '',
         firstName: '',
         lastName: '',
         isTerminate: false,
@@ -190,6 +195,18 @@ function newUser() {
         workAddress: '',
         phone: '',
         isDSM: false,
+        role: 0,
+        token: ''
+    }
+}
+
+function newDeviceInfo() {
+    return {
+        model: '',
+        platform: '',
+        uuid: '',
+        version: '',
+        manufacturer : '',
     }
 }
 
@@ -204,8 +221,10 @@ function initializeEnvironment(callback) {
                 });
             });
         }, function (dberr) {           
-            showError(dberr.message);
+            showError(dberr);
         });        
+    }, function (err) {
+        showError(err);
     });
 }
 
@@ -337,7 +356,24 @@ function loadSettings(tx, callback) {
     });
 }
 
+function getDeviceInfo() {
+    if (config.enable_devmode) {
+        deviceInfo.model = 'Samsung Tab 3';
+        deviceInfo.platform = 'Web';
+        deviceInfo.uuid = '123-456-789';
+        deviceInfo.version = '1.0';
+        deviceInfo.manufacturer = 'Samsung';
+    } else {
+        deviceInfo.model = device.model;
+        deviceInfo.platform = device.platform;
+        deviceInfo.uuid = device.uuid;
+        deviceInfo.version = device.version;
+        deviceInfo.manufacturer = device.manufacturer;
+    }
+}
+
 function initializeApp() {
+    getDeviceInfo();
     log('Initialize angular app.');
     ping(function (r) {
         serverConnected = r;
@@ -458,8 +494,17 @@ function tryping(retry, callback) {
         return;
     }
 
-    var devideInfo = userID.toString();
-    var url = baseURL + '/ping/' + devideInfo;
+    var text = '';
+    text = text.concat('user_id~', user.id);
+    text = text.concat('||token~', user.token);
+    text = text.concat('||app_version~', config.version);
+    text = text.concat('||model~', deviceInfo.model);
+    text = text.concat('||platform~', deviceInfo.platform);
+    text = text.concat('||uuid~', deviceInfo.uuid);
+    text = text.concat('||version~', deviceInfo.version);
+    text = text.concat('||manufacturer~', deviceInfo.manufacturer);
+    var url = baseURL + '/ping/' + text;
+    log(url);
     $.ajax({
         type: "POST",
         contentType: "application/json; charset=utf-8",
@@ -467,7 +512,7 @@ function tryping(retry, callback) {
         data: '',
         processData: false,
         dataType: "json",
-        timeout: config.time_out * 1000, // sets timeout to 3 seconds
+        timeout: config.time_out * 1000,
         success: function (response) {
             callback(true);
         },

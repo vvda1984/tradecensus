@@ -162,6 +162,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="DBScript.txt" />
     <Content Include="Global.asax" />
     <Content Include="ReleaseNote.txt" />
     <Content Include="scripts\ai.0.22.9-build00167.js" />
@@ -188,8 +189,11 @@
     <Compile Include="Config.cs">
       <DependentUpon>TradeCensusModel.tt</DependentUpon>
     </Compile>
-    <Compile Include="ConfigService\ConfigRepo.cs" />
+    <Compile Include="ConfigService\ConfigService.cs" />
     <Compile Include="ConfigService\IConfigService.cs" />
+    <Compile Include="ConnectionSession.cs">
+      <DependentUpon>TradeCensusModel.tt</DependentUpon>
+    </Compile>
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -205,7 +209,7 @@
     </Compile>
     <Compile Include="OutletService\IOutletService.cs" />
     <Compile Include="OutletService\OutletModel.cs" />
-    <Compile Include="OutletService\OutletRepo.cs" />
+    <Compile Include="OutletService\OutletService.cs" />
     <Compile Include="OutletType.cs">
       <DependentUpon>TradeCensusModel.tt</DependentUpon>
     </Compile>
@@ -217,13 +221,13 @@
     </Compile>
     <Compile Include="PersonService\IPersonService.cs" />
     <Compile Include="PersonService\PersonModel.cs" />
-    <Compile Include="PersonService\PersonRepo.cs" />
+    <Compile Include="PersonService\PersonService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Province.cs">
       <DependentUpon>TradeCensusModel.tt</DependentUpon>
     </Compile>
     <Compile Include="ProvinceService\IProvinceService.cs" />
-    <Compile Include="ProvinceService\ProvinceRepo.cs" />
+    <Compile Include="ProvinceService\ProvinceService.cs" />
     <Compile Include="Shared\BaseRepo.cs" />
     <Compile Include="Shared\ConfigResponse.cs" />
     <Compile Include="Shared\Constants.cs" />

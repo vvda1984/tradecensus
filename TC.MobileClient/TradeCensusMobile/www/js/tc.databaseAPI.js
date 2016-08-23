@@ -1,5 +1,4 @@
-﻿function initalizeDB(onSuccess) {
-    //db = window.sqlitePlugin.openDatabase({ name: "td-v01.db", location: 'default' });
+﻿function initalizeDB(onSuccess, onError) {
     var dbName = 'tc-v1-03.db';
     log('Open database: ' + dbName);
     db = window.openDatabase("Database", "2.0", dbName, 200000);
@@ -8,31 +7,61 @@
             tx.executeSql('DROP TABLE IF EXISTS user1');
             tx.executeSql('DROP TABLE IF EXISTS config');
             tx.executeSql('DROP TABLE IF EXISTS province');
-            tx.executeSql('DROP TABLE IF EXISTS outletType');        
-            tx.executeSql('DROP TABLE IF EXISTS [outletImage1]');        
+            tx.executeSql('DROP TABLE IF EXISTS outletType');
+            tx.executeSql('DROP TABLE IF EXISTS [outletImage1]');
         }
 
         log("ensure table [user] exist");
-        tx.executeSql('CREATE TABLE IF NOT EXISTS [user1] ( [ID] integer PRIMARY KEY NOT NULL, [UserName] text, [FirstName] text, [LastName] text, [IsTerminate] text NOT NULL,	[HasAuditRole] text NOT NULL COLLATE NOCASE, [PosID] text NOT NULL COLLATE NOCASE, [ZoneID] text NOT NULL COLLATE NOCASE, [AreaID] text NOT NULL COLLATE NOCASE, [ProvinceID] text NOT NULL COLLATE NOCASE, [Email] text, [EmailTo] text, [HouseNo] text, [Street] text, [District] text, [HomeAddress] text, [WorkAddress] text, [Phone] text, [IsDSM] text NOT NULL, [OfflinePassword] text NOT NULL)');
+        tx.executeSql('CREATE TABLE IF NOT EXISTS [user1] ( [ID] integer PRIMARY KEY NOT NULL, [UserName] text, [FirstName] text, [LastName] text, [IsTerminate] text NOT NULL,	[HasAuditRole] text NOT NULL COLLATE NOCASE, [PosID] text NOT NULL COLLATE NOCASE, [ZoneID] text NOT NULL COLLATE NOCASE, [AreaID] text NOT NULL COLLATE NOCASE, [ProvinceID] text NOT NULL COLLATE NOCASE, [Email] text, [EmailTo] text, [HouseNo] text, [Street] text, [District] text, [HomeAddress] text, [WorkAddress] text, [Phone] text, [IsDSM] text NOT NULL, [OfflinePassword] text NOT NULL)',
+            [],
+            function (tx1) {
+            },
+            function (tx1, dberr) {
+                onError(dberr.message);
+            });
 
         log("ensure table [config] exist");
-        tx.executeSql('CREATE TABLE IF NOT EXISTS [config] ( [Name] text PRIMARY KEY NOT NULL COLLATE NOCASE, [Value] text)');
+        tx.executeSql('CREATE TABLE IF NOT EXISTS [config] ( [Name] text PRIMARY KEY NOT NULL COLLATE NOCASE, [Value] text)',
+            [],
+            function (tx1) {
+            },
+            function (tx1, dberr) {
+                onError(dberr.message);
+            });
 
         log("ensure table [province] exist");
-        tx.executeSql('CREATE TABLE IF NOT EXISTS [province] ( [ID] text PRIMARY KEY NOT NULL, [Name] text COLLATE NOCASE)');
-       
+        tx.executeSql('CREATE TABLE IF NOT EXISTS [province] ( [ID] text PRIMARY KEY NOT NULL, [Name] text COLLATE NOCASE)',
+            [],
+            function (tx1) {
+            },
+            function (tx1, dberr) {
+                onError(dberr.message);
+            });
+
         log("ensure table [outletType] exist");
-        tx.executeSql('CREATE TABLE IF NOT EXISTS [outletType] ( [ID] text PRIMARY KEY NOT NULL, [Name] text COLLATE NOCASE, [OGroupID] text COLLATE NOCASE, [KPIType] int NOT NULL)');
+        tx.executeSql('CREATE TABLE IF NOT EXISTS [outletType] ( [ID] text PRIMARY KEY NOT NULL, [Name] text COLLATE NOCASE, [OGroupID] text COLLATE NOCASE, [KPIType] int NOT NULL)',
+            [],
+            function (tx1) {
+            },
+            function (tx1, dberr) {
+                onError(dberr.message);
+            });
 
         log("ensure table [outletImage1] exist");
-        tx.executeSql('CREATE TABLE IF NOT EXISTS [outletImage1] ( [ID] text NOT NULL, [OutletID] text NOT NULL, [ImageIndex] text NOT NULL, [ImagePath] text NOT NULL, [Uploaded] text NOT NULL, [CreatedDate] text NOT NULL, [CreatedBy] text NOT NULL )');
+        tx.executeSql('CREATE TABLE IF NOT EXISTS [outletImage1] ( [ID] text NOT NULL, [OutletID] text NOT NULL, [ImageIndex] text NOT NULL, [ImagePath] text NOT NULL, [Uploaded] text NOT NULL, [CreatedDate] text NOT NULL, [CreatedBy] text NOT NULL )',
+            [],
+            function (tx1) {
+            },
+            function (tx1, dberr) {
+                onError(dberr.message);
+            });
 
         //log("ensure table [outletSync] exist");
         //tx.executeSql('CREATE TABLE IF NOT EXISTS [outletSync] ( [ID] text PRIMARY KEY NOT NULL, [PersonID] integer NOT NULL, [LastSyncTS] text NOT NULL)');
 
         log("initialized db successfully");
         initializeProvinces(tx, onSuccess);
-    });    
+    });
 }
 
 function logSqlCommand(sql) {
@@ -111,30 +140,47 @@ function insertUserDB(person, userName, password, onSuccess, onError) {
         var sql = 'DELETE FROM [user1]';
         logSqlCommand(sql);
         tx.executeSql(sql, [], function (tx1) {
-            var sql = "INSERT OR REPLACE INTO [user1] VALUES (";
+            var sql = "INSERT INTO [user1] VALUES (";
             sql = sql.concat(person.ID.toString(), ", ");
             sql = sql.concat("'", userName, "', ");
-            sql = sql.concat("'", person.FirstName, "', ");
-            sql = sql.concat("'", person.LastName, "', ");
+            sql = sql.concat("'", quoteText(person.FirstName), "', ");
+            sql = sql.concat("'", quoteText(person.LastName), "', ");
             sql = sql.concat("'", person.IsTerminate ? "1" : "0", "', ");
             sql = sql.concat("'", person.HasAuditRole ? "1" : "0", "', ");
             sql = sql.concat("'", person.PosID.toString(), "', ");
             sql = sql.concat("'", person.ZoneID, "', ");
             sql = sql.concat("'", person.AreaID, "', ");
             sql = sql.concat("'", person.ProvinceID, "', ");
-            sql = sql.concat("'", toStr(person.Email), "', ");
-            sql = sql.concat("'", toStr(person.EmailTo), "', ");
-            sql = sql.concat("'", toStr(person.HouseNo), "', ");
-            sql = sql.concat("'", toStr(person.Street), "', ");
-            sql = sql.concat("'", toStr(person.District), "', ");
-            sql = sql.concat("'", toStr(person.HomeAddress), "', ");
-            sql = sql.concat("'", toStr(person.WorkAddress), "', ");
-            sql = sql.concat("'", toStr(person.Phone), "', ");
+            sql = sql.concat("'", toStr(quoteText(person.Email)), "', ");
+            sql = sql.concat("'", toStr(quoteText(person.EmailTo)), "', ");
+            sql = sql.concat("'", toStr(quoteText(person.HouseNo)), "', ");
+            sql = sql.concat("'", toStr(quoteText(person.Street)), "', ");
+            sql = sql.concat("'", toStr(quoteText(person.District)), "', ");
+            sql = sql.concat("'", toStr(quoteText(person.HomeAddress)), "', ");
+            sql = sql.concat("'", toStr(quoteText(person.WorkAddress)), "', ");
+            sql = sql.concat("'", toStr(quoteText(person.Phone)), "', ");
             sql = sql.concat("'", toStr(person.IsDSM), "', ");
-            sql = sql.concat("'", hashString(password), "')");
+            sql = sql.concat("'", hashString(quoteText(password)), "')");
             logSqlCommand(sql);
             tx1.executeSql(sql, [], onSuccess, onError);
-        }, onError);
+        }, function (tx1, dberr) {
+            onError(dberr);
+        });
+    });
+}
+
+function changePasswordDB(userID, password, onSuccess, onError) {
+    db.transaction(function (tx) {
+        var sql = 'UPDATE [user1] set OfflinePassword = ';
+        sql = sql.concat('"', hashString(password), '"');
+        sql = sql.concat(' WHERE ID = ', userID);
+
+        logSqlCommand(sql);
+        tx.executeSql(sql, [], function (tx1) {
+            onSuccess();
+        }, function (tx1, dberr) {
+            onError(dberr);
+        });
     });
 }
 
@@ -155,7 +201,7 @@ function selectConfigs(onSuccess, onError) {
 function selectUserDB(userName, password, onSuccess, onError) {
     db.transaction(function (tx) {
         var sql = "SELECT * FROM [user1] WHERE ";
-        sql = sql.concat("UserName='", userName, "' AND OfflinePassword='" + hashString(password), "'");
+        sql = sql.concat("UserName='", userName, "' AND OfflinePassword='" + hashString(quoteText(password)), "'");
         logSqlCommand(sql);
         tx.executeSql(sql, [], onSuccess, onError);
     });
@@ -170,7 +216,7 @@ function insertProvinces(items, onSuccess, onError) {
             provinces[i] = p;
             var sql = "INSERT OR REPLACE INTO [province] VALUES (";           
             sql = sql.concat("'", p.ID, "', ");            
-            sql = sql.concat("'", p.Name, "')");
+            sql = sql.concat("'", quoteText(p.Name), "')");
             logSqlCommand(sql);
             tx.executeSql(sql, [], function(tx){}, onError);
         };
@@ -188,7 +234,7 @@ function insertOutletTypes(items, onSuccess, onError) {
             outletTypes[i + 1] = p;
             var sql = "INSERT OR REPLACE INTO [outletType] VALUES (";
             sql = sql.concat("'", p.ID, "', ");
-            sql = sql.concat("'", p.Name, "', ");
+            sql = sql.concat("'", quoteText(p.Name), "', ");
             sql = sql.concat("'", p.OGroupID, "', ");
             sql = sql.concat(p.KPIType.toString(), ")");
             logSqlCommand(sql);
@@ -231,7 +277,7 @@ function insertSetting(tx, name, value) {
     tx.executeSql(sql, [], function () { }, function (err) { log(err);});
 }
 
-function initializeProvinces(tx1, onSuccess) {
+function initializeProvinces(tx1, onSuccess, onError) {
     log('initialize provinces');
     tx1.executeSql("SELECT * FROM province", [], function (tx, dbres) {
         if (dbres.rows.length == 0) {
@@ -317,7 +363,9 @@ function initializeProvinceRow(tx, name, value) {
     sql = sql.concat("'", name, "', ");
     sql = sql.concat("'", value, "')");
     logSqlCommand(sql);
-    tx.executeSql(sql);
+    tx.executeSql(sql, [], function (tx1) { }, function (tx1, dberr) {
+        log(dberr.message);
+    });
 }
 
 function selectProvincesDB(tx, onSuccess, onError) {
@@ -356,6 +404,10 @@ function ensureUserOutletDBExist(isReset, outletSyncTbl, outletTbl, provinceDown
             tx.executeSql('DROP TABLE IF EXISTS ' + outletSyncTbl);
             tx.executeSql('DROP TABLE IF EXISTS ' + outletTbl);
             tx.executeSql('DROP TABLE IF EXISTS ' + provinceDownloadTbl);
+
+            tx.executeSql('Delete from ' + outletTbl, [], function (tx1) { }, function (tx1, dberr) { });
+            tx.executeSql('Delete from ' + provinceDownloadTbl, [], function (tx1) { }, function (tx1, dberr) { });
+            tx.executeSql('Delete from ' + outletSyncTbl, [], function (tx1) { }, function (tx1, dberr) { });
         }
 
         log('ensure table [' + outletSyncTbl + '] exist');
@@ -441,7 +493,9 @@ function syncWithStorageOutletDB(tx, userID, outletTbl, outlets, i, onSuccess, o
 
     outlet.PSynced = 1; // synced
     outlet.positionIndex = i;
-    outlet.PStatus = 0;
+    if (outlet.PStatus == null || outlet.PStatus == undefined)
+        outlet.PStatus = 0;
+    //outlet.PStatus = outlet.PStatus == null ? 0 : outlet.PStatus;
     initializeOutlet(outlet);
 
     var sql = 'SELECT * FROM ' + outletTbl + ' WHERE PRowID="' + outlet.PRowID.toString() + '"';
@@ -519,7 +573,8 @@ function insertDownloadedOutletDB(tx, outletTbl, outlets, i, onSuccess, onError)
     var outlet = outlets[i];
     outlet.PSynced = 1; // synced
     outlet.positionIndex = i;
-    outlet.PStatus = 0;
+    if (outlet.PStatus == null || outlet.PStatus == undefined)
+        outlet.PStatus = 0;
     var sql = 'DELETE FROM ' + outletTbl + ' WHERE ID = ' + outlet.ID.toString();
     logSqlCommand(sql);
     tx.executeSql(sql, [],
@@ -674,13 +729,13 @@ function buildOutletInsertSql(outletTbl, outlet) {
     sql = sql.concat("'", quoteText(outlet.PersonFirstName), "', ");   //'[PersonFirstName] text NULL,'
     sql = sql.concat("'", quoteText(outlet.PersonLastName), "', ");    //'[PersonLastName] text NULL,' +
     sql = sql.concat("'", quoteText(outlet.Note), "', ");              //'[Note] text NULL,' ,
-    sql = sql.concat(outlet.Longitude.toString(), ', ');    //'[Longitude] float NULL,' ,
-    sql = sql.concat(outlet.Latitude.toString(), ', ');     //'[Latitude] float NULL,' ,
+    sql = sql.concat(outlet.Longitude == null ? 0 : outlet.Longitude.toString(), ', ');    //'[Longitude] float NULL,' ,
+    sql = sql.concat(outlet.Latitude == null ? 0 : outlet.Latitude.toString(), ', ');     //'[Latitude] float NULL,' ,
     sql = sql.concat('" ", ');                              //'[TaxID] text NULL,' ,
     sql = sql.concat('0, ');	                            //'[ModifiedStatus] int NULL,' ,
-    sql = sql.concat(outlet.InputBy.toString(), ', ');      //'[InputBy] int NULL,' ,
+    sql = sql.concat(outlet.InputBy == null ? 0 : outlet.InputBy.toString(), ', ');      //'[InputBy] int NULL,' ,
     sql = sql.concat('" ", ');                              //'[InputDate] text NULL,' ,
-    sql = sql.concat(outlet.AmendBy.toString(), ', ');      //'[AmendBy] int NOT NULL,' ,
+    sql = sql.concat(outlet.AmendBy == null ? 0 : outlet.AmendBy.toString(), ', ');      //'[AmendBy] int NOT NULL,' ,
     sql = sql.concat("'", outlet.AmendDate, "', ");         //'[AmendDate] text NOT NULL,' ,
     sql = sql.concat('" ", ');                              //'[OutletEmail] text NULL,' ,    
     sql = sql.concat(outlet.AuditStatus.toString(), ', ');  //'[AuditStatus] int NOT NULL,' ,	
@@ -709,12 +764,12 @@ function addNewOutlet(tx, outletTbl, outlet, isAdd, isMod, isAud, synced, marked
     sql = sql.concat('"', outlet.AreaID, '", ');            //'[AreaID] text NOT NULL,' ,
     sql = sql.concat('" ",');                               //'[TerritoryID] text NOT NULL,' ,
     sql = sql.concat('"', outlet.OTypeID, '", ');           //'[OTypeID] text NOT NULL,' ,
-    sql = sql.concat('"', outlet.Name, '", ');              //'[Name] text NOT NULL,'
-    sql = sql.concat('"', outlet.AddLine, '", ');           //'[AddLine] text NULL,' ,
-    sql = sql.concat('"', outlet.AddLine2, '", ');          //'[AddLine2] text NULL,' ,
-    sql = sql.concat('"', outlet.District, '", ');          //'[District] text NULL,' ,
+    sql = sql.concat('"', quoteText(outlet.Name), '", ');              //'[Name] text NOT NULL,'
+    sql = sql.concat('"', quoteText(outlet.AddLine), '", ');           //'[AddLine] text NULL,' ,
+    sql = sql.concat('"', quoteText(outlet.AddLine2), '", ');          //'[AddLine2] text NULL,' ,
+    sql = sql.concat('"', quoteText(outlet.District), '", ');          //'[District] text NULL,' ,
     sql = sql.concat('"', outlet.ProvinceID, '", ');        //'[ProvinceID] text NOT NULL,' ,
-    sql = sql.concat('"', outlet.Phone, '", ');             //'[Phone] text NULL,' ,
+    sql = sql.concat('"', quoteText(outlet.Phone), '", ');             //'[Phone] text NULL,' ,
     sql = sql.concat('0, ');                                //'[CallRate] int NOT NULL,' ,
     sql = sql.concat('"', outlet.CloseDate, '", ');         //'[CloseDate] text NULL,' ,
     sql = sql.concat('"', outlet.CreateDate, '", ');	    //'[CreateDate] text NOT NULL,' ,
@@ -725,19 +780,19 @@ function addNewOutlet(tx, outletTbl, outlet, isAdd, isMod, isAud, synced, marked
     sql = sql.concat('" ",');                               //'[Open2nd] text NULL,' ,
     sql = sql.concat('" ",');                               //'[Close2nd] text NULL,' ,
     sql = sql.concat('0, ');                                //'[SpShift] int NOT NULL,' ,
-    sql = sql.concat('"', outlet.LastContact, '", ');       //'[LastContact]text NOT NULL,' ,
-    sql = sql.concat('"', outlet.LastVisit, '", ');         //'[LastVisit] text NULL,' ,
+    sql = sql.concat('"', quoteText(outlet.LastContact), '", ');       //'[LastContact]text NOT NULL,' ,
+    sql = sql.concat('"', quoteText(outlet.LastVisit), '", ');         //'[LastVisit] text NULL,' ,
     sql = sql.concat(outlet.PersonID.toString(), ', ');     //'[PersonID] int NOT NULL,' ,     
-    sql = sql.concat('"', outlet.PersonFirstName, '", ');   //'[PersonFirstName] text NULL,'
-    sql = sql.concat('"', outlet.PersonLastName, '", ');    //'[PersonLastName] text NULL,' +
-    sql = sql.concat('"', outlet.Note, '", ');              //'[Note] text NULL,' ,
+    sql = sql.concat('"', quoteText(outlet.PersonFirstName), '", ');   //'[PersonFirstName] text NULL,'
+    sql = sql.concat('"', quoteText(outlet.PersonLastName), '", ');    //'[PersonLastName] text NULL,' +
+    sql = sql.concat('"', quoteText(outlet.Note), '", ');              //'[Note] text NULL,' ,
     sql = sql.concat(outlet.Longitude.toString(), ', ');    //'[Longitude] float NULL,' ,
     sql = sql.concat(outlet.Latitude.toString(), ', ');     //'[Latitude] float NULL,' ,
     sql = sql.concat('" ", ');                              //'[TaxID] text NULL,' ,
     sql = sql.concat('0, ');	                            //'[ModifiedStatus] int NULL,' ,
-    sql = sql.concat(outlet.InputBy.toString(), ', ');      //'[InputBy] int NULL,' ,
+    sql = sql.concat(outlet.InputBy == null ? 0 : outlet.InputBy.toString(), ', ');      //'[InputBy] int NULL,' ,
     sql = sql.concat('" ", ');                              //'[InputDate] text NULL,' ,
-    sql = sql.concat(outlet.AmendBy.toString(), ', ');      //'[AmendBy] int NOT NULL,' ,
+    sql = sql.concat(outlet.AmendBy == null ? 0 : outlet.AmendBy.toString(), ', ');      //'[AmendBy] int NOT NULL,' ,
     sql = sql.concat('"', outlet.AmendDate, '", ');         //'[AmendDate] text NOT NULL,' ,
     sql = sql.concat('" ", ');                              //'[OutletEmail] text NULL,' ,    
     sql = sql.concat(outlet.AuditStatus.toString(), ', ');  //'[AuditStatus] int NOT NULL,' ,	
@@ -777,12 +832,12 @@ function updateOutlet(tx, outletTbl, outlet, state, synced) {
     sql = sql.concat('AreaID="', outlet.AreaID, '", ');
     // TerritoryID text NOT NULL
     sql = sql.concat('OTypeID="', outlet.OTypeID, '", ');
-    sql = sql.concat('Name="', outlet.Name, '", ');
-    sql = sql.concat('AddLine="', outlet.AddLine, '", ');
-    sql = sql.concat('AddLine2="', outlet.AddLine2, '", ');
-    sql = sql.concat('District="', outlet.District, '", ');
+    sql = sql.concat('Name="', quoteText(outlet.Name), '", ');
+    sql = sql.concat('AddLine="', quoteText(outlet.AddLine), '", ');
+    sql = sql.concat('AddLine2="', quoteText(outlet.AddLine2), '", ');
+    sql = sql.concat('District="', quoteText(outlet.District), '", ');
     sql = sql.concat('ProvinceID="', outlet.ProvinceID, '", ');
-    sql = sql.concat('Phone="', outlet.Phone, '", ');
+    sql = sql.concat('Phone="', quoteText(outlet.Phone), '", ');
     //[CallRate] int NOT NULL
     sql = sql.concat('CloseDate="', outlet.CloseDate, '", ');
     sql = sql.concat('CreateDate="', outlet.CreateDate, '", ');
@@ -801,9 +856,9 @@ function updateOutlet(tx, outletTbl, outlet, state, synced) {
     sql = sql.concat('Latitude=', outlet.Latitude.toString(), ', ');
     //'[TaxID] text NULL
     //'[ModifiedStatus] int NULL
-    sql = sql.concat('InputBy=', outlet.InputBy.toString(), ', ');
+    sql = sql.concat('InputBy=', outlet.InputBy == null ? 0 : outlet.InputBy.toString(), ', ');
     sql = sql.concat('InputDate="', outlet.InputDate == null ? '' : outlet.InputDate, '", ');
-    sql = sql.concat('AmendBy=', outlet.AmendBy.toString(), ', ');
+    sql = sql.concat('AmendBy=', outlet.AmendBy == null ? 0 : outlet.AmendBy.toString(), ', ');
     sql = sql.concat('AmendDate="', outlet.AmendDate, '", ');
     //[OutletEmail] text NULL
     sql = sql.concat('AuditStatus=', outlet.AuditStatus.toString(), ', ');
@@ -959,8 +1014,17 @@ function selectOutletsDB(outletTbl, latMin, latMax, lngMin, lngMax, view, onSucc
             sql = sql.concat('AuditStatus <> ' + StatusDelete.toString());
         } else if (view == 1) {
             if (user.hasAuditRole) {
-                sql = sql.concat('AuditStatus in ( ', StatusPost.toString(), ', ', StatusAuditAccept.toString(), ', ', StatusAuditDeny.toString(), ')');
-                //sql = sql.concat(' AND PersonID = ' + userID.toString());
+                //sql = sql.concat('AuditStatus in ( ', StatusPost.toString(),
+                //                    ', ', StatusAuditAccept.toString(),
+                //                    ', ', StatusAuditDeny.toString(),
+                //                    ', ', StatusAuditorNew.toString(),
+                //                    ', ', StatusAuditorAccept.toString(), ')');
+             
+                sql = sql.concat(' AuditStatus = ', StatusPost.toString());
+                sql = sql.concat(' OR AuditStatus = ', StatusAuditAccept.toString());
+                sql = sql.concat(' OR AuditStatus = ', StatusAuditDeny.toString());
+                sql = sql.concat(' OR AuditStatus = ', StatusAuditorAccept.toString());
+                sql = sql.concat(' OR (AuditStatus = ', StatusAuditorNew.toString(), ' AND PersonID = ', userID.toString(), ')');
             } else {
                 sql = sql.concat('AuditStatus in ( ',  StatusNew.toString(), ', ', StatusPost.toString(), ', ', StatusAuditAccept.toString(), ', ', StatusAuditDeny.toString(), ')');
                 //sql = sql.concat(' AND PersonID = ' + userID.toString());
@@ -973,9 +1037,21 @@ function selectOutletsDB(outletTbl, latMin, latMax, lngMin, lngMax, view, onSucc
                 sql = sql.concat('AuditStatus in ( ', StatusEdit.toString(), ', ', StatusExitingPost.toString(), ', ', StatusDone.toString(), ')');
                 sql = sql.concat(' AND AmendBy = ' + userID.toString());
             }
-        } else {
+        } else if (view == 3) {
             sql = sql.concat('AuditStatus in (', StatusExitingAccept.toString(), ', ', StatusExitingDeny.toString(), ', ', StatusAuditAccept.toString(), ', ', StatusAuditDeny.toString(), ')');
             sql = sql.concat(' AND PersonID = ' + userID.toString());
+        } else {
+            if (user.hasAuditRole) {
+                sql = sql.concat('AuditStatus in ( ', StatusAuditorNew.toString(), ', ', StatusAuditorAccept.toString(), ')');
+                sql = sql.concat(' AND PersonID = ' + userID.toString());
+            } else {
+                sql = sql.concat('AuditStatus in ( ',
+                    StatusNew.toString(), ', ',
+                    StatusPost.toString(), ', ',
+                    StatusAuditAccept.toString(), ', ',
+                    StatusAuditDeny.toString(), ')');
+                sql = sql.concat(' AND PersonID = ' + userID.toString());
+            }
         }
         sql = sql.concat(' AND Latitude >= ', latMin.toString(), ' AND Latitude <= ', latMax.toString());
         sql = sql.concat(' AND Longitude >= ', lngMin.toString(), ' AND Longitude <= ', lngMax.toString());

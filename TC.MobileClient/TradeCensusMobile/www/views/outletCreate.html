@@ -97,6 +97,13 @@
                 </md-input-container>
             </div>
 
+            <div layout-gt-sm="row" style="margin-bottom:0px;" ng-show="canComment">
+                <md-input-container class="md-block" flex-gt-sm="">
+                    <label>{{R.comment}}</label>
+                    <textarea id="inputComment" ng-model="outlet.Note" md-maxlength="150" rows="2" md-select-on-focus="" ng-disabled="{{disableComment}}" style="margin-bottom:0px;" required=""></textarea>
+                </md-input-container>
+            </div>
+
             <div layout-gt-sm="row" style="margin-bottom:24px;">
                 <div flex-gt-sm="" style="margin-left:12px;" class="outlet-image-container">
                     <img id="outletImg1" class="outlet-image" ng-click="capture(1);" src="{{image1URL}}" alt="Outlet Image" />
@@ -117,8 +124,9 @@
                 </div>-->
             </div>
             <div layout-gt-sm="row" layout-margin layout-align="center" style="margin-bottom:0px;">     
-                <md-button class="md-raised md-primary" ng-click="postOutlet()" ng-show="showDraft">{{R.btn_post}}</md-button>
-                <md-button class="md-raised md-primary" ng-click="deleteOutlet()" ng-show="showDraft">{{R.btn_delete}}</md-button>
+                <md-button class="md-raised md-primary" ng-click="postOutlet()" ng-show="canPost">{{R.btn_post}}</md-button>
+                <md-button class="md-raised md-primary" ng-click="approveOutlet()" ng-show="canApprove">{{R.btn_approve}}</md-button>
+                <md-button class="md-raised md-primary" ng-click="deleteOutlet()" ng-show="canDelete">{{R.btn_delete}}</md-button>
                 <md-button class="md-raised md-primary" ng-click="saveUpdate()">{{R.btn_save}}</md-button>
                 <md-button class="md-raised" ng-click="cancelUpdate()">{{R.btn_cancel}}</md-button>                
             </div>

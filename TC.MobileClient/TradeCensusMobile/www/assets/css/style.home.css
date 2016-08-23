@@ -260,7 +260,7 @@
     width: 100px;
     margin-right:10px;
     margin-left:10px;       
-    height:64px;    
+    height:80px;
 }
 
 .text-button img {
@@ -515,7 +515,7 @@
 #home-topright-test {
     position: fixed;
     top: 4px;
-    right: 64px;    
+    right: 80px;    
     z-index: 3;
     border: 0px;
     display: inline-block;

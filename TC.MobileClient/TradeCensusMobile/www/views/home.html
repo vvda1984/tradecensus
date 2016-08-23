@@ -1,9 +1,11 @@
 <div id="view-home">
     <div id="home-topleft" >
-        <div class="square-button float-left white" ng-show="showListButton" ng-click="showhideOutletPanel()">
-            <img src="assets/img/menu.svg" ng-hide="viewOutletPanel"/>                        
-            <img src="assets/img/menu-blue.svg" ng-show="viewOutletPanel"/>
-        </div>        
+        <div class="square-button float-left white" ng-hide="viewOutletPanel" ng-click="showhideOutletPanel()">
+            <img src="assets/img/menu.svg"/>
+        </div>  
+        <div class="square-button float-left blue" ng-show="viewOutletPanel" ng-click="showhideOutletPanel()">
+            <img src="assets/img/menu-white.svg" />
+        </div>       
         <div class="square-bar float-left white" ng-click="showDropdown()">            
             <span>{{outletHeader}}</span>
             <img src="assets/img/arrow-down.svg" />                        
@@ -24,6 +26,7 @@
         <div id="outlet-dropdown" class="dropdown">
             <div class="dropdown-item" ng-click="changeOutletView(0)"><img src="assets/img/outlet-near.svg"/><span>{{R.near_by_outlets}}</span></div>
             <div class="dropdown-item" ng-click="changeOutletView(1)"><img src="assets/img/outlet-new.svg" /><span>{{R.new_outlets}}</span></div>
+            <div class="dropdown-item" ng-click="changeOutletView(4)"><img src="assets/img/outlet-new-own.svg" /><span>{{R.my_new_outlets}}</span></div>
             <div class="dropdown-item" ng-click="changeOutletView(2)"><img src="assets/img/outlet-edit.svg" /><span>{{R.updated_outlets}}</span></div>
             <div class="dropdown-item" ng-show="hasAuditRole" ng-click="changeOutletView(3)"><img src="assets/img/outlet-audit.svg" /><span>{{R.auditted_outlets}}</span></div>
         </div>
@@ -110,9 +113,11 @@
                                         <span class="small-text gray-color" ng-show="viewOutletFull">{{R.last_change}}: </span>
                                         <span class="small-text gray-color">{{outlet.AmendDate ? outlet.AmendDate : "-"}}</span>
 
+                                        <!--<div class="m-flat-button-small float-right blue" ng-show="outlet.canApprove" ng-click="approveOutlet(outlet)"><span>Approve</span></div>-->
                                         <div class="m-flat-button-small float-right blue" ng-show="outlet.canPost" ng-click="postOutlet(outlet)"><span>Post</span></div>
                                         <div class="m-flat-button-small float-right blue" ng-show="outlet.canRevise" ng-click="reviseOutlet(outlet)"><span>Revise</span></div>
-                                        <div class="m-flat-button-small float-right red" ng-show="outlet.IsDraft" ng-click="deleteOutlet(outlet)"><span>Delete</span></div>
+                                        <div class="m-flat-button-small float-right red" ng-show="outlet.canDelete" ng-click="deleteOutlet(outlet)"><span>Delete</span></div>
+                                        <!--<div class="m-flat-button-small float-right blue" ng-show="outlet.canRevert" ng-click="revertOutlet(outlet)"><span>Reset</span></div>-->
 
                                         <div class="float-right" ng-show="outlet.viewAuditStatus">
                                             <span class="small-text green-color" ng-show="outlet.IsAudited">{{outlet.auditResult}}</span>
@@ -141,7 +146,7 @@
             </button>           
         
             <div class="searchbox">
-                <input class="search" placeholder="{{R.search}}" ng-model="searchName" ng-change="searchChanged()">
+                <input id="searchInput" class="search" placeholder="{{R.search}}" ng-model="searchName" ng-change="searchChanged()">
                 <img src="assets/img/search.svg" class="search-img" ng-show="showSearchImg" />
                 <img src="assets/img/clear.svg" class="search-img" ng-show="showClearSearchImg" ng-click='clearSearch()'/>
             </div>      
@@ -164,19 +169,13 @@
         </div>   
     </div>
 
-    <!--<div id="home-topright-sub1">
-        <div class="cirle-button blue float-top-right" style="z-index:2" ng-click="createNewOutlet()">
-            <img src="assets/img/add.svg" />
-        </div>
-    </div>-->
-
     <div id="home-topright-street">      
         <div class="square-button blue" ng-click="closeStreetViewMode()">
             <img src="assets/img/close.svg" />
         </div>        
     </div>
 
-     <div id="home-topright-test" ng-show="config.enable_devmode">      
+    <div id="home-topright-test" ng-show="config.enable_devmode">      
         <input placeholder="acc" ng-model="testacc" style="width:40px;height:36px;" type="number">
         <input placeholder="lat" ng-model="testlat" style="width:80px;height:36px;" type="number">
         <input placeholder="lng" ng-model="testlng" style="width:80px;height:36px;" type="number">
@@ -188,6 +187,7 @@
            <span>{{R.you_are_in_offline_mode}}</span>
         </div>         
     </div>
+
     <div id="home-topright-sync-hint">
         <div class="square-box-red float-right normal-text">
             <span>{{R.hint_do_sync}}</span>
@@ -243,10 +243,10 @@
                 </form>
             </md-content>
 
-            <div style="position:absolute; bottom:4px; right:0px; height:64px; left:12px;z-index:3;">
-                <div class="text-button float-left" ng-click="">
-                    <!--<div><img src="assets/img/download.svg"></div>
-                    <div class="title">{{R.btn_download}}</div>-->
+            <div style="position:absolute; bottom:4px; right:0px; height:80px; left:12px;z-index:3;">
+                <div class="text-button float-left" ng-click="displayChangePasswordDlg()">
+                    <div><img src="assets/img/change-password.svg"></div>
+                    <div class="title small-text">{{R.btn_changePassword}}</div>
                 </div>               
                 <div class="text-button float-left" ng-click="syncOutlets()">
                     <div><img src="assets/img/sync.svg"></div>
@@ -268,8 +268,48 @@
         <!--<div class="square-button-small float-top blue" ng-click="createNewOutlet()">
             <img src="assets/img/add.svg" />
         </div>-->
-         <div class="square-button-small float-top white" ng-click="panToCurLocation()">
+         <div id="current-location-button" class="square-button-small float-top white" ng-click="panToCurLocation()">
             <img src="assets/img/curloccation.svg" />
         </div>        
-    </div>      
+    </div>   
+   
+    <div id="dlg-change-password" style="display:none">
+        <div class="loading-window">
+            <div class="dialog">
+                <div class="content">
+                    <div class="title blue-color">{{R.btn_changePassword}}</div><br>
+                    <div>
+                        <div id="Password-form">
+                            <md-content layout-padding="" class="md-content-white">
+                                <form name="changePasswordForm">
+                                    <md-input-container class="md-block" ng-hide="forceChangePassword">
+                                        <label>{{ R.enter_current_password }}</label>
+                                        <input id="cur-pass" required="" name="curpassword" type="password" ng-model="curPass">
+                                    </md-input-container>
+
+                                    <md-input-container class="md-block">
+                                        <label>{{ R.enter_new_password }}</label>
+                                        <input id="new-pass" required="" name="newpassword" type="password" ng-model="newPass">
+                                    </md-input-container>
+
+                                    <md-input-container class="md-block">
+                                        <label>{{ R.enter_confirm_password }}</label>
+                                        <input id="confirm-pass" required="" name="confirmpassword" type="password" ng-model="confirmPass">
+                                    </md-input-container>
+                                </form>
+                            </md-content>
+                        </div>
+                    </div>
+                </div>
+                <div class="button label-blue" ng-click="changePassword(true)" ng-hide="forceChangePassword">
+                    <div class="center" fit>{{R.btn_cancel}}</div>
+                    <paper-ripple fit></paper-ripple>
+                </div>
+                <div class="button label-blue" ng-click="changePassword(false)">
+                    <div class="center" fit>{{R.btn_save}}</div>
+                    <paper-ripple fit></paper-ripple>
+                </div>
+            </div>
+        </div>
+    </div>   
 </div>

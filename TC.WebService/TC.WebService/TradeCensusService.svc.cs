@@ -12,12 +12,13 @@ namespace TradeCensus
     //http://localhost:33333/TradeCensusService.svc/outlet/saveoutlets
     [AspNetCompatibilityRequirements(RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed)]
     public partial class TradeCensusService : ITradeCensusService
-    {             
-        //[WebGet(UriTemplate = "login/{id}/{pass}", ResponseFormat = WebMessageFormat.Json)]
+    {
+        #region Person Service
+        
         [WebInvoke(Method = "POST", UriTemplate = "login/{username}/{pass}", ResponseFormat = WebMessageFormat.Json)]
         public LoginResponse Login(string username, string pass)
         {
-            using(var repo = new PersonRepo())
+            using(var repo = new PersonService())
             {
                 LoginResponse resp = new LoginResponse();
                 try
@@ -33,16 +34,15 @@ namespace TradeCensus
             }
         }
 
-        //[WebGet(UriTemplate = "provinces/getall", ResponseFormat = WebMessageFormat.Json)]
-        [WebInvoke(Method = "POST", UriTemplate = "provinces/getall", ResponseFormat = WebMessageFormat.Json)]
-        public ProvinceResponse GetProvinces()
+        [WebInvoke(Method = "POST", UriTemplate = "changepassword/{token}/{personid}/{oldpassword}/{newpassword}", ResponseFormat = WebMessageFormat.Json)]
+        public LoginResponse ChangePassword(string token, string personid, string oldpassword, string newpassword)
         {
-            using (var repo = new ProvinceRepo())
+            using (var repo = new PersonService())
             {
-                ProvinceResponse resp = new ProvinceResponse();
+                LoginResponse resp = new LoginResponse();
                 try
                 {
-                    resp.Items = repo.GetAll();
+                    repo.ChangePassword(token, int.Parse(personid), oldpassword, newpassword);
                 }
                 catch (Exception ex)
                 {
@@ -53,11 +53,67 @@ namespace TradeCensus
             }
         }
 
-        //[WebGet(UriTemplate = "config/getall", ResponseFormat = WebMessageFormat.Json)]
+        [WebInvoke(Method = "POST", UriTemplate = "resetpassword/{token}/{personid}/{password}", ResponseFormat = WebMessageFormat.Json)]
+        public LoginResponse ResetPassword(string token, string personid, string password)
+        {
+            using (var repo = new PersonService())
+            {
+                LoginResponse resp = new LoginResponse();
+                try
+                {
+                    repo.ResetPassword(token, int.Parse(personid), password);
+                }
+                catch (Exception ex)
+                {
+                    resp.Status = Constants.ErrorCode;
+                    resp.ErrorMessage = ex.Message;
+                }
+                return resp;
+            }
+        }
+
+        [WebInvoke(Method = "POST", UriTemplate = "ping/{deviceinfo}", ResponseFormat = WebMessageFormat.Json)]
+        public Response Ping(string deviceinfo)
+        {
+            Response res = new Response();
+            try
+            {
+                var log = LogUtil.GetLogger("service");
+                log.Debug(string.Format("Received ping from {0}", deviceinfo));
+                if (!string.IsNullOrWhiteSpace(deviceinfo))
+                {
+                    (new System.Threading.Tasks.Task(() =>
+                    {
+                        try
+                        {
+                            using (PersonService service = new PersonService())
+                            {
+                                service.TrackPing(deviceinfo);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            log.Debug(string.Format("Write ping info error: {0}", ex));
+                        }
+                    })).Start();
+                }
+            }
+            catch (Exception ex)
+            {
+                res.ErrorMessage = ex.Message;
+                res.Status = Constants.ErrorCode;
+            }
+            return res;
+        }
+
+        #endregion
+
+        #region Config Service
+
         [WebInvoke(Method = "POST", UriTemplate = "config/getall", ResponseFormat = WebMessageFormat.Json)]
         public ConfigResponse GetConfig()
         {
-            using (var repo = new ConfigRepo())
+            using (var repo = new ConfigService())
             {
                 ConfigResponse resp = new ConfigResponse();
                 try
@@ -73,11 +129,37 @@ namespace TradeCensus
             }
         }
 
-        //[WebGet(UriTemplate = "outlet/getbyprovince/{provinceID}", ResponseFormat = WebMessageFormat.Json)]
+        #endregion
+
+        #region Province Service
+
+        [WebInvoke(Method = "POST", UriTemplate = "provinces/getall", ResponseFormat = WebMessageFormat.Json)]
+        public ProvinceResponse GetProvinces()
+        {
+            using (var repo = new ProvinceService())
+            {
+                ProvinceResponse resp = new ProvinceResponse();
+                try
+                {
+                    resp.Items = repo.GetAll();
+                }
+                catch (Exception ex)
+                {
+                    resp.Status = Constants.ErrorCode;
+                    resp.ErrorMessage = ex.Message;
+                }
+                return resp;
+            }
+        }
+
+        #endregion
+
+        #region Outlet Service
+
         [WebInvoke(Method = "POST", UriTemplate = "outlet/getbyprovince/{personID}/{provinceID}", ResponseFormat = WebMessageFormat.Json)]
         public GetOutletIDResponse GetOutletsByProvince(string personID, string provinceID)
         {
-            using (var repo = new OutletRepo())
+            using (var repo = new OutletService())
             {
                 var resp = new GetOutletIDResponse();
                 try
@@ -93,11 +175,10 @@ namespace TradeCensus
             }
         }
 
-        //[WebGet(UriTemplate = "outlet/get/{id}", ResponseFormat = WebMessageFormat.Json)]
         [WebInvoke(Method = "POST", UriTemplate = "outlet/get/{personID}/{id}", ResponseFormat = WebMessageFormat.Json)]
         public GetOutletResponse GetOutletByID(string personID, string id)
         {
-            using (var repo = new OutletRepo())
+            using (var repo = new OutletService())
             {
                 var resp = new GetOutletResponse();
                 try
@@ -113,11 +194,10 @@ namespace TradeCensus
             }
         }
 
-        //[WebGet(UriTemplate = "outlet/getoutlettypes", ResponseFormat = WebMessageFormat.Json)]
         [WebInvoke(Method = "POST", UriTemplate = "outlet/getoutlettypes", ResponseFormat = WebMessageFormat.Json)]
         public GetOutletTypeResponse GetOutlets()
         {
-            using (var repo = new OutletRepo())
+            using (var repo = new OutletService())
             {
                 var resp = new GetOutletTypeResponse();
                 try
@@ -136,7 +216,7 @@ namespace TradeCensus
         [WebInvoke(Method = "POST", UriTemplate = "outlet/getoutlets/{personID}/{lat}/{lng}/{meter}/{count}/{status}", ResponseFormat = WebMessageFormat.Json)]
         public GetOutletListResponse GetNearbyOutlets(string personID, string lat, string lng, string meter, string count, string status)
         {            
-            using (var repo = new OutletRepo())
+            using (var repo = new OutletService())
             {
                 var resp = new GetOutletListResponse();
                 try
@@ -160,7 +240,7 @@ namespace TradeCensus
         [WebInvoke(Method = "POST", UriTemplate = "outlet/save", ResponseFormat = WebMessageFormat.Json)]
         public SaveOutletResponse SaveOutlet(OutletModel item)
         {
-            using (var repo = new OutletRepo())
+            using (var repo = new OutletService())
             {
                 var resp = new SaveOutletResponse();
                 try
@@ -186,7 +266,7 @@ namespace TradeCensus
         public SaveImageResponse SaveImage()
         {
             //public SaveImageResponse SaveImage(string fileKey, string outletID, string index, Stream stream)
-            using (var repo = new OutletRepo())
+            using (var repo = new OutletService())
             {
                 var resp = new SaveImageResponse();
                 try
@@ -211,7 +291,7 @@ namespace TradeCensus
         [WebInvoke(Method = "POST", UriTemplate = "outlet/getimage/{outletID}/{index}", ResponseFormat = WebMessageFormat.Json)]
         public GetImageResponse GetImage(string outletID, string index)
         {
-            using (var repo = new OutletRepo())
+            using (var repo = new OutletService())
             {
                 var resp = new GetImageResponse();
                 try
@@ -230,7 +310,7 @@ namespace TradeCensus
         [WebInvoke(Method = "POST", UriTemplate = "outlet/download/{personID}/{provinceID}/{from}/{to}", ResponseFormat = WebMessageFormat.Json)]
         public GetOutletListResponse DownloadOutlets(string personID, string provinceID, string from, string to)
         {
-            using (var repo = new OutletRepo())
+            using (var repo = new OutletService())
             {
                 var resp = new GetOutletListResponse();
                 try
@@ -249,7 +329,7 @@ namespace TradeCensus
         [WebInvoke(Method = "POST", UriTemplate = "outlet/downloadimagebase54/{personID}/{outletID}/{index}", ResponseFormat = WebMessageFormat.Json)]
         public GetImageResponse DownloadImageBase64(string personID, string outletID, string index)
         {
-            using (var repo = new OutletRepo())
+            using (var repo = new OutletService())
             {
                 var resp = new GetImageResponse();
                 try
@@ -268,7 +348,7 @@ namespace TradeCensus
         [WebInvoke(Method = "POST", UriTemplate = "outlet/uploadmagebase54/{personID}/{outletID}/{index}/{image}", ResponseFormat = WebMessageFormat.Json)]
         public Response UploadImageBase64(string personID, string outletID, string index, string image)
         {
-            using (var repo = new OutletRepo())
+            using (var repo = new OutletService())
             {
                 var resp = new Response();
                 try
@@ -287,7 +367,7 @@ namespace TradeCensus
         [WebInvoke(Method = "POST", UriTemplate = "outlet/saveoutlets", ResponseFormat = WebMessageFormat.Json)]
         public SyncOutletResponse SyncOutlets(OutletModel[] items)
         {
-            using (var repo = new OutletRepo())
+            using (var repo = new OutletService())
             {
                 var resp = new SyncOutletResponse();
                 try
@@ -310,26 +390,10 @@ namespace TradeCensus
             }
         }
 
-        [WebInvoke(Method = "POST", UriTemplate = "ping/{deviceinfo}", ResponseFormat = WebMessageFormat.Json)]
-        public Response Ping(string deviceinfo)
-        {
-            Response res = new Response();
-            try {
-                var log = LogUtil.GetLogger("service");
-                log.Debug(string.Format("Received ping from {0}", deviceinfo));
-            }
-            catch (Exception ex){
-                res.ErrorMessage = ex.Message;
-                res.Status = Constants.ErrorCode;
-            }
-            return res;
-        }
-
         [WebInvoke(Method = "POST", UriTemplate = "outlet/downloadzip/{personID}/{provinceID}/{from}/{to}", ResponseFormat = WebMessageFormat.Json)]
-
         public string DownloadOutletsZip(string personID, string provinceID, string from, string to)
         {
-            using (var repo = new OutletRepo())
+            using (var repo = new OutletService())
             {
                 Stopwatch sw = new Stopwatch();
                 sw.Start();
@@ -352,7 +416,7 @@ namespace TradeCensus
         [WebInvoke(Method = "POST", UriTemplate = "outlet/gettotalbyprovince/{personID}/{provinceID}", ResponseFormat = WebMessageFormat.Json)]
         public int GetTotalProvincesCount(string personID, string provinceID)
         {
-            using (var repo = new OutletRepo())
+            using (var repo = new OutletService())
             {
                 Stopwatch sw = new Stopwatch();
                 sw.Start();
@@ -372,12 +436,10 @@ namespace TradeCensus
             }
         }
 
-
         [WebInvoke(Method = "POST", UriTemplate = "outlet/downloadzipbyte/{personID}/{provinceID}/{from}/{to}", ResponseFormat = WebMessageFormat.Json)]
-
         public byte[] DownloadOutletsZipByte(string personID, string provinceID, string from, string to)
         {
-            using (var repo = new OutletRepo())
+            using (var repo = new OutletService())
             {
                 Stopwatch sw = new Stopwatch();
                 sw.Start();
@@ -396,5 +458,7 @@ namespace TradeCensus
                 }
             }
         }
+
+        #endregion
     }
 }

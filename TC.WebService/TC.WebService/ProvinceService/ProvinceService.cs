@@ -4,9 +4,9 @@ using TradeCensus.Shared;
 
 namespace TradeCensus
 {
-    public class ProvinceRepo : BaseRepo
+    public class ProvinceService : BaseRepo
     {
-        public ProvinceRepo() : base("Province")
+        public ProvinceService() : base("Province")
         {
         }
 

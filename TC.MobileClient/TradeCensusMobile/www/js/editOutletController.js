@@ -1,4 +1,5 @@
 ﻿/// <reference path="tc.mapAPI.js" />
+/// <reference path="tc.databaseAPI.js" />
 /// <reference path="tc.outletAPI.js" />
 
 function editOutletController($scope, $mdDialog) {
@@ -11,6 +12,7 @@ function editOutletController($scope, $mdDialog) {
     $scope.isOutletClosed = !$scope.outlet.IsOpened;
     $scope.isAuditor = user.hasAuditRole;
     $scope.isSaler = !user.hasAuditRole;
+    $scope.outlet.isChanged = false;
 
     var title = $scope.outlet.Name;
     if ($scope.outlet.ID != 60000000) {
@@ -35,7 +37,7 @@ function editOutletController($scope, $mdDialog) {
             $scope.viewDeny = true;
             $scope.disableOpenClose = true;
             $scope.disableTracking = true;
-          
+
             if ($scope.outlet.AuditStatus == StatusInitial) {
                 setViewOnly();
             } else if ($scope.outlet.AuditStatus == StatusExitingPost || $scope.outlet.AuditStatus == StatusPost) {
@@ -51,12 +53,20 @@ function editOutletController($scope, $mdDialog) {
         } else {
             $scope.viewSave = true;
             if ($scope.outlet.AuditStatus == StatusInitial) {
-                $scope.canChangeOpenClose = true;
-                $scope.canChangeTrackNonTrack = true;
-                $scope.disableOpenClose = $scope.outlet.IsOpened;
-                $scope.disableTracking = $scope.outlet.Tracking == 1;
-                $scope.disableComment = false;
-                $scope.allowCapture = true; //$scope.outlet.AuditStatus != StatusInitial;
+                if ($scope.outlet.IsOpened && $scope.outlet.Tracking == 1) {
+                    setViewOnly();
+                } else {
+                    $scope.canChangeOpenClose = true;
+                    $scope.canChangeTrackNonTrack = true;
+                    $scope.disableOpenClose = $scope.outlet.IsOpened;
+                    if ($scope.outlet.IsOpened)
+                        $scope.disableTracking = $scope.outlet.Tracking == 1;
+                    else
+                        $scope.disableTracking = false;
+                        
+                    $scope.disableComment = false;
+                    $scope.allowCapture = true; //$scope.outlet.AuditStatus != StatusInitial;
+                }
             } else if ($scope.outlet.AuditStatus == StatusNew) {
                 // show not display here
             } else if ($scope.outlet.AuditStatus == StatusPost) {
@@ -64,15 +74,39 @@ function editOutletController($scope, $mdDialog) {
                 $scope.canRevise = $scope.outlet.canRevise; //$scope.outlet.AuditStatus == StatusPost && $scope.outlet.PersonID == user.id;
             } else if ($scope.outlet.AuditStatus == StatusEdit) {
                 $scope.canPost = true;
+                $scope.canRevert = true;
                 $scope.canChangeOpenClose = true;
                 $scope.canChangeTrackNonTrack = true;
-                //$scope.disableOpenClose = false;
-                //$scope.disableTracking = false;
-                $scope.disableOpenClose = $scope.outlet.IsOpened;
-                $scope.disableTracking = $scope.outlet.Tracking == 1;
                 $scope.disableComment = false;
                 $scope.allowCapture = true;
                 $scope.canRevise = $scope.outlet.canRevise;//$scope.outlet.AuditStatus == StatusPost && $scope.outlet.PersonID == user.id;
+
+                //$scope.disableOpenClose = false;
+                //$scope.disableTracking = false;
+
+                if ($scope.outlet.PStatus == 1) {
+                    setViewOnly();
+                } else if ($scope.outlet.PStatus == 2){
+                    $scope.disableOpenClose = true;
+                    $scope.disableTracking = false;
+                } else if ($scope.outlet.PStatus == 2) {
+                    $scope.disableOpenClose = false;
+                    $scope.disableTracking = false;
+                }
+               
+                //if (($scope.outlet.PStatus & 4) > 0) {
+                //    $scope.disableOpenClose = false;
+                //    $scope.disableTracking = false;
+                //} else if (($scope.outlet.PStatus & 2) > 0) {
+                //    $scope.disableOpenClose = false;
+                //    $scope.disableTracking = false; //$scope.outlet.Tracking == 1;
+                //} else if (($scope.outlet.PStatus & 1) > 0) {
+                //    $scope.disableOpenClose = $scope.outlet.IsOpened;
+                //    $scope.disableTracking = false;
+                //} else {
+                //    $scope.disableOpenClose = $scope.outlet.IsOpened;
+                //    $scope.disableTracking = $scope.outlet.Tracking == 1;
+                //}
             } else if ($scope.outlet.AuditStatus == StatusExitingPost) {
                 setViewOnly();
                 $scope.canRevise = $scope.outlet.canRevise; //$scope.outlet.AuditStatus == StatusPost && $scope.outlet.PersonID == user.id;
@@ -81,13 +115,6 @@ function editOutletController($scope, $mdDialog) {
             }
         }
     }
-
-    //if ($scope.needAudit) {
-    //    $scope.outlet.AuditAction = 1; //approve
-    //}
-    //$scope.canRevise = $scope.outlet.AuditStatus == StatusPost && $scope.outlet.PersonID == user.id;
-    //$scope.canChangeOpenClose = user.hasAuditRole || $scope.outlet.AuditStatus != StatusPost;
-    //$scope.canChangeTrackNonTrack = user.hasAuditRole || $scope.outlet.AuditStatus != StatusPost;
 
     var allowCapture = $scope.allowCapture;
     $scope.allowCapture = allowCapture &&
@@ -204,6 +231,8 @@ function editOutletController($scope, $mdDialog) {
                 //showError(err);
             });
         }
+
+        $scope.outlet.isChanged = true;
     }
 
     $scope.saveUpdate = function () {
@@ -217,8 +246,12 @@ function editOutletController($scope, $mdDialog) {
             if (!validate())
                 return;
 
-            if ($scope.isAuditor && $scope.outlet.AuditStatus == StatusExitingPost)
-                $scope.outlet.AuditStatus = StatusDone;
+            //if ($scope.isAuditor && $scope.outlet.AuditStatus == StatusExitingPost)
+            //    $scope.outlet.AuditStatus = StatusDone;
+
+            if ($scope.outlet.AuditStatus == StatusInitial) {
+                $scope.outlet.AuditStatus = StatusEdit;
+            }
 
             $mdDialog.hide(true);
             try { $scope.$apply(); } catch (er) { }
@@ -226,99 +259,75 @@ function editOutletController($scope, $mdDialog) {
             hideDlg();
             showError(R.cannot_approve_or_deny);
         })
-
-        //log('Change open/close status: ' + $scope.outlet.IsOpened);
-        //setOpenCloseValue();
-        //if ($scope.isAuditor && $scope.outlet.AuditStatus == StatusExitingPost)
-        //    $scope.outlet.AuditStatus = StatusDone;
-     
-        //$mdDialog.hide(true);
-        //try { $scope.$apply(); } catch (er) { }
     };
 
     $scope.cancelUpdate = function () {
-
         $mdDialog.cancel();
         try { $scope.$apply(); } catch (er) { }
     };
 
     $scope.reviseOutlet = function () {
-        //if (!networkReady()) {
-        //    if ($scope.outlet.IsSynced) {
-        //        showError(R.cannot_revise);
-        //        return;
-        //    } else {
-        //        var confirmText = R.revise_outlet_confirm.replace("{outletname}", $scope.outlet.Name);
-        //        showConfirm(R.revise_outlet, confirmText, function () {
-        //            $scope.outlet.IsDraft = true; // POST
-        //            $mdDialog.hide(true);
-        //            try { $scope.$apply(); } catch (er) { }
-        //        }, function () { });
-        //    }
-        //} else {
-        //    var confirmText = R.revise_outlet_confirm.replace("{outletname}", $scope.outlet.Name);
-        //    showConfirm(R.revise_outlet, confirmText, function () {
-        //        $scope.outlet.IsDraft = true; // POST
-        //        $mdDialog.hide(true);
-        //        try { $scope.$apply(); } catch (er) { }
-        //    }, function () { });
-        //}
+        var confirmText = R.revise_outlet_confirm.replace("{outletname}", $scope.outlet.Name);
+        showConfirm(R.revise_outlet, confirmText, function () {
+            if ($scope.outlet.AuditStatus == StatusPost) {
+                $scope.outlet.IsDraft = true; // POST
+                $scope.outlet.AuditStatus = StatusNew;
+            }
+            else if($scope.outlet.AuditStatus == StatusExitingPost ) {
+                $scope.outlet.IsExistingDraft = true; // POST
+                $scope.outlet.AuditStatus = StatusEdit;  //Revise
+            }
 
+            $scope.outlet.isChanged = true;
+            $mdDialog.hide(true);
+        }, function () { });
+    }
 
-        showDlg(R.get_current_location, R.please_wait);
-        getCurPosition(false, function (lat, lng) {
-            hideDlg();
-            if (!validateRange(lat, lng)) return;
-            var confirmText = R.revise_outlet_confirm.replace("{outletname}", $scope.outlet.Name);
-            showConfirm(R.revise_outlet, confirmText, function () {
-                if($scope.outlet.AuditStatus == StatusPost)
-                    $scope.outlet.IsDraft = true; // POST
-                else
-                    $scope.outlet.IsExistingDraft = true; // POST
-                $mdDialog.hide(true);
-            }, function () { });
-        }, function () {
-            hideDlg();
-            showError(R.cannot_approve_or_deny);
-        })
+    $scope.revertOutlet = function () {
+        $mdDialog.cancel();
+        return; //n/a
+
+        //var confirmText = R.revert_outlet_confirm.replace("{outletname}", $scope.outlet.Name);
+        //showConfirm(R.revert_outlet, confirmText, function () {
+        //    $scope.outlet.isRevert = true;
+        //    $scope.outlet.isChanged = true;
+        //    $mdDialog.hide(true);
+        //}, function () { });
     }
 
     $scope.postOutlet = function () {
-        //showDlg(R.get_current_location, R.please_wait);
-        //getCurPosition(false, function (lat, lng) {
-        //    hideDlg();
-        //    if (!validateRange(lat, lng)) return;
-        //    setOpenCloseValue();
-        //    var confirmText = R.post_outlet_confirm.replace("{outletname}", $scope.outlet.Name);
-        //    showConfirm(R.post_outlet, confirmText, function () {
-        //        $scope.outlet.IsExistingDraft = false; // POST
-        //        $mdDialog.hide(true);
-        //    }, function () { });
-        //}, function () {
-        //    hideDlg();
-        //    showError(R.cannot_approve_or_deny);
-        //})
-
         var confirmText = R.post_outlet_confirm.replace("{outletname}", $scope.outlet.Name);
         showConfirm(R.post_outlet, confirmText, function () {
-            $scope.outlet.IsDraft = false; // POST
+
+            if ($scope.outlet.AuditStatus == StatusEdit) {
+                $scope.outlet.IsExistingDraft = false; // POST
+                $scope.outlet.AuditStatus = StatusExitingPost;
+            } else if ($scope.outlet.AuditStatus == StatusNew) {
+                $scope.outlet.IsDraft = false; // POST
+                $scope.outlet.AuditStatus = StatusPost;
+            }
+
+            $scope.outlet.isChanged = true;
             $mdDialog.hide(true);
         }, function () { });
     }
 
     $scope.approve = function () {
+        if (!validate(true)) return;
+
         showDlg(R.get_current_location, R.please_wait);
         getCurPosition(false, function (lat, lng) {
             hideDlg();
-            if (!validateAuditor(lat, lng)) return;
+            if (!validateRange(lat, lng)) return;
 
             log('Change open/close status: ' + $scope.outlet.IsOpened);
             setOpenCloseValue();
-            if ($scope.outlet.AuditStatus == StatusEdit)
+            if ($scope.outlet.AuditStatus == StatusExitingPost)
                 $scope.outlet.AuditStatus = StatusExitingAccept;
             else {
                 $scope.outlet.AuditStatus = StatusAuditAccept;
             }
+            $scope.outlet.isChanged = true;
 
             $mdDialog.hide(true);
             try { $scope.$apply(); } catch (er) { }
@@ -329,20 +338,23 @@ function editOutletController($scope, $mdDialog) {
     }
 
     $scope.deny = function () {
+        if (!validate(true)) return;
+
         showDlg(R.get_current_location, R.please_wait);
         getCurPosition(false, function (lat, lng) {
             hideDlg();
-            if (!validateAuditor(lat, lng)) return;
+            if (!validateRange(lat, lng)) return;
 
             log('Change open/close status: ' + $scope.outlet.IsOpened);
             setOpenCloseValue();
 
-            if ($scope.outlet.AuditStatus == StatusEdit)
+            if ($scope.outlet.AuditStatus == StatusExitingPost)
                 $scope.outlet.AuditStatus = StatusExitingDeny;
             else {
                 $scope.outlet.AuditStatus = StatusAuditDeny;
             }
 
+            $scope.outlet.isChanged = true;
             $mdDialog.hide(true);
             try { $scope.$apply(); } catch (er) { }
 
@@ -352,18 +364,8 @@ function editOutletController($scope, $mdDialog) {
         })
     }
 
-    function validateAuditor(lat, lng) {
+    function validate() {
         if (isEmpty($scope.outlet.Note)) {
-            showErrorAdv(R.comment_is_empty, function () { $("#inputComment").focus(); });
-            return false;
-        }
-
-        var rangeValid = validateRange(lat, lng);
-        if (!rangeValid) {
-            return false;
-        }
-
-        if (isEmpty($scope.outlet.Phone)) {
             showErrorAdv(R.comment_is_empty, function () { $("#inputComment").focus(); });
             return false;
         }
@@ -397,7 +399,7 @@ function editOutletController($scope, $mdDialog) {
         $scope.viewCancel = true;
         $scope.viewApprove = false;
         $scope.viewDeny = false;
-       
+        $scope.canRevert = false;
 
         $scope.disableOpenClose = true;
         $scope.disableTracking = true;
@@ -409,25 +411,6 @@ function editOutletController($scope, $mdDialog) {
         $scope.canChangeOpenClose = true;       // view only
         $scope.canChangeTrackNonTrack = true;   // view only
         $scope.isDeleted = false;
-    }
-
-    function captureImage(onSuccess, onError) {
-        try {
-			if(config.enable_devmode){
-				onSuccess('D:\\Untitled.png ');
-			}else{
-			    navigator.camera.getPicture(onSuccess, onError,
-                    {
-                        quality: 30,
-                        targetWidth: 800,
-                        targetHeight: 600,
-                        correctOrientation: true,
-                        destinationType: Camera.DestinationType.FILE_URI, // DATA_URL for base64 => not recommend due to memory issue
-                    });
-			}
-        } catch (err) {
-            showError(err);
-        }
     }
 
     function getImageURL(stringImage) {
@@ -489,8 +472,15 @@ function editOutletController($scope, $mdDialog) {
     }
 
     function validate() {
-        if ($scope.outlet.IsOpened != orgIsOpen || $scope.outlet.IsTracked != orgTracked) {
-            if (isEmpty($scope.outlet.StringImage1) && isEmpty($scope.outlet.StringImage2) || isEmpty($scope.outlet.StringImage3)) {
+        if ($scope.config.enable_devmode) {
+            $scope.outlet.isChanged = true;
+            return true;
+        }
+
+        if ($scope.outlet.IsOpened != orgIsOpen || $scope.outlet.IsTracked != orgTracked || $scope.outlet.Status == StatusEdit) {
+            $scope.outlet.isChanged = true;
+
+            if (isEmpty($scope.outlet.StringImage1) && isEmpty($scope.outlet.StringImage2) && isEmpty($scope.outlet.StringImage3)) {
                 showValidationErr(R.need_to_capture);
                 return false;
             }

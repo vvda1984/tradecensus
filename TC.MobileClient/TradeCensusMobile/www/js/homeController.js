@@ -5,7 +5,6 @@
 /// <reference path="tc.databaseAPI.js" />
 /// <reference path="tc.appAPI.js" />
 
-
 var isOutletDlgOpen = false;
 var isLoadingOutlet = false;
 var dialogClosedCallback;
@@ -29,7 +28,11 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     $scope.testlng = curlng;
     $scope.testacc = curacc;
 
-    $scope.canAddNewOutlet = !user.hasAuditRole;
+    $scope.curPass = '';
+    $scope.newPass = '';
+    $scope.confirmPass = '';
+
+    $scope.canAddNewOutlet = true; //!user.hasAuditRole;
     $scope.dprovinces = dprovinces;
     $scope.config = config;
     $scope.editOutletFull = false;
@@ -39,7 +42,6 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     $scope.showNoOutletFound = true; 
     $scope.showSyncButton = false;   
     $scope.outlets = [];
-    $scope.showListButton = true;
     $scope.showCollapseButton = false;
     $scope.showExpandButton = false;
     $scope.showSettingCollapse = false;
@@ -48,11 +50,11 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     $scope.showClearSearchImg = false;
     $scope.viewOutletPanel = false;
     $scope.currentPage = 0;
-    $scope.pageSize = config.page_size;    
+    $scope.pageSize = config.page_size;
 
     for (var i = 0; i < dprovinces.length; i++) {
-        if (dprovinces[i].id === $scope.config.province_id) {
-            selectProvince = dprovinces[i];            
+        if (dprovinces[i].id == $scope.config.province_id) {
+            selectProvince = dprovinces[i];
             if (dprovinces[i].download) {
                 $("#buttonDownload").css('display', 'none');
                 $("#buttonRedownload").css('display', 'table');
@@ -329,6 +331,8 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             case 3:                
                 $scope.outletHeader = R.auditted_outlets;
                 break;
+            case 4:
+                $scope.outletHeader = R.my_new_outlets;
         }
         $scope.currentPage = 0;     
         getOutletsByView(false);
@@ -453,6 +457,15 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         }, function () { });
     }
 
+    //*************************************************************************
+    $scope.revertOutlet = function (outlet) {
+        //var outlet = $scope.outlets[i];
+        var confirmText = R.delete_outlet_confirm.replace("{outletname}", outlet.Name);
+        showConfirm(R.delete_outlet, confirmText, function () {
+            deleteDraftOutlet(outlet);
+        }, function () { });
+    }
+
     //*************************************************************************    
     $scope.postOutlet = function (outlet) {
         //showDlg(R.get_current_location, R.please_wait);
@@ -541,9 +554,9 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         //        clonedOutlet.AmendBy = userID;
         //        log('Revise outlet ' + outlet.ID.toString());
         //        log('Save outlet to server')
-        //        saveOutlet(outlet, function (synced) {
+        //        saveOutlet(clonedOutlet, function (synced) {
         //            log('Save outlet to local db')
-        //            changeOutletStatusDB($scope.config.tbl_outlet, outlet, clonedOutlet.AuditStatus, synced ? 1 : 0, function () {
+        //            changeOutletStatusDB($scope.config.tbl_outlet, clonedOutlet, clonedOutlet.AuditStatus, synced ? 1 : 0, function () {
         //                hideDlg();
         //                $scope.refresh();
         //            }, function (dberr) {
@@ -562,20 +575,23 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             var clonedOutlet = cloneObj(outlet);
             clonedOutlet.positionIndex = outlet.positionIndex;
 
-            if (clonedOutlet.AuditStatus == StatusNew) {
+            if (clonedOutlet.AuditStatus == StatusPost) {
                 clonedOutlet.IsDraft = true;
                 clonedOutlet.AuditStatus = StatusNew;
             } else {
                 clonedOutlet.IsExistingDraft = true;
                 clonedOutlet.AuditStatus = StatusEdit;
             }
+
+            clonedOutlet.IsDraft = true;
+            clonedOutlet.IsExistingDraft = true;
             clonedOutlet.AmendBy = userID;
             log('Revise outlet ' + outlet.ID.toString());
 
             log('Save outlet to server')
-            saveOutlet(outlet, function (synced) {
+            saveOutlet(clonedOutlet, function (synced) {
                 log('Save outlet to local db')
-                changeOutletStatusDB($scope.config.tbl_outlet, outlet, clonedOutlet.AuditStatus, synced ? 1 : 0, function () {
+                changeOutletStatusDB($scope.config.tbl_outlet, clonedOutlet, clonedOutlet.AuditStatus, synced ? 1 : 0, function () {
                     hideDlg();
                     $scope.refresh();
                 }, function (dberr) {
@@ -631,6 +647,61 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         //        });
         //    }, function () { });
         //}
+    }
+
+    //*************************************************************************    
+    $scope.revertOutlet = function (outlet) {
+        var confirmText = R.revert_outlet_confirm.replace("{outletname}", outlet.Name);
+        showConfirm(R.revert_outlet, confirmText, function () {
+            var clonedOutlet = cloneObj(outlet);
+            clonedOutlet.positionIndex = outlet.positionIndex;
+
+            clonedOutlet.AuditStatus = StatusRevert;
+            clonedOutlet.AmendBy = userID;
+
+            log('Save outlet to server')
+            saveOutlet(clonedOutlet, function (synced) {
+                log('Save outlet to local db')
+                changeOutletStatusDB($scope.config.tbl_outlet, clonedOutlet, clonedOutlet.AuditStatus, synced ? 1 : 0, function () {
+                    hideDlg();
+                    $scope.refresh();
+                }, function (dberr) {
+                    hideDlg();
+                    showError(dberr.message);
+                });
+            });
+
+        }, function () { });
+    }
+
+    //*************************************************************************    
+    $scope.approveOutlet = function (outlet) {
+        showDlg(R.get_current_location, R.please_wait);
+        getCurPosition(false, function (lat, lng) {
+            hideDlg();
+            var confirmText = R.approve_outlet_confirm.replace("{outletname}", outlet.Name);
+            showConfirm(R.approve_outlet, confirmText, function () {
+                var clonedOutlet = cloneObj(outlet);
+                clonedOutlet.AuditStatus = StatusAuditorAccept;
+                clonedOutlet.AmendBy = userID;
+                //log('Post outlet ' + outlet.ID.toString());
+                //outlet.AuditStatus = StatusPost;
+                log('Save outlet to server')
+                saveOutlet(clonedOutlet, function (synced) {
+                    log('Save outlet to local db')
+                    changeOutletStatusDB($scope.config.tbl_outlet, clonedOutlet, clonedOutlet.AuditStatus, synced ? 1 : 0, function () {
+                        hideDlg();
+                        $scope.refresh();
+                    }, function (dberr) {
+                        hideDlg();
+                        showError(dberr.message);
+                    });
+                });
+            }, function () { });
+        }, function () {
+            hideDlg();
+            showError(R.cannot_approve_or_deny);
+        })
     }
 
     //*************************************************************************    
@@ -716,129 +787,135 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             }
         }
 
-        showDlg(R.validate_unsynced_outlets, R.please_wait);
-        selectUnsyncedOutletsOfProvince($scope.config.tbl_outlet, p.id, function (dbres) {
-            hideDlg();
-            if (dbres.rows.length > 0) {
-                showDlg(R.error, R.unsynced_outlet_in_province);
-                return;
-            }
-            isOutletDlgOpen = true;
+        try {
+            showDlg(R.validate_unsynced_outlets, R.please_wait);
+            selectUnsyncedOutletsOfProvince($scope.config.tbl_outlet, p.id, function (dbres) {
+                hideDlg();
+                if (dbres.rows.length > 0) {
+                    showDlg(R.error, R.unsynced_outlet_in_province);
+                    return;
+                }
+                isOutletDlgOpen = true;
 
-            showConfirm(R.download_outlets, R.download_outlets_confim + selectProvince.name + '?', function () {
-                setTimeout(function () {
-                  
-                    downloadSession++;
-                    try {
-                        showLoading(R.downloading_outlet, R.please_wait, R.cancel_download_confirm,
-                            function () {
-                                isOutletDlgOpen = false;
-                                if (dialogClosedCallback) dialogClosedCallback();
-                                log('*** CANCEL download');
-                                cancelLoadingDlg = true;
-                                downloadSession++;
-                            }
-                        );
-                        var sessionID = downloadSession;
-                        var url = baseURL + '/outlet/gettotalbyprovince/' + userID + '/' + selectProvince.id;
-                        log('Call service api: ' + url);
-                        $http({
-                            method: config.http_method,
-                            url: url
-                        }).then(function (resp) {
-                            if (cancelLoadingDlg || sessionID != downloadSession) {
-                                lastDownloadProvinceTS = new Date();
-                                isOutletDlgOpen = false;
-                                if (dialogClosedCallback) dialogClosedCallback();
-                                return;
-                            }
-                            try {
-                                var outletCount = resp.data;
-                                if (outletCount > 0) {
-                                    deleleOutletsDB(config.tbl_outlet, selectProvince.id,
-                                        function () {
-                                            log('Found ' + outletCount.toString() + ' outlets');
-                                            var maxPage1 = parseInt(outletCount / $scope.config.download_batch_size)
-                                            var maxPage2 = outletCount % $scope.config.download_batch_size;
-                                            var maxPage = maxPage1 + (maxPage2 > 0 ? 1 : 0);
+                showConfirm(R.download_outlets, R.download_outlets_confim + selectProvince.name + '?', function () {
+                    setTimeout(function () {
+                        downloadSession++;
+                        try {
+                            showLoading(R.downloading_outlet, R.please_wait, R.cancel_download_confirm,
+                                function () {
+                                    isOutletDlgOpen = false;
+                                    if (dialogClosedCallback) dialogClosedCallback();
+                                    log('*** CANCEL download');
+                                    cancelLoadingDlg = true;
+                                    downloadSession++;
+                                }
+                            );
+                            var sessionID = downloadSession;
+                            var url = baseURL + '/outlet/gettotalbyprovince/' + userID + '/' + selectProvince.id;
+                            log('Call service api: ' + url);
+                            $http({
+                                method: config.http_method,
+                                url: url
+                            }).then(function (resp) {
+                                if (cancelLoadingDlg || sessionID != downloadSession) {
+                                    lastDownloadProvinceTS = new Date();
+                                    isOutletDlgOpen = false;
+                                    if (dialogClosedCallback) dialogClosedCallback();
+                                    return;
+                                }
+                                try {
+                                    var outletCount = resp.data;
+                                    if (outletCount > 0) {
+                                        deleleOutletsDB(config.tbl_outlet, selectProvince.id,
+                                            function () {
+                                                log('Found ' + outletCount.toString() + ' outlets');
+                                                var maxPage1 = parseInt(outletCount / $scope.config.download_batch_size)
+                                                var maxPage2 = outletCount % $scope.config.download_batch_size;
+                                                var maxPage = maxPage1 + (maxPage2 > 0 ? 1 : 0);
 
-                                            downloadProvinceOutletsZip(selectProvince.id, sessionID, 0, maxPage,
-                                                function () {
-                                                    isOutletDlgOpen = false;
-                                                    if (dialogClosedCallback) dialogClosedCallback();
-                                                    if (sessionID == downloadSession) {
-                                                        changeDownloadProvinceStatusDB(config.tbl_downloadProvince, selectProvince.id, 1, function () {
-                                                            selectProvince.download = 1;
+                                                downloadProvinceOutletsZip(selectProvince.id, sessionID, 0, maxPage,
+                                                    function () {
+                                                        isOutletDlgOpen = false;
+                                                        if (dialogClosedCallback) dialogClosedCallback();
+                                                        if (sessionID == downloadSession) {
+                                                            changeDownloadProvinceStatusDB(config.tbl_downloadProvince, selectProvince.id, 1, function () {
+                                                                selectProvince.download = 1;
+                                                                hideLoadingDlg();
+                                                                showInfo('Download outlets completed!');
+                                                                if (selectProvince.download) {
+                                                                    $("#buttonDownload").css('display', 'none');
+                                                                    $("#buttonRedownload").css('display', 'table');
+                                                                    $("#buttonDeleteOffline").css('display', 'table');
+                                                                }
+                                                            }, function (dberr) {
+                                                                showError(dberr.message);
+                                                            });
+                                                        }
+                                                    }, function (errMsg) {
+                                                        isOutletDlgOpen = false;
+                                                        if (dialogClosedCallback) dialogClosedCallback();
+                                                        if (sessionID == downloadSession) {
+                                                            showError(errMsg);
+                                                        }
+                                                    }, function () {
+                                                        isOutletDlgOpen = false;
+                                                        if (dialogClosedCallback) dialogClosedCallback();
+                                                        try {
                                                             hideLoadingDlg();
-                                                            showInfo('Download outlets completed!');
-                                                            if (selectProvince.download) {
-                                                                $("#buttonDownload").css('display', 'none');
-                                                                $("#buttonRedownload").css('display', 'table');
-                                                                $("#buttonDeleteOffline").css('display', 'table');
-                                                            }
-                                                        }, function (dberr) {
-                                                            showError(dberr.message);
-                                                        });
-                                                    }
-                                                }, function (errMsg) {
-                                                    isOutletDlgOpen = false;
-                                                    if (dialogClosedCallback) dialogClosedCallback();
-                                                    if (sessionID == downloadSession) {
-                                                        showError(errMsg);
-                                                    }
-                                                }, function () {
-                                                    isOutletDlgOpen = false;
-                                                    if (dialogClosedCallback) dialogClosedCallback();
-                                                    try {
-                                                        hideLoadingDlg();
-                                                    }
-                                                    catch (er) { };
-                                                })
-                                        },
-                                        function (err) {
-                                            if (sessionID == downloadSession) {
-                                                showError(err.message);
-                                            }
-                                        });
-                                }
-                                else {
-                                    if (sessionID == downloadSession) {
-                                        hideLoadingDlg();
-                                        showInfo(R.no_outlet_found);
+                                                        }
+                                                        catch (er) { };
+                                                    })
+                                            },
+                                            function (err) {
+                                                if (sessionID == downloadSession) {
+                                                    showError(err.message);
+                                                }
+                                            });
                                     }
+                                    else {
+                                        if (sessionID == downloadSession) {
+                                            hideLoadingDlg();
+                                            showInfo(R.no_outlet_found);
+                                        }
+                                    }
+                                } catch (err) {
+                                    showError(err.message);
+                                    isOutletDlgOpen = false;
+                                    if (dialogClosedCallback) dialogClosedCallback();
                                 }
-                            } catch (err) {
-                                showError(err.message);
-                                isOutletDlgOpen = false;
-                                if (dialogClosedCallback) dialogClosedCallback();
-                            }
-                        }, function (err) {
-                            if (sessionID == downloadSession) {
-                                isOutletDlgOpen = false;
-                                if (dialogClosedCallback) dialogClosedCallback();
-                                showError($scope.R.text_ConnectionTimeout);
-                                log('HTTP error...');
-                                log(err);
-                                //hideDlg();
-                                //var msg = err.statusText == '' ? $scope.R.text_ConnectionTimeout : err.statusText;
-                            }
-                        });
-                    } catch (ex) {
-                        showError(ex.message);
-                        isOutletDlgOpen = false;
-                        if (dialogClosedCallback) dialogClosedCallback();
-                    }
-                    lastDownloadProvinceTS = new Date();
-                }, 500);               
-            }, function () {
+                            }, function (err) {
+                                if (sessionID == downloadSession) {
+                                    isOutletDlgOpen = false;
+                                    if (dialogClosedCallback) dialogClosedCallback();
+                                    showError($scope.R.text_ConnectionTimeout);
+                                    log('HTTP error...');
+                                    log(err);
+                                    //hideDlg();
+                                    //var msg = err.statusText == '' ? $scope.R.text_ConnectionTimeout : err.statusText;
+                                }
+                            });
+                        } catch (ex) {
+                            showError(ex.message);
+                            isOutletDlgOpen = false;
+                            if (dialogClosedCallback) dialogClosedCallback();
+                        }
+                        lastDownloadProvinceTS = new Date();
+                    }, 500);               
+                }, function () {
+                    isOutletDlgOpen = false;
+                    if (dialogClosedCallback) dialogClosedCallback();
+                });
+            }, function (tx, dberr) {
+                showError(dberr.message);
                 isOutletDlgOpen = false;
                 if (dialogClosedCallback) dialogClosedCallback();
             });
-        }, function (dberr) {
-            showError(dberr.message);
+        }
+        catch(e){
+            showError(e.message);
             isOutletDlgOpen = false;
             if (dialogClosedCallback) dialogClosedCallback();
-        });
+        }
     }
 
     //*************************************************************************
@@ -908,10 +985,12 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                 if (dialogClosedCallback) dialogClosedCallback();
                 if (answer) {
                     log('save outlet')
-                    $scope.outlet.AuditStatus = ($scope.outlet.IsDraft) ? StatusNew : StatusPost;
-                    //if (user.hasAuditRole)
-                    //    $scope.outlet.AuditStatus = StatusPost;
-
+                    if (user.hasAuditRole) {
+                        $scope.outlet.AuditStatus = StatusAuditorNew;
+                    } else {
+                        $scope.outlet.AuditStatus = ($scope.outlet.IsDraft) ? StatusNew : StatusPost;
+                    }
+                   
                     log('Audit Status: ' + $scope.outlet.AuditStatus.toString());
                     showDlg(R.save_outlet, R.please_wait);
                     saveOutlet($scope.outlet,
@@ -1329,6 +1408,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 
     //*************************************************************************
     function editOutlet(j, isPanTo) {
+        $('#searchInput').blur();
         tryOpenDialog(function () {
             // Still has issue if this outlet has been removed while user move
             log('Open outlet:' + j.toString());
@@ -1350,8 +1430,11 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             $scope.outlet = clonedOutlet;
             initializeOutlet($scope.outlet);
             log('draft: ' + $scope.outlet.IsDraft);
-            var isEditNewOutlet = $scope.outlet.AuditStatus == StatusNew;
+            var isEditNewOutlet = $scope.outlet.AuditStatus == StatusNew || $scope.outlet.AuditStatus == StatusAuditorNew;
             $scope.isNewOutlet = false;
+            $scope.isApproved = false;
+            $scope.outlet.isChanged = false;
+            $scope.outlet.isRevert = false;
             $mdDialog.show({
                 scope: $scope.$new(),
                 controller: isEditNewOutlet ? newOutletController : editOutletController,
@@ -1365,79 +1448,108 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                 if (dialogClosedCallback) dialogClosedCallback();
                 if (!answer) return;
 
-                if (isEditNewOutlet) {
-                    if ($scope.outlet.isDeleted)
-                        $scope.outlet.AuditStatus = StatusDelete;
+                if (!$scope.outlet.isChanged) return;
+
+                if (!$scope.outlet.isRevert) {
+                    //if (isEditNewOutlet) {
+                    //    if ($scope.outlet.isDeleted)
+                    //        $scope.outlet.AuditStatus = StatusDelete;
+                    //    else if ($scope.outlet.isApproved) {
+                    //        $scope.outlet.AuditStatus = StatusAuditorAccept;
+                    //    } else if ($scope.outlet.AuditStatus != StatusAuditorNew) {
+                    //        $scope.outlet.AuditStatus = ($scope.outlet.IsDraft) ? StatusNew : StatusPost;
+                    //    }
+                    //} else {
+                    //    if ($scope.outlet.AuditStatus == StatusInitial)
+                    //        $scope.outlet.AuditStatus = StatusEdit;
+                    //    else if ($scope.outlet.AuditStatus == StatusPost) {
+                    //        $scope.outlet.AuditStatus = StatusNew;  //Revise
+                    //    } else if ($scope.outlet.AuditStatus == StatusExitingPost) {
+                    //        $scope.outlet.AuditStatus = StatusEdit;  //Revise
+                    //    } else if ($scope.outlet.AuditStatus == StatusEdit) {
+                    //        $scope.outlet.AuditStatus = ($scope.outlet.IsExistingDraft) ? StatusEdit : StatusExitingPost;
+                    //    }
+                    //}
+
+                    if ($scope.outlet.IsTracked)
+                        $scope.outlet.Tracking = 1;
                     else
-                        $scope.outlet.AuditStatus = ($scope.outlet.IsDraft) ? StatusNew : StatusPost;
-                } else {
-                    if ($scope.outlet.AuditStatus == StatusInitial)
-                        $scope.outlet.AuditStatus = StatusEdit;
-                    else if ($scope.outlet.AuditStatus == StatusPost) {
-                        if ($scope.outlet.IsDraft) {
-                            $scope.outlet.AuditStatus = StatusNew;  //Revise
-                        }
-                    } else if ($scope.outlet.AuditStatus == StatusExitingPost) {
-                        if ($scope.outlet.IsExistingDraft) {
-                            $scope.outlet.AuditStatus = StatusEdit;  //Revise
-                        }
-                    } else if ($scope.outlet.AuditStatus == StatusEdit) {
-                        if (!$scope.outlet.IsExistingDraft) {
-                            $scope.outlet.AuditStatus = StatusExitingPost;  //Post
+                        $scope.outlet.Tracking = 0;
+
+                    if ($scope.outlet.IsOpened) $scope.outlet.CloseDate = '';
+            
+                    if ($scope.outlet.PStatus == 0) {
+                        if (orgOutlet.IsOpened && orgOutlet.Tracking == 1) {
+                            $scope.outlet.PStatus = 1;
+                        } else if (orgOutlet.IsOpened && orgOutlet.Tracking == 0) {
+                            $scope.outlet.PStatus = 2;
+                        } else {
+                            $scope.outlet.PStatus = 3;
                         }
                     }
+                    //var pstatus = $scope.outlet.PStatus;
+                    //if ($scope.outlet.IsOpened != orgOutlet.IsOpened && $scope.outlet.Tracking != orgOutlet.Tracking) {
+                    //    pstatus |= 4;
+                    //} else if ($scope.outlet.IsOpened != orgOutlet.IsOpened && $scope.outlet.Tracking == orgOutlet.Tracking) {
+                    //    pstatus |= 2;
+                    //    if($scope.outlet)
+                    //} else if ($scope.outlet.IsOpened == orgOutlet.IsOpened && $scope.outlet.Tracking != orgOutlet.Tracking) {
+                    //    pstatus |= 1;
+                    //}
+                    //$scope.outlet.PStatus = pstatus;
+
+                    $scope.outlet.AmendBy = userID;
+
+                    var isPost = $scope.outlet.IsDraft != orgOutlet.IsDraft;
+                    var isAuditChanged = $scope.outlet.AuditStatus != orgOutlet.AuditStatus;
+
+                    orgOutlet.AuditStatus = $scope.outlet.AuditStatus;
+                    orgOutlet.AmendBy = $scope.outlet.AmendBy;
+                    orgOutlet.AddLine = $scope.outlet.AddLine;
+                    orgOutlet.AddLine2 = $scope.outlet.AddLine2;
+                    orgOutlet.AuditStatus = $scope.outlet.AuditStatus;
+                    orgOutlet.CloseDate = $scope.outlet.CloseDate;
+                    orgOutlet.Distance = $scope.outlet.Distance;
+                    orgOutlet.District = $scope.outlet.District;
+                    orgOutlet.FullAddress = $scope.outlet.FullAddress;
+                    orgOutlet.IsOpened = $scope.outlet.IsOpened;
+                    orgOutlet.IsTracked = $scope.outlet.IsTracked;
+                    orgOutlet.Name = $scope.outlet.Name;
+                    orgOutlet.Note = $scope.outlet.Note;
+                    orgOutlet.OTypeID = $scope.outlet.OTypeID;
+                    orgOutlet.OutletEmail = $scope.outlet.OutletEmail;
+                    orgOutlet.OutletSource = $scope.outlet.OutletSource;
+                    orgOutlet.OutletTypeName = $scope.outlet.OutletTypeName;
+                    orgOutlet.Phone = $scope.outlet.Phone;
+                    orgOutlet.ProvinceID = $scope.outlet.ProvinceID;
+                    orgOutlet.ProvinceName = $scope.outlet.ProvinceName;
+
+                    var img1 = $scope.outlet.StringImage1;
+                    var img2 = $scope.outlet.StringImage2;
+                    var img3 = $scope.outlet.StringImage3;
+
+                    orgOutlet.StringImage1 = img1;
+                    orgOutlet.StringImage2 = img2;
+                    orgOutlet.StringImage3 = img3;
+
+                    orgOutlet.TotalVolume = $scope.outlet.TotalVolume;
+                    orgOutlet.Tracking = $scope.outlet.Tracking;
+                    orgOutlet.VBLVolume = $scope.outlet.VBLVolume;
+                    orgOutlet.PStatus = $scope.outlet.PStatus;
+
+                    orgOutlet.modifiedImage1 = $scope.outlet.modifiedImage1;
+                    orgOutlet.modifiedImage2 = $scope.outlet.modifiedImage2;
+                    orgOutlet.modifiedImage3 = $scope.outlet.modifiedImage3;
+                } else{
+                    $scope.outlet.AuditStatus = StatusRevert;
+                    orgOutlet.AuditStatus = $scope.outlet.AuditStatus;
+                    orgOutlet.StringImage1 = '';
+                    orgOutlet.StringImage2 = '';
+                    orgOutlet.StringImage3 = '';
+                    orgOutlet.modifiedImage1 = false;
+                    orgOutlet.modifiedImage2 = false;
+                    orgOutlet.modifiedImage3 = false;
                 }
-
-                if ($scope.outlet.IsTracked)
-                    $scope.outlet.Tracking = 1;
-                else
-                    $scope.outlet.Tracking = 0;
-
-                if ($scope.outlet.IsOpened) $scope.outlet.CloseDate = '';
-
-                $scope.outlet.AmendBy = userID;
-
-                var isPost = $scope.outlet.IsDraft != orgOutlet.IsDraft;
-                var isAuditChanged = $scope.outlet.AuditStatus != orgOutlet.AuditStatus;
-
-                orgOutlet.AuditStatus = $scope.outlet.AuditStatus;
-                orgOutlet.AmendBy = $scope.outlet.AmendBy;
-                orgOutlet.AddLine = $scope.outlet.AddLine;
-                orgOutlet.AddLine2 = $scope.outlet.AddLine2;
-                orgOutlet.AuditStatus = $scope.outlet.AuditStatus;
-                orgOutlet.CloseDate = $scope.outlet.CloseDate;
-                orgOutlet.Distance = $scope.outlet.Distance;
-                orgOutlet.District = $scope.outlet.District;
-                orgOutlet.FullAddress = $scope.outlet.FullAddress;
-                orgOutlet.IsOpened = $scope.outlet.IsOpened;
-                orgOutlet.IsTracked = $scope.outlet.IsTracked;
-                orgOutlet.Name = $scope.outlet.Name;
-                orgOutlet.Note = $scope.outlet.Note;
-                orgOutlet.OTypeID = $scope.outlet.OTypeID;
-                orgOutlet.OutletEmail = $scope.outlet.OutletEmail;
-                orgOutlet.OutletSource = $scope.outlet.OutletSource;
-                orgOutlet.OutletTypeName = $scope.outlet.OutletTypeName;
-                orgOutlet.Phone = $scope.outlet.Phone;
-                orgOutlet.ProvinceID = $scope.outlet.ProvinceID;
-                orgOutlet.ProvinceName = $scope.outlet.ProvinceName;
-
-                var img1 = $scope.outlet.StringImage1;
-                var img2 = $scope.outlet.StringImage2;
-                var img3 = $scope.outlet.StringImage3;
-
-                orgOutlet.StringImage1 = img1;
-                orgOutlet.StringImage2 = img2;
-                orgOutlet.StringImage3 = img3;
-
-                orgOutlet.TotalVolume = $scope.outlet.TotalVolume;
-                orgOutlet.Tracking = $scope.outlet.Tracking;
-                orgOutlet.VBLVolume = $scope.outlet.VBLVolume;
-                orgOutlet.PStatus = $scope.outlet.PStatus;
-
-                orgOutlet.modifiedImage1 = $scope.outlet.modifiedImage1;
-                orgOutlet.modifiedImage2 = $scope.outlet.modifiedImage2;
-                orgOutlet.modifiedImage3 = $scope.outlet.modifiedImage3;
-
                 showDlg(R.saving_outlet, R.please_wait);
                 if ($scope.outlet.isDeleted) {
                     log('save outlet to server')
@@ -1793,6 +1905,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 	function enableOffline(isOnline) {
 	    if (isOnline) {
 	        $("#home-topright-offline").css('display', 'none');
+	        $("#home-topright-sync-hint").css('display', 'none');
 	        selectAllUnsyncedOutlets(config.tbl_outlet,
               function (dbres) {
                   if (dbres.rows.length > 0) {
@@ -1809,15 +1922,16 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 	}
 
     //*************************************************************************
-  
 	function handleConnectionChanged(networkStatus) {
 	    enableOffline(networkStatus);
 	    if (networkStatus) {
 	        if (appReady)
 	            changeGPSTrackingStatus();
 
-	        loadMapCallback = handleMapLoaded;
-	        loadMapApi();
+	        if (!isMapReady) {
+	            loadMapCallback = handleMapLoaded;
+	            loadMapApi();
+	        }
 
 	        //if (!isSyncing) {
 	        //    setTimeout(function () {
@@ -1835,6 +1949,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 	    }
 	}
 
+    //*************************************************************************
 	function handleMapLoaded() {
 	    showDlg(R.get_near_by_outlets, R.please_wait);
 	    getCurPosition(true, function (lat, lng) {
@@ -1842,6 +1957,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 	        if (networkReady()) {
 	            if (isMapReady) {
 	                log('Move to current location');
+	                //$('#current-location-button').css('display', 'block');
 	                moveToCurrentLocation();
 	            }
 	            if (appReady)
@@ -1877,12 +1993,105 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 	        }
 	    }, function (err) { hideDlg(); });
 
-	  
 	    loadMapCallback = null;
 	};
 
+    //*************************************************************************
+	$scope.changePassword = function (isCancel) {
+	    if (isCancel) {
+	        $('#dlg-change-password').css('display', 'none');
+	        if (!appReady) start();
+	    } else {
+	        if (!$scope.forceChangePassword && isEmpty($scope.curPass)) {
+	            showErrorAdv(R.current_pass_is_empty, function () { $("#cur-pass").focus(); });
+	            return;
+	        }
 
-    //*********************************** START APPLICATION **************************************           
+	        if (isEmpty($scope.newPass)) {
+	            showErrorAdv(R.new_pass_is_empty, function () { $("#new-pass").focus(); });
+	            return;
+	        }
+
+	        if ($scope.newPass != $scope.confirmPass) {
+	            showErrorAdv(R.confirm_pass_doesnot_match, function () { $("#confirm-pass").focus(); });
+	            return;
+	        }
+
+	        showDlg(R.submitting, R.please_wait);
+	        try {
+	            var url = baseURL;
+	            if ($scope.forceChangePassword) {
+	                url = url.concat('/resetpassword');
+	                url = url.concat('/', user.token);
+	                url = url.concat('/', user.id);
+	                url = url.concat('/', hashString($scope.newPass));
+	            } else {
+	                url = url.concat('/changepassword');
+	                url = url.concat('/', user.token);
+	                url = url.concat('/', user.id);
+	                url = url.concat('/', hashString($scope.curPass));
+	                url = url.concat('/', hashString($scope.newPass));
+	            }
+	          
+	            log('Call service api: ' + url);
+	            $http({
+	                method: config.http_method,
+	                url: url
+	            }).then(function (resp) {
+	                try {
+	                    hideDlg();
+	                    var data = resp.data;
+	                    if (data.Status == -1) { // error
+	                        showError(data.ErrorMessage);
+	                    } else {
+	                        $scope.forceChangePassword = false;
+	                        changePasswordDB(userID, $scope.newPass, function () {
+	                            $scope.curPass = '';
+	                            $scope.newPass = '';
+	                            $scope.confirmPass = '';
+	                            $('#dlg-change-password').css('display', 'none');
+	                            if (!appReady) start();
+	                        }, function (dberr) {
+	                            showError(dberr.message);
+	                        });
+	                    }
+	                } catch (err) {
+	                    showError(err.message);
+	                }
+	            }, function (err) {
+	                log('HTTP error...');
+	                var msg = err.statusText == '' ? $scope.R.text_ConnectionTimeout : err.statusText;
+	                showError(msg);
+	            });
+	        } catch (ex) {
+	            showError(ex.message);
+	        }
+	    }
+	};
+
+    //*************************************************************************
+	$scope.displayChangePasswordDlg = function () {
+	    if (!networkReady()) {
+	        showError(R.cannot_change_password_in_offline);
+	        return;
+	    }
+
+	    $('#dlg-change-password').css('display', 'table');
+	}
+
+    //*************************************************************************           
+	function start() {
+	    showDlg(R.loading, R.please_wait);
+	    loadMapApi();
+
+	    //showDlg(R.get_current_location, R.please_wait);
+	    //getCurPosition(true, function (lat, lng) {
+	    //    loadMapApi();
+	    //}, function (err) {
+	    //    log(err);
+	    //    loadMapApi();
+	    //});
+	}
     try {
         enableOffline(networkReady());
 
@@ -1922,16 +2131,16 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         };
 
         initializeView();
-        editOutletCallback = function (i) { editOutlet(i, false);};   
+        editOutletCallback = function (i) { editOutlet(i, false); };
 
-       
-        showDlg(R.get_current_location, R.please_wait);
-        getCurPosition(true, function (lat, lng) {            
-            loadMapApi();
-        }, function (err) {
-            log(err);
-            loadMapApi();
-        });		                               		
+        // Get current location first before do another stubs
+        if (user.role == 10 || user.role == 11) {
+            $scope.forceChangePassword = true;
+            $('#dlg-change-password').css('display', 'table');
+        } else {
+            start();
+        }
+                           		
     } catch (err) {
         showError(err);
         log(err);

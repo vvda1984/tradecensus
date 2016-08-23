@@ -18,8 +18,20 @@ function language_en() {
         btn_logout: 'LOGOUT',
         btn_post: 'POST',
         btn_revise: 'REVISE',
+        btn_revert: 'RESET',
         btn_approve: 'APPROVE',
         btn_deny: 'DENY',
+        btn_changePassword : 'CHANGE PASSWORD',
+
+        version : 'Version',
+        submitting: 'SUBMITTING',
+        cannot_change_password_in_offline: 'Cannot change password in offline mode!',
+        enter_current_password: 'Current Password',
+        enter_new_password: 'New Password',
+        enter_confirm_password: 'Confirm Password',
+        current_pass_is_empty: 'Current password is empty!',
+        new_pass_is_empty: 'New password is empty!',
+        confirm_pass_doesnot_match: 'Confirm password does not match!',
 		
         connecting_server: 'Connecting to server',
         loading_map : 'Loading map',
@@ -46,8 +58,10 @@ function language_en() {
         distance: 'Distance',
         max_outlets: 'Max Outlets',
 		page_size : 'Outlet Page Size',
-        near_by_outlets: 'Near-by Outlets',
-        new_outlets: 'New Outlets',
+
+		near_by_outlets: 'Near-by Outlets',
+		new_outlets: 'New Outlets',
+		my_new_outlets: 'My New Outlets',
         updated_outlets: 'Updated Outlets',
         auditted_outlets: 'Auditted Outlets',
         no_outlet_found: 'No outlet found',
@@ -94,7 +108,8 @@ function language_en() {
         deny: 'Deny',
         revise: 'Revise',
         draft: 'Draft',        
-		comment : 'Comment',
+        comment: 'Comment',
+        revert: 'Reset',
 
         get_current_location: 'Get current location',
         synchronize_outlets: 'Synchronize Outlets',
@@ -121,12 +136,19 @@ function language_en() {
         delete_outlet: 'Delete Outlet',
         delete_outlet_confirm: 'Are you sure you want to delete outlet "{outletname}"?',
 
+        revert_outlet: 'Reset Outlet',
+        revert_outlet_confirm: 'Are you sure you want to reset outlet "{outletname}"?',
+
         post_outlet: 'Post Outlet',
         post_outlet_confirm: 'Are you sure you want to POST outlet "{outletname}"?',
 
         revise_outlet: 'Revise Outlet',
         revise_outlet_confirm: 'Are you sure you want to REVISE outlet "{outletname}"?',
 		
+        approve_outlet: 'Approve Outlet',
+        approve_outlet_confirm: 'Are you sure you want to APPROVE outlet "{outletname}"?',
+
+
         outlet_type_is_empty: 'Outlet type is empty!',
 		outlet_name_is_empty : 'Outlet name is empty!',
 		house_no_is_empty : 'House number is empty!',
@@ -135,11 +157,11 @@ function language_en() {
 		phone_is_empty: 'Phone is empty!',
 		comment_is_empty: 'Comment is empty!',
 		ovar_audit_distance: 'Outlet is out of audit range ({distance} m).',
-		total_is_invald: 'TOTAL volume must be whole number',
-		total_is_empty: 'TOTAL volume must greater than zero.',
+		total_is_invald: 'Total volume must be whole number',
+		total_is_empty: 'Total volume must be greater than zero.',
 		vbl_is_invald: ' VBL volume must be whole number',
 		vbl_is_empty: 'VBL volume must greater than zero',
-		vbl_cannot_greater_than_total: 'VBL volume cannot greater than Total volume.',
+		vbl_cannot_greater_than_total: 'VBL volume can\'t be greater than Total volume.',
 		need_to_capture: 'Please capture images',
 
 		confirm : 'CONFIRM',

@@ -34,8 +34,9 @@ namespace TradeCensus
         public virtual DbSet<SyncHistory> SyncHistories { get; set; }
         public virtual DbSet<Zone> Zones { get; set; }
         public virtual DbSet<OutletHistory> OutletHistories { get; set; }
+        public virtual DbSet<Person> People { get; set; }
+        public virtual DbSet<ConnectionSession> ConnectionSessions { get; set; }
         public virtual DbSet<Outlet> Outlets { get; set; }
         public virtual DbSet<OutletImage> OutletImages { get; set; }
-        public virtual DbSet<Person> People { get; set; }
     }
 }

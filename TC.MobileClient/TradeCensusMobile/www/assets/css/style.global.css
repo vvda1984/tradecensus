@@ -1,0 +1,109 @@
+﻿/****************************** COLOR ******************************/
+.blue {
+    background: #01541E;
+}
+
+.blue-dark {
+    background: #103B68;
+}
+
+.white {
+    background: white;
+}
+
+.red {
+    background: #F44336;
+}
+
+.blue1 {
+    background: #2196F3;
+}
+
+.transparent {
+    background: transparent;
+    box-shadow: 0px;
+}
+
+.light-green{
+    background:#4CAF50;
+}
+
+/****************************** TEXT COLOR ******************************/
+
+.black-color {
+    color: black;
+}
+
+.gray-color {
+    color:  rgb(128, 128, 128);
+}
+
+.blue-color {
+    color: #2196F3;
+}
+
+.warn-color {
+    color: #EF8E1B;
+}
+
+.error-color {
+    color: #F44336;
+}
+
+.green-color{
+    color : #01541E;
+}
+
+/****************************** TEXT SIZE ******************************/
+
+.normal-text {
+    font-size: 16px;
+}
+
+.large-text {
+    font-size: 20px;
+}
+
+.small-text {
+    font-size: 14px;
+}
+
+*:focus {
+    outline: none;
+}
+
+/****************************** DISPLAy ******************************/
+.display-none {
+    display: none;
+}
+
+/****************************** POSITION ******************************/
+.float-left {
+    float: left; 
+    margin-right: 4px;
+}
+.float-right {
+    float: right; 
+    margin-left: 4px;
+}
+
+.float-top {     
+    margin-top: 4px;
+}
+
+.float-top-right {     
+    margin-bottom: 8px;
+}
+
+/****************************** MARGIN ******************************/
+.margin-top-4{
+    margin-top: 4px;
+}
+
+.margin-top-8{
+    margin-top: 8px;
+}
+
+.margin-top-12{
+    margin-top: 8px;
+}

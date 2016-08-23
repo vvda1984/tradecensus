@@ -12,7 +12,7 @@ using TradeCensus.Shared;
 
 namespace TradeCensus
 {
-    public class OutletRepo : BaseRepo
+    public class OutletService : BaseRepo
     {
         static object Locker = new object(); 
         //const byte ActionAdd = 0;
@@ -60,7 +60,7 @@ namespace TradeCensus
             }
         }
 
-        public OutletRepo() : base("Outlet")
+        public OutletService() : base("Outlet")
         {
         }
 
@@ -149,44 +149,26 @@ namespace TradeCensus
                     query = from i in _entities.Outlets
                             where i.Latitude >= bl.Lat && i.Latitude <= tl.Lat &&
                                   i.Longitude >= bl.Lng && i.Longitude <= br.Lng &&
-                                  ((i.AuditStatus == Constants.StatusNew && i.PersonID == personID) || i.AuditStatus == Constants.StatusPost || i.AuditStatus == Constants.StatusAuditAccept || i.AuditStatus == Constants.StatusAuditDeny) //&&
-                                  //i.PersonID != personID
+                                  ((i.AuditStatus == Constants.StatusAuditorNew && i.PersonID == personID) ||
+                                    i.AuditStatus == Constants.StatusPost ||
+                                    i.AuditStatus == Constants.StatusAuditAccept ||
+                                    i.AuditStatus == Constants.StatusAuditDeny ||
+                                    //i.AuditStatus == Constants.StatusAuditorNew ||
+                                    i.AuditStatus == Constants.StatusAuditorAccept) //&&
+                                                                                    //i.PersonID != personID
                             select i;
                 else
                     query = from i in _entities.Outlets
                             where i.Latitude >= bl.Lat && i.Latitude <= tl.Lat &&
                                   i.Longitude >= bl.Lng && i.Longitude <= br.Lng &&
-                                  (i.AuditStatus == Constants.StatusNew || i.AuditStatus == Constants.StatusPost
-                                  || i.AuditStatus == Constants.StatusAuditAccept || i.AuditStatus == Constants.StatusAuditDeny) //&&
-                                  //i.PersonID == personID
+                                  (i.AuditStatus == Constants.StatusNew ||
+                                  i.AuditStatus == Constants.StatusPost ||
+                                  i.AuditStatus == Constants.StatusAuditAccept ||
+                                  i.AuditStatus == Constants.StatusAuditDeny ||
+                                  //i.AuditStatus == Constants.StatusAuditorNew || 
+                                  i.AuditStatus == Constants.StatusAuditorAccept) //&&
+                                                                                  //i.PersonID == personID
                             select i;
-
-                //if (AuditorNewMode)
-                //{
-                //    if (auditor)
-                //        query = from i in _entities.Outlets
-                //                where i.Latitude >= bl.Lat && i.Latitude <= tl.Lat &&
-                //                      i.Longitude >= bl.Lng && i.Longitude <= br.Lng &&
-                //                      i.AuditStatus == Constants.StatusPost &&
-                //                      i.PersonID != personID
-                //                select i;
-                //    else
-                //        query = from i in _entities.Outlets
-                //                where i.Latitude >= bl.Lat && i.Latitude <= tl.Lat &&
-                //                      i.Longitude >= bl.Lng && i.Longitude <= br.Lng &&
-                //                      (i.AuditStatus == Constants.StatusNew || i.AuditStatus == Constants.StatusPost) &&
-                //                      i.PersonID == personID
-                //                select i;
-                //}
-                //else
-                //{
-                //    query = from i in _entities.Outlets
-                //            where i.Latitude >= bl.Lat && i.Latitude <= tl.Lat &&
-                //                  i.Longitude >= bl.Lng && i.Longitude <= br.Lng &&
-                //                  (i.AuditStatus == Constants.StatusNew || i.AuditStatus == Constants.StatusPost) &&
-                //                  i.PersonID == personID
-                //            select i;
-                //}
             }
             else if (status == 2) // edit
             {
@@ -202,21 +184,41 @@ namespace TradeCensus
                             where i.Latitude >= bl.Lat && i.Latitude <= tl.Lat &&
                                   i.Longitude >= bl.Lng && i.Longitude <= br.Lng &&
                                   (i.AuditStatus == Constants.StatusEdit ||
-                                    i.AuditStatus == Constants.StatusExistingPost ||
-                                    i.AuditStatus == Constants.StatusExistingAccept 
-                                    || i.AuditStatus == Constants.StatusExistingDeny) &&  
+                                   i.AuditStatus == Constants.StatusExistingPost ||
+                                   i.AuditStatus == Constants.StatusExistingAccept || i.AuditStatus == Constants.StatusExistingDeny) &&
                                   i.AmendBy == personID
                             select i;
             }
-            else // audit
+            else if (status == 3) // audit
             {
                 query = from i in _entities.Outlets
                         where i.Latitude >= bl.Lat && i.Latitude <= tl.Lat &&
                               i.Longitude >= bl.Lng && i.Longitude <= br.Lng &&
-                              (i.AuditStatus == Constants.StatusAuditAccept || i.AuditStatus == Constants.StatusAuditDeny
-                              || i.AuditStatus == Constants.StatusExistingAccept || i.AuditStatus == Constants.StatusExistingDeny) &&
+                              (i.AuditStatus == Constants.StatusAuditAccept || i.AuditStatus == Constants.StatusAuditDeny ||
+                              i.AuditStatus == Constants.StatusExistingAccept || i.AuditStatus == Constants.StatusExistingDeny ||
+                              i.AuditStatus == Constants.StatusAuditorAccept) &&
                               i.AmendBy == personID
                         select i;
+            }
+            else  // new by person id
+            {
+                if (auditor)
+                    query = from i in _entities.Outlets
+                            where i.Latitude >= bl.Lat && i.Latitude <= tl.Lat &&
+                                  i.Longitude >= bl.Lng && i.Longitude <= br.Lng &&
+                                  i.PersonID == personID &&
+                                  (i.AuditStatus == Constants.StatusAuditorNew || i.AuditStatus == Constants.StatusAuditorAccept)
+                            select i;
+                else
+                    query = from i in _entities.Outlets
+                            where i.Latitude >= bl.Lat && i.Latitude <= tl.Lat &&
+                                  i.Longitude >= bl.Lng && i.Longitude <= br.Lng &&
+                                  i.PersonID == personID &&
+                                  (i.AuditStatus == Constants.StatusNew ||
+                                   i.AuditStatus == Constants.StatusPost ||
+                                   i.AuditStatus == Constants.StatusAuditAccept ||
+                                   i.AuditStatus == Constants.StatusAuditDeny)
+                            select i;
             }
                         
             if (query.Any())
@@ -233,7 +235,8 @@ namespace TradeCensus
                 int found = 0;
                 foreach (var outlet in arr)
                 {
-                    if (outlet.AuditStatus == Constants.StatusNew && outlet.PersonID != personID) continue;
+                    if ((outlet.AuditStatus == Constants.StatusNew || outlet.AuditStatus == Constants.StatusAuditorNew) && 
+                        outlet.PersonID != personID) continue;
 
                     double distance = outlet.Distance;
                     //DistanceHelper.CalcDistance(curLocation, new Point { Lat = outlet.Latitude, Lng = outlet.Longitude });
@@ -285,9 +288,9 @@ namespace TradeCensus
                 PRowID = outlet.PRowID.ToString(),
                 PAction = 0,
                 PNote = "",
-                InputBy = outlet.InputBy ==null? 0 : outlet.InputBy.Value,
-                AmendBy = outlet.AmendBy ==null ?0 : outlet.AmendBy.Value,
-                AmendDate = outlet.AmendDate ==null ? DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") : outlet.AmendDate.Value.ToString("yyyy-MM-dd HH:mm:ss"),
+                InputBy = outlet.InputBy == null ? 0 : outlet.InputBy.Value,
+                AmendBy = outlet.AmendBy == null ? 0 : outlet.AmendBy.Value,
+                AmendDate = outlet.AmendDate == null ? DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") : outlet.AmendDate.Value.ToString("yyyy-MM-dd HH:mm:ss"),
                 AuditStatus = outlet.AuditStatus,
                 CreateDate = outlet.CreateDate == null ? DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") : outlet.CreateDate.Value.ToString("yyyy-MM-dd HH:mm:ss"),
                 OutletSource = 0,
@@ -296,8 +299,16 @@ namespace TradeCensus
                 StringImage3 = "",
                 TotalVolume = outlet.TotalVolume,
                 VBLVolume = outlet.VBLVolume,
+                PStatus = outlet.PModifiedStatus,
             };
-           
+
+            //int pstatus = 0;
+            //if(outlet.PCloseDate != outlet.CloseDate)
+            //    pstatus |= 1;
+            //if (outlet.PTracking != outlet.PTracking)
+            //    pstatus |= 2;
+            //foundOutlet.PStatus = pstatus;
+
             //if (outlet.DEDISID > 0)
             //    foundOutlet.OutletSource = 1;
             //else if (outlet.DISAlias != null)
@@ -376,6 +387,14 @@ namespace TradeCensus
             {
                 return "Deny update outlet";
             }
+            else if (auditStatus == Constants.StatusAuditorAccept)
+            {
+                return "Approve auditor outlet";
+            }
+            else if (auditStatus == Constants.StatusRevert)
+            {
+                return "Revert change";
+            }
             else
             {
                 return "Unknown";
@@ -391,6 +410,9 @@ namespace TradeCensus
             if (existingOutlet == null && outlet.ID != 600000000)
                 existingOutlet = _entities.Outlets.FirstOrDefault(i => i.ID == outlet.ID);
 
+            if (existingOutlet == null && outlet.AuditStatus == Constants.StatusDelete)
+                return null;
+
             if (existingOutlet == null)
             {
                 if (outlet.AuditStatus == Constants.StatusDelete) return null; // already delete
@@ -398,6 +420,8 @@ namespace TradeCensus
                 {
                     if (outlet.ID == 600000000)
                         outlet.ID = GetNextOutletID(int.Parse(outlet.ProvinceID));
+
+                    outlet.AmendBy = outlet.InputBy;
                     existingOutlet = new Outlet
                     {
                         ID = outlet.ID,
@@ -422,9 +446,9 @@ namespace TradeCensus
                         DEDISID = 0,
                         DISAlias = null,
                         LegalName = null,
-                        PIsDeleted = false,
                         PRowID = Guid.NewGuid(),
                         AuditStatus = Constants.StatusNew,
+                        PModifiedStatus = 0,
                     };
                     _entities.Outlets.Add(existingOutlet);
                     return UpdateOutlet(outlet, existingOutlet, saveChanged);
@@ -434,15 +458,16 @@ namespace TradeCensus
                 return UpdateOutlet(outlet, existingOutlet, saveChanged);
         }
 
-        private Outlet UpdateOutlet(OutletModel outlet, Outlet existingOutlet, bool saveChanged = true)
+        private Outlet UpdateOutlet(OutletModel outlet, Outlet dbOutlet, bool saveChanged = true)
         {
-            if (existingOutlet.AuditStatus == Constants.StatusAuditAccept ||
-                existingOutlet.AuditStatus == Constants.StatusAuditDeny ||
-                existingOutlet.AuditStatus == Constants.StatusExistingAccept ||
-                existingOutlet.AuditStatus == Constants.StatusExistingDeny ||
-                existingOutlet.AuditStatus == Constants.StatusDone)
+            if (dbOutlet.AuditStatus == Constants.StatusAuditAccept ||
+                dbOutlet.AuditStatus == Constants.StatusAuditDeny ||
+                dbOutlet.AuditStatus == Constants.StatusExistingAccept ||
+                dbOutlet.AuditStatus == Constants.StatusExistingDeny ||
+                dbOutlet.AuditStatus == Constants.StatusAuditorAccept ||
+                dbOutlet.AuditStatus == Constants.StatusDone)
             {
-                AppendOutletHistory(outlet.AmendBy, outlet.ID, Constants.StatusAuditDeny, "Cannot update audited outlet");
+                AppendOutletHistory(outlet.AmendBy, outlet.ID, Constants.StatusDeny, "Cannot update audited outlet");
                 if (saveChanged)
                     _entities.SaveChanges();
                 throw new DeniedException("Cannot update because outlet(s) audited!");
@@ -453,61 +478,61 @@ namespace TradeCensus
                 DeleteOutlet(outlet.PersonID, outlet.ID);
                 return null;
             }
+            else if(outlet.AuditStatus == Constants.StatusRevert)
+            {
+                throw new NotImplementedException("Revert was not implemented!");
+            }
             else
             {
-                //if (!isNewOutlet && outlet.AuditStatus == Constants.StatusNew && (
-                //    existingOutlet.AuditStatus != Constants.StatusPost ||
-                //    existingOutlet.AuditStatus != Constants.StatusNew))
-                //{
-                //    throw new Exception("Cannot Revise outlet, the data is out of synced. Click Refresh button to reload data");
-                //}
-
-                existingOutlet.AreaID = outlet.AreaID;
-                existingOutlet.Name = outlet.Name;
-                existingOutlet.OTypeID = outlet.OTypeID;
-                existingOutlet.AddLine = outlet.AddLine;
-                existingOutlet.AddLine2 = outlet.AddLine2;
-                existingOutlet.District = outlet.District;
-                existingOutlet.ProvinceID = outlet.ProvinceID;
-                existingOutlet.Phone = outlet.Phone;
+                dbOutlet.AreaID = outlet.AreaID;
+                dbOutlet.Name = outlet.Name;
+                dbOutlet.OTypeID = outlet.OTypeID;
+                dbOutlet.AddLine = outlet.AddLine;
+                dbOutlet.AddLine2 = outlet.AddLine2;
+                dbOutlet.District = outlet.District;
+                dbOutlet.ProvinceID = outlet.ProvinceID;
+                dbOutlet.Phone = outlet.Phone;
                 if (!string.IsNullOrEmpty(outlet.CloseDate))
                     try
                     {
-                        existingOutlet.CloseDate = DateTime.ParseExact(outlet.CloseDate, "yyyy-MM-dd HH:mm:ss", null);
+                        dbOutlet.CloseDate = DateTime.ParseExact(outlet.CloseDate, "yyyy-MM-dd HH:mm:ss", null);
                     }
                     catch
                     {
                         try
                         {
-                            existingOutlet.CloseDate = DateTime.ParseExact(outlet.CloseDate, "yyyy-MM-dd", null);
+                            dbOutlet.CloseDate = DateTime.ParseExact(outlet.CloseDate, "yyyy-MM-dd", null);
                         }
                         catch
                         {
-                            existingOutlet.CloseDate = DateTime.Now;
+                            dbOutlet.CloseDate = DateTime.Now;
                         }
                     }
                 else
-                    existingOutlet.CloseDate = null;
-                existingOutlet.Tracking = outlet.Tracking;
-                existingOutlet.PersonID = outlet.PersonID;
-                existingOutlet.Note = outlet.Note;
-                existingOutlet.Longitude = outlet.Longitude;
-                existingOutlet.Latitude = outlet.Latitude;
-                existingOutlet.AmendBy = outlet.AmendBy;
-                existingOutlet.AmendDate = DateTime.Now;
-                existingOutlet.AuditStatus = (byte)outlet.AuditStatus;
-                existingOutlet.TotalVolume = outlet.TotalVolume;
-                existingOutlet.VBLVolume = outlet.VBLVolume;
-                existingOutlet.AuditStatus = (byte)outlet.AuditStatus;
-                if (!string.IsNullOrEmpty(outlet.PRowID))
-                    existingOutlet.PRowID = new Guid(outlet.PRowID);
+                    dbOutlet.CloseDate = null;
 
-                OutletImage outletImage = existingOutlet.OutletImages.FirstOrDefault();
+                dbOutlet.Tracking = outlet.Tracking;
+                dbOutlet.PersonID = outlet.PersonID;
+                dbOutlet.Note = outlet.Note;
+                dbOutlet.Longitude = outlet.Longitude;
+                dbOutlet.Latitude = outlet.Latitude;
+                dbOutlet.AmendBy = outlet.AmendBy;
+                dbOutlet.AmendDate = DateTime.Now;
+                dbOutlet.AuditStatus = (byte)outlet.AuditStatus;
+                dbOutlet.TotalVolume = outlet.TotalVolume;
+                dbOutlet.VBLVolume = outlet.VBLVolume;
+                dbOutlet.AuditStatus = (byte)outlet.AuditStatus;
+                dbOutlet.PModifiedStatus = outlet.PStatus;
+
+                if (!string.IsNullOrEmpty(outlet.PRowID))
+                    dbOutlet.PRowID = new Guid(outlet.PRowID);
+
+                OutletImage outletImage = dbOutlet.OutletImages.FirstOrDefault();
                 if (outletImage == null)
                 {
                     outletImage = new OutletImage();
-                    outletImage.Outlet = existingOutlet;
-                    existingOutlet.OutletImages.Add(outletImage);
+                    outletImage.Outlet = dbOutlet;
+                    dbOutlet.OutletImages.Add(outletImage);
                 }
 
                 if (string.IsNullOrEmpty(outlet.StringImage1))
@@ -519,7 +544,7 @@ namespace TradeCensus
                 {
                     byte[] data;
                     string relativePath;
-                    SaveToFile(existingOutlet.ID, 1, outlet.StringImage1, out relativePath, out data);
+                    SaveToFile(dbOutlet.ID, 1, outlet.StringImage1, out relativePath, out data);
                     outletImage.Image1 = relativePath;
                     outletImage.ImageData1 = data;
                 }
@@ -533,7 +558,7 @@ namespace TradeCensus
                 {
                     byte[] data;
                     string relativePath;
-                    SaveToFile(existingOutlet.ID, 2, outlet.StringImage2, out relativePath, out data);
+                    SaveToFile(dbOutlet.ID, 2, outlet.StringImage2, out relativePath, out data);
                     outletImage.Image2 = relativePath;
                     outletImage.ImageData2 = data;
                 }
@@ -547,7 +572,7 @@ namespace TradeCensus
                 {
                     byte[] data;
                     string relativePath;
-                    SaveToFile(existingOutlet.ID, 3, outlet.StringImage3, out relativePath, out data);
+                    SaveToFile(dbOutlet.ID, 3, outlet.StringImage3, out relativePath, out data);
                     outletImage.Image3 = relativePath;
                     outletImage.ImageData3 = data;
                 }
@@ -555,7 +580,7 @@ namespace TradeCensus
                 AppendOutletHistory(outlet.AmendBy, outlet.ID, (byte)outlet.AuditStatus, ToActionMsg(outlet.AuditStatus));
                 if (saveChanged)
                     _entities.SaveChanges();
-                return existingOutlet; ;
+                return dbOutlet;
             }
         }
 
@@ -690,7 +715,7 @@ namespace TradeCensus
                 OutletID = outletID,
                 PersonID = personID,
                 Action = action,
-                Note = string.IsNullOrEmpty(note) ? "" : note,
+                Note = "",
                 InputBy = personID,
                 InputDate = DateTime.Now,
             };
@@ -935,7 +960,10 @@ namespace TradeCensus
                 try
                 {
                     var o = SaveOutlet(outlet, true);
-                    dboutlets.Add(new SyncOutlet { ID = o.ID, RowID = outlet.PRowID.ToString() });
+                    if (o != null)
+                        dboutlets.Add(new SyncOutlet { ID = o.ID, RowID = outlet.PRowID.ToString() });
+                    else
+                        dboutlets.Add(new SyncOutlet { ID = 0, RowID = outlet.PRowID.ToString() });
                 }
                 catch (DeniedException ex)
                 {

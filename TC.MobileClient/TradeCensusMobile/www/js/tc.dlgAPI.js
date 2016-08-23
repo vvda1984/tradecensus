@@ -57,7 +57,7 @@ function showDlg(title, message, callback) {
 		$('#dlg-message').html(message);
 	} else {
 	    var cover = null;
-	    var t = (title === R.error ? 'style="color:red;">' : '>');
+	    var t = (title === R.error || title === R.validate_error ? 'style="color:red;">' : '>');
 		if (callback) {			
 			dlgCloseCallback = callback;
 			cover =

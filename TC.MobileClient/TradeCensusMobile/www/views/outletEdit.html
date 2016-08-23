@@ -130,7 +130,8 @@
                 <md-button class="md-raised md-primary" ng-show="viewApprove" ng-click="approve()">{{R.btn_approve}}</md-button>
                 <md-button class="md-raised" ng-show="viewDeny" ng-click="deny()">{{R.btn_deny}}</md-button>
                 <md-button class="md-raised md-primary" ng-click="postOutlet()" ng-show="canPost">{{R.btn_post}}</md-button>
-                <md-button class="md-raised md-primary blue1" ng-show="canRevise" ng-click="reviseOutlet()">{{R.btn_revise}}</md-button>           
+                <md-button class="md-raised md-primary blue1" ng-show="canRevise" ng-click="reviseOutlet()">{{R.btn_revise}}</md-button>
+                <!--<md-button class="md-raised md-primary blue1" ng-show="canRevert" ng-click="revertOutlet()">{{R.btn_revert}}</md-button>-->           
                 <md-button class="md-raised md-primary" ng-show="viewSave" ng-click="saveUpdate()">{{R.btn_save}}</md-button>
 
                 <md-button class="md-raised" ng-show="viewCancel" ng-click="cancelUpdate()">{{isViewOnly ? R.btn_cancel : R.btn_close}}</md-button>

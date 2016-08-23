@@ -54,13 +54,13 @@ namespace TradeCensus
         public byte AuditStatus { get; set; }
         public int TotalVolume { get; set; }
         public int VBLVolume { get; set; }
-        public bool PIsDeleted { get; set; }
-        public System.Guid PRowID { get; set; }
         public int ModifiedStatus { get; set; }
         public string TaxID { get; set; }
         public string DISAlias { get; set; }
         public int DEDISID { get; set; }
         public string LegalName { get; set; }
+        public System.Guid PRowID { get; set; }
+        public int PModifiedStatus { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<OutletImage> OutletImages { get; set; }

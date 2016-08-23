@@ -6,15 +6,18 @@ const StatusNew = 10;
 const StatusPost = 11;
 const StatusAuditAccept = 12;
 const StatusAuditDeny = 13;
-
-const StatusDone = 40;
+const StatusAuditorNew = 14;
+const StatusAuditorAccept = 15;
 
 const StatusEdit = 30;
 const StatusExitingPost = 31;
 const StatusExitingAccept = 32;
 const StatusExitingDeny = 33;
 
+const StatusDone = 40;
+
 const StatusDelete = 100;
+const StatusRevert = 102;
 
 var nearByOutlets = [];
 var curOutlets = [];
@@ -49,7 +52,7 @@ function newOutlet(provinceName) {
         Action: 0,
         AddLine: '',
         AddLine2: '',
-        AmendBy: 11693,
+        AmendBy: user.id,
         AmendDate: "",
         AreaID: user.areaID,
         AuditStatus: StatusNew,
@@ -120,7 +123,14 @@ function initializeOutlet(outlet) {
         outlet.Distance = 0;
 
     //if (outlet.FullAddress == null || isEmpty(outlet.FullAddress))
-        outlet.FullAddress = outlet.AddLine + ' ' + outlet.AddLine2 + ', ' + outlet.District + ', ' + outlet.ProvinceName;
+    if (outlet.AddLine == null) outlet.AddLine = '';
+    if (outlet.AddLine2 == null) outlet.AddLine2 = '';
+    if (outlet.District == null) outlet.District = '';
+    if (outlet.ProvinceName == null) outlet.ProvinceName = '';
+    if (outlet.PersonFirstName == null) outlet.PersonFirstName = '';
+    if (outlet.PersonLastName == null) outlet.PersonLastName = '';
+
+    outlet.FullAddress = outlet.AddLine + ' ' + outlet.AddLine2 + ', ' + outlet.District + ', ' + outlet.ProvinceName;
 
     var exname = '';
     if (outlet.PersonFirstName) {
@@ -135,31 +145,36 @@ function initializeOutlet(outlet) {
         exname = exname.concat(' (', outlet.PersonID.toString(), ')');
     } 
 
-    if (outlet.Note == null) outlet.Note = '';
-    if (outlet.LastVisit == null) outlet.LastVisit = "";
-    if (outlet.CloseDate == null) outlet.CloseDate = "";
+    if (isEmpty(outlet.Note)) outlet.Note = '';
+    if (isEmpty(outlet.LastVisit)) outlet.LastVisit = '';
+    if (isEmpty(outlet.CloseDate)) outlet.CloseDate = '';
 
     outlet.ExtractName = exname;
     outlet.IsSynced = (outlet.PSynced) && (outlet.PSynced == 1);
     outlet.IsOpened = isEmpty(outlet.CloseDate);
     outlet.IsTracked = outlet.Tracking == 1;      
     outlet.IsAuditApproved = outlet.AuditStatus == 1;
-    outlet.IsNew = outlet.AuditStatus == StatusNew || outlet.AuditStatus == StatusPost || outlet.AuditStatus == StatusAuditAccept;
+    outlet.IsNew = outlet.AuditStatus == StatusNew || outlet.AuditStatus == StatusPost ||
+                   outlet.AuditStatus == StatusAuditAccept || outlet.AuditStatus == StatusAuditDeny ||
+                   outlet.AuditStatus == StatusAuditorNew || outlet.AuditStatus == StatusAuditorAccept;
     outlet.IsDenied = outlet.AuditStatus == StatusAuditDeny || outlet.AuditStatus == StatusExitingDeny;
-    outlet.IsDraft = outlet.AuditStatus == StatusNew;
+    outlet.IsDraft = outlet.AuditStatus == StatusNew || outlet.AuditStatus == StatusAuditorNew;
+    outlet.canDelete = (outlet.AuditStatus == StatusNew || outlet.AuditStatus == StatusAuditorNew) && outlet.PersonID == user.id;
+    outlet.canRevert = false; //outlet.AuditStatus == StatusEdit && outlet.AmendBy == user.id;
     outlet.IsExistingDraft = outlet.AuditStatus == StatusEdit;
-    outlet.canPost = outlet.AuditStatus == StatusNew || outlet.AuditStatus == StatusEdit;
+    outlet.canPost = !user.hasAuditRole && ((outlet.AuditStatus == StatusNew && outlet.PersonID == user.id ) || (outlet.AuditStatus == StatusEdit && outlet.AmendBy == user.id));
+    outlet.canApprove = outlet.AuditStatus == StatusAuditorNew && outlet.PersonID == userID;
     //if (networkReady()) {
     //    outlet.canRevise = outlet.AuditStatus == StatusPost && outlet.PersonID == userID;
     //} else {
     //    outlet.canRevise = outlet.AuditStatus == StatusPost && outlet.PersonID == userID && !outlet.IsSynced;
     //}
-    outlet.canRevise = (outlet.AuditStatus == StatusPost && outlet.PersonID == userID) ||
-                       (outlet.AuditStatus == StatusExitingPost && outlet.AmendBy == userID);
+    outlet.canRevise = !user.hasAuditRole && ((outlet.AuditStatus == StatusPost && outlet.PersonID == userID) ||
+                       (outlet.AuditStatus == StatusExitingPost && outlet.AmendBy == userID));
  
     outlet.hasMarker = false;
 
-    if (outlet.AuditStatus == StatusAuditAccept || outlet.AuditStatus == StatusExitingAccept) {
+    if (outlet.AuditStatus == StatusAuditAccept || outlet.AuditStatus == StatusExitingAccept || outlet.AuditStatus == StatusAuditorAccept) {
         outlet.IsAudited = true;
         outlet.auditResult = 'Approved',
         outlet.viewAuditStatus = true;

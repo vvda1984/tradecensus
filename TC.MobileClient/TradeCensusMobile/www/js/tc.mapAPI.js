@@ -1,7 +1,7 @@
 ﻿/// <reference path="tc.outletAPI.js" />
 
-const START_LAT = 10.775432;
-const START_LNG = 106.705803;
+const START_LAT = 10.775432;//10.802202;    //10.775432;
+const START_LNG = 106.705803; //106.660283;   //106.705803;
 const earthR = 6378137;
 
 //var devCurLat = 10.775432;
@@ -57,7 +57,9 @@ function loadMapApi() {
     loadedMapAPI = true;
 
     showDlg(R.loading_map, R.please_wait);
-    var url = 'https://maps.googleapis.com/maps/api/js?=v=3.exp&sensor=false&key=' + config.map_api_key + '&callback=initializeMap';
+	
+	
+    var url = 'https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&key=' + config.map_api_key + '&callback=initializeMap';
     log('Load map API: ' + url);
     $.getScript(url);
     isloadingGGapi = false;
@@ -111,6 +113,15 @@ function initializeMap() {
             }         
         });
 
+		$.getScript('assets/libs/geoxml3/ProjectedOverlay.js');
+		$.getScript('assets/libs/geoxml3/kmz/geoxml3.js');
+		$.getScript('assets/libs/geoxml3/kmz/geoxml3_gxParse_kmz.js');
+		$.getScript('assets/libs/geoxml3/kmz/ZipFile.complete.js');
+	
+		var myParser = new geoXML3.parser({map: map});
+		myParser.parse('assets/content/hcm.kml');
+		
+		
         hideDlg();
         isMapReady = true;
         if (loadMapCallback) {
@@ -142,7 +153,7 @@ function clearMarkers() {
 }
 
 function createMaker(outlet, position, i, isNew) {
-    var iconUrl = isNew ? 'assets/img/pin-new.png' : getMarkerIcon(outlet);
+    var iconUrl = getMarkerIcon(outlet);
     var zindexval = google.maps.Marker.MAX_ZINDEX + 1;
     if (!outlet.IsOpened || !outlet.IsTracked)
         zindexval = google.maps.Marker.MAX_ZINDEX + 2;
@@ -189,7 +200,11 @@ function createMaker(outlet, position, i, isNew) {
 
 function getMarkerIcon(outlet) {
     if (outlet != null) {
-        if (outlet.AuditStatus == StatusNew || outlet.AuditStatus == StatusPost || outlet.AuditStatus == StatusAuditAccept) {
+        if (outlet.AuditStatus == StatusNew ||
+            outlet.AuditStatus == StatusPost ||
+            outlet.AuditStatus == StatusAuditAccept ||
+            outlet.AuditStatus == StatusAuditorNew ||
+            outlet.AuditStatus == StatusAuditorAccept) {
             return 'assets/img/pin-new.png';
         } else if (outlet.AuditStatus == StatusAuditDeny) {
             return 'assets/img/pin-new-error.png';
@@ -226,8 +241,6 @@ function getMarkerIcon(outlet) {
                     return 'assets/img/pin-dis-open.png';
             }
         }
-
-       
     }
     return 'assets/img/pin-cur';
 }

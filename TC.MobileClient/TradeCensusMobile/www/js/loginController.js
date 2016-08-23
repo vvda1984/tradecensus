@@ -118,7 +118,7 @@ function loginController($scope, $http) {
     
     function loginOnline(retry, onSuccess, onError) {
         log('Login online ' + retry.toString());
-        var url = baseURL + '/login/' + $scope.userName + '/' + $scope.password;
+        var url = baseURL + '/login/' + $scope.userName + '/' + hashString($scope.password);
         log('Call service api: ' + url);
         $http({
             method: config.http_method,
@@ -164,7 +164,7 @@ function loginController($scope, $http) {
   
     function loginOffline(onSuccess, onError) {
         log('Login offline');
-        selectUserDB($scope.userName, hashString($scope.password),
+        selectUserDB($scope.userName, $scope.password,
             function (tx, dbres) {
                 hideDlg();
                 if (dbres.rows.length == 1) {
@@ -187,7 +187,8 @@ function loginController($scope, $http) {
                         HomeAddress: per.HomeAddress,
                         WorkAddress: per.WorkAddress,
                         Phone: per.Phone,
-                        Role : per.HasAuditRole == '1' ? 1 : 0,
+                        Role: per.HasAuditRole == '1' ? 1 : 0,
+                        Token: '',
                     });
                 } else {
                     onError(R.invalid_user_password);
@@ -198,32 +199,36 @@ function loginController($scope, $http) {
             });
     }
 
-    function loginSuccess(user) {
+    function loginSuccess(loginUser) {
         log('Login successfully');
-        if (user.IsTerminate) {
+        if (loginUser.IsTerminate) {
             showError(R.user_terminated);
             return;
         }
       
-        userID = user.ID;
-        $scope.user.id = user.ID;
-        $scope.user.firstName = user.FirstName;
-        $scope.user.lastName = user.LastName;
-        $scope.user.isTerminate = user.IsTerminate;
-        $scope.user.hasAuditRole = user.HasAuditRole;
-        $scope.user.posID = user.PosID;
-        $scope.user.zoneID = user.ZoneID;
-        $scope.user.areaID = user.AreaID;
-        $scope.user.provinceID = user.ProvinceID;
-        $scope.user.email = user.Email;
-        $scope.user.emailTo = user.EmailTo;
-        $scope.user.houseNo = user.HouseNo;
-        $scope.user.street = user.Street;
-        $scope.user.district = user.District;
-        $scope.user.homeAddress = user.HomeAddress;
-        $scope.user.workAddress = user.WorkAddress;
-        $scope.user.phone = user.Phone;
-        $scope.user.isDSM = user.isDSM;
+        userID = loginUser.ID;
+        $scope.user.id = loginUser.ID;
+        $scope.user.firstName = loginUser.FirstName;
+        $scope.user.lastName = loginUser.LastName;
+        $scope.user.isTerminate = loginUser.IsTerminate;
+        $scope.user.hasAuditRole = loginUser.HasAuditRole;
+        $scope.user.posID = loginUser.PosID;
+        $scope.user.zoneID = loginUser.ZoneID;
+        $scope.user.areaID = loginUser.AreaID;
+        $scope.user.provinceID = loginUser.ProvinceID;
+        $scope.user.email = loginUser.Email;
+        $scope.user.emailTo = loginUser.EmailTo;
+        $scope.user.houseNo = loginUser.HouseNo;
+        $scope.user.street = loginUser.Street;
+        $scope.user.district = loginUser.District;
+        $scope.user.homeAddress = loginUser.HomeAddress;
+        $scope.user.workAddress = loginUser.WorkAddress;
+        $scope.user.phone = loginUser.Phone;
+        $scope.user.isDSM = loginUser.isDSM;
+        $scope.user.role = loginUser.Role;
+        $scope.user.token = loginUser.Token == undefined ? '' : loginUser.Token;
+
+        user = $scope.user;
         
         config.tbl_outletSync = 'outletsync_' + $scope.user.id;
         config.tbl_outlet = 'outlet_' + $scope.user.id;
@@ -231,7 +236,7 @@ function loginController($scope, $http) {
         
         log($scope.user.hasAuditRole);
         enableSync = true;
-        resetLocal = user.Role == 101 || user.Role == 100;
+        resetLocal = loginUser.Role == 101 || loginUser.Role == 100;
 
 		log('create outlet tables');
 

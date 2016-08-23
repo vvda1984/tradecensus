@@ -33,4 +33,16 @@ Only owner can Revise (POST > NEW)
 POST => only change by auditor (approve/deny)
 Auditor can view NEW/EDIT outlets in New and Edited query
 
+======================================================================================
+[1.1.16232.1] 2016-08-19
+Add new feature to release version:
+- Add feature to query 'My New Outlet'
+- Support change/reset password
+- Track Information of device while ping
+
+[1.1.16232.1] 2016-08-19
+Fix bug: 
+- Outlet history uses wrong InputID for new outlet
+- Remove Note in Outlet History to prevent confuse
+
 

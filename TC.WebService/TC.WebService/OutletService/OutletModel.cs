@@ -87,6 +87,8 @@ namespace TradeCensus
         public int PAction { get; set; }
         [DataMember]
         public string PNote { get; set; }
+        [DataMember]
+        public int PStatus { get; set; }
     }
 
     [DataContract]
