@@ -71,5 +71,10 @@ namespace TradeCensus.Shared
             }
             return value;
         }
+
+        protected bool IsAuditor(PersonRole person)
+        {
+            return person.Role == 1 || person.Role % 10 == 1;
+        }
     }
 }

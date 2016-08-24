@@ -123,7 +123,7 @@ namespace TradeCensus
             var user = _entities.PersonRoles.FirstOrDefault(i => i.PersonID == personID);
             if (user == null)
                 throw new Exception(string.Format("User {0} doesn't exist", personID));
-            var auditor = user.Role == Constants.RoleAudit ||  user.Role == Constants.RoleAudit1;
+            var auditor = IsAuditor(user);
 
             string method = GetSetting("calc_distance_algorithm", "circle");            
             Log("Calculate distance method: {0}", method);

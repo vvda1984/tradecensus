@@ -40,9 +40,12 @@ Add new feature to release version:
 - Support change/reset password
 - Track Information of device while ping
 
-[1.1.16232.1] 2016-08-19
+[1.1.16232.2] 2016-08-19
 Fix bug: 
 - Outlet history uses wrong InputID for new outlet
 - Remove Note in Outlet History to prevent confuse
+
+[1.1.16236.3] 2016-08-24
+- Support 1 Person <=> n UserName
 
 
