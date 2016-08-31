@@ -4,15 +4,18 @@ using System.Web.Services;
 namespace TradeCensus
 {
     [ServiceContract]
-    public interface IPersonService
+    public interface IPersonService : ITCService
     {     
         [OperationContract]       
-        LoginResponse Login(string username, string pass);
+        LoginResponse Login(string username, string password);
 
         [OperationContract]
-        LoginResponse ChangePassword(string token, string personid, string oldpassword, string newpassword);
+        Response ChangePassword(string token, string personid, string oldpassword, string newpassword);
 
         [OperationContract]
-        LoginResponse ResetPassword(string token, string personid, string password);
+        Response ResetPassword(string token, string personid, string password);
+
+        [OperationContract]
+        Response Ping(string deviceinfo);
     }
 }

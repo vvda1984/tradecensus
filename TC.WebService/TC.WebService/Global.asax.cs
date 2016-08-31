@@ -4,15 +4,17 @@ using System.Linq;
 using System.Web;
 using System.Web.Security;
 using System.Web.SessionState;
+using TradeCensus.Shared;
 
 namespace TradeCensus
 {
     public class Global : System.Web.HttpApplication
     {
+        public static TradeCensusContext CurrentContext { get; set; }
 
         protected void Application_Start(object sender, EventArgs e)
         {
-
+            CurrentContext = new TradeCensusContext();
         }
 
         protected void Session_Start(object sender, EventArgs e)

@@ -4,7 +4,7 @@ using System.ServiceModel;
 namespace TradeCensus
 {
     [ServiceContract]
-    public interface IOutletService
+    public interface IOutletService : ITCService
     {
         [OperationContract]
         GetOutletIDResponse GetOutletsByProvince(string personID, string provinceID);
@@ -13,7 +13,7 @@ namespace TradeCensus
         GetOutletResponse GetOutletByID(string personID, string id);
 
         [OperationContract]
-        GetOutletTypeResponse GetOutlets();
+        GetOutletTypeResponse GetOutletTypes();
 
         [OperationContract]
         GetOutletListResponse GetNearbyOutlets(string personID, string lat, string lng, string meter, string count, string status);
@@ -47,5 +47,8 @@ namespace TradeCensus
 
         [OperationContract]
         SyncOutletResponse SyncOutlets(OutletModel[] outlets);
+
+        [OperationContract]
+        GetOutletImagesResponse GetImages(string outletID);
     }
 }

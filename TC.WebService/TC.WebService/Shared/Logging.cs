@@ -1,12 +1,17 @@
 ﻿using NLog;
 
-namespace TradeCensusService.Shared
+namespace TradeCensus
 {
-    public class LogUtil
+    public interface ILogFactory
     {
-        public static Logger GetLogger(string name)
+        ILogger GetLogger(string name);
+    }
+
+    public class LogFactory : ILogFactory
+    {
+        public ILogger GetLogger(string name)
         {
-            return NLog.LogManager.GetLogger(name);
+            return LogManager.GetLogger(name);
         }
     }   
 

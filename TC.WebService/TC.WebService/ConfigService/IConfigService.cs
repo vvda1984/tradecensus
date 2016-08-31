@@ -3,7 +3,7 @@
 namespace TradeCensus
 {
     [ServiceContract]
-    public interface IConfigService
+    public interface IConfigService : ITCService
     {     
         [OperationContract]
         ConfigResponse GetConfig();

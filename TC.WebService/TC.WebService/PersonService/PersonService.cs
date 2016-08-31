@@ -6,13 +6,13 @@ using TradeCensus.Shared;
 
 namespace TradeCensus
 {
-    public class PersonService : BaseRepo
+    public class PersonService : TradeCensusServiceBase, IPersonService
     {        
         public PersonService() : base("Person")
         {
         }
     
-        public PersonModel Login(string userName, string password)
+        private PersonModel GetPerson(string userName, string password)
         {
             Log("Request login: {0}", userName);
             password = HashPassword(password);
@@ -63,7 +63,7 @@ namespace TradeCensus
             return res;      
         }
 
-        public void ChangePassword(string token, int personID, string oldPassword, string newPassword)
+        private void ChangePassword(string token, int personID, string oldPassword, string newPassword)
         {
             var user = _entities.PersonRoles.FirstOrDefault(i => i.PersonID == personID);
             if (user == null)
@@ -84,7 +84,7 @@ namespace TradeCensus
             _entities.SaveChanges();
         }
 
-        public void ResetPassword(string token, int personID, string password)
+        private void ResetPassword(string token, int personID, string password)
         {
             var user = _entities.PersonRoles.FirstOrDefault(i => i.PersonID == personID);
             if (user == null)
@@ -99,13 +99,9 @@ namespace TradeCensus
             _entities.SaveChanges();
         }
 
-        /// <summary>
-        /// This is used in case client doesn't hash password
-        /// </summary>
-        /// <param name="password"></param>
-        /// <returns></returns>
         private string HashPassword(string password)
         {
+            // This is used in case client doesn't hash password
             bool hashPassword = false;
             try
             {
@@ -142,7 +138,7 @@ namespace TradeCensus
                 throw new Exception("You have not logined in ONLINE mode. Please relogin and try again!");
         }
 
-        public void TrackPing(string pingInfo)
+        private void TrackPing(string pingInfo)
         {
             ConnectionSession connection = Parse(pingInfo); //Newtonsoft.Json.JsonConvert.DeserializeObject<ConnectionSession>(pingInfo);
             if (string.IsNullOrEmpty(connection.Uuid)) return; // should throw exception here...
@@ -206,6 +202,82 @@ namespace TradeCensus
 
             return res;
         }
+
+        #region IPersonService Interfaces
+
+        public LoginResponse Login(string username, string password)
+        {
+            LoginResponse resp = new LoginResponse();
+            try
+            {
+                resp.People = GetPerson(username, password);
+            }
+            catch (Exception ex)
+            {
+                resp.Status = Constants.ErrorCode;
+                resp.ErrorMessage = ex.Message;
+            }
+            return resp;
+        }
+
+        public Response ChangePassword(string token, string personid, string oldpassword, string newpassword)
+        {
+            Response resp = new Response();
+            try
+            {
+                ChangePassword(token, int.Parse(personid), oldpassword, newpassword);
+            }
+            catch (Exception ex)
+            {
+                resp.Status = Constants.ErrorCode;
+                resp.ErrorMessage = ex.Message;
+            }
+            return resp;
+        }
+
+        public Response ResetPassword(string token, string personid, string password)
+        {
+            Response resp = new Response();
+            try
+            {
+                ResetPassword(token, int.Parse(personid), password);
+            }
+            catch (Exception ex)
+            {
+                resp.Status = Constants.ErrorCode;
+                resp.ErrorMessage = ex.Message;
+            }
+            return resp;
+        }
+
+        public Response Ping(string deviceinfo)
+        {
+            Response res = new Response();
+            try
+            {
+                _logger.Debug(string.Format("Received ping from {0}", deviceinfo));
+                if (!string.IsNullOrWhiteSpace(deviceinfo))
+                    (new System.Threading.Tasks.Task(() =>
+                    {
+                        try
+                        {
+                            TrackPing(deviceinfo);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.Debug(string.Format("Write ping info error: {0}", ex));
+                        }
+                    })).Start();
+            }
+            catch (Exception ex)
+            {
+                res.ErrorMessage = ex.Message;
+                res.Status = Constants.ErrorCode;
+            }
+            return res;
+        }
+
+        #endregion
     }
 
     public class HashUtil

@@ -1,19 +1,29 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using System.Linq;
 using TradeCensus.Shared;
 
 namespace TradeCensus
 {
-    public class ProvinceService : BaseRepo
+    public class ProvinceService : TradeCensusServiceBase, IProvinceService
     {
         public ProvinceService() : base("Province")
         {
         }
 
-        public List<Province> GetAll()
+        public ProvinceResponse GetProvinces()
         {
-            Log("Get list of provinces");
-            return _entities.Provinces.ToList();
+            ProvinceResponse resp = new ProvinceResponse();
+            try
+            {
+                _logger.Debug("Get all provinces");
+                resp.Items = _entities.Provinces.ToList();
+            }
+            catch (Exception ex)
+            {
+                resp.Status = Constants.ErrorCode;
+                resp.ErrorMessage = ex.Message;
+            }
+            return resp;
         }
     }
 }

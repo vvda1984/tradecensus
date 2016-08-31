@@ -1,16 +1,15 @@
 ﻿using NLog;
 using System;
 using System.Linq;
-using TradeCensusService.Shared;
 
 namespace TradeCensus.Shared
 {
-    public abstract class BaseRepo : IDisposable
+    public abstract class TradeCensusServiceBase : IDisposable
     {
         protected tradecensusEntities _entities;
-        protected Logger _logger;
+        protected ILogger _logger;
         protected bool _isDataChanged;
-        protected string _name;     
+        protected string _name;
 
         protected void ValidatePerson(int personID)
         {
@@ -19,12 +18,13 @@ namespace TradeCensus.Shared
                 throw new Exception(string.Format("User {0} doesn't exist", personID));
         }
 
-        protected BaseRepo(string name)
+        protected TradeCensusServiceBase(string name)
         {            
             _entities = new tradecensusEntities(); // throw error
             _name = name;
-            _logger = LogUtil.GetLogger(name);
+            _logger = Global.CurrentContext.LogFactory.GetLogger(name);
         }        
+
         public void Dispose()
         {
             if (_isDataChanged && _entities != null)
@@ -38,14 +38,17 @@ namespace TradeCensus.Shared
                 }                
             }
         }
+
         protected void Log(string message)
         {
-            _logger.Write(message);
+            _logger.Debug(message);
         }
+
         protected void Log(string message, params object[] args)
         {
-            _logger.Write(message, args);
+            _logger.Debug(message, args);
         }
+
         protected int ToInt(string value)
         {
             try
@@ -57,6 +60,7 @@ namespace TradeCensus.Shared
                 throw new InvalidOperationException(string.Format("Cannot convert '{0}' to number", value));
             }
         }
+
         protected string GetSetting(string key, string defaultValue)
         {
             string value;

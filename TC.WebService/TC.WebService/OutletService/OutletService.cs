@@ -5,30 +5,16 @@ using System.Data.Entity;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Text;
 using System.Web;
 using TradeCensus.Shared;
 
 namespace TradeCensus
 {
-    public class OutletService : BaseRepo
+    public class OutletService : TradeCensusServiceBase, IOutletService
     {
         static object Locker = new object(); 
-        //const byte ActionAdd = 0;
-        //const byte ActionUpdate = 1;
-        //const byte ActionUpdateImage = 2;   // absoluted
-        //const byte ActionAudit = 3;
-        //const byte ActionDelete = 4;
-        //const byte ActionRevise = 5;
-
-        //const byte OActionNew = 10;
-        //const byte OActionPost = 11;
-        //const byte OActionRevise = 12;
-        //const byte OActionEdit = 13;
-        //const byte OActionAuditApprove = 14;
-        //const byte OActionAuditDeny = 15;
-        //const byte OActionDelete = 16;
+        
         const byte OActionDenyUpdate = 17;
 
         private bool AuditorNewMode
@@ -64,7 +50,7 @@ namespace TradeCensus
         {
         }
 
-        public List<OutletShort> GetByProvinceID(int personID, string provinceID)
+        private List<OutletShort> GetByProvinceID(int personID, string provinceID)
         {
             ValidatePerson(personID);
             Log("Get outlet by province id: {0}", provinceID);
@@ -75,7 +61,7 @@ namespace TradeCensus
             return ids;
         }
 
-        public OutletModel GetByID(int personID, string id)
+        private OutletModel GetByID(int personID, string id)
         {
             ValidatePerson(personID);
             Log("Get outlet by id: {0}", id);
@@ -93,13 +79,13 @@ namespace TradeCensus
             return outletModel;
         }
 
-        public List<OutletType> GetAllOutletTypes()
+        private List<OutletType> GetAllOutletTypes()
         {
             Log("Get list of OutletTypes");
             return _entities.OutletTypes.ToList();
         }
 
-        public List<OutletModel> GetOutletsByProvince(int personID, string provinceID)
+        private List<OutletModel> GetOutletsByProvince(int personID, string provinceID)
         {
             var user = _entities.PersonRoles.FirstOrDefault(i => i.PersonID == personID);
             if (user == null)
@@ -118,30 +104,30 @@ namespace TradeCensus
             return res;
         }
 
-        public List<OutletModel> GetOutletsByLocation(int personID, double lat, double lng, double meter, int count, int status)
+        private List<OutletModel> GetOutletsByLocation1(int personID, double lat, double lng, double meter, int count, int status)
         {
             var user = _entities.PersonRoles.FirstOrDefault(i => i.PersonID == personID);
             if (user == null)
                 throw new Exception(string.Format("User {0} doesn't exist", personID));
-            var auditor = IsAuditor(user);
+            var auditor = user.Role == Constants.RoleAudit ||  user.Role == Constants.RoleAudit1;
 
             string method = GetSetting("calc_distance_algorithm", "circle");            
             Log("Calculate distance method: {0}", method);
             var curLocation = new Point { Lat = lat, Lng = lng };
-            Point tl = DistanceHelper.CalcShiftedPoint(meter, 0 - meter, curLocation);
-            Point tr = DistanceHelper.CalcShiftedPoint(meter, meter, curLocation);
-            Point bl = DistanceHelper.CalcShiftedPoint(0 - meter, 0 - meter, curLocation);
-            Point br = DistanceHelper.CalcShiftedPoint(0 - meter, meter, curLocation);
+            Point tl = DistanceUtil.CalcShiftedPoint(meter, 0 - meter, curLocation);
+            Point tr = DistanceUtil.CalcShiftedPoint(meter, meter, curLocation);
+            Point bl = DistanceUtil.CalcShiftedPoint(0 - meter, 0 - meter, curLocation);
+            Point br = DistanceUtil.CalcShiftedPoint(0 - meter, meter, curLocation);
 
             List<OutletModel> res = new List<OutletModel>();
             IQueryable<Outlet> query;
             if (status == 0) // near-by
             {
-                query = from i in _entities.Outlets
-                        where i.Latitude >= bl.Lat && i.Latitude <= tl.Lat &&
-                              i.Longitude >= bl.Lng && i.Longitude <= br.Lng &&
-                              i.AuditStatus != Constants.StatusDelete
-                        select i;
+                query = (from i in _entities.Outlets
+                         where i.Latitude >= bl.Lat && i.Latitude <= tl.Lat &&
+                               i.Longitude >= bl.Lng && i.Longitude <= br.Lng &&
+                               i.AuditStatus != Constants.StatusDelete
+                         select i).Include(i => i.OutletImages);
             }
             else if (status == 1) // new
             {
@@ -185,7 +171,8 @@ namespace TradeCensus
                                   i.Longitude >= bl.Lng && i.Longitude <= br.Lng &&
                                   (i.AuditStatus == Constants.StatusEdit ||
                                    i.AuditStatus == Constants.StatusExistingPost ||
-                                   i.AuditStatus == Constants.StatusExistingAccept || i.AuditStatus == Constants.StatusExistingDeny) &&
+                                   i.AuditStatus == Constants.StatusExistingAccept || 
+                                   i.AuditStatus == Constants.StatusExistingDeny) &&
                                   i.AmendBy == personID
                             select i;
             }
@@ -227,9 +214,9 @@ namespace TradeCensus
                 Array.Sort(arr, delegate (Outlet o1, Outlet o2)
                 {
                     if (o1.Distance == 0)
-                        o1.Distance = DistanceHelper.CalcDistance(curLocation, new Point { Lat = o1.Lat, Lng = o1.Lng });
+                        o1.Distance = DistanceUtil.CalcDistance(curLocation, new Point { Lat = o1.Lat, Lng = o1.Lng });
                     if (o2.Distance == 0)
-                        o2.Distance = DistanceHelper.CalcDistance(curLocation, new Point { Lat = o2.Lat, Lng = o2.Lng });
+                        o2.Distance = DistanceUtil.CalcDistance(curLocation, new Point { Lat = o2.Lat, Lng = o2.Lng });
                     return o1.Distance.CompareTo(o2.Distance);
                 });
                 int found = 0;
@@ -239,7 +226,7 @@ namespace TradeCensus
                         outlet.PersonID != personID) continue;
 
                     double distance = outlet.Distance;
-                    //DistanceHelper.CalcDistance(curLocation, new Point { Lat = outlet.Latitude, Lng = outlet.Longitude });
+                    //DistanceUtil.CalcDistance(curLocation, new Point { Lat = outlet.Latitude, Lng = outlet.Longitude });
                     //value == "circle"
                     bool isMatched = string.Compare(method, "squard", StringComparison.OrdinalIgnoreCase) == 0;
                     if (string.Compare(method, "circle", StringComparison.OrdinalIgnoreCase) == 0)
@@ -257,6 +244,195 @@ namespace TradeCensus
                 }
             }
             return res;
+        }
+
+        private List<OutletModel> GetOutletsByLocation(int personID, double lat, double lng, double meter, int count, int status)
+        {
+            var user = _entities.PersonRoles.FirstOrDefault(i => i.PersonID == personID);
+            if (user == null)
+                throw new Exception(string.Format("User {0} doesn't exist", personID));
+            var auditor = user.Role == Constants.RoleAudit || user.Role == Constants.RoleAudit1;
+
+            string method = GetSetting("calc_distance_algorithm", "circle");
+            Log("Calculate distance method: {0}", method);
+            var curLocation = new Point { Lat = lat, Lng = lng };
+            Point tl = DistanceUtil.CalcShiftedPoint(meter, 0 - meter, curLocation);
+            Point tr = DistanceUtil.CalcShiftedPoint(meter, meter, curLocation);
+            Point bl = DistanceUtil.CalcShiftedPoint(0 - meter, 0 - meter, curLocation);
+            Point br = DistanceUtil.CalcShiftedPoint(0 - meter, meter, curLocation);
+
+            List<OutletModel> res = new List<OutletModel>();
+            var command = QueryOutletCommand(status, bl.Lat, tl.Lat, bl.Lng, br.Lng,  personID, auditor);
+
+            var query = _entities.Database.SqlQuery<OutletEntity>(command); 
+            if (query.Any())
+            {
+                var arr = query.ToArray();
+                Array.Sort(arr, delegate (OutletEntity o1, OutletEntity o2)
+                {
+                    if (o1.Distance == 0)
+                        o1.Distance = DistanceUtil.CalcDistance(curLocation, new Point { Lat = o1.Lat, Lng = o1.Lng });
+                    if (o2.Distance == 0)
+                        o2.Distance = DistanceUtil.CalcDistance(curLocation, new Point { Lat = o2.Lat, Lng = o2.Lng });
+                    return o1.Distance.CompareTo(o2.Distance);
+                });
+                int found = 0;
+                foreach (var outlet in arr)
+                {
+                    if ((outlet.AuditStatus == Constants.StatusNew || outlet.AuditStatus == Constants.StatusAuditorNew) &&
+                        outlet.PersonID != personID) continue;
+
+                    double distance = outlet.Distance;
+                    //DistanceUtil.CalcDistance(curLocation, new Point { Lat = outlet.Latitude, Lng = outlet.Longitude });
+                    //value == "circle"
+                    bool isMatched = string.Compare(method, "squard", StringComparison.OrdinalIgnoreCase) == 0;
+                    if (string.Compare(method, "circle", StringComparison.OrdinalIgnoreCase) == 0)
+                        isMatched = distance <= meter;
+
+                    if (isMatched)
+                    {
+                        var foundOutlet = ToOutletModel(outlet);
+                        foundOutlet.Distance = distance;
+                        res.Add(foundOutlet);
+                        found++;
+                    }
+                    if (found >= count) break;
+                }
+            }
+            return res;
+        }
+
+        private string QueryOutletCommand(int status, double minLat, double maxLat, double minLng, double maxLng, int personID, bool auditor)
+        {
+            string sqlCommand =
+              @"select o.*, 
+		            ot.Name as OutletTypeName, 
+                    pr.Name as ProvinceName,
+		            p.FirstName as PersonFirstName,  
+		            p.LastName as PersonLastName,
+		            p.IsDSM as PersonIsDSM
+	            from 
+		            Outlet as o 
+                    left join Province pr on o.ProvinceID = pr.ID
+		            left join OutletType ot on o.OTypeID = ot.ID
+		            left join Person p on p.ID = o.PersonID ";
+
+            if (status == 0) // near-by
+            {
+                sqlCommand += string.Format(
+                    @"where
+                        o.Latitude >= {0} AND o.Latitude <= {1} AND
+                        o.Longitude >= {2} AND o.Longitude <= {3} AND
+                        o.AuditStatus <> {4}", minLat, maxLat, minLng, maxLng, Constants.StatusDelete
+                    );
+            }
+            else if (status == 1) // new
+            {
+                if (auditor)
+                    sqlCommand += string.Format(
+                        @"where
+                            o.Latitude >= {0} AND o.Latitude <= {1} AND
+                            o.Longitude >= {2} AND o.Longitude <= {3} AND
+                            (
+                                (o.AuditStatus = {4} AND o.PersonID = {5}) OR 
+                                o.AuditStatus IN ({6}, {7}, {8}, {9})  
+                            )",
+                            minLat, maxLat, minLng, maxLng,
+                            Constants.StatusAuditorNew, personID,
+                            Constants.StatusPost,
+                            Constants.StatusAuditAccept,
+                            Constants.StatusAuditDeny,
+                            Constants.StatusAuditorAccept
+                        );
+                else
+                    sqlCommand += string.Format(
+                       @"where
+                            o.Latitude >= {0} AND o.Latitude <= {1} AND
+                            o.Longitude >= {2} AND o.Longitude <= {3} AND 
+                            o.AuditStatus IN ({4}, {5}, {6}, {7}, {8})",
+                            minLat, maxLat, minLng, maxLng,
+                            Constants.StatusNew,
+                            Constants.StatusPost,
+                            Constants.StatusAuditAccept,
+                            Constants.StatusAuditDeny,
+                            Constants.StatusAuditorAccept
+                       );
+            }
+            else if (status == 2) // edit
+            {
+                if (auditor)
+                    sqlCommand += string.Format(
+                       @"where
+                            o.Latitude >= {0} AND o.Latitude <= {1} AND
+                            o.Longitude >= {2} AND o.Longitude <= {3} AND
+                            o.AuditStatus = {4} AND
+                            o.PersonID <> {5}",
+                            minLat, maxLat, minLng, maxLng,
+                            Constants.StatusExistingPost,
+                            personID);
+                else
+                    sqlCommand += string.Format(
+                     @"where
+                        o.Latitude >= {0} AND o.Latitude <= {1} AND
+                        o.Longitude >= {2} AND o.Longitude <= {3} AND 
+                        o.AmendBy = {4} AND
+                        o.AuditStatus IN ({5}, {6}, {7}, {8})",
+                          minLat, maxLat, minLng, maxLng,
+                          personID,
+                          Constants.StatusEdit,
+                          Constants.StatusExistingPost,
+                          Constants.StatusExistingAccept,
+                          Constants.StatusExistingDeny
+                     );
+            }
+            else if (status == 3) // audit
+            {
+                sqlCommand += string.Format(
+                     @"where
+                        o.Latitude >= {0} AND o.Latitude <= {1} AND
+                        o.Longitude >= {2} AND o.Longitude <= {3} AND 
+                        o.AmendBy = {4} AND
+                        o.AuditStatus IN ({5}, {6}, {7}, {8}, {9})",
+                          minLat, maxLat, minLng, maxLng,
+                          personID,
+                          Constants.StatusAuditAccept,
+                          Constants.StatusAuditDeny,
+                          Constants.StatusExistingAccept,
+                          Constants.StatusExistingDeny,
+                          Constants.StatusAuditorAccept
+                     );
+            }
+            else  // new by person id
+            {
+                if (auditor)
+                    sqlCommand += string.Format(
+                    @"where
+                            o.Latitude >= {0} AND o.Latitude <= {1} AND
+                            o.Longitude >= {2} AND o.Longitude <= {3} AND 
+                            o.PersonID = {4} AND
+                            o.AuditStatus IN ({5}, {6})",
+                         minLat, maxLat, minLng, maxLng,
+                         personID,
+                         Constants.StatusAuditorNew,
+                         Constants.StatusAuditorAccept
+                    );
+                else
+                    sqlCommand += string.Format(
+                    @"where
+                            o.Latitude >= {0} AND o.Latitude <= {1} AND
+                            o.Longitude >= {2} AND o.Longitude <= {3} AND 
+                            o.PersonID = {4} AND
+                            o.AuditStatus IN ({5}, {6}, {7}, {8})",
+                         minLat, maxLat, minLng, maxLng,
+                         personID,
+                         Constants.StatusNew,
+                         Constants.StatusPost,
+                         Constants.StatusAuditAccept,
+                         Constants.StatusAuditDeny
+                    );
+            }
+
+            return sqlCommand;
         }
 
         private OutletModel ToOutletModel(Outlet outlet)
@@ -401,7 +577,7 @@ namespace TradeCensus
             }
         }
 
-        public Outlet SaveOutlet(OutletModel outlet, bool saveChanged = true)
+        private Outlet InsertOrUpdateOutlet(OutletModel outlet, bool saveChanged = true)
         {
             Outlet existingOutlet = null;
             if (!string.IsNullOrEmpty(outlet.PRowID))
@@ -662,7 +838,7 @@ namespace TradeCensus
             Directory.CreateDirectory(path);
         }
 
-        public string GetImage(string outletID, string index)
+        private string GetOutletImage(string outletID, string index)
         {           
             var id = int.Parse(outletID);
             Outlet outlet = _entities.Outlets.FirstOrDefault(i => i.ID == id);
@@ -722,7 +898,7 @@ namespace TradeCensus
             _entities.OutletHistories.Add(hist);
         }
 
-        public void DeleteOutlet(int personID, int outletID)
+        private void DeleteOutlet(int personID, int outletID)
         {
             Outlet existingOutlet = _entities.Outlets.FirstOrDefault(i => i.ID == outletID);
             if (existingOutlet != null)
@@ -743,7 +919,7 @@ namespace TradeCensus
             _entities.SaveChanges();
         }
 
-        public List<OutletModel> DownloadOutlets(int personID, string provinceID, int from, int to)
+        private List<OutletModel> DownloadOutlets(int personID, string provinceID, int from, int to)
         {
             ValidatePerson(personID);
             //Person person = _entities.People.FirstOrDefault(i => i.ID == personID);
@@ -799,7 +975,7 @@ namespace TradeCensus
             return outlets;
         }
 
-        public string DownloadOutletsZip(int personID, string provinceID, int from, int to)
+        private string DownloadOutletsZip(int personID, string provinceID, int from, int to)
         {
             //ValidatePerson(personID);
             Stopwatch sw = new Stopwatch();
@@ -862,7 +1038,7 @@ namespace TradeCensus
             //}
         }
 
-        public byte[] DownloadOutletsZipByte(int personID, string provinceID, int from, int to)
+        private byte[] DownloadOutletsZipByte(int personID, string provinceID, int from, int to)
         {
             var data = DownloadOutletsZipByte(personID, provinceID, from, to);
             using (MemoryStream ms = new MemoryStream())
@@ -878,7 +1054,7 @@ namespace TradeCensus
             }
         }
 
-        public string DownloadImageBase64(int personID, int outletID, int index)
+        private string DownloadImageBase64(int personID, int outletID, int index)
         {
             ValidatePerson(personID);
             string imageDir = ImagesPath;
@@ -909,7 +1085,7 @@ namespace TradeCensus
             return "";
         }
 
-        public void UploadImageBase64(int personID, int outletID, int index, string image)
+        private void UploadImageBase64(int personID, int outletID, int index, string image)
         {
           
             byte[] data;
@@ -952,14 +1128,14 @@ namespace TradeCensus
             }
         }
 
-        public DeniedException SaveOutlets(OutletModel[] outlets, List<SyncOutlet> dboutlets)
+        private DeniedException SaveOutlets(OutletModel[] outlets, List<SyncOutlet> dboutlets)
         {
             StringBuilder sb = new StringBuilder();
             foreach (var outlet in outlets)
             {
                 try
                 {
-                    var o = SaveOutlet(outlet, true);
+                    var o = InsertOrUpdateOutlet(outlet, true);
                     if (o != null)
                         dboutlets.Add(new SyncOutlet { ID = o.ID, RowID = outlet.PRowID.ToString() });
                     else
@@ -1006,10 +1182,155 @@ namespace TradeCensus
             relativePath = "/Images/" + relativePath;
         }
 
-        public int GetTotalProvincesCount(int personID, string provinceID)
+        private string ToBase64(byte[] img)
+        {
+            if (img == null) return "";
+            return Convert.ToBase64String(img);
+        }
+
+
+        #region IOutletService Interfaces
+
+        public GetOutletIDResponse GetOutletsByProvince(string personID, string provinceID)
+        {
+            var resp = new GetOutletIDResponse();
+            try
+            {
+                resp.Outlets = GetByProvinceID(int.Parse(personID), provinceID);
+            }
+            catch (Exception ex)
+            {
+                resp.Status = Constants.ErrorCode;
+                resp.ErrorMessage = ex.Message;
+            }
+            return resp;
+        }
+
+        public GetOutletResponse GetOutletByID(string personID, string id)
+        {
+            var resp = new GetOutletResponse();
+            try
+            {
+                resp.Item = GetByID(int.Parse(personID), id);
+            }
+            catch (Exception ex)
+            {
+                resp.Status = Constants.ErrorCode;
+                resp.ErrorMessage = ex.Message;
+            }
+            return resp;
+        }
+
+        public GetOutletTypeResponse GetOutletTypes()
+        {
+            var resp = new GetOutletTypeResponse();
+            try
+            {
+                resp.Items = GetAllOutletTypes();
+            }
+            catch (Exception ex)
+            {
+                resp.Status = Constants.ErrorCode;
+                resp.ErrorMessage = ex.Message;
+            }
+            return resp;
+        }
+
+        public GetOutletListResponse GetNearbyOutlets(string personID, string lat, string lng, string meter, string count, string status)
+        {
+            var resp = new GetOutletListResponse();
+            try
+            {
+                resp.Items = GetOutletsByLocation(int.Parse(personID),
+                    Convert.ToDouble(lat), Convert.ToDouble(lng),
+                    Convert.ToDouble(meter), Convert.ToInt32(count),
+                    Convert.ToInt32(status));
+            }
+            catch (Exception ex)
+            {
+                resp.Status = Constants.ErrorCode;
+                resp.ErrorMessage = ex.Message;
+            }
+            return resp;
+        }
+
+        public SaveOutletResponse SaveOutlet(OutletModel item)
+        {
+            var resp = new SaveOutletResponse();
+            try
+            {
+                resp.ID = item.ID;
+                var outlet = InsertOrUpdateOutlet(item);
+                if (outlet != null)
+                {
+                    resp.ID = outlet.ID;
+                    resp.RowID = outlet.PRowID.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                resp.Status = Constants.ErrorCode;
+                resp.ErrorMessage = ex.Message;
+            }
+            return resp;
+        }
+
+        public SaveImageResponse SaveImage()
+        {
+            var resp = new SaveImageResponse();
+            try
+            {
+                HttpPostedFile file = HttpContext.Current.Request.Files["orderfile"];
+                if (file == null)
+                    throw new Exception("File not found!");
+                string outletid = HttpContext.Current.Request.Params["outletid"];
+                string index = HttpContext.Current.Request.Params["index"];
+                string userid = HttpContext.Current.Request.Params["userid"];
+                resp.ImageThumb = SaveImage(userid, outletid, index, file);
+            }
+            catch (Exception ex)
+            {
+                resp.Status = Constants.ErrorCode;
+                resp.ErrorMessage = ex.Message;
+            }
+            return resp;
+        }
+
+        public GetImageResponse GetImage(string outletID, string index)
+        {
+            var resp = new GetImageResponse();
+            try
+            {
+                resp.Image = GetOutletImage(outletID, index);
+            }
+            catch (Exception ex)
+            {
+                resp.Status = Constants.ErrorCode;
+                resp.ErrorMessage = ex.Message;
+            }
+            return resp;
+        }
+
+        public GetOutletListResponse DownloadOutlets(string personID, string provinceID, string from, string to)
+        {
+            var resp = new GetOutletListResponse();
+            try
+            {
+                resp.Items = DownloadOutlets(int.Parse(personID), provinceID, int.Parse(from), int.Parse(to));
+            }
+            catch (Exception ex)
+            {
+                resp.Status = Constants.ErrorCode;
+                resp.ErrorMessage = ex.Message;
+            }
+            return resp;
+        }
+
+        public int GetTotalProvincesCount(string personID, string provinceID)
         {
             try
             {
+                ValidatePerson(int.Parse(personID));
                 return _entities.Outlets.Count(i => i.ProvinceID == provinceID);
             }
             catch
@@ -1018,245 +1339,113 @@ namespace TradeCensus
             }
         }
 
-        public string ToBase64(byte[] img)
+        public string DownloadOutletsZip(string personID, string provinceID, string from, string to)
         {
-            if (img == null) return "";
-            return Convert.ToBase64String(img);
-        }
-    }
-
-    public class Point
-    {
-        public double Lat { get; set; }
-        public double Lng { get; set; }
-    }
-
-    public class DistanceHelper
-    {
-        public static double CalcDistance(Point p1, Point p2)
-        {
-            var R = 6378137; // Earth’s mean radius in meter
-            var dLat = CalcRad(p2.Lat - p1.Lat);
-            var dLong = CalcRad(p2.Lng - p1.Lng);
-            var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) + Math.Cos(CalcRad(p1.Lat)) * Math.Cos(CalcRad(p2.Lat)) *
-                    Math.Sin(dLong / 2) * Math.Sin(dLong / 2);
-            var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
-            var d = R * c;
-            return Math.Round(d, 2);
-        }
-
-        public static double CalcRad(double x)
-        {
-            return x * Math.PI / 180;
-        }
-
-        //private double InDistanceSquare(Point saleLoc, Point outletLoc, double meter)
-        //{
-        //    var o1 = outletLoc.Lng + (meter * 0.0001) / 11.32;
-        //    var o3 = outletLoc.Lng - (meter * 0.0001) / 11.32;
-        //    var o2 = outletLoc.Lat + (meter * 0.0001) / 11.32;
-        //    var o4 = outletLoc.Lat - (meter * 0.0001) / 11.32;
-
-        //    if (saleLoc.Lat <= 0 && saleLoc.Lng >= 0) return saleLoc.Lat >= o4 && saleLoc.Lng <= o1;
-        //    if (saleLoc.Lat >= 0 && saleLoc.Lng >= 0) return saleLoc.Lat <= o2 && saleLoc.Lng <= o1;
-        //    if (saleLoc.Lat >= 0 && saleLoc.Lng <= 0) return saleLoc.Lat <= o2 && saleLoc.Lng >= o3;
-        //    if (saleLoc.Lat <= 0 && saleLoc.Lng <= 0) return saleLoc.Lat >= o4 && saleLoc.Lng >= o3;
-        //    return false;
-        //}    
-
-        public static Point CalcShiftedPoint(double dlat, double dlng, Point p)
-        {
-            Point newP = new Point
+            try
             {
-                Lat = p.Lat + (dlat / Constants.EarthR) * (180 / Math.PI),
-                Lng = p.Lng + (dlng / Constants.EarthR) * (180 / Math.PI) / Math.Cos(p.Lat * Math.PI / 180)
-            };
-            return newP;
-        }
-
-    }
-
-    partial class Outlet
-    {
-        public double Lat { get { return Latitude == null ? 0 : Latitude.Value; } }
-        public double Lng { get { return Longitude == null ? 0 : Longitude.Value; } }
-        public double Distance { get; set; }
-    }
-
-    public static class OutletExtend
-    {
-        public static string ToDownloadString(this Outlet outlet, Person person, string img1, string img2, string img3)
-        {
-            StringBuilder sb = new StringBuilder();
-            //(65002226, 
-            // "HRC", 
-            // " ",
-            // "KA", 
-            // "KARAOKE E2 - NH THIÊN HỒNG", 
-            // "199", 
-            // "Điện Biên Phủ", 
-            // "Q.3", 
-            // "50", 
-            // "0838248798", 
-            // 0, 
-            // "", 
-            // "2009-04-10 00:00:00", 
-            // 1, 
-            // " ",
-            // " ",
-            // " ",
-            // " ",
-            // " ",
-            // 0, 
-            // "mr nghia", 
-            // "", 
-            // 12594, 
-            // "Tăng Minh Gia", 
-            // "Bảo", 
-            // "", 
-            // 106.692777, 
-            // 10.785563, 
-            // " ", 
-            // 0, 
-            // 0, 
-            // " ", 
-            // 11655, 
-            // "2016-07-05 11:54:11", 
-            // " ", 
-            // 0, 
-            // 0, 
-            // 0, 
-            // "", 
-            // "", 
-            // "", 
-            // 0, 
-            // "7a72490b-b3e6-4101-a5d8-14f8ec3cb045", 
-            // 0, 
-            // 0, 
-            // 0, 
-            // 1,
-            // 0,
-            // 1470384228911, 
-            // 0)
-            //var ts = outlet.AmendDate == null ? new TimeSpan() : outlet.AmendDate.Value.Subtract(new DateTime(1970, 1, 1));
-
-            sb.Append(outlet.ID).Append(Constants.DataDelimeter);
-            sb.Append(outlet.PRowID).Append(Constants.DataDelimeter);
-
-            sb.Append(ToSql(outlet.ID)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(outlet.AreaID)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(outlet.TerritoryID)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(outlet.OTypeID)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(outlet.Name)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(outlet.AddLine)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(outlet.AddLine2)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(outlet.District)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(outlet.ProvinceID)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(outlet.Phone)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(outlet.CloseDate)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(outlet.CreateDate)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(outlet.Tracking)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(outlet.Class)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(outlet.Open1st)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(outlet.Close1st)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(outlet.Open2nd)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(outlet.Close2nd)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(outlet.SpShift)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(outlet.LastContact)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(outlet.LastVisit)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(outlet.PersonID)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(person.FirstName)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(person.LastName)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(outlet.Note)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(outlet.Longitude)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(outlet.Latitude)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(outlet.TaxID)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(outlet.ModifiedStatus)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(outlet.InputBy)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(outlet.InputDate)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(outlet.AmendBy)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(outlet.AmendDate)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(outlet.OutletEmail)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(outlet.AuditStatus)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(outlet.TotalVolume)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(outlet.VBLVolume)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(img1)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(img2)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(img3)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(outlet.PRowID)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(1)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(1)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(1)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(1)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(0)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(0)).Append(Constants.FieldDelimeter);
-            sb.Append(ToSql(0));
-
-            return sb.ToString();
-        }
-
-        private static string ToSql(object value)
-        {
-            if (value == null) return "\" \"";
-            if (value is String)
-            {
-                // quoted text
-                return "\"" + value + "\"";
+                return DownloadOutletsZip(int.Parse(personID), provinceID, int.Parse(from), int.Parse(to));
             }
-            else if (value is bool)
+            catch
             {
-                return (bool)value ? "1" : "0";
+                return null;
             }
-            else if (value is long)
-            {
-                return value.ToString();
-            }
-            else if (value is int)
-            {
-                return value.ToString();
-            }
-            else if (value is decimal)
-            {
-                return value.ToString();
-            }
-            else if (value is DateTime)
-            {
-                return "\"" + ((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss") + "\""; 
-            }
-            else
-                return value.ToString();
         }
-    }
 
-    [Serializable]
-    public class DownloadOutlet : Outlet
-    {
-        public long RowNo { get; set; }
-        public string PersonFirstName { get; set; }
-        public string PersonLastName { get; set; }
-        public bool? PersonIsDSM { get; set; }
-
-        [IgnoreDataMember]
-        public byte[] ImageData1 { get; set; }
-        [IgnoreDataMember]
-        public byte[] ImageData2 { get; set; }
-        [IgnoreDataMember]
-        public byte[] ImageData3 { get; set; }
-
-        public string StringImage1 { get; set; }
-        public string StringImage2 { get; set; }
-        public string StringImage3 { get; set; }
-    }
-
-    public class DeniedException : Exception
-    {
-        public DeniedException() : base()
+        public byte[] DownloadOutletsZipByte(string personID, string provinceID, string from, string to)
         {
+            try
+            {
 
+                return DownloadOutletsZipByte(int.Parse(personID), provinceID, int.Parse(from), int.Parse(to));
+            }
+            catch
+            {
+                return null;
+            }
         }
-        public DeniedException(string msg): base(msg)
+
+        public GetImageResponse DownloadImageBase64(string personID, string outletID, string index)
         {
-
+            var resp = new GetImageResponse();
+            try
+            {
+                resp.Image = DownloadImageBase64(int.Parse(personID), int.Parse(outletID), int.Parse(index));
+            }
+            catch (Exception ex)
+            {
+                resp.Status = Constants.ErrorCode;
+                resp.ErrorMessage = ex.Message;
+            }
+            return resp;
         }
+
+        public Response UploadImageBase64(string personID, string outletID, string index, string image)
+        {
+            var resp = new Response();
+            try
+            {
+                UploadImageBase64(int.Parse(personID), int.Parse(outletID), int.Parse(index), image);
+            }
+            catch (Exception ex)
+            {
+                resp.Status = Constants.ErrorCode;
+                resp.ErrorMessage = ex.Message;
+            }
+            return resp;
+        }
+
+        public SyncOutletResponse SyncOutlets(OutletModel[] outlets)
+        {
+            var resp = new SyncOutletResponse();
+            try
+            {
+                List<SyncOutlet> dboutlets = new List<SyncOutlet>();
+                var error = SaveOutlets(outlets, dboutlets);
+                resp.Outlets = dboutlets;
+                if (error != null)
+                {
+                    resp.Status = Constants.Warning;
+                    resp.ErrorMessage = error.Message;
+                }
+            }
+            catch (Exception ex)
+            {
+                resp.Status = Constants.ErrorCode;
+                resp.ErrorMessage = ex.Message;
+            }
+            return resp;
+        }
+
+        public GetOutletImagesResponse GetImages(string outletID)
+        {
+            var resp = new GetOutletImagesResponse();
+            try
+            {
+                resp.Image1 = "";
+                resp.Image2 = "";
+                resp.Image3 = "";
+                int id = int.Parse(outletID);
+                var o = _entities.OutletImages.FirstOrDefault(i=>i.OutletID == id);
+                if(o != null)
+                {
+                    if (o.ImageData1 != null)
+                        resp.Image1 = FormatBase64(Convert.ToBase64String(o.ImageData1));
+
+                    if (o.ImageData2 != null)
+                        resp.Image2 = FormatBase64(Convert.ToBase64String(o.ImageData2));
+
+                    if (o.ImageData3 != null)
+                        resp.Image3 = FormatBase64(Convert.ToBase64String(o.ImageData3));
+                }
+            }
+            catch (Exception ex)
+            {
+                resp.Status = Constants.ErrorCode;
+                resp.ErrorMessage = ex.Message;
+            }
+            return resp;
+        }
+
+        #endregion
     }
 }

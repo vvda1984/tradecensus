@@ -36,6 +36,17 @@
           <Property Name="AmendDate" Type="datetime" Nullable="false" />
           <Property Name="AmendBy" Type="int" Nullable="false" />
         </EntityType>
+        <EntityType Name="GeoBorder">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="int" Nullable="false" />
+          <Property Name="ParentID" Type="int" Nullable="false" />
+          <Property Name="Name" Type="nvarchar" MaxLength="255" Nullable="false" />
+          <Property Name="GeoData" Type="nvarchar(max)" />
+          <Property Name="AmendBy" Type="int" Nullable="false" />
+          <Property Name="AmendDate" Type="datetime" Nullable="false" />
+        </EntityType>
         <EntityType Name="Outlet">
           <Key>
             <PropertyRef Name="ID" />
@@ -228,6 +239,7 @@
           <EntitySet Name="Area" EntityType="Self.Area" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Config" EntityType="Self.Config" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="ConnectionSession" EntityType="Self.ConnectionSession" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="GeoBorder" EntityType="Self.GeoBorder" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Outlet" EntityType="Self.Outlet" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="OutletHistory" EntityType="Self.OutletHistory" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="OutletImage" EntityType="Self.OutletImage" Schema="dbo" store:Type="Tables" />
@@ -362,6 +374,7 @@
             <End Role="Outlet" EntitySet="Outlets" />
             <End Role="OutletImage" EntitySet="OutletImages" />
           </AssociationSet>
+          <EntitySet Name="GeoBorders" EntityType="tradecensusModel.GeoBorder" />
         </EntityContainer>
         <EntityType Name="OutletHistory">
           <Key>
@@ -494,6 +507,17 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <EntityType Name="GeoBorder">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="Int32" Nullable="false" />
+          <Property Name="ParentID" Type="Int32" Nullable="false" />
+          <Property Name="Name" Type="String" Nullable="false" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="GeoData" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="AmendBy" Type="Int32" Nullable="false" />
+          <Property Name="AmendDate" Type="DateTime" Nullable="false" Precision="3" />
+        </EntityType>
       </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -701,6 +725,18 @@
                 <ScalarProperty Name="Image2" ColumnName="Image2" />
                 <ScalarProperty Name="Image1" ColumnName="Image1" />
                 <ScalarProperty Name="OutletID" ColumnName="OutletID" />
+                <ScalarProperty Name="ID" ColumnName="ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="GeoBorders">
+            <EntityTypeMapping TypeName="tradecensusModel.GeoBorder">
+              <MappingFragment StoreEntitySet="GeoBorder">
+                <ScalarProperty Name="AmendDate" ColumnName="AmendDate" />
+                <ScalarProperty Name="AmendBy" ColumnName="AmendBy" />
+                <ScalarProperty Name="GeoData" ColumnName="GeoData" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="ParentID" ColumnName="ParentID" />
                 <ScalarProperty Name="ID" ColumnName="ID" />
               </MappingFragment>
             </EntityTypeMapping>

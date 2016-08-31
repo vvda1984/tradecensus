@@ -186,12 +186,19 @@
     <Compile Include="Area.cs">
       <DependentUpon>TradeCensusModel.tt</DependentUpon>
     </Compile>
+    <Compile Include="BorderService\BorderModel.cs" />
+    <Compile Include="BorderService\BorderService.cs" />
+    <Compile Include="BorderService\BorderServiceResponse.cs" />
+    <Compile Include="BorderService\IBorderService.cs" />
     <Compile Include="Config.cs">
       <DependentUpon>TradeCensusModel.tt</DependentUpon>
     </Compile>
     <Compile Include="ConfigService\ConfigService.cs" />
     <Compile Include="ConfigService\IConfigService.cs" />
     <Compile Include="ConnectionSession.cs">
+      <DependentUpon>TradeCensusModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="GeoBorder.cs">
       <DependentUpon>TradeCensusModel.tt</DependentUpon>
     </Compile>
     <Compile Include="Global.asax.cs">
@@ -207,6 +214,8 @@
     <Compile Include="OutletImage.cs">
       <DependentUpon>TradeCensusModel.tt</DependentUpon>
     </Compile>
+    <Compile Include="OutletService\DistanceUtil.cs" />
+    <Compile Include="OutletService\ExtendedClass.cs" />
     <Compile Include="OutletService\IOutletService.cs" />
     <Compile Include="OutletService\OutletModel.cs" />
     <Compile Include="OutletService\OutletService.cs" />
@@ -228,13 +237,16 @@
     </Compile>
     <Compile Include="ProvinceService\IProvinceService.cs" />
     <Compile Include="ProvinceService\ProvinceService.cs" />
-    <Compile Include="Shared\BaseRepo.cs" />
-    <Compile Include="Shared\ConfigResponse.cs" />
+    <Compile Include="Shared\DeniedException.cs" />
+    <Compile Include="Shared\ServiceFactory.cs" />
+    <Compile Include="Shared\TradeCensusContext.cs" />
+    <Compile Include="Shared\TradeCensusServiceBase.cs" />
+    <Compile Include="ConfigService\ConfigResponse.cs" />
     <Compile Include="Shared\Constants.cs" />
-    <Compile Include="Shared\LoginResponse.cs" />
-    <Compile Include="Shared\LogManager.cs" />
-    <Compile Include="Shared\OutletResponse.cs" />
-    <Compile Include="Shared\ProvinceResponse.cs" />
+    <Compile Include="PersonService\LoginResponse.cs" />
+    <Compile Include="Shared\Logging.cs" />
+    <Compile Include="OutletService\OutletResponse.cs" />
+    <Compile Include="ProvinceService\ProvinceResponse.cs" />
     <Compile Include="Shared\Response.cs" />
     <Compile Include="SyncDetail.cs">
       <DependentUpon>TradeCensusModel.tt</DependentUpon>

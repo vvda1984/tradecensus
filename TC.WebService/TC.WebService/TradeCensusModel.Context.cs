@@ -38,5 +38,6 @@ namespace TradeCensus
         public virtual DbSet<ConnectionSession> ConnectionSessions { get; set; }
         public virtual DbSet<Outlet> Outlets { get; set; }
         public virtual DbSet<OutletImage> OutletImages { get; set; }
+        public virtual DbSet<GeoBorder> GeoBorders { get; set; }
     }
 }

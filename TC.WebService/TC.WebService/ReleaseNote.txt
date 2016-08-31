@@ -48,4 +48,9 @@ Fix bug:
 [1.1.16236.3] 2016-08-24
 - Support 1 Person <=> n UserName
 
+[1.1.16237.4] 2016-08-25
+- Add feature to draw border
+- Enhance query outlet performance
+- Ignore image when query outlet
+- Add api to get outlet images
 

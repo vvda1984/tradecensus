@@ -4,7 +4,7 @@ using TradeCensus.Shared;
 namespace TradeCensus
 {
     [ServiceContract]
-    public interface IProvinceService
+    public interface IProvinceService : ITCService
     {
         [OperationContract]
         ProvinceResponse GetProvinces();
