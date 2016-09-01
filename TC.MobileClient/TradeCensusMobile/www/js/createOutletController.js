@@ -164,6 +164,11 @@ function newOutletController($scope, $mdDialog) {
     $scope.postOutlet = function () {
         if (!validate()) return;
      
+        if (isEmpty($scope.outlet.StringImage1) && isEmpty($scope.outlet.StringImage2) && isEmpty($scope.outlet.StringImage3)) {
+            showValidationErr(R.need_to_capture);
+            return;
+        }
+
         var confirmText = R.post_outlet_confirm.replace("{outletname}", $scope.outlet.Name);
         showConfirm(R.post_outlet, confirmText, function () {
             if ($scope.outlet.AuditStatus == StatusNew) {
@@ -373,5 +378,4 @@ function newOutletController($scope, $mdDialog) {
         //})
     }
     loadImages();
-
 }

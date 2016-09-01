@@ -24,6 +24,7 @@ var mapViewChangedCallback = null;
 var locationChangedCallback = null;
 var homeMarker = null;
 var curInfoWin = null;
+var borders = [];
 
 var curlat = START_LAT;
 var curlng = START_LNG;
@@ -59,15 +60,19 @@ function loadMapApi() {
     showDlg(R.loading_map, R.please_wait);
 	
 	
-    var url = 'https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&key=' + config.map_api_key + '&callback=initializeMap';
+    var url = 'https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&key=' + config.map_api_key + '&callback=googleMapReadyCallback';
     log('Load map API: ' + url);
     $.getScript(url);
     isloadingGGapi = false;
 }
 
+function googleMapReadyCallback() {
+    isMapReady = true;
+    initializeMap();
+}
+
 function initializeMap() {
     isloadingGGapi = false;
-    isMapReady = true;	
     log('Create map instance');
     try {
         homeMarker = null;
@@ -83,11 +88,11 @@ function initializeMap() {
             zoomControlOptions: {
                 position: google.maps.ControlPosition.RIGHT_BOTTOM
             },
-            mapTypeControl: true,
-            mapTypeControlOptions: {
-                style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
-                position: google.maps.ControlPosition.BOTTOM_CENTER
-            },
+            mapTypeControl: false,
+            //mapTypeControlOptions: {
+            //    style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+            //    position: google.maps.ControlPosition.BOTTOM_LEFT //BOTTOM_CENTER
+            //},
             scaleControl: true,
             streetViewControl: true,
             fullscreenControl: false,
@@ -113,14 +118,13 @@ function initializeMap() {
             }         
         });
 
-		$.getScript('assets/libs/geoxml3/ProjectedOverlay.js');
-		$.getScript('assets/libs/geoxml3/kmz/geoxml3.js');
-		$.getScript('assets/libs/geoxml3/kmz/geoxml3_gxParse_kmz.js');
-		$.getScript('assets/libs/geoxml3/kmz/ZipFile.complete.js');
+		//$.getScript('assets/libs/geoxml3/ProjectedOverlay.js');
+		//$.getScript('assets/libs/geoxml3/kmz/geoxml3.js');
+		//$.getScript('assets/libs/geoxml3/kmz/geoxml3_gxParse_kmz.js');
+		//$.getScript('assets/libs/geoxml3/kmz/ZipFile.complete.js');
 	
-		var myParser = new geoXML3.parser({map: map});
-		myParser.parse('assets/content/hcm.kml');
-		
+		//var myParser = new geoXML3.parser({map: map});
+		//myParser.parse('assets/content/hcm.kml');
 		
         hideDlg();
         isMapReady = true;
@@ -138,6 +142,39 @@ function initializeMap() {
             loadMapCallback();
             loadMapCallback = null;
         }
+    }
+}
+
+function drawMapBorder(geodata) {
+    if(!isMapReady) return;
+    for (var i = 0; i < borders.length; i++) {
+        borders[i].setMap(null);
+    }
+    borders = [];
+
+    var zones = JSON.parse(geodata);
+
+    for (var i = 0; i < zones.length; i++) {
+        var lines = zones[i].border;
+       
+        var border = new google.maps.Polygon({
+            paths: lines,
+            strokeColor: '#FF0000',
+            strokeOpacity: 0.5,
+            strokeWeight: 4,    
+            fillColor: '#000000',
+            fillOpacity: 0.1,
+        });
+        border.setMap(map);
+        borders.push(border);
+    }
+}
+
+function changeMapTypeView(i) {
+    if (i == 0) {
+        map.setMapTypeId('roadmap');
+    } else {
+        map.setMapTypeId('satellite');
     }
 }
 

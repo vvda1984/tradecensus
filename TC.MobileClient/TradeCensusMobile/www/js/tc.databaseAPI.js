@@ -1,7 +1,7 @@
 ﻿function initalizeDB(onSuccess, onError) {
     var dbName = 'tc-v1-03.db';
     log('Open database: ' + dbName);
-    db = window.openDatabase("Database", "2.0", dbName, 200000);
+    db = window.openDatabase("Database", "2.0", dbName, 1024 * 1024 * 500);
     db.transaction(function (tx) {
         if (resetDB) {
             tx.executeSql('DROP TABLE IF EXISTS user1');
@@ -493,9 +493,9 @@ function syncWithStorageOutletDB(tx, userID, outletTbl, outlets, i, onSuccess, o
 
     outlet.PSynced = 1; // synced
     outlet.positionIndex = i;
+    outlet.isOnline = true;
     if (outlet.PStatus == null || outlet.PStatus == undefined)
         outlet.PStatus = 0;
-    //outlet.PStatus = outlet.PStatus == null ? 0 : outlet.PStatus;
     initializeOutlet(outlet);
 
     var sql = 'SELECT * FROM ' + outletTbl + ' WHERE PRowID="' + outlet.PRowID.toString() + '"';
@@ -798,9 +798,9 @@ function addNewOutlet(tx, outletTbl, outlet, isAdd, isMod, isAud, synced, marked
     sql = sql.concat(outlet.AuditStatus.toString(), ', ');  //'[AuditStatus] int NOT NULL,' ,	
     sql = sql.concat(outlet.TotalVolume.toString(), ', ');  //'[TotalVolume] int NOT NULL,' +
     sql = sql.concat(outlet.VBLVolume.toString(), ', ');    //'[VBLVolume] int NOT NULL,' +   
-    sql = sql.concat('"', outlet.StringImage1, '", ');      //'[StringImage1] text,' ,
-    sql = sql.concat('"', outlet.StringImage2, '", ');      //'[StringImage2] text,' ,
-    sql = sql.concat('"', outlet.StringImage3, '", ');      //'[StringImage3] text,' ,
+    sql = sql.concat('"",');                                //'[StringImage1] text,' ,
+    sql = sql.concat('"",');                                //'[StringImage2] text,' ,
+    sql = sql.concat('"",');                                //'[StringImage3] text,' ,
     sql = sql.concat(outlet.OutletSource.toString(), ', '); //'[OutletSource] int' ,
     sql = sql.concat('"', outlet.PRowID, '", ');            //'[PRowID] text NULL,' ,  
     sql = sql.concat(isAdd ? '1' : '0', ', ');              //'[PIsAdd] bit,' ,

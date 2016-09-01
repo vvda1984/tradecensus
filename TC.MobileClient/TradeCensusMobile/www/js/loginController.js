@@ -11,6 +11,7 @@ function loginController($scope, $http) {
     $scope.config = config;
     $scope.user = user;
     $scope.password = '';
+    isMapReady = false;
 
     if (config.enable_devmode) {
         $scope.userName = 'sale1';

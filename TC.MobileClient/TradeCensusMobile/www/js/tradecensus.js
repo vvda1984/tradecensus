@@ -125,7 +125,7 @@ function newConfig() {
     //ip: 'localhost', //'27.0.15.234',
     //port: '33334',//'3001',
     var c = {
-        enable_devmode: true,
+        enable_devmode: false,
         page_size: 20,
         cluster_size: 50,
         cluster_max_zoom: 15.5,
@@ -161,7 +161,7 @@ function newConfig() {
         tbl_outletSync: 'uos',
         tbl_outlet: 'uo',
         tbl_downloadProvince: 'udp',
-        version: '1.2a.16235.2',
+        version: '1.2a.16244.4',
     };
     if (isHttp) {
         c.protocol = 'http';

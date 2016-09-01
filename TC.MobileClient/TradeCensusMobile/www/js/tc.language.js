@@ -162,7 +162,7 @@ function language_en() {
 		vbl_is_invald: ' VBL volume must be whole number',
 		vbl_is_empty: 'VBL volume must greater than zero',
 		vbl_cannot_greater_than_total: 'VBL volume can\'t be greater than Total volume.',
-		need_to_capture: 'Please capture images',
+		need_to_capture: 'Please capture images before POST',
 
 		confirm : 'CONFIRM',
 		delete_offline_outlets_of : 'Delete offline outlets of ',
@@ -188,6 +188,8 @@ function language_en() {
 		network_warn: 'Please try again because network was not stable!',
 
 		open_close: "Status",
-        tracking_status: 'Tracking'
+		tracking_status: 'Tracking',
+		load_images: 'Loading outlet images',
+		cannot_get_outlet_images: 'Cannot load outlet images!',
     }
 };
