@@ -374,9 +374,10 @@ function editOutletController($scope, $mdDialog) {
     }
 
     function validateRange(lat, lng) {
-        var d = calcDistance({ Lat: lat, Lng: lng }, { Lat: $scope.outlet.Latitude, Lng: $scope.outlet.Longitude });
+        var d = parseInt(calcDistance({ Lat: lat, Lng: lng }, { Lat: $scope.outlet.Latitude, Lng: $scope.outlet.Longitude }));
         if (d > $scope.config.audit_range) {
             var errMsg = R.ovar_audit_distance.replace('{distance}', $scope.config.audit_range.toString());
+            errMsg = errMsg.replace('{value}', d);
             showValidationErr(errMsg);
             return false;
         }

@@ -36,6 +36,16 @@ var gpsWatchID = -1;
 var loadedMarkers = [];
 var lastRefreshDate;
 
+var border_level = 0;
+var borders_0;
+var borders_1;
+var borders_2;
+var borders_3;
+var borders_4;
+var borders_5;
+var borders_6;
+
+
 var isloadingGGapi = false;
 function loadMapApi() {
     if (isloadingGGapi) return;
@@ -152,10 +162,16 @@ function drawMapBorder(geodata) {
     }
     borders = [];
 
+    var bounds = new google.maps.LatLngBounds();
+    
     var zones = JSON.parse(geodata);
 
     for (var i = 0; i < zones.length; i++) {
         var lines = zones[i].border;
+
+        for (var j = 0; j < lines.length; j++) {
+            bounds.extend(lines[j]);
+        }
        
         var border = new google.maps.Polygon({
             paths: lines,
@@ -163,18 +179,21 @@ function drawMapBorder(geodata) {
             strokeOpacity: 0.5,
             strokeWeight: 4,    
             fillColor: '#000000',
-            fillOpacity: 0.1,
+            fillOpacity: config.border_fill_opacity,
         });
         border.setMap(map);
         borders.push(border);
     }
+
+    bounds.getCenter();
+    map.fitBounds(bounds);
 }
 
 function changeMapTypeView(i) {
     if (i == 0) {
         map.setMapTypeId('roadmap');
     } else {
-        map.setMapTypeId('satellite');
+        map.setMapTypeId('hybrid');
     }
 }
 
@@ -572,4 +591,41 @@ function calcDistance(saleLoc, outletLoc) {
 
 function calculateRad(x) {
     return x * Math.PI / 180;
+}
+
+function setBorders(items, level) {
+    if (level == 0) {
+        borders_0 = items;
+    } else if (level == 1) {
+        borders_1 = items;
+    } else if (level == 2) {
+        borders_2 = items;
+    } else if (level == 3) {
+        borders_3 = items;
+    } else if (level == 4) {
+        borders_4 = items;
+    } else if (level == 5) {
+        borders_5 = items;
+    } else if (level == 6) {
+        borders_6 = items;
+    }
+}
+
+function getBorders(level) {
+    if (level == 0) {
+        return borders_0; 
+    } else if (level == 1) {
+        return borders_1;
+    } else if (level == 2) {
+        return borders_2;
+    } else if (level == 3) {
+        return borders_3;
+    } else if (level == 4) {
+        return borders_4;
+    } else if (level == 5) {
+        return borders_5;
+    } else if (level == 6) {
+        return borders_6;
+    }
+    return [];
 }

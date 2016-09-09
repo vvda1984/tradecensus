@@ -1,6 +1,6 @@
 ﻿function initalizeDB(onSuccess, onError) {
-    try{
-        db = window.openDatabase('tc-v1-05.db', "2.0", 'tc-v1-05.db', 500 * 1024 * 1024); //~500MB
+    try {
+        db = window.sqlitePlugin.openDatabase({ name: 'tc-v2-01.db', location: 'default' });
         db.transaction(function (tx) {
             if (resetDB) {
                 tx.executeSql('DROP TABLE IF EXISTS user1');
@@ -484,7 +484,6 @@ function ensureUserOutletDBExist(isReset, outletSyncTbl, outletTbl, provinceDown
     });
 }
 
-//*****************************************************
 function syncWithStorageOutletDB(tx, userID, outletTbl, outlets, i, onSuccess, onError) {
     if (i == outlets.length) {
         onSuccess();
@@ -501,8 +500,7 @@ function syncWithStorageOutletDB(tx, userID, outletTbl, outlets, i, onSuccess, o
         outlet.PStatus = 0;
     initializeOutlet(outlet);
 
-    //var sql = 'SELECT * FROM ' + outletTbl + ' WHERE PRowID like \'' + outlet.PRowID.toString() + '\'';
-    var sql = 'SELECT * FROM ' + outletTbl + ' WHERE ID = ' + outlet.ID.toString();
+    var sql = 'SELECT * FROM ' + outletTbl + ' WHERE PRowID="' + outlet.PRowID.toString() + '"';
     tx.executeSql(sql, [], 
         function (tx1, dbres) {
             var rowlen = dbres.rows.length;
@@ -516,13 +514,13 @@ function syncWithStorageOutletDB(tx, userID, outletTbl, outlets, i, onSuccess, o
                     if (existOutlet.PSynced) {                        
                         // synced already, just overwrite by server value...
                         log('Overwrite local because it was synced to server');
-                        updateOutlet(tx, outletTbl, outlet, 0, true, false);
+                        updateOutlet(tx, outletTbl, outlet, 0, true);
                     } else {
                         // outlet wasn't synced, check amend date
                         // this logic can be failed if timezone in server and client are different
                         if (compareDate(outlet.AmendDate, existOutlet.AmendDate, 'yyyy-MM-dd HH:mm:ss') > 0) {
                             log('Overwrite local because server date > local date');
-                            updateOutlet(tx, outletTbl, outlet, 0, true, false);
+                            updateOutlet(tx, outletTbl, outlet, 0, true);                                    
                         }                            
                     }
                 }
@@ -534,7 +532,7 @@ function syncWithStorageOutletDB(tx, userID, outletTbl, outlets, i, onSuccess, o
                     outlet.OutletSource = 0;
                 }
                
-                addNewOutlet(tx1, outletTbl, outlet, false, false, false, true, false);                
+                addNewOutlet(tx1, outletTbl, outlet, false, false, false, true, false, false);                
             }
 
             if ((i + 1) < outlets.length) {
@@ -549,7 +547,6 @@ function syncWithStorageOutletDB(tx, userID, outletTbl, outlets, i, onSuccess, o
         });
 }
 
-//*****************************************************
 function insertOutletsDB(userID, outletTbl, outlets, onSuccess, onError) {
     if (outlets.length == 0) {
         onSuccess();
@@ -589,7 +586,7 @@ function insertDownloadedOutletDB(tx, outletTbl, outlets, i, onSuccess, onError)
             } else {
                 outlet.OutletSource = 0;
             }
-            addNewOutlet(tx1, outletTbl, outlet, false, false, false, true, false);
+            addNewOutlet(tx1, outletTbl, outlet, false, false, false, true, false, true);
 
             if ((i + 1) < outlets.length) {
                 insertDownloadedOutletDB(tx1, outletTbl, outlets, i + 1, onSuccess, onError);
@@ -611,7 +608,6 @@ function deleleOutletsDB(outletTbl, provinceId, onSuccess, onError) {
     }, onError);
 }
 
-//*****************************************************
 function addDownloadOutletsDB(outletTbl, outlets, onSuccess, onError) {
     if (outlets.length == 0) {
         onSuccess();
@@ -762,7 +758,7 @@ function buildOutletInsertSql(outletTbl, outlet) {
     return sql;
 }
 
-function addNewOutlet(tx, outletTbl, outlet, isAdd, isMod, isAud, synced, marked) {
+function addNewOutlet(tx, outletTbl, outlet, isAdd, isMod, isAud, synced, marked, saveImage) {
     log('add new outlet');
     var n = (new Date()).getTime();
     var sql = 'INSERT INTO ' + outletTbl + ' VALUES (';
@@ -804,9 +800,15 @@ function addNewOutlet(tx, outletTbl, outlet, isAdd, isMod, isAud, synced, marked
     sql = sql.concat(outlet.AuditStatus.toString(), ', ');  //'[AuditStatus] int NOT NULL,' ,	
     sql = sql.concat(outlet.TotalVolume.toString(), ', ');  //'[TotalVolume] int NOT NULL,' +
     sql = sql.concat(outlet.VBLVolume.toString(), ', ');    //'[VBLVolume] int NOT NULL,' +   
-    sql = sql.concat('"', outlet.StringImage1, '",');       //'[StringImage1] text,' ,
-    sql = sql.concat('"', outlet.StringImage2, '",');       //'[StringImage2] text,' ,
-    sql = sql.concat('"', outlet.StringImage3, '",');       //'[StringImage3] text,' ,
+    if (saveImage) {
+        sql = sql.concat('"",');                            //'[StringImage1] text,' ,
+        sql = sql.concat('"",');                            //'[StringImage2] text,' ,
+        sql = sql.concat('"",');                            //'[StringImage3] text,' ,
+    } else {
+        sql = sql.concat('"', outlet.StringImage1 ,'",');   //'[StringImage1] text,' ,
+        sql = sql.concat('"', outlet.StringImage2, '",');   //'[StringImage2] text,' ,
+        sql = sql.concat('"', outlet.StringImage3, '",');   //'[StringImage3] text,' ,
+    }
     sql = sql.concat(outlet.OutletSource.toString(), ', '); //'[OutletSource] int' ,
     sql = sql.concat('"', outlet.PRowID, '", ');            //'[PRowID] text NULL,' ,  
     sql = sql.concat(isAdd ? '1' : '0', ', ');              //'[PIsAdd] bit,' ,
@@ -827,7 +829,7 @@ function addNewOutlet(tx, outletTbl, outlet, isAdd, isMod, isAud, synced, marked
         });
 }
 
-function updateOutlet(tx, outletTbl, outlet, state, synced, updateImage) {
+function updateOutlet(tx, outletTbl, outlet, state, synced) {
     log('update outlet ' + outlet.ID.toString() + '(' + outlet.PLastModTS + ')');
     var n = (new Date()).getTime();
     var marked = n < outlet.PLastModTS;
@@ -871,34 +873,32 @@ function updateOutlet(tx, outletTbl, outlet, state, synced, updateImage) {
     sql = sql.concat('TotalVolume=', outlet.TotalVolume.toString(), ', ');
     sql = sql.concat('VBLVolume=', outlet.VBLVolume.toString(), ', ');
 
-    if (updateImage) {
-        if (!isEmpty(outlet.StringImage1)) {
-            if (outlet.StringImage1.toUpperCase().indexOf('IMAGES') > -1) {
-                // ignore this value is URL link
-            } else {
-                sql = sql.concat('StringImage1="', outlet.StringImage1, '", ');
-            }
-        } else
-            sql = sql.concat('StringImage1="",');
+    if (!isEmpty(outlet.StringImage1)) {
+        if (outlet.StringImage1.toUpperCase().indexOf('IMAGES') > -1) {
+            // ignore this value is URL link
+        } else {
+            sql = sql.concat('StringImage1="', outlet.StringImage1, '", ');
+        }
+    } else
+        sql = sql.concat('StringImage1="",');
 
-        if (!isEmpty(outlet.StringImage2)) {
-            if (outlet.StringImage2.toUpperCase().indexOf('IMAGES') > -1) {
-                // ignore this value is URL link
-            } else {
-                sql = sql.concat('StringImage2="', outlet.StringImage2, '", ');
-            }
-        } else
-            sql = sql.concat('StringImage2="",');
+    if (!isEmpty(outlet.StringImage2)) {
+        if (outlet.StringImage2.toUpperCase().indexOf('IMAGES') > -1) {
+            // ignore this value is URL link
+        } else {
+            sql = sql.concat('StringImage2="', outlet.StringImage2, '", ');
+        }
+    } else
+        sql = sql.concat('StringImage2="",');
 
-        if (!isEmpty(outlet.StringImage3)) {
-            if (outlet.StringImage3.toUpperCase().indexOf('IMAGES') > -1) {
-                // ignore this value is URL link
-            } else {
-                sql = sql.concat('StringImage3="', outlet.StringImage3, '", ');
-            }
-        } else
-            sql = sql.concat('StringImage3="", ');
-    }
+    if (!isEmpty(outlet.StringImage3)) {
+        if (outlet.StringImage3.toUpperCase().indexOf('IMAGES') > -1) {
+            // ignore this value is URL link
+        } else {
+            sql = sql.concat('StringImage3="', outlet.StringImage3, '", ');
+        }
+    } else
+        sql = sql.concat('StringImage3="", ');
 
     sql = sql.concat('OutletSource=', outlet.OutletSource, ', ');
     //[PRowID] text NULL
@@ -909,7 +909,7 @@ function updateOutlet(tx, outletTbl, outlet, state, synced, updateImage) {
     sql = sql.concat('PStatus=', outlet.PStatus.toString() + ', ');
     sql = sql.concat('PLastModTS=', n.toString(), ', ');
     sql = sql.concat('PMarked=', marked ? '1' : '0');
-    sql = sql.concat(' WHERE PRowID like \'', outlet.PRowID, '\'');
+    sql = sql.concat(' WHERE PRowID="', outlet.PRowID, '"');
     /*
     if (outlet.PRowID != null && outlet.PRowID.length > 0) {
         sql = sql.concat(' WHERE PRowID="', outlet.PRowID , '"');
@@ -928,36 +928,10 @@ function updateOutlet(tx, outletTbl, outlet, state, synced, updateImage) {
        });
 }
 
-//*****************************************************
-function updateOutletImageDB(outletTbl, outlet, callback) {
-    db.transaction(function (tx) {
-        var sql = 'UPDATE ' + outletTbl + ' SET ';
-        sql = sql.concat('StringImage1="', outlet.StringImage1, '", ');
-        sql = sql.concat('StringImage2="', outlet.StringImage2, '", ');
-        sql = sql.concat('StringImage3="', outlet.StringImage3, '" ');
-        sql = sql.concat(' WHERE ID =', outlet.ID.toString());
-
-        logSqlCommand(sql);
-        tx.executeSql(sql, [],
-           function (tx1) {
-               log('Update outlet ' + outlet.ID.toString());
-               callback();
-           },
-           function (tx1, dberr) {
-               log('Update outlet error ' + outlet.ID.toString());
-               log(dberr.message);
-               callback();
-           });
-    }, function (err) { callback();});
-   
-}
-
-
-//*****************************************************
 function saveOutletDB(outletTbl, outlet, state, synced, onSuccess, onError) {
     db.transaction(function (tx) {
         try {            
-            updateOutlet(tx, outletTbl, outlet, state, synced, true);
+            updateOutlet(tx, outletTbl, outlet, state, synced);
         } catch (err) {
             log(err);
         }
@@ -1001,11 +975,10 @@ function setSyncStatusDB(outletTbl, syncOutlets, synced, onSuccess, onError) {
     }, onError);
 }
 
-//*****************************************************
 function addOutletDB(outletTbl, outlet, synced, onSuccess, onError) {
     db.transaction(function (tx) {
         try {
-            addNewOutlet(tx, outletTbl, outlet, true, false, false, synced, false);
+            addNewOutlet(tx, outletTbl, outlet, true, false, false, synced, false, true);
         } catch (err) {
             log(err);
         }

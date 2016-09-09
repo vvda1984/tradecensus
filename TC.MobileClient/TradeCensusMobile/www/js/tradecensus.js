@@ -28,7 +28,7 @@ var sessionID = guid();
 var isNetworkAvailable = true;      // Network monitoring status
 var onNetworkChangedCallback;       // Network monitoring callback
 
-showDlg(R.connecting_server, R.please_wait, null);
+//showDlg(R.connecting_server, R.please_wait, null);
 
 var app = angular.module('TradeCensus', ['ngRoute', 'ngMaterial', 'ngMessages'])
 .config(['$routeProvider', appRouter])
@@ -80,11 +80,9 @@ var app = angular.module('TradeCensus', ['ngRoute', 'ngMaterial', 'ngMessages'])
         //document.addEventListener("offline", onNetworkDisconnected, false);
         //document.addEventListener("resume", loadMapApi, false);
 
-        logger.initialize('tradecencus');
+        //logger.initialize('tradecencus');
        
-        initializeEnvironment(function(){
-            initializeApp();
-        });        
+        initializeEnvironment(function () { initializeApp(); });
     }
 
     $(document).ready(function () {
@@ -125,27 +123,32 @@ function newConfig() {
     //ip: 'localhost', //'27.0.15.234',
     //port: '33334',//'3001',
     var c = {
+        debug_build: true,
         enable_devmode: false,
         page_size: 20,
         cluster_size: 50,
         cluster_max_zoom: 15.5,
         mode_online: true,
+        enable_rereverse_geo: 1,
         protocol: 'https',
-        ip: '203.34.144.29/tc-test', //'203.34.144.29/trade-census', //tc-test
+        //ip: '203.34.144.29/tc-test', //'203.34.144.29/trade-census', //tc-test
+        ip: '203.34.144.29/trade-census',
         port: '443',
         service_name: 'TradeCensusService.svc', // absolute
         enable_liveGPS: true,
         liveGPS_distance: 10,
         map_zoom: 17,
         distance: 200,
-        audit_range: 50, //50
+        border_fill_opacity: 0,
+        audit_accuracy: 50, //100
+        audit_range: 100, //100
         item_count: 20,
         province_id: 50, // HCM
         http_method: 'POST',
         calc_distance_algorithm: 'circle',
         map_api_key: 'AIzaSyDpKidHSrPMfErXLJSts9R6pam7iUOr_W0',
         max_oulet_download: 1,
-        download_batch_size: 8000,
+        download_batch_size: 5000,
         time_out: 30,               // Connection timeout
         auto_sync: 0,                // Sync delay...
         sync_time: 1 * 60 * 1000,   // Sync delay...
@@ -161,7 +164,7 @@ function newConfig() {
         tbl_outletSync: 'uos',
         tbl_outlet: 'uo',
         tbl_downloadProvince: 'udp',
-        version: '1.2a.16244.4',
+        version: '1.2p.16251.2',
     };
     if (isHttp) {
         c.protocol = 'http';
@@ -211,20 +214,16 @@ function newDeviceInfo() {
 }
 
 function initializeEnvironment(callback) {
-    initalizeDB(function () {
-        db.transaction(function (tx) {
-            loadOutletTypes(tx, function(tx1){
-                loadProvinces(tx1, function(tx2){
-                    loadSettings(tx2, function(tx3){
-                        initializeApp();
-                    });
+    initalizeDB(function (tx) {
+        loadOutletTypes(tx, function (tx1) {
+            loadProvinces(tx1, function (tx2) {
+                loadSettings(tx2, function (tx3) {
+                    callback();
                 });
             });
-        }, function (dberr) {           
-            showError(dberr);
-        });        
-    }, function (err) {
-        showError(err);
+        });
+    }, function (errMsg) {
+        showError(errMsg);
     });
 }
 
@@ -239,15 +238,19 @@ function loadOutletTypes(tx, callback) {
     outletTypes = [];
     outletTypes[0] = { ID: '-1', Name: ' ' };
     selectOutletTypesDB(tx, function (tx1, dbrow) {
-        var rowLen = dbrow.rows.length;
-        log('Outlet found: ' + rowLen.toString());
-        if (rowLen) {
-            for (i = 0; i < rowLen; i++) {
-                outletTypes[i + 1] = {
-                    ID: dbrow.rows.item(i).ID,
-                    Name: dbrow.rows.item(i).Name,
+        try {
+            var rowLen = dbrow.rows.length;
+            log('Outlet found: ' + rowLen.toString());
+            if (rowLen) {
+                for (i = 0; i < rowLen; i++) {
+                    outletTypes[i + 1] = {
+                        ID: dbrow.rows.item(i).ID,
+                        Name: dbrow.rows.item(i).Name,
+                    }
                 }
             }
+        } catch (ex) {
+            showError(ex.message);
         }
         callback(tx1);
     }, function (dberr) {
@@ -265,15 +268,19 @@ function loadProvinces(tx, callback) {
     log('Load provinces from db');
     provinces = [];
     selectProvincesDB(tx, function (tx1, dbrow) {
-        var rowLen = dbrow.rows.length;
-        log('Provinces found: ' + rowLen.toString());
-        if (rowLen) {
-            for (i = 0; i < rowLen; i++) {
-                provinces[i] = {
-                    id: dbrow.rows.item(i).ID,
-                    name: dbrow.rows.item(i).Name,
+        try {
+            var rowLen = dbrow.rows.length;
+            log('Provinces found: ' + rowLen.toString());
+            if (rowLen) {
+                for (i = 0; i < rowLen; i++) {
+                    provinces[i] = {
+                        id: dbrow.rows.item(i).ID,
+                        name: dbrow.rows.item(i).Name,
+                    }
                 }
             }
+        } catch (ex) {
+            showError(ex.message);
         }
 
         callback(tx1);
@@ -285,70 +292,86 @@ function loadProvinces(tx, callback) {
 function loadSettings(tx, callback) {
     log('Load settings...');
     selectSettingDB(tx, function (tx1, dbres) {
-        var rowLen = dbres.rows.length;
-        log('Settings found: ' + rowLen.toString());
-        if (rowLen) {
-            for (i = 0; i < rowLen; i++) {
-                var name = dbres.rows.item(i).Name;
-                var value = dbres.rows.item(i).Value;
-                if (name == 'protocol') {                    
-                    config.protocol = value;
-                } else if (name == 'ip') {
-                    log('set ip: ' + value);
-                    config.ip = value;
-                } else if (name == 'port') {
-                    log('set port: ' + value);
-                    config.port = value;
-                } else if (name == 'service_name') {
-                    log('service name: ' + value);
-                    config.service_name = value;
-                } else if (name == 'item_count') {
-                    log('item_count: ' + value);
-                    config.item_count = parseInt(value);
-                } else if (name == 'distance') {
-                    log('distance: ' + value);
-                    config.distance = parseInt(value);
-                } else if (name == 'province_id') {
-                    config.province_id = value;
-                } else if (name == 'calc_distance_algorithm') {
-                    config.calc_distance_algorithm = value;
-                } else if (name == 'tbl_area_ver') {
-                    config.tbl_area_ver = value;
-                } else if (name == 'tbl_outlettype_ver') {
-                    config.tbl_outlettype_ver = value;
-                } else if (name == 'tbl_province_ver') {
-                    config.tbl_province_ver = value;
-                } else if (name == 'tbl_zone_ver') {
-                    config.tbl_zone_ver = value;
-                } else if (name == 'map_api_key') {
-                    config.map_api_key = value;
-                } else if (name == 'sync_time') {
-                    config.sync_time = parseInt(value);
-                } else if (name == 'sync_time_out') {
-                    config.sync_time_out = parseInt(value);
-                } else if (name == 'sync_batch_size') {
-                    config.sync_batch_size = parseInt(value);
-                } else if (name == 'cluster_size') {
-                    config.cluster_size = parseInt(value);
-                } else if (name == 'cluster_max_zoom') {
-                    config.cluster_max_zoom = parseFloat(value);
-                } else if (name == 'http_method') {
-                    config.http_method = value;
-                } else if (name == 'map_api_key') {
-                    config.map_api_key = value;
-                } else if (name == 'max_oulet_download') {
-                    config.max_oulet_download = parseInt(value);
-                } else if (name == 'audit_range') {
-                    config.audit_range = parseInt(value);
-                } else if (name == 'ping_time') {
-                    config.ping_time = parseInt(value);
-                } else if (name == 'refresh_time') {
-                    config.refresh_time = parseInt(value);
-                } else if (name == 'refresh_time_out') {
-                    config.refresh_time_out = parseInt(value);
+        try {
+            var rowLen = dbres.rows.length;
+            log('Settings found: ' + rowLen.toString());
+            if (rowLen) {
+                for (i = 0; i < rowLen; i++) {
+                    var name = dbres.rows.item(i).Name;
+                    var value = dbres.rows.item(i).Value;
+                    if (name == 'protocol') {
+                        config.protocol = value;
+                    } else if (name == 'ip') {
+                        log('set ip: ' + value);
+                        config.ip = value;
+                    } else if (name == 'port') {
+                        log('set port: ' + value);
+                        config.port = value;
+                    } else if (name == 'service_name') {
+                        log('service name: ' + value);
+                        config.service_name = value;
+                    } else if (name == 'item_count') {
+                        log('item_count: ' + value);
+                        config.item_count = parseInt(value);
+                    } else if (name == 'distance') {
+                        log('distance: ' + value);
+                        config.distance = parseInt(value);
+                    } else if (name == 'province_id') {
+                        config.province_id = value;
+                    } else if (name == 'calc_distance_algorithm') {
+                        config.calc_distance_algorithm = value;
+                    } else if (name == 'tbl_area_ver') {
+                        config.tbl_area_ver = value;
+                    } else if (name == 'tbl_outlettype_ver') {
+                        config.tbl_outlettype_ver = value;
+                    } else if (name == 'tbl_province_ver') {
+                        config.tbl_province_ver = value;
+                    } else if (name == 'tbl_zone_ver') {
+                        config.tbl_zone_ver = value;
+                    } else if (name == 'map_api_key') {
+                        config.map_api_key = value;
+                    } else if (name == 'sync_time') {
+                        config.sync_time = parseInt(value);
+                    } else if (name == 'sync_time_out') {
+                        config.sync_time_out = parseInt(value);
+                    } else if (name == 'sync_batch_size') {
+                        config.sync_batch_size = parseInt(value);
+                    } else if (name == 'cluster_size') {
+                        config.cluster_size = parseInt(value);
+                    } else if (name == 'cluster_max_zoom') {
+                        config.cluster_max_zoom = parseFloat(value);
+                    } else if (name == 'http_method') {
+                        config.http_method = value;
+                    } else if (name == 'map_api_key') {
+                        config.map_api_key = value;
+                    } else if (name == 'max_oulet_download') {
+                        config.max_oulet_download = parseInt(value);
+                    } else if (name == 'audit_range') {
+                        config.audit_range = parseInt(value);
+                    } else if (name == 'audit_accuracy') {
+                        config.audit_accuracy = parseInt(value);
+                    } else if (name == 'ping_time') {
+                        config.ping_time = parseInt(value);
+                    } else if (name == 'refresh_time') {
+                        config.refresh_time = parseInt(value);
+                    } else if (name == 'refresh_time_out') {
+                        config.refresh_time_out = parseInt(value);
+                    } else if (name == 'border_fill_opacity') {
+                        try {
+                            config.border_fill_opacity = parseFloat(value);
+                        }
+                        catch (err) {
+                        }
+                    } else if (name == 'enable_rereverse_geo') {
+                        config.enable_rereverse_geo = parseInt(value);
+                    } else if (name == 'download_batch_size') {
+                        config.download_batch_size = parseInt(value);
+                    }
                 }
             }
-        }     
+        } catch (er) {
+            showError('Load settings error:' + er.message);
+        }
         baseURL = buildURL(config.protocol, config.ip, config.port, config.service_name);       
         callback(tx1);
     },  function (dberr) {      
@@ -357,27 +380,37 @@ function loadSettings(tx, callback) {
 }
 
 function getDeviceInfo() {
-    if (config.enable_devmode) {
-        deviceInfo.model = 'Samsung Tab 3';
-        deviceInfo.platform = 'Web';
-        deviceInfo.uuid = '123-456-789';
+    try{
+        if (config.enable_devmode) {
+            deviceInfo.model = 'Samsung Tab 3';
+            deviceInfo.platform = 'Web';
+            deviceInfo.uuid = '123-456-789';
+            deviceInfo.version = '1.0';
+            deviceInfo.manufacturer = 'Samsung';
+        } else {
+            deviceInfo.model = device.model;
+            deviceInfo.platform = device.platform;
+            deviceInfo.uuid = device.uuid;
+            deviceInfo.version = device.version;
+            deviceInfo.manufacturer = device.manufacturer;
+        }
+    }
+    catch(ex)
+    {
+        deviceInfo.model = 'unknown';
+        deviceInfo.platform = 'unknown';
+        deviceInfo.uuid = '000-000-000';
         deviceInfo.version = '1.0';
-        deviceInfo.manufacturer = 'Samsung';
-    } else {
-        deviceInfo.model = device.model;
-        deviceInfo.platform = device.platform;
-        deviceInfo.uuid = device.uuid;
-        deviceInfo.version = device.version;
-        deviceInfo.manufacturer = device.manufacturer;
+        deviceInfo.manufacturer = 'unknown';
     }
 }
 
 function initializeApp() {
+    hideDlg();
     getDeviceInfo();
     log('Initialize angular app.');
     ping(function (r) {
         serverConnected = r;
-        hideDlg();
         startPingProgress();
         startSyncProgress();
     });

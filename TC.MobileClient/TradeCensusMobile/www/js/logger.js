@@ -3,7 +3,8 @@
 var logger = {
     ready : false,
 
-    initialize : function (appname){
+    initialize: function (appname) {
+       
         // setup a logfile path (required)
         // this path is relative to your device sdcard storage directory
         log(window);

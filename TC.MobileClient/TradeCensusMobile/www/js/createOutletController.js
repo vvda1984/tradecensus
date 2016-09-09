@@ -183,6 +183,9 @@ function newOutletController($scope, $mdDialog) {
     $scope.saveUpdate = function () {
         if (!validate(false)) return;
 
+        //$scope.outlet.isChanged = true;
+        //$mdDialog.hide(true);
+
         showDlg(R.get_current_location, R.please_wait);
         getCurPosition(false, function (lat, lng) {
             hideDlg();
@@ -311,10 +314,11 @@ function newOutletController($scope, $mdDialog) {
     }
 
     function validateRange(lat, lng) {
-        var d = calcDistance({ Lat: lat, Lng: lng }, { Lat: $scope.outlet.Latitude, Lng: $scope.outlet.Longitude });
-        if (d > $scope.config.audit_range) {
-            var errMsg = R.ovar_audit_distance.replace('{distance}', $scope.config.audit_range.toString());
-            showValidation(errMsg);
+        var d = parseInt(calcDistance({ Lat: lat, Lng: lng }, { Lat: $scope.outlet.Latitude, Lng: $scope.outlet.Longitude }));
+        if (d > config.audit_range) {
+            var errMsg = R.ovar_audit_distance.replace('{distance}', config.audit_range.toString());
+            errMsg = errMsg.replace('{value}', d);
+            showValidationErr(errMsg);
             return false;
         }
         return true;

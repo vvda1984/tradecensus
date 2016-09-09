@@ -12,9 +12,9 @@
         </div>  
         <div class="square-bar float-left white">
             <span>{{R.distance}} (m):</span>
-            <input placeholder="meter" ng-model="config.distance" type="number" min="50" >
+            <input placeholder="meter" name="distance" ng-model="config.distance" type="number" min="50" required="">
             <span>{{R.max_outlets}}:</span>
-            <input placeholder="number" ng-model="config.item_count" min="1" >
+            <input type="number" required="" placeholder="number" ng-model="config.item_count" min="1" >
             <span> </span>
         </div>
         <div class="square-button float-left blue" ng-show="allowRefresh" ng-click="refresh()">
@@ -176,9 +176,9 @@
     </div>
 
     <div id="home-topright-test" ng-show="config.enable_devmode">      
-        <input placeholder="acc" ng-model="testacc" style="width:40px;height:36px;" type="number">
-        <input placeholder="lat" ng-model="testlat" style="width:80px;height:36px;" type="number">
-        <input placeholder="lng" ng-model="testlng" style="width:80px;height:36px;" type="number">
+        <input placeholder="acc" ng-model="testacc" style="width:40px;height:28px;" type="number">
+        <input placeholder="lat" ng-model="testlat" style="width:80px;height:28px;" type="number">
+        <input placeholder="lng" ng-model="testlng" style="width:80px;height:28px;" type="number">
         <button ng-click="testChangeLocation()">Set</button>
     </div>
 
@@ -211,7 +211,7 @@
 
                      <md-input-container class="md-block" style="margin-bottom:4px;">
                         <label>{{R.page_size}}</label>
-                        <input type="number" required="" name="page_size" ng-model="config.page_size"  min="5">                  
+                        <input type="number" required="" name="page_size" ng-model="config.page_size" min="5">
                     </md-input-container>
                    
                     <md-input-container class="md-block" flex-gt-sm="" style="margin-bottom:20px;">
@@ -284,7 +284,7 @@
             <span class="small-text black-color" ng-show="isSatellite">Map</span>
         </div>  
         
-        <select ng-model="border1" ng-show="border1IsVisible" ng-change="borderChanged(1)" class="border-selector float-right margin-right-16">
+        <!--<select ng-model="border1" ng-show="border1IsVisible" ng-change="borderChanged(1)" class="border-selector float-right margin-right-16">
             <option ng-repeat="x in border1Items" value="{{x.ID}}">{{x.Name}}</option>
         </select>
         <select ng-model="border2" ng-show="border2IsVisible" ng-change="borderChanged(2)" class="border-selector float-right">
@@ -302,7 +302,20 @@
         </div>
         <div class="m-flat-button-small float-right gray" ng-hide="canDrawBorder">
             <span>View</span>
+        </div>-->  
+    </div>
+
+    <div id="home-bottomcenter">
+        <div class="square-bar-border white float-left" ng-click="showSelectedBorderDlg()">
+            <span>{{selectedBorder.Name}}</span>
+            <!--<img src="assets/img/arrow-down.svg" />-->
         </div>  
+        <div class="m-flat-button-shadow blue" ng-show="canDrawBorder" ng-click="drawBorder()">
+            <span>View</span>
+        </div>
+        <div class="m-flat-button-shadow gray" ng-hide="canDrawBorder">
+            <span>View</span>
+        </div>
     </div>
     
     <div id="dlg-change-password" style="display:none">

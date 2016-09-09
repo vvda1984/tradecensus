@@ -1,0 +1,26 @@
+﻿<md-dialog aria-label="Download Province" ng-cloak>
+    <md-toolbar class="md-hue-2">
+        <div class="md-toolbar-tools">
+            <div ng-show="allowBack" class="m-flat-button-small" style="width:auto;margin-right:16px;" ng-click="backBorder()">
+                <img src="assets/img/arrow-left-white.svg" style="margin-top:2px;margin-left:-12px; margin-right:-4px; width:24px;height:24px;" />
+                <span>{{R.btn_back}}</span>
+            </div>
+            <h2 flex="">
+                <span></span>
+            </h2>
+            <img id="loading-border" src="assets/img/loader.gif" style="height:22px;width:22px;display:none">
+        </div>
+    </md-toolbar>
+    <md-content layout-padding="0" class="popup-content">
+        <table class="province-table" id="table_borders">
+            <tbody>
+                <tr ng-repeat="border in borders">
+                    <td ng-click="selectBorder(border)"> {{ border.Name }} </td>
+                    <td ng-click="nextBorder(border)" class="td-image-right">
+                        <img ng-show="border.ChildrenCount" src="assets/img/arrow-right-green.svg"/>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </md-content>
+</md-dialog>

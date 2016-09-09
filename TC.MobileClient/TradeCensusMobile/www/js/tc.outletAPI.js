@@ -236,16 +236,13 @@ function queryOutlets(isbackground, view, callback) {
                     //var found = 0;
                     //for (i = 0; i < rowLen; i++) {
                     //    var outlet = dbres.rows.item(i);
-
                     //    if (outlet.Name == 'Aaaa') {
                     //        log('');
                     //    }
-
                     //    var distance = 10000000;
                     //    if (config.calc_distance_algorithm == "circle")
                     //        distance = calcDistance(saleLoc, { Lat: outlet.Latitude, Lng: outlet.Longitude });
                     //    log('Distance to Outlet ' + outlet.ID.toString() + ': ' + distance.toString());
-
                     //    if (distance <= meter) {
                     //        outlet.Distance = distance;
                     //        log('Add outlet ' + outlet.ID.toString() + ' to list');

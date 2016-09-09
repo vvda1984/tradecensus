@@ -88,6 +88,14 @@ function loginController($scope, $http) {
     };
    
     $scope.login = function () {
+        if ($scope.config.debug_build) {
+            //var availabeDate = formatDate(new Date(2016, 10, 1), 'yyyyMMdd');
+            //var curDate = formatDate(Date(), 'yyyyMMdd');
+            //if (compareDates(curDate, 'yyyyMMdd', availabeDate, 'yyyyMMdd')) {
+            //    return;
+            //}
+        }
+        
         log($scope.user.id);
         // validate user id
         if (isEmpty($scope.userName)) {
@@ -379,6 +387,8 @@ function loginController($scope, $http) {
                         config.cluster_max_zoom = p.Value;
                     } else if (p.Key == 'audit_range') {
                         config.audit_range = parseInt(p.Value);
+                    } else if (p.Key == 'audit_accuracy') {
+                        config.audit_accuracy = parseInt(p.Value);
                     } else if (p.Key == 'download_batch_size') {
                         config.download_batch_size = parseInt(p.Value);
                     } else if (p.Key == 'auto_sync') {
@@ -395,6 +405,12 @@ function loginController($scope, $http) {
                         config.refresh_time = parseInt(p.Value);
                     } else if (p.Key == 'refresh_time_out') {
                         config.refresh_time_out = parseInt(p.Value);
+                    } else if (p.Key == 'border_fill_opacity') {
+                        config.border_fill_opacity = parseFloat(p.Value);
+                    } else if (p.Key == 'enable_rereverse_geo') {
+                        config.enable_rereverse_geo = parseInt(p.Value);
+                    } else if (p.Key == 'download_batch_size') {
+                        config.download_batch_size = parseInt(p.Value);
                     }
                 }
 
