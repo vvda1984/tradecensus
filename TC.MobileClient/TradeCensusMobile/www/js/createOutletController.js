@@ -4,8 +4,8 @@
 
 
 function newOutletController($scope, $mdDialog) {
-    //log($scope.outletTypes);
     isOutletDlgOpen = true;
+
     $scope.R = R;
     $scope.outletTypes = outletTypes;
     $scope.allowCapture = true;
@@ -49,6 +49,8 @@ function newOutletController($scope, $mdDialog) {
     $scope.image2URL = getImageURL($scope.outlet.StringImage2);
     $scope.image3URL = getImageURL($scope.outlet.StringImage3);
     
+    var orgOutlet = cloneObj($scope.outlet);
+
     $scope.capture = function (i) {
         $scope.outlet.isChanged = true;
         if (i == 1) {
@@ -171,31 +173,23 @@ function newOutletController($scope, $mdDialog) {
 
         var confirmText = R.post_outlet_confirm.replace("{outletname}", $scope.outlet.Name);
         showConfirm(R.post_outlet, confirmText, function () {
-            if ($scope.outlet.AuditStatus == StatusNew) {
-                $scope.outlet.IsDraft = false; // POST
-                $scope.outlet.AuditStatus = StatusPost;
-            }
-            $scope.outlet.isChanged = true;
-            $mdDialog.hide(true);
+            checkDistance(function () {
+                if ($scope.outlet.AuditStatus == StatusNew) {
+                    $scope.outlet.IsDraft = false; // POST
+                    $scope.outlet.AuditStatus = StatusPost;
+                }
+                $scope.outlet.isChanged = true;
+                $mdDialog.hide(true);
+            });
         }, function () { });
     }
 
     $scope.saveUpdate = function () {
         if (!validate(false)) return;
 
-        //$scope.outlet.isChanged = true;
-        //$mdDialog.hide(true);
-
-        showDlg(R.get_current_location, R.please_wait);
-        getCurPosition(false, function (lat, lng) {
-            hideDlg();
-            if (!validateRange(lat, lng)) return;
-
+        checkDistance(function () {
             $scope.outlet.isChanged = true;
             $mdDialog.hide(true);
-        }, function () {
-            hideDlg();
-            showError(R.cannot_approve_or_deny);
         });
     };
 
@@ -230,6 +224,23 @@ function newOutletController($scope, $mdDialog) {
 
     $scope.nameChanged = function(){
         $scope.title = buildTitle();
+    }
+
+    function checkDistance(callback) {
+        if (isModifed(orgOutlet, $scope.outlet)) {
+            showDlg(R.get_current_location, R.please_wait);
+            getCurPosition(false, function (lat, lng) {
+                hideDlg();
+                if (!validateRange(lat, lng)) return;
+
+                callback();
+            }, function () {
+                hideDlg();
+                showError(R.msg_validate_accuracy_1);
+            });
+        } else {
+            callback();
+        }
     }
 
     function getImageURL(stringImage) {
@@ -316,8 +327,11 @@ function newOutletController($scope, $mdDialog) {
     function validateRange(lat, lng) {
         var d = parseInt(calcDistance({ Lat: lat, Lng: lng }, { Lat: $scope.outlet.Latitude, Lng: $scope.outlet.Longitude }));
         if (d > config.audit_range) {
-            var errMsg = R.ovar_audit_distance.replace('{distance}', config.audit_range.toString());
-            errMsg = errMsg.replace('{value}', d);
+            //var errMsg = R.ovar_audit_distance.replace('{distance}', config.audit_range.toString());
+            //errMsg = errMsg.replace('{value}', d);
+
+            var errMsg = R.validate_distance.replace('{distance}', config.audit_range.toString());
+            errMsg = errMsg.replace('{distance}', config.audit_range.toString());
             showValidationErr(errMsg);
             return false;
         }
@@ -381,5 +395,6 @@ function newOutletController($scope, $mdDialog) {
         //    }
         //})
     }
+
     loadImages();
 }

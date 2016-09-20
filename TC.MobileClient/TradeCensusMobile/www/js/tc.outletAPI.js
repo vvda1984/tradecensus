@@ -317,3 +317,35 @@ function queryNearbyOutlets(callback) {
             showError(dberr.message);
         });
 }
+
+function isModifed(orgOutlet, outlet) {
+    if (orgOutlet.Name !== outlet.Name) return true;
+
+    if (orgOutlet.Phone !== outlet.Phone) return true;
+
+    if (orgOutlet.OTypeID !== outlet.OTypeID) return true;
+
+    if (orgOutlet.AddLine !== outlet.AddLine) return true;
+
+    if (orgOutlet.AddLine2 !== outlet.AddLine2) return true;
+
+    if (orgOutlet.District !== outlet.District) return true;
+
+    if (orgOutlet.ProvinceID !== outlet.ProvinceID) return true;
+
+    if (orgOutlet.TotalVolume !== outlet.TotalVolume) return true;
+
+    if (orgOutlet.VBLVolume !== outlet.VBLVolume) return true;
+
+    if (orgOutlet.Note !== outlet.Note) return true;
+
+    if (orgOutlet.StringImage1 !== outlet.StringImage1) return true;
+
+    if (orgOutlet.StringImage2 !== outlet.StringImage2) return true;
+
+    if (orgOutlet.StringImage3 !== outlet.StringImage3) return true;
+
+    if (orgOutlet.IsTracked !== outlet.IsTracked) return true;
+
+    return false;
+}

@@ -418,9 +418,9 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             //    log(err);
             //}
         } else {
-            var errMsg = R.msg_validate_accuracy.replace('{distance}', $scope.config.audit_accuracy.toString());
-            errMsg = errMsg.replace('{curacc}', curAccRound);
-            showError(errMsg);
+            //var errMsg = R.msg_validate_accuracy.replace('{distance}', $scope.config.audit_accuracy.toString());
+            //errMsg = errMsg.replace('{curacc}', curAccRound);
+            showError(R.msg_validate_accuracy_1);
         }
     }
 
@@ -463,47 +463,48 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         }, function () { });
     }
 
-    //*************************************************************************
-    $scope.revertOutlet = function (outlet) {
-        //var outlet = $scope.outlets[i];
-        var confirmText = R.delete_outlet_confirm.replace("{outletname}", outlet.Name);
-        showConfirm(R.delete_outlet, confirmText, function () {
-            deleteDraftOutlet(outlet);
-        }, function () { });
-    }
-
     //*************************************************************************    
     $scope.postOutlet = function (outlet) {
-        if (isEmpty(outlet.StringImage1) && isEmpty(outlet.StringImage2) && isEmpty(outlet.StringImage3)) {
-            if (networkReady()) {
-                showDlg(R.label_validating, R.please_wait);
-                var url = baseURL + '/outlet/getimagecount/' + outlet.ID;
-                log('Call service api: ' + url);
-                $http({
-                    method: config.http_method,
-                    data: outlet,
-                    url: url,
-                    headers: { 'Content-Type': 'application/json' }
-                }).then(function (resp) {
-                    hideDlg();
-                    var count = resp.data;
-                    if (count > 0) {
-                        performPostOutlet(outlet);
-                    } else {
-                        showValidationErr(R.need_to_capture);
-                        return;
-                    }
-                }, function (err) {
-                    hideDlg();
-                    showValidationErr(R.need_to_capture);
-                    return;
-                });
-            } else {
+        showDlg(R.label_validating, R.please_wait);
+        loadImagesIfNeed(outlet, function () {
+            hideDlg();
+            if (isEmpty(outlet.StringImage1) && isEmpty(outlet.StringImage2) && isEmpty(outlet.StringImage3)) {
                 showValidationErr(R.need_to_capture);
             }
-        }
-        else
-            performPostOutlet(outlet);
+            else
+                performPostOutlet(outlet);
+        });
+
+        //if (isEmpty(outlet.StringImage1) && isEmpty(outlet.StringImage2) && isEmpty(outlet.StringImage3)) {
+        //    if (networkReady()) {
+        //        showDlg(R.label_validating, R.please_wait);
+        //        var url = baseURL + '/outlet/getimagecount/' + outlet.ID;
+        //        log('Call service api: ' + url);
+        //        $http({
+        //            method: config.http_method,
+        //            data: outlet,
+        //            url: url,
+        //            headers: { 'Content-Type': 'application/json' }
+        //        }).then(function (resp) {
+        //            hideDlg();
+        //            var count = resp.data;
+        //            if (count > 0) {
+        //                performPostOutlet(outlet);
+        //            } else {
+        //                showValidationErr(R.need_to_capture);
+        //                return;
+        //            }
+        //        }, function (err) {
+        //            hideDlg();
+        //            showValidationErr(R.need_to_capture);
+        //            return;
+        //        });
+        //    } else {
+        //        showValidationErr(R.need_to_capture);
+        //    }
+        //}
+        //else
+        //    performPostOutlet(outlet);
     }
 
     function performPostOutlet(outlet) {
@@ -541,39 +542,14 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 
     //*************************************************************************    
     $scope.reviseOutlet = function (outlet) {
-        //showDlg(R.get_current_location, R.please_wait);
-        //getCurPosition(false, function (lat, lng) {
-        //    hideDlg();
-        //    var confirmText = R.revise_outlet_confirm.replace("{outletname}", outlet.Name);
-        //    showConfirm(R.revise_outlet, confirmText, function () {
-        //        var clonedOutlet = cloneObj(outlet);
-        //        clonedOutlet.positionIndex = outlet.positionIndex;
-        //        if (clonedOutlet.AuditStatus == StatusNew) {
-        //            clonedOutlet.IsDraft = true;
-        //            clonedOutlet.AuditStatus = StatusNew;
-        //        } else {
-        //            clonedOutlet.IsExistingDraft = true;
-        //            clonedOutlet.AuditStatus = StatusEdit;
-        //        }
-        //        clonedOutlet.AmendBy = userID;
-        //        log('Revise outlet ' + outlet.ID.toString());
-        //        log('Save outlet to server')
-        //        saveOutlet(clonedOutlet, function (synced) {
-        //            log('Save outlet to local db')
-        //            changeOutletStatusDB($scope.config.tbl_outlet, clonedOutlet, clonedOutlet.AuditStatus, synced ? 1 : 0, function () {
-        //                hideDlg();
-        //                $scope.refresh();
-        //            }, function (dberr) {
-        //                hideDlg();
-        //                showError(dberr.message);
-        //            });
-        //        });
-        //    }, function () { });
-        //}, function () {
-        //    hideDlg();
-        //    showError(R.cannot_approve_or_deny);
-        //})
+        showDlg(R.label_validating, R.please_wait);
+        loadImagesIfNeed(outlet, function () {
+            hideDlg();
+            performReviseOutlet(outlet);
+        });
+    }
 
+    function performReviseOutlet(outlet) {
         var confirmText = R.revise_outlet_confirm.replace("{outletname}", outlet.Name);
         showConfirm(R.revise_outlet, confirmText, function () {
             var clonedOutlet = cloneObj(outlet);
@@ -605,53 +581,8 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             });
 
         }, function () { });
-
-        //if (!networkReady()) {
-        //    if (outlet.IsSynced)
-        //    {
-        //        showError(R.cannot_revise);
-        //        return;
-        //    } else {
-        //        var confirmText = R.revise_outlet_confirm.replace("{outletname}", outlet.Name);
-        //        showConfirm(R.revise_outlet, confirmText, function () {
-        //            outlet.IsDraft = false;
-        //            outlet.AuditStatus = StatusPost;
-        //            log('Revise outlet ' + outlet.ID.toString());
-        //            outlet.AuditStatus = StatusNew;
-        //            log('Save outlet to server')
-        //            saveOutlet(outlet, function (synced) {
-        //                log('Save outlet to local db')
-        //                changeOutletStatusDB($scope.config.tbl_outlet, outlet, StatusNew, synced ? 1 : 0, function () {
-        //                    hideDlg();
-        //                    $scope.refresh();
-        //                }, function (dberr) {
-        //                    hideDlg();
-        //                    showError(dberr.message);
-        //                });
-        //            });
-        //        }, function () { });
-        //    }
-        //} else {
-        //    var confirmText = R.revise_outlet_confirm.replace("{outletname}", outlet.Name);
-        //    showConfirm(R.revise_outlet, confirmText, function () {
-        //        outlet.IsDraft = false;
-        //        outlet.AuditStatus = StatusPost;
-        //        log('Revise outlet ' + outlet.ID.toString());
-        //        outlet.AuditStatus = StatusNew;
-        //        log('Save outlet to server')
-        //        saveOutlet(outlet, function (synced) {
-        //            log('Save outlet to local db')
-        //            changeOutletStatusDB($scope.config.tbl_outlet, outlet, StatusNew, synced ? 1 : 0, function () {
-        //                hideDlg();
-        //                $scope.refresh();
-        //            }, function (dberr) {
-        //                hideDlg();
-        //                showError(dberr.message);
-        //            });
-        //        });
-        //    }, function () { });
-        //}
     }
+
 
     //*************************************************************************    
     $scope.revertOutlet = function (outlet) {

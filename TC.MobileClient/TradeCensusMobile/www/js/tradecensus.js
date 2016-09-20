@@ -122,6 +122,7 @@ function newConfig() {
     var isHttp = true;
     //ip: 'localhost', //'27.0.15.234',
     //port: '33334',//'3001',
+    //var testBuild = false;
     var c = {
         debug_build: true,
         enable_devmode: false,
@@ -131,7 +132,8 @@ function newConfig() {
         mode_online: true,
         enable_rereverse_geo: 1,
         protocol: 'https',
-        //ip: '203.34.144.29/tc-test', //'203.34.144.29/trade-census', //tc-test
+        //ip: '27.0.15.234/trade-census',
+        //ip: '203.34.144.29/tc-test',
         ip: '203.34.144.29/trade-census',
         port: '443',
         service_name: 'TradeCensusService.svc', // absolute
@@ -164,7 +166,8 @@ function newConfig() {
         tbl_outletSync: 'uos',
         tbl_outlet: 'uo',
         tbl_downloadProvince: 'udp',
-        version: '1.2p.16251.2',
+        version: '1.2p.16264.6',
+        versionNum: 3,
     };
     if (isHttp) {
         c.protocol = 'http';
@@ -414,6 +417,9 @@ function initializeApp() {
         startPingProgress();
         startSyncProgress();
     });
+    if (getNetworkState()) {
+        checkUpdate();
+    }
 };
 
 /****************************************************************/
@@ -560,3 +566,37 @@ function tryping(retry, callback) {
 }
 
 /****************************************************************/
+
+function checkUpdate() {
+    try {
+        showDlg(R.check_update, R.please_wait);
+        var url = baseURL + '/config/getverion/' + config.versionNum.toString();
+        log('Call service api: ' + url);
+
+        $.ajax({
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            url: url,
+            data: '',
+            processData: false,
+            dataType: "json",
+            timeout: config.time_out * 1000,
+            success: function (response) {
+                hideDlg();
+                if (response.Status == -1) { // error
+                    showError(response.ErrorMessage);
+                } else {
+                    if (!isEmpty(response.Message)) {
+                        showInfo(response.Message);
+                    }
+                }
+            },
+            error: function (a, b, c) {
+                hideDlg();
+            }
+        });
+    } catch (err) {
+        hideDlg();
+        log(err);
+    }
+}

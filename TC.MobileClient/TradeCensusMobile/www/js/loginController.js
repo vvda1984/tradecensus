@@ -26,6 +26,7 @@ function loginController($scope, $http) {
     var timeo = $scope.config.time_out;
     var dist = $scope.config.liveGPS_distance;
 
+
     $scope.exit = function () {
         navigator.app.exitApp();
     };
@@ -88,14 +89,7 @@ function loginController($scope, $http) {
     };
    
     $scope.login = function () {
-        if ($scope.config.debug_build) {
-            //var availabeDate = formatDate(new Date(2016, 10, 1), 'yyyyMMdd');
-            //var curDate = formatDate(Date(), 'yyyyMMdd');
-            //if (compareDates(curDate, 'yyyyMMdd', availabeDate, 'yyyyMMdd')) {
-            //    return;
-            //}
-        }
-        
+
         log($scope.user.id);
         // validate user id
         if (isEmpty($scope.userName)) {
@@ -110,19 +104,25 @@ function loginController($scope, $http) {
         }
 
         showDlg(R.btn_login, R.please_wait);
-        if (getNetworkState()) {
-            loginOnline(0, loginSuccess, function (msg) {
-                if (msg == R.connection_timeout) {
-                    loginOffline(loginSuccess, function (err) {
+        getCurPosition(false, function (lat, lng) {
+            //hideDlg();
+            if (getNetworkState()) {
+                loginOnline(0, loginSuccess, function (msg) {
+                    if (msg == R.connection_timeout) {
+                        loginOffline(loginSuccess, function (err) {
+                            loginError(msg);
+                        });
+                    } else {
                         loginError(msg);
-                    });
-                } else {
-                    loginError(msg);
-                }
-            });
-        } else {
-            loginOffline(loginSuccess, loginError);
-        }
+                    }
+                });
+            } else {
+                loginOffline(loginSuccess, loginError);
+            }
+        }, function () {
+            hideDlg();
+            showError(R.cannot_get_cur_location);
+        });
     }
     
     function loginOnline(retry, onSuccess, onError) {
@@ -468,5 +468,7 @@ function loginController($scope, $http) {
                 insertOutletTypes(data.Items, onSuccess, onError);
             }
         }, handleHttpError);
-    }   
+    }
+
+   
 };
