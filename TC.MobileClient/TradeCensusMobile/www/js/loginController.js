@@ -1,5 +1,4 @@
 ﻿
-
 function loginController($scope, $http) {
     log('Enter Login Controller');
     editOutletCallback = null;
@@ -127,7 +126,8 @@ function loginController($scope, $http) {
     
     function loginOnline(retry, onSuccess, onError) {
         log('Login online ' + retry.toString());
-        var url = baseURL + '/login/' + $scope.userName + '/' + hashString($scope.password);
+        pass = hashString($scope.password);
+        var url = baseURL + '/login/' + $scope.userName + '/' + pass;
         log('Call service api: ' + url);
         $http({
             method: config.http_method,
@@ -173,6 +173,7 @@ function loginController($scope, $http) {
   
     function loginOffline(onSuccess, onError) {
         log('Login offline');
+        pass = hashString($scope.password);
         selectUserDB($scope.userName, $scope.password,
             function (tx, dbres) {
                 hideDlg();
@@ -405,6 +406,8 @@ function loginController($scope, $http) {
                         config.refresh_time = parseInt(p.Value);
                     } else if (p.Key == 'refresh_time_out') {
                         config.refresh_time_out = parseInt(p.Value);
+                    } else if (name == 'session_time_out') {
+                        config.session_time_out = parseInt(p.Value);
                     } else if (p.Key == 'border_fill_opacity') {
                         config.border_fill_opacity = parseFloat(p.Value);
                     } else if (p.Key == 'enable_rereverse_geo') {

@@ -12,4 +12,14 @@ namespace TradeCensus
             get; set;
         }
     }
+
+    [DataContract]
+    public class CheckVersionResponse : Response
+    {
+        [DataMember]
+        public int Version { get; set; }
+
+        [DataMember]
+        public string Message { get; set; }
+    }
 }

@@ -178,6 +178,7 @@ function language_en() {
 		need_to_capture: 'Please capture images before POST',
 		msg_validate_accuracy: 'The accuracy ({curacc}m) is over {distance}m. Please try again',
 		msg_validate_accuracy_1: 'Failed to locate outlet GPS. Please try with a clear view of sky<br/>(Tín hiệu GPS yếu, vui lòng di chuyển ra khu vực thông thoáng hơn)',
+		msg_cannot_get_location: 'Get current location timeout!',
 
 		confirm : 'CONFIRM',
 		delete_offline_outlets_of : 'Delete offline outlets of ',

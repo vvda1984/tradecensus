@@ -7,5 +7,8 @@ namespace TradeCensus
     {     
         [OperationContract]
         ConfigResponse GetConfig();
+
+        [OperationContract]
+        CheckVersionResponse GetVersion(string version);
     }
 }

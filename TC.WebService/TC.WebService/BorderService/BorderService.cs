@@ -21,7 +21,11 @@ namespace TradeCensus
             {
                 resp.Items = new List<BorderModel>();
                 int id = int.Parse(parentID);
-                var query = _entities.GeoBorders.Where(i => i.ParentID == id).OrderBy(i => i.Name);
+                //var query = _entities.GeoBorders.Where(i => i.ParentID == id).OrderBy(i => i.Name);
+                var command = string.Format(@"SELECT gb.*, (select COUNT(Id) from GeoBorder as tmp where tmp.ParentID = gb.ID) as 'ChildrenCount'
+                    FROM GeoBorder as gb
+                    WHERE gb.ParentID = {0} order by gb.Name", parentID);
+                var query = _entities.Database.SqlQuery<GeoBorderEx>(command);
                 if (query.Any())
                     foreach (var i in query)
                         resp.Items.Add(new BorderModel()
@@ -29,7 +33,9 @@ namespace TradeCensus
                             Name = i.Name,
                             ID = i.ID.ToString(),
                             ParentID = i.ParentID.ToString(),
-                            GeoData = i.Formateddata,
+                            GeoData = "", //i.Formateddata,
+                            ChildrenCount = i.ChildrenCount,
+                            HasGeoData = !string.IsNullOrWhiteSpace(i.GeoData) ? 1 : 0,
                         });
             }
             catch (Exception ex)
@@ -45,16 +51,25 @@ namespace TradeCensus
             GetBorderResponse resp = new GetBorderResponse();
             try
             {
-                int geoID = int.Parse(id);
-                var border = _entities.GeoBorders.FirstOrDefault(i => i.ID == geoID);
-                if (border != null)
+                //int geoID = int.Parse(id);
+                //var border = _entities.GeoBorders.FirstOrDefault(i => i.ID == geoID);
+                var query = _entities.Database.SqlQuery<GeoBorderEx>(
+                      string.Format(@"SELECT TOP 1 gb.*, (select COUNT(Id) from GeoBorder as tmp where tmp.ParentID = gb.ID) as 'ChildrenCount'
+                        FROM GeoBorder as gb
+                        WHERE gb.ID = {0}", id));
+                if (query.Any())
+                {
+                    var border = query.FirstOrDefault();
                     resp.Item = new BorderModel
                     {
                         Name = border.Name,
                         ID = border.ID.ToString(),
                         ParentID = border.ParentID.ToString(),
-                        GeoData = border.Formateddata
+                        GeoData = border.Formateddata,
+                        ChildrenCount = border.ChildrenCount,
+                        HasGeoData = !string.IsNullOrWhiteSpace(border.GeoData) ? 1 : 0,
                     };
+                }
             }
             catch (Exception ex)
             {
@@ -71,17 +86,29 @@ namespace TradeCensus
             {
                 resp.Items = new List<BorderModel>();
                 int id = int.Parse(provinceID);
-                var border = _entities.GeoBorders.FirstOrDefault(i => i.ID == id || string.Compare(i.Name, provinceName, StringComparison.OrdinalIgnoreCase) == 0);
-                if (border != null)
-                {
-                    resp.Items.Add(new BorderModel() {
-                        Name = border.Name,
-                        ID = border.ID.ToString(),
-                        ParentID = border.ParentID.ToString(),
-                        GeoData = border.Formateddata
-                    });
+                //var border = _entities.GeoBorders.FirstOrDefault(i => i.ID == id || string.Compare(i.Name, provinceName, StringComparison.OrdinalIgnoreCase) == 0);
 
-                    AppendChildren(id, resp.Items);
+                var query = _entities.Database.SqlQuery<GeoBorderEx>(
+                    string.Format(@"SELECT TOP 1 gb.*, (select COUNT(Id) from GeoBorder as tmp where tmp.ParentID = gb.ID) as 'ChildrenCount'
+                                    FROM GeoBorder as gb
+                                    WHERE gb.ID = {0} OR gb.Name LIKE '%{1}%'", id, provinceName));
+                if (query.Any())
+                {
+                    var border = query.FirstOrDefault();
+                    if (border != null)
+                    {
+                        resp.Items.Add(new BorderModel()
+                        {
+                            Name = border.Name,
+                            ID = border.ID.ToString(),
+                            ParentID = border.ParentID.ToString(),
+                            GeoData = border.Formateddata,
+                            ChildrenCount = border.ChildrenCount,
+                            HasGeoData = !string.IsNullOrWhiteSpace(border.GeoData) ? 1 : 0,
+                        });
+
+                        AppendChildren(id, resp.Items);
+                    }
                 }
             }
             catch (Exception ex)
@@ -94,7 +121,12 @@ namespace TradeCensus
 
         private void AppendChildren(int id, List<BorderModel> items)
         {
-            var query = _entities.GeoBorders.Where(i => i.ParentID == id).OrderBy(i => i.Name);
+            //var query = _entities.GeoBorders.Where(i => i.ParentID == id).OrderBy(i => i.Name);
+            var query = _entities.Database.SqlQuery<GeoBorderEx>(
+                   string.Format(@"SELECT gb.*, (select COUNT(Id) from GeoBorder as tmp where tmp.ParentID = gb.ID) as 'ChildrenCount'
+                                    FROM GeoBorder as gb
+                                    WHERE gb.ParentID = {0}
+                                    order by gb.Name", id));
             if (query.Any())
                 foreach (var i in query)
                 {
@@ -104,13 +136,15 @@ namespace TradeCensus
                         ID = i.ID.ToString(),
                         ParentID = i.ParentID.ToString(),
                         GeoData = i.Formateddata,
+                        ChildrenCount = i.ChildrenCount,
+                        HasGeoData = !string.IsNullOrWhiteSpace(i.GeoData) ? 1 : 0,
                     });
                     AppendChildren(i.ID, items);
                 }
         }
     }
 
-    public partial class GeoBorder
+    public class GeoBorderEx : GeoBorder
     {
         public string Formateddata
         {
@@ -119,6 +153,8 @@ namespace TradeCensus
                 return (new PolylineBorder()).Parse(GeoData);
             }
         }
+
+        public int ChildrenCount { get; set; }
     }
 
     public class PolylineBorder
@@ -139,9 +175,15 @@ namespace TradeCensus
                 if (c == '[')
                 {
                     curZone = new GeoZone();
+                    coors = new List<GeoCoordinate>();
+                    step = 0;
                 }
                 else if (c == ']')
                 {
+                    curCoor.Lat = double.Parse(number.ToString());
+                    coors.Add(curCoor);
+                    curCoor = new GeoCoordinate();
+
                     if (curZone != null)
                     {
                         curZone.Border = coors.ToArray();
@@ -154,14 +196,16 @@ namespace TradeCensus
                     if(curZone == null)
                     {
                         // do nothing
+                        number.Clear();
                     }
                     else
                     {
-                        if (step%2 == 0)
+                        if (step % 2 == 0)
                         {
                             curCoor.Lng = double.Parse(number.ToString());
                         }
-                        else{
+                        else
+                        {
                             curCoor.Lat = double.Parse(number.ToString());
                             coors.Add(curCoor);
                             curCoor = new GeoCoordinate();

@@ -483,10 +483,25 @@ function editSelectedOutlet(i) {
     }
 }
 
+var isWaitingForLocation = false;
 function getCurPosition(moveToCur, onSuccess, onError) {
     log('Get current location...');
+    isWaitingForLocation = true;
+    var waitTimeout = setTimeout(function () {
+        if (!isWaitingForLocation) return;
+        isWaitingForLocation = false;
+        onError(R.msg_cannot_get_location);
+    }, config.time_out * 1000);
+
     try {       
         navigator.geolocation.getCurrentPosition(function (position) {
+            if (!isWaitingForLocation) return;
+            isWaitingForLocation = false;
+
+            if (waitTimeout)
+                clearTimeout(waitTimeout);
+
+            isWaitingForLocation = 0;
             var lat = position.coords.latitude;
             var lng = position.coords.longitude;   
             curacc = position.coords.accuracy;         
@@ -509,6 +524,12 @@ function getCurPosition(moveToCur, onSuccess, onError) {
             onSuccess(lat, lng);
         },
         function (err) {
+            if (!isWaitingForLocation) return;
+            isWaitingForLocation = false;
+
+            if (waitTimeout)
+                clearTimeout(waitTimeout);
+
             if (config.enable_devmode) {
                 // AnVO: DEBUG
                 log('***set debug location...');

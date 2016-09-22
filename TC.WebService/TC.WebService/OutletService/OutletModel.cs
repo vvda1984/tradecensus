@@ -9,7 +9,7 @@ namespace TradeCensus
         [DataMember]
         public int ID { get; set; }
         [DataMember]
-        public string AreaID { get; set; }        
+        public string AreaID { get; set; }
         [DataMember]
         public string OTypeID { get; set; }
         [DataMember]
@@ -23,7 +23,7 @@ namespace TradeCensus
         [DataMember]
         public string AddLine2 { get; set; }
         [DataMember]
-        public string District { get; set; }        
+        public string District { get; set; }
         [DataMember]
         public string ProvinceID { get; set; }
         [DataMember]
@@ -61,9 +61,9 @@ namespace TradeCensus
         [DataMember]
         public double Latitude { get; set; }
         [DataMember]
-        public string OutletEmail { get; set; }        
+        public string OutletEmail { get; set; }
         [DataMember]
-        public double Distance { get; set; }        
+        public double Distance { get; set; }
         [DataMember]
         public int InputBy { get; set; }
         [DataMember]
@@ -71,7 +71,7 @@ namespace TradeCensus
         [DataMember]
         public string AmendDate { get; set; }
         [DataMember]
-        public int AuditStatus { get; set; }        
+        public int AuditStatus { get; set; }
         [DataMember]
         public string StringImage1 { get; set; }
         [DataMember]

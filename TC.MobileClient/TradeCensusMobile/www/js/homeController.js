@@ -13,6 +13,10 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     log('Enter Home page');
     $scope.R = R;
     log(user);
+    logoutCallback = function () {
+        $scope.changeView('login');
+    };
+
     var appReady = false;
     var leftPanelStatus = 0;
     var righPanelStatus = 0;
@@ -442,9 +446,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                 for (var i = 0; i < dbres.rows.length; i++) {
                     unsyncedOutlets[i] = dbres.rows.item(i);
                 }
-                //outlet/saveoutlets
-                //trySyncOutlets(unsyncedOutlets, 0, onSuccess, onError);
-
+              
                 submitUnsyncedOutlets(unsyncedOutlets, function () {
                     showInfo(R.synchronize_completed);
                     $("#home-topright-sync-hint").css('display', 'none');
@@ -474,37 +476,6 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             else
                 performPostOutlet(outlet);
         });
-
-        //if (isEmpty(outlet.StringImage1) && isEmpty(outlet.StringImage2) && isEmpty(outlet.StringImage3)) {
-        //    if (networkReady()) {
-        //        showDlg(R.label_validating, R.please_wait);
-        //        var url = baseURL + '/outlet/getimagecount/' + outlet.ID;
-        //        log('Call service api: ' + url);
-        //        $http({
-        //            method: config.http_method,
-        //            data: outlet,
-        //            url: url,
-        //            headers: { 'Content-Type': 'application/json' }
-        //        }).then(function (resp) {
-        //            hideDlg();
-        //            var count = resp.data;
-        //            if (count > 0) {
-        //                performPostOutlet(outlet);
-        //            } else {
-        //                showValidationErr(R.need_to_capture);
-        //                return;
-        //            }
-        //        }, function (err) {
-        //            hideDlg();
-        //            showValidationErr(R.need_to_capture);
-        //            return;
-        //        });
-        //    } else {
-        //        showValidationErr(R.need_to_capture);
-        //    }
-        //}
-        //else
-        //    performPostOutlet(outlet);
     }
 
     function performPostOutlet(outlet) {
@@ -752,7 +723,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                                 }
                             );
                             var sessionID = downloadSession;
-                            var url = baseURL + '/outlet/gettotalbyprovince/' + userID + '/' + selectProvince.id;
+                            var url = baseURL + '/outlet/gettotalbyprovince/' + userID + '/' + pass + '/' + selectProvince.id;
                             log('Call service api: ' + url);
                             $http({
                                 method: config.http_method,
@@ -955,71 +926,6 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     }
 
     //*************************************************************************
-    function downloadProvinceOutlets(provinceID, sessionID, page, maxPage, onSuccess, onError, onCancel) {
-        try {
-            if (cancelLoadingDlg || sessionID != downloadSession) {
-                onCancel();
-                return;
-            }
-            var percent = (page + 1) * 100 / maxPage;
-            var downloadMessage = R.downloading_outlet_msg.replace("{percent}", parseInt(percent).toString());
-            //downloadMessage = downloadMessage.replace('{total}', maxPage.toString());
-
-            var from = page * $scope.config.download_batch_size;
-            var to = from + $scope.config.download_batch_size;
-
-            showLoading(downloadMessage, R.downloading_outlet_get_outlets);
-            //outlet/download/{personID}/{provinceID}/{from}/{to}
-            var url = baseURL + '/outlet/download/' + userID + '/' + provinceID + '/' + from.toString() + '/' + to.toString();
-            log('Call service api: ' + url);
-            $http({
-                method: config.http_method,
-                url: url
-            }).then(function (resp) {
-                try {
-                    var data = resp.data;
-                    if (data.Status == -1) { // error
-                        onError(data.ErrorMessage);
-                    } else {
-                        var items = data.Items;
-                        if (cancelLoadingDlg || sessionID != downloadSession) {
-                            onCancel();
-                            return;
-                        }
-
-                        if (items.length > 0) {
-                            showLoading(downloadMessage, R.downloading_outlet_save_outlets);
-                            insertDownloadedOutletsDB(config.tbl_outlet, items,
-                                function () {
-                                    if (cancelLoadingDlg || sessionID != downloadSession) {
-                                        onCancel();
-                                    } else {
-                                        if (page + 1 <= maxPage)
-                                            downloadProvinceOutlets(provinceID, sessionID, page + 1, maxPage, onSuccess, onError, onCancel);
-                                        else
-                                            onSuccess();
-                                    }
-                                }, function (dberr) {
-                                    onError(dberr.message);
-                                });
-                        } else {
-                            onSuccess();
-                        }
-                    }
-                } catch (err) {
-                    onError(err.message);
-                }
-            }, function (err) {
-                log(err);
-                hideDlg();
-                onError(err_download_province);
-            });
-        } catch (ex) {
-            onError(ex.message);
-        }
-    }
-
-    //*************************************************************************
     function downloadProvinceOutletsZip(provinceID, sessionID, page, maxPage, onSuccess, onError, onCancel) {
         try {
             if (cancelLoadingDlg || sessionID != downloadSession) {
@@ -1035,7 +941,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 
             showLoading(downloadMessage, R.downloading_outlet_get_outlets);
             //outlet/download/{personID}/{provinceID}/{from}/{to}
-            var url = baseURL + '/outlet/downloadzip/' + userID + '/' + provinceID + '/' + from.toString() + '/' + to.toString();
+            var url = baseURL + '/outlet/downloadzip/' + userID + '/' + pass + '/' + provinceID + '/' + from.toString() + '/' + to.toString();
             log('Call service api: ' + url);
             $http({
                 method: config.http_method,
@@ -1160,6 +1066,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             }
             
             var url = baseURL + '/outlet/getoutlets/' + userID + '/'
+                            + pass + '/'
                             + curlat.toString() + '/'
                             + curlng.toString() + '/'
                             + config.distance.toString() + '/'
@@ -1560,7 +1467,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         if (isEmpty(outlet.StringImage1) && isEmpty(outlet.StringImage2) && isEmpty(outlet.StringImage3) && networkReady()) {
             showDlg(R.load_images, R.loading);
             try {
-                var url = baseURL + '/outlet/getimages/' + outlet.ID.toString();
+                var url = baseURL + '/outlet/getimages/' +userID + '/' + pass + '/' + outlet.ID.toString();
                 log('Call service api: ' + url);
                 $http({
                     method: config.http_method,
@@ -1630,40 +1537,12 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     //*************************************************************************
     function saveOutlet(outlet, onSuccess) {
         submitOutlet(outlet, onSuccess);
-
-        //if (outlet.modifiedImage1 || outlet.modifiedImage2 || outlet.modifiedImage3) {
-        //    log('Save image to database before start uploading');
-        //    insertOutletImages(user.id, outlet, function (uploadItems) {
-        //        submitOutlet(outlet, function (status) {
-        //            if (!status) { // save failed
-        //                onSuccess(status);
-        //            } else {
-		//				if(uploadItems.length > 0){
-        //                tryUploadImages(uploadItems, 0,
-        //                    function () {
-        //                        onSuccess(true);
-        //                    },
-        //                    function () {
-        //                        onSuccess(false);
-        //                    });
-		//				} else{
-		//					onSuccess(true);
-		//				}
-        //            }
-        //        });
-        //    }, function (err) {
-        //        log(err);
-        //        showError(err);
-        //    });
-        //}
-        //else
-        //    submitOutlet(outlet, onSuccess);
     }
 
     //*************************************************************************
     function submitOutlet(outlet, callback) {
         if (networkReady()) {
-            var url = baseURL + '/outlet/save';
+            var url = baseURL + '/outlet/save/' + userID + '/' + pass;
             log('Call service api: ' + url);
             $http({
                 method: config.http_method,
@@ -1691,135 +1570,6 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     }
 
     //*************************************************************************
-    function tryUploadImages(uploadItems, i, onSuccess, onError) {
-        showDlg(R.updating_image + '(' + (i + 1).toString() + '/' + uploadItems.length.toString() + ')', R.please_wait);
-        var item = uploadItems[i];
-        var orderId = item.OutletID.toString();
-        var index = item.ImageIndex.toString();;
-
-		log(item);
-		var fileURL = item.ImagePath;
-		if (fileURL == 0) {
-		    fileURL = item.Uploaded;
-		    orderId = item.ID;
-
-		}
-
-		if(isEmpty(fileURL)){
-			removeUploadingInfo(item.ID, function () {
-                if (i + 1 < uploadItems.length) {
-                    tryUploadImages(uploadItems, i + 1, onSuccess, onError);
-                } else {
-                    onSuccess();
-                }
-            }, function (dberr) {
-                log(dberr.message);
-                showError(dberr.message);
-                onError();
-            });
-			return;
-		}
-		
-        // TODO: check file existing...
-        var options = new FileUploadOptions();
-        options.fileKey = 'orderfile';
-        options.fileName = 'orderfile'; //fileURL.substr(fileURL.lastIndexOf('/') + 1);
-        options.mimeType = "image/jpeg";
-        options.params = {
-            outletid: orderId,
-            index: index,
-            userid: user.id.toString(),
-        };
-
-        //var url = baseURL + '/outlet/uploadimage/' + options.fileKey + '/' + item.OutletID.toString() + '/' + (i + 1).toString();
-        var url = baseURL + '/outlet/uploadimage';
-        var ft = new FileTransfer();
-        ft.upload(fileURL, url,
-        function (res) {            
-            log('upload file success');
-			log(res);
-            removeUploadingInfo(item.ID, function () {
-                if (i + 1 < uploadItems.length) {
-                    tryUploadImages(uploadItems, i + 1, onSuccess, onError);
-                } else {
-                    onSuccess();
-                }
-            }, function (dberr) {
-                log(dberr.message);
-                showError('An error has occurred: Code = " + error.code');
-                onError();
-            });
-            //{"SaveImageResult":{"ErrorMessage":null,"Status":0,"ImageThumb":"\/images\/65000117_1.png"}}
-            //if (res.response.SaveImageResult.Status == 0) {
-            //    log('upload file success');
-            //    removeUploadingInfo(item.ID, function () {
-            //        if (i + 1 < uploadItems.length) {
-            //            tryUploadImages(uploadItems, i + 1, onSuccess, onError);
-            //        } else {
-            //            onSuccess();
-            //        }
-            //    }, function (dberr) {
-            //        log(dberr.message);
-            //        showError('An error has occurred: Code = " + error.code');
-            //        onError();
-            //    });
-            //} else {
-            //    showError('An error has occurred: ' + errorres.response.ErrorMessage);
-            //    onError();
-            //}
-        }, function (error) {
-            showError(R.error);
-            onError();
-        }, options);
-    }       
-
-    //*************************************************************************
-	function trySyncOutlets(unsyncedOutlets, index, onSuccess, onError) {
-        var item = unsyncedOutlets[index];        
-        log('Sync outlet ' + item.Name + ' (' + (index + 1).toString() + '/' + unsyncedOutlets.length.toString() + ')');
-        submitOutlet(item, function (status) {
-            if (status) {
-                log('Sync outlet data: ' + item.ID.toString() + ' completed');
-                selectUnsyncedOutletImage(user.id, item.ID, function (tx, dbres) {					
-                    if (dbres.rows.length > 0) {
-                        var uploadItems = [];
-                        for (var i = 0; i < dbres.rows.length; i++) {
-                            uploadItems[i] = dbres.rows.item(i);
-                        }
-                        tryUploadImages(uploadItems, 0,
-                             function () {
-                                 setOutletSyncStatus(tx, config.tbl_outlet, item.ID, 1, function (tx1) {
-                                     if ((index + 1) < unsyncedOutlets.length) {
-                                         trySyncOutlets(unsyncedOutlets, index + 1, onSuccess, onSuccess);
-                                     } else {
-                                         onSuccess();
-                                     }
-                                 }, handleDBError);
-                             },
-                             function () {
-								 onError('Sync error, please try again!');                                 
-                             });
-                    } else {
-                        setOutletSyncStatus(tx, config.tbl_outlet, item.ID, 1, function (tx1) {
-                            if ((index + 1) < unsyncedOutlets.length) {
-                                trySyncOutlets(unsyncedOutlets, index + 1, onSuccess, onError);
-                            } else {
-                                onSuccess();
-                            }
-                        }, function(dberr){
-							onError(dberr.message);
-						});
-                    }									
-                }, function(dberr){
-					onError(dberr.message);
-				});
-            } else {				
-                onError('Sync error, please try again!');
-            }
-        });
-    }
-   
-    //*************************************************************************
 	var isSyncing = false;
 	var lastAutoSyncTS = new Date();
 	function autoSyncOutlets(onSuccess, onError) {
@@ -1840,9 +1590,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 			    for (var i = 0; i < dbres.rows.length; i++) {
 			        unsyncedOutlets[i] = dbres.rows.item(i);
 			    }
-			    //outlet/saveoutlets
-			    //trySyncOutlets(unsyncedOutlets, 0, onSuccess, onError);
-
+			   
 			    submitUnsyncedOutlets(unsyncedOutlets, onSuccess, onError);
 			}, function (dberr) {
 			    onError('Query unsynced outlet error');
@@ -1853,7 +1601,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     //*************************************************************************
 	function submitUnsyncedOutlets(unsyncedOutlets, onSuccess, onError) {
 	    if (networkReady()) {
-	        var url = baseURL + '/outlet/saveoutlets';
+	        var url = baseURL + '/outlet/saveoutlets/' + userID + '/' + pass;
 	        log('Call service api: ' + url);
 	        $http({
 	            method: config.http_method,

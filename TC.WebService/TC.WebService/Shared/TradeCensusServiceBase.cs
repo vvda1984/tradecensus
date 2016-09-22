@@ -11,11 +11,11 @@ namespace TradeCensus.Shared
         protected bool _isDataChanged;
         protected string _name;
 
-        protected void ValidatePerson(int personID)
+        protected void ValidatePerson(int personID, string password)
         {
-            var user = _entities.PersonRoles.FirstOrDefault(i => i.PersonID == personID);
+            var user = _entities.PersonRoles.FirstOrDefault(i => i.PersonID == personID && i.Password == password);
             if (user == null)
-                throw new Exception(string.Format("User {0} doesn't exist", personID));
+                throw new Exception(string.Format("Invalid user", personID));
         }
 
         protected TradeCensusServiceBase(string name)

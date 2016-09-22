@@ -54,3 +54,17 @@ Fix bug:
 - Ignore image when query outlet
 - Add api to get outlet images
 
+[1.1.16244.5] 2016-09-1
+- Change from json to raw data
+- Add adapter to convert raw to json
+
+[1.1.16246.6] 2016-09-03
+- Support multiple border in one zone
+
+[1.1.16258.10] 2016-09-13
+- Add api to check version
+
+[1.1.16266.11] 2016-09-21
+- Remove un-used api
+- Add user/password to authorize request
+

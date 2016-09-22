@@ -32,5 +32,35 @@ namespace TradeCensus
             }
             return resp;
         }
+
+        public CheckVersionResponse GetVersion(string version)
+        {
+            CheckVersionResponse resp = new CheckVersionResponse();
+            try
+            {
+                Log("Get all config");
+                var latestVersion = _entities.Configs.FirstOrDefault(i=>string.Compare(i.Name, "Version", StringComparison.OrdinalIgnoreCase) == 0);
+                if (latestVersion != null)
+                {
+                    int lastVersionNumber = int.Parse(latestVersion.Value);
+                    int currVersionNumber = int.Parse(version);
+
+                    if (lastVersionNumber > currVersionNumber)
+                    {
+                        var msg = _entities.Configs.FirstOrDefault(i => string.Compare(i.Name, "NewVersionMessage", StringComparison.OrdinalIgnoreCase) == 0);
+
+
+                        resp.Version = lastVersionNumber;
+                        resp.Message = msg != null ? msg.Value : "";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                resp.Status = Constants.ErrorCode;
+                resp.ErrorMessage = ex.Message;
+            }
+            return resp;
+        }
     }
 }

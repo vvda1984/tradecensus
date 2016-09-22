@@ -16,5 +16,11 @@ namespace TradeCensus
 
         [DataMember]
         public string GeoData { get; set; }
+
+        [DataMember]
+        public int ChildrenCount { get; set; }
+
+        [DataMember]
+        public int HasGeoData { get; set; }
     }
 }

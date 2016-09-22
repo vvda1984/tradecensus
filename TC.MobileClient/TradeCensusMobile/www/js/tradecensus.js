@@ -13,6 +13,7 @@ var enableSync = false;
 var onImageViewerClose;
 var newImageFile;
 var userID = 0;
+var pass = '';
 var user = newUser();
 var config = newConfig();
 var deviceInfo = newDeviceInfo();
@@ -24,6 +25,7 @@ var outletTypes = [];
 var R = useLanguage();
 var baseURL = '';
 var sessionID = guid();
+var lastActivedTS = null;
 
 var isNetworkAvailable = true;      // Network monitoring status
 var onNetworkChangedCallback;       // Network monitoring callback
@@ -72,6 +74,7 @@ var app = angular.module('TradeCensus', ['ngRoute', 'ngMaterial', 'ngMessages'])
     "use strict";
     function onDeviceReady() {
         console.log('Device Ready!');
+        inactivityTime();
 
         // disable back button
         document.addEventListener("backbutton", function (e) { e.preventDefault(); }, false);
@@ -83,6 +86,16 @@ var app = angular.module('TradeCensus', ['ngRoute', 'ngMaterial', 'ngMessages'])
         //logger.initialize('tradecencus');
        
         initializeEnvironment(function () { initializeApp(); });
+        
+        document.onmousedown = function () {
+            inactivityTime();
+        };
+        document.onkeypress = function () {
+            inactivityTime();
+        };
+        document.ontouchstart = function () {
+            inactivityTime();
+        };
     }
 
     $(document).ready(function () {
@@ -125,7 +138,7 @@ function newConfig() {
     //var testBuild = false;
     var c = {
         debug_build: true,
-        enable_devmode: false,
+        enable_devmode: true,
         page_size: 20,
         cluster_size: 50,
         cluster_max_zoom: 15.5,
@@ -133,8 +146,8 @@ function newConfig() {
         enable_rereverse_geo: 1,
         protocol: 'https',
         //ip: '27.0.15.234/trade-census',
-        //ip: '203.34.144.29/tc-test',
-        ip: '203.34.144.29/trade-census',
+        ip: '203.34.144.29/tc-test',
+        //ip: '203.34.144.29/trade-census',
         port: '443',
         service_name: 'TradeCensusService.svc', // absolute
         enable_liveGPS: true,
@@ -152,21 +165,22 @@ function newConfig() {
         max_oulet_download: 1,
         download_batch_size: 5000,
         time_out: 30,               // Connection timeout
-        auto_sync: 0,                // Sync delay...
+        auto_sync: 0,               // 
         sync_time: 1 * 60 * 1000,   // Sync delay...
         sync_time_out: 5 * 60,      // Sync timeout
         sync_batch_size: 100,       // Number of uploaded outlets in sync request
-        ping_time: 30,               // Time
-        refresh_time: 30,           // Time to get outlet
+        ping_time: 30,              // Time
+        refresh_time: 30,           // 
         refresh_time_out: 3 * 60,   // Time to get outlet
+        session_time_out: 1 * 60,
         tbl_area_ver: '0',
         tbl_outlettype_ver: '0',
         tbl_province_ver: '1',
         tbl_zone_ver: '0',
         tbl_outletSync: 'uos',
         tbl_outlet: 'uo',
-        tbl_downloadProvince: 'udp',
-        version: '1.2p.16264.6',
+        tbl_downloadProvince: 'udp',        
+        version: '1.2a.16264.6',
         versionNum: 3,
     };
     if (isHttp) {
@@ -179,6 +193,26 @@ function newConfig() {
 
     return c;
 }
+
+var logoutCallback;
+var inactivityTime = function () {
+    var t;
+    document.onmousemove = resetTimer;
+    document.onkeypress = resetTimer;
+    document.ontouchstart = resetTimer;
+
+    function logout() {
+        if (logoutCallback)
+            logoutCallback();
+    }
+
+    function resetTimer() {
+        clearTimeout(t);
+        if (config.session_time_out > 0) {
+            t = setTimeout(logout, config.session_time_out * 1000);
+        }
+    }
+};
 
 function newUser() {
     return {
@@ -359,6 +393,8 @@ function loadSettings(tx, callback) {
                         config.refresh_time = parseInt(value);
                     } else if (name == 'refresh_time_out') {
                         config.refresh_time_out = parseInt(value);
+                    } else if (name == 'session_time_out') {
+                        config.session_time_out = parseInt(value);
                     } else if (name == 'border_fill_opacity') {
                         try {
                             config.border_fill_opacity = parseFloat(value);

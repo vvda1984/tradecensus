@@ -120,6 +120,26 @@ namespace TradeCensus
             }
         }
 
+        [WebInvoke(Method = "POST", UriTemplate = "config/getverion/{version}", ResponseFormat = WebMessageFormat.Json)]
+        public CheckVersionResponse GetVersion(string version)
+        {
+            _logger.Debug("Receive get config request");
+            try
+            {
+                IConfigService service = Global.CurrentContext.ServiceFactory.GetService<IConfigService>();
+                return service.GetVersion(version);
+            }
+            catch (Exception ex)
+            {
+                _logger.Warn(ex, "Cannot get config");
+                return new CheckVersionResponse
+                {
+                    Status = Constants.ErrorCode,
+                    ErrorMessage = "Service internal error",
+                };
+            }
+        }
+
         #endregion
 
         #region Province Service
@@ -148,46 +168,6 @@ namespace TradeCensus
 
         #region Outlet Service
 
-        [WebInvoke(Method = "POST", UriTemplate = "outlet/getbyprovince/{personID}/{provinceID}", ResponseFormat = WebMessageFormat.Json)]
-        public GetOutletIDResponse GetOutletsByProvince(string personID, string provinceID)
-        {
-            _logger.Debug("Receive get outlets by province request");
-            try
-            {
-                IOutletService service = Global.CurrentContext.ServiceFactory.GetService<IOutletService>();
-                return service.GetOutletsByProvince(personID, provinceID);
-            }
-            catch (Exception ex)
-            {
-                _logger.Warn(ex, "Process request error");
-                return new GetOutletIDResponse
-                {
-                    Status = Constants.ErrorCode,
-                    ErrorMessage = "Service internal error",
-                };
-            }
-        }
-
-        [WebInvoke(Method = "POST", UriTemplate = "outlet/get/{personID}/{id}", ResponseFormat = WebMessageFormat.Json)]
-        public GetOutletResponse GetOutletByID(string personID, string id)
-        {
-            _logger.Debug("Receive get outlets by id request");
-            try
-            {
-                IOutletService service = Global.CurrentContext.ServiceFactory.GetService<IOutletService>();
-                return service.GetOutletByID(personID, id);
-            }
-            catch (Exception ex)
-            {
-                _logger.Warn(ex, "Process request error");
-                return new GetOutletResponse
-                {
-                    Status = Constants.ErrorCode,
-                    ErrorMessage = "Service internal error",
-                };
-            }
-        }
-
         [WebInvoke(Method = "POST", UriTemplate = "outlet/getoutlettypes", ResponseFormat = WebMessageFormat.Json)]
         public GetOutletTypeResponse GetOutletTypes()
         {
@@ -208,14 +188,14 @@ namespace TradeCensus
             }
         }
 
-        [WebInvoke(Method = "POST", UriTemplate = "outlet/getoutlets/{personID}/{lat}/{lng}/{meter}/{count}/{status}", ResponseFormat = WebMessageFormat.Json)]
-        public GetOutletListResponse GetNearbyOutlets(string personID, string lat, string lng, string meter, string count, string status)
+        [WebInvoke(Method = "POST", UriTemplate = "outlet/getoutlets/{personID}/{password}/{lat}/{lng}/{meter}/{count}/{status}", ResponseFormat = WebMessageFormat.Json)]
+        public GetOutletListResponse GetNearbyOutlets(string personID, string password, string lat, string lng, string meter, string count, string status)
         {
             _logger.Debug("Receive get near-by outlets request");
             try
             {
                 IOutletService service = Global.CurrentContext.ServiceFactory.GetService<IOutletService>();
-                return service.GetNearbyOutlets(personID, lat, lng, meter, count, status);
+                return service.GetNearbyOutlets(personID, password, lat, lng, meter, count, status);
             }
             catch (Exception ex)
             {
@@ -228,14 +208,14 @@ namespace TradeCensus
             }
         }
 
-        [WebInvoke(Method = "POST", UriTemplate = "outlet/save", ResponseFormat = WebMessageFormat.Json)]
-        public SaveOutletResponse SaveOutlet(OutletModel item)
+        [WebInvoke(Method = "POST", UriTemplate = "outlet/save/{personID}/{password}", ResponseFormat = WebMessageFormat.Json)]
+        public SaveOutletResponse SaveOutlet(string personID, string password, OutletModel item)
         {
             _logger.Debug("Receive save outlet request");
             try
             {
                 IOutletService service = Global.CurrentContext.ServiceFactory.GetService<IOutletService>();
-                return service.SaveOutlet(item);
+                return service.SaveOutlet(personID, password, item);
             }
             catch (Exception ex)
             {
@@ -248,114 +228,14 @@ namespace TradeCensus
             }
         }
 
-        [WebInvoke(Method = "POST", UriTemplate = "outlet/uploadimage", ResponseFormat = WebMessageFormat.Json, BodyStyle = WebMessageBodyStyle.Wrapped)]
-        public SaveImageResponse SaveImage()
-        {
-            _logger.Debug("Receive save image request");
-            try
-            {
-                IOutletService service = Global.CurrentContext.ServiceFactory.GetService<IOutletService>();
-                return service.SaveImage();
-            }
-            catch (Exception ex)
-            {
-                _logger.Warn(ex, "Process request error");
-                return new SaveImageResponse
-                {
-                    Status = Constants.ErrorCode,
-                    ErrorMessage = "Service internal error",
-                };
-            }
-        }
-
-        [WebInvoke(Method = "POST", UriTemplate = "outlet/getimage/{outletID}/{index}", ResponseFormat = WebMessageFormat.Json)]
-        public GetImageResponse GetImage(string outletID, string index)
-        {
-            _logger.Debug("Receive get image request");
-            try
-            {
-                IOutletService service = Global.CurrentContext.ServiceFactory.GetService<IOutletService>();
-                return service.GetImage(outletID, index);
-            }
-            catch (Exception ex)
-            {
-                _logger.Warn(ex, "Process request error");
-                return new GetImageResponse
-                {
-                    Status = Constants.ErrorCode,
-                    ErrorMessage = "Service internal error",
-                };
-            }
-        }
-
-        [WebInvoke(Method = "POST", UriTemplate = "outlet/download/{personID}/{provinceID}/{from}/{to}", ResponseFormat = WebMessageFormat.Json)]
-        public GetOutletListResponse DownloadOutlets(string personID, string provinceID, string from, string to)
-        {
-            _logger.Debug("Receive download outlets request");
-            try
-            {
-                IOutletService service = Global.CurrentContext.ServiceFactory.GetService<IOutletService>();
-                return service.DownloadOutlets(personID, personID, from, to);
-            }
-            catch (Exception ex)
-            {
-                _logger.Warn(ex, "Process request error");
-                return new GetOutletListResponse
-                {
-                    Status = Constants.ErrorCode,
-                    ErrorMessage = "Service internal error",
-                };
-            }
-        }
-
-        [WebInvoke(Method = "POST", UriTemplate = "outlet/downloadimagebase54/{personID}/{outletID}/{index}", ResponseFormat = WebMessageFormat.Json)]
-        public GetImageResponse DownloadImageBase64(string personID, string outletID, string index)
-        {
-            _logger.Debug("Receive download image base64 request");
-            try
-            {
-                IOutletService service = Global.CurrentContext.ServiceFactory.GetService<IOutletService>();
-                return service.DownloadImageBase64(personID, outletID, index);
-            }
-            catch (Exception ex)
-            {
-                _logger.Warn(ex, "Process request error");
-                return new GetImageResponse
-                {
-                    Status = Constants.ErrorCode,
-                    ErrorMessage = "Service internal error",
-                };
-            }
-        }
-
-        [WebInvoke(Method = "POST", UriTemplate = "outlet/uploadmagebase54/{personID}/{outletID}/{index}/{image}", ResponseFormat = WebMessageFormat.Json)]
-        public Response UploadImageBase64(string personID, string outletID, string index, string image)
-        {
-            _logger.Debug("Receive upload image base64 request");
-            try
-            {
-                IOutletService service = Global.CurrentContext.ServiceFactory.GetService<IOutletService>();
-                return service.UploadImageBase64(personID, outletID, index, image);
-            }
-            catch (Exception ex)
-            {
-                _logger.Warn(ex, "Process request error");
-                return new Response
-                {
-                    Status = Constants.ErrorCode,
-                    ErrorMessage = "Service internal error",
-                };
-            }
-        }
-
-        [WebInvoke(Method = "POST", UriTemplate = "outlet/saveoutlets", ResponseFormat = WebMessageFormat.Json)]
-        public SyncOutletResponse SyncOutlets(OutletModel[] items)
+        [WebInvoke(Method = "POST", UriTemplate = "outlet/saveoutlets/{personID}/{password}", ResponseFormat = WebMessageFormat.Json)]
+        public SyncOutletResponse SyncOutlets(string personID, string password, OutletModel[] items)
         {
             _logger.Debug("Receive sync outlets request");
             try
             {
                 IOutletService service = Global.CurrentContext.ServiceFactory.GetService<IOutletService>();
-                return service.SyncOutlets(items);
+                return service.SyncOutlets(personID, password, items);
             }
             catch (Exception ex)
             {
@@ -368,14 +248,14 @@ namespace TradeCensus
             }
         }
 
-        [WebInvoke(Method = "POST", UriTemplate = "outlet/downloadzip/{personID}/{provinceID}/{from}/{to}", ResponseFormat = WebMessageFormat.Json)]
-        public string DownloadOutletsZip(string personID, string provinceID, string from, string to)
+        [WebInvoke(Method = "POST", UriTemplate = "outlet/downloadzip/{personID}/{password}/{provinceID}/{from}/{to}", ResponseFormat = WebMessageFormat.Json)]
+        public string DownloadOutletsZip(string personID, string password, string provinceID, string from, string to)
         {
             _logger.Debug("Receive download outlets zip request");
             try
             {
                 IOutletService service = Global.CurrentContext.ServiceFactory.GetService<IOutletService>();
-                return service.DownloadOutletsZip(personID, provinceID, from, to);
+                return service.DownloadOutletsZip(personID, password, provinceID, from, to);
             }
             catch (Exception ex)
             {
@@ -384,14 +264,14 @@ namespace TradeCensus
             }
         }
 
-        [WebInvoke(Method = "POST", UriTemplate = "outlet/gettotalbyprovince/{personID}/{provinceID}", ResponseFormat = WebMessageFormat.Json)]
-        public int GetTotalProvincesCount(string personID, string provinceID)
+        [WebInvoke(Method = "POST", UriTemplate = "outlet/gettotalbyprovince/{personID}/{password}/{provinceID}", ResponseFormat = WebMessageFormat.Json)]
+        public int GetTotalProvincesCount(string personID, string password, string provinceID)
         {
             _logger.Debug("Receive get total province request");
             try
             {
                 IOutletService service = Global.CurrentContext.ServiceFactory.GetService<IOutletService>();
-                return service.GetTotalProvincesCount(personID, provinceID);
+                return service.GetTotalProvincesCount(personID, password, provinceID);
             }
             catch (Exception ex)
             {
@@ -400,30 +280,14 @@ namespace TradeCensus
             }
         }
 
-        [WebInvoke(Method = "POST", UriTemplate = "outlet/downloadzipbyte/{personID}/{provinceID}/{from}/{to}", ResponseFormat = WebMessageFormat.Json)]
-        public byte[] DownloadOutletsZipByte(string personID, string provinceID, string from, string to)
-        {
-            _logger.Debug("Receive download outlet zip as byte request");
-            try
-            {
-                IOutletService service = Global.CurrentContext.ServiceFactory.GetService<IOutletService>();
-                return service.DownloadOutletsZipByte(personID, provinceID, from, to);
-            }
-            catch (Exception ex)
-            {
-                _logger.Warn(ex, "Process request error");
-                return new byte[0];
-            }
-        }
-
-        [WebInvoke(Method = "POST", UriTemplate = "outlet/getimages/{outletID}", ResponseFormat = WebMessageFormat.Json)]
-        public GetOutletImagesResponse GetImages(string outletID)
+        [WebInvoke(Method = "POST", UriTemplate = "outlet/getimages/{personID}/{password}/{outletID}", ResponseFormat = WebMessageFormat.Json)]
+        public GetOutletImagesResponse GetImages(string personID, string password, string outletID)
         {
             _logger.Debug("Receive get image request");
             try
             {
                 IOutletService service = Global.CurrentContext.ServiceFactory.GetService<IOutletService>();
-                return service.GetImages(outletID);
+                return service.GetImages(personID, password, outletID);
             }
             catch (Exception ex)
             {
