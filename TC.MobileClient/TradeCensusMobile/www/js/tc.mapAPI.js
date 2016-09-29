@@ -44,7 +44,13 @@ var borders_3;
 var borders_4;
 var borders_5;
 var borders_6;
-
+var selected_border_0; // province
+var selected_border_1; // district
+//var selected_border_2;
+//var selected_border_3;
+//var selected_border_4;
+//var selected_border_5;
+//var selected_border_6;
 
 var isloadingGGapi = false;
 function loadMapApi() {
@@ -110,14 +116,12 @@ function initializeMap() {
 
         google.maps.event.addListener(map, 'click', function (event) {
             log('map clicked');
-            if (mapClickedCallback != null)
-                mapClickedCallback();
+            inactivityTime();
         });
 
         google.maps.event.addListener(map, 'bounds_changed', function (event) {
             log('map bounds_changed');
-            if(mapClickedCallback)
-              mapClickedCallback();
+            inactivityTime();
         });
 
         panorama = map.getStreetView();

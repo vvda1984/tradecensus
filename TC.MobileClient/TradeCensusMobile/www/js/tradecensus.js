@@ -138,7 +138,7 @@ function newConfig() {
     //var testBuild = false;
     var c = {
         debug_build: true,
-        enable_devmode: true,
+        enable_devmode: false,
         page_size: 20,
         cluster_size: 50,
         cluster_max_zoom: 15.5,
@@ -146,8 +146,8 @@ function newConfig() {
         enable_rereverse_geo: 1,
         protocol: 'https',
         //ip: '27.0.15.234/trade-census',
-        ip: '203.34.144.29/tc-test',
-        //ip: '203.34.144.29/trade-census',
+        //ip: '203.34.144.29/tc-test',
+        ip: '203.34.144.29/trade-census',
         port: '443',
         service_name: 'TradeCensusService.svc', // absolute
         enable_liveGPS: true,
@@ -172,7 +172,7 @@ function newConfig() {
         ping_time: 30,              // Time
         refresh_time: 30,           // 
         refresh_time_out: 3 * 60,   // Time to get outlet
-        session_time_out: 1 * 60,
+        session_time_out: 0 * 60,
         tbl_area_ver: '0',
         tbl_outlettype_ver: '0',
         tbl_province_ver: '1',
@@ -180,8 +180,8 @@ function newConfig() {
         tbl_outletSync: 'uos',
         tbl_outlet: 'uo',
         tbl_downloadProvince: 'udp',        
-        version: '1.2a.16264.6',
-        versionNum: 3,
+        version: '1.2p.16265.7',
+        versionNum: 4,
     };
     if (isHttp) {
         c.protocol = 'http';
@@ -202,7 +202,7 @@ var inactivityTime = function () {
     document.ontouchstart = resetTimer;
 
     function logout() {
-        if (logoutCallback)
+        if (logoutCallback && config.session_time_out > 0)
             logoutCallback();
     }
 

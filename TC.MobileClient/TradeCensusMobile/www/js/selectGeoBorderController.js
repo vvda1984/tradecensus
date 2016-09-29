@@ -14,6 +14,8 @@ function selectGeoBorderController($scope, $http, $mdDialog) {
     var t_borders_4 = borders_4;
     var t_borders_5 = borders_5;
     var t_borders_6 = borders_6;
+    var t_selected_border_0 = selected_border_0;
+    var t_selected_border_1 = selected_border_1;
 
     function set_t_borders(items, level) {
         if (level == 0) {
@@ -51,7 +53,6 @@ function selectGeoBorderController($scope, $http, $mdDialog) {
         return [];
     }
 
-
     $scope.title = '';
     $scope.R = R;  
     $scope.borders = get_t_borders(t_level);
@@ -69,6 +70,13 @@ function selectGeoBorderController($scope, $http, $mdDialog) {
             try { $scope.title = $scope.userSelectedBorer.Name; }
             catch (er) { }
         }
+        
+        if (t_level == 0) {
+            t_selected_border_0 = $scope.userSelectedBorer;
+            t_selected_border_1 = null;
+        } else if (t_level == 1) {
+            t_selected_border_1 = $scope.userSelectedBorer;
+        }
 
         borders_0 = t_borders_0;
         borders_1 = t_borders_1;
@@ -79,12 +87,21 @@ function selectGeoBorderController($scope, $http, $mdDialog) {
         borders_6 = t_borders_6;
         border_level = t_level;
 
+        selected_border_0 = t_selected_border_0;
+        selected_border_1 = t_selected_border_1;
+
         userSelectedBorder = b;
         $mdDialog.hide(true);
     }
 
     $scope.nextBorder = function (b) {
         try {
+            if (t_level == 0) {
+                t_selected_border_0 = b;
+            } else if (t_level == 1) {
+                t_selected_border_1 = b;
+            }
+
             $("#loading-border").css("display", "block");
             var url = baseURL + '/border/getsubborders/' + b.ID.toString();
             log('Call service api: ' + url);
@@ -123,5 +140,11 @@ function selectGeoBorderController($scope, $http, $mdDialog) {
         t_level--;
         $scope.borders = get_t_borders(t_level);
         $scope.allowBack = t_level > 0;
+
+        if (t_level == 0) {
+            t_selected_border_0 = null;
+        } else if (t_level == 1) {
+            t_selected_border_1 = null;
+        }
     }
 }

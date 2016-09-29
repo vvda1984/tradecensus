@@ -832,44 +832,54 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 
     //*************************************************************************
     function addNewOutlet() {
-        if (networkReady() && config.enable_rereverse_geo) {
-            log('try reverse the address');
-            var geocoder = new google.maps.Geocoder();
-            geocoder.geocode({
-                'latLng': new google.maps.LatLng(curlat, curlng),
-                'language': 'vi',
-            }, function (results, status) {
-                if (status === google.maps.GeocoderStatus.OK && results.length > 0) {
-                    var street = '';
-                    var district = '';
-                    var province = '';
-                    try {
-                        log(results);
-                        if (results[0]) {
-                            for (var i = 0; i < results[0].address_components.length; i++) {
-                                log('foreach add_comp ' + i.toString() + ':' + results[0].address_components[i].types[0]);
-                                if (results[0].address_components[i].types[0] == 'route') {
-                                    street = results[0].address_components[i].long_name;
-                                } else if (results[0].address_components[i].types[0] == 'administrative_area_level_2') {
-                                    district = results[0].address_components[i].long_name;
-                                    break;
-                                } else if (results[0].address_components[i].types[0] == 'administrative_area_level_1') {
-                                    province = results[0].address_components[i].long_name;
-                                    break;
-                                }
-                            }
-                        } else {
-                            log('no geocoder result.');
-                        }
-                    } catch (geoerr) {
-                        log('Parse geocoder failed due to: ' + geoerr);
-                    }
-                    tryCreateNewOutlet(curlat, curlng, street, district, province);
-                } else {
-                    log('Geocoder failed due to: ' + status);
-                    tryCreateNewOutlet(curlat, curlng, '', '', '');
-                }
-            });
+        //if (networkReady() && config.enable_rereverse_geo) {
+        //    log('try reverse the address');
+        //    var geocoder = new google.maps.Geocoder();
+        //    geocoder.geocode({
+        //        'latLng': new google.maps.LatLng(curlat, curlng),
+        //        'language': 'vi',
+        //    }, function (results, status) {
+        //        if (status === google.maps.GeocoderStatus.OK && results.length > 0) {
+        //            var street = '';
+        //            var district = '';
+        //            var province = '';
+        //            try {
+        //                log(results);
+        //                if (results[0]) {
+        //                    for (var i = 0; i < results[0].address_components.length; i++) {
+        //                        log('foreach add_comp ' + i.toString() + ':' + results[0].address_components[i].types[0]);
+        //                        if (results[0].address_components[i].types[0] == 'route') {
+        //                            street = results[0].address_components[i].long_name;
+        //                        } else if (results[0].address_components[i].types[0] == 'administrative_area_level_2') {
+        //                            district = results[0].address_components[i].long_name;
+        //                            break;
+        //                        } else if (results[0].address_components[i].types[0] == 'administrative_area_level_1') {
+        //                            province = results[0].address_components[i].long_name;
+        //                            break;
+        //                        }
+        //                    }
+        //                } else {
+        //                    log('no geocoder result.');
+        //                }
+        //            } catch (geoerr) {
+        //                log('Parse geocoder failed due to: ' + geoerr);
+        //            }
+        //            tryCreateNewOutlet(curlat, curlng, street, district, province);
+        //        } else {
+        //            log('Geocoder failed due to: ' + status);
+        //            tryCreateNewOutlet(curlat, curlng, '', '', '');
+        //        }
+        //    });
+        //} else {
+        //    tryCreateNewOutlet(curlat, curlng, '', '', '');
+        //}
+
+        if (networkReady()) {
+            if (selected_border_1) {
+                tryCreateNewOutlet(curlat, curlng, '', selected_border_1.Name, '');
+            } else {
+                tryCreateNewOutlet(curlat, curlng, '', '', '');
+            }
         } else {
             tryCreateNewOutlet(curlat, curlng, '', '', '');
         }
@@ -1844,8 +1854,6 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 	    showDlg(R.loading_borders, R.please_wait);
 	    isInitializeBorders = true;
 
-	    //loadBorders(0, 1);
-
 	    if (networkReady() && hasLocation && config.enable_rereverse_geo) {
 	        log('try reverse the address');
 	        var geocoder = new google.maps.Geocoder();
@@ -1878,103 +1886,16 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 	                } catch (geoerr) {
 	                    log('Parse geocoder failed due to: ' + geoerr);
 	                }
-	                //loadBorders(0, 1);
                     loadTopBorders();
 	            } else {
 	                log('Geocoder failed due to: ' + status);
-	                //loadBorders(0, 1);
 	                loadTopBorders();
 	            }
 	        });
 	    } else {
-	        //loadBorders(0, 1);
 	        loadTopBorders();
 	    }
 	}
-
-	//function loadBorders(parentID, level) {
-	//    try {
-	//        var url = baseURL + '/border/getsubborders/' + parentID.toString();
-	//        log('Call service api: ' + url);
-	//        $http({
-	//            method: config.http_method,
-	//            url: url
-	//        }).then(function (resp) {
-	//            try {
-	//                var data = resp.data;
-	//                if (data.Status == -1) { // error
-	//                    showError(data.ErrorMessage);
-	//                    callback(false, null);
-	//                } else {
-	//                    var items = data.Items;
-	//                    //items.unshift({ID : -1, Name:'', ParentID: -1, GeoData : ''});
-	//                    if (level == 0) {
-	//                        var foundAutoProvince = false;
-	//                        if (borderAutoProvinceName) {
-	//                            for (var i = 0; i < items.length; i++) {
-	//                                if (items[i].Name === borderAutoProvinceName) {
-	//                                    setBorders()
-	//                                    $scope.border1 = items[i].ID;
-	//                                    foundAutoProvince = true;
-	//                                    break;
-	//                                }
-	//                            }
-	//                        }
-	//                        if (foundAutoProvince && borderAutoDistrictName)
-	//                            loadSubBorders(1);
-	//                    } else if (level == 2) {
-	//                        $scope.border2IsVisible = items.length > 1;
-	//                        $scope.border3IsVisible = false;
-	//                        $scope.border4IsVisible = false;
-	//                        $scope.border2Items = items;
-	//                        var foundAutoDistrict = false;
-	//                        if (borderAutoDistrictName) {
-	//                            for (var i = 0; i < items.length; i++) {
-	//                                if (items[i].Name === borderAutoDistrictName) {
-	//                                    $scope.border2 = items[i].ID;
-	//                                    foundAutoDistrict = true;
-	//                                    break;
-	//                                }
-	//                            }
-	//                        }
-	//                        if (foundAutoDistrict)
-	//                            loadSubBorders(2);
-	//                    } else if (level == 3) {
-	//                        $scope.border3IsVisible = items.length > 1;
-	//                        $scope.border4IsVisible = false;
-	//                        $scope.border3Items = items;
-	//                        var foundAutoWard = false;
-	//                        if (borderAutoWardName) {
-	//                            var temp = changeAlias(borderAutoWardName);
-	//                            for (var i = 0; i < items.length; i++) {
-	//                                var temp1 = changeAlias(items[i].Name);
-	//                                if (temp1.indexOf(temp) !== -1) {
-	//                                    $scope.border3 = items[i].ID;
-	//                                    foundAutoWard = true;
-	//                                    break;
-	//                                }
-	//                            }
-	//                        }
-	//                        if (foundAutoWard)
-	//                            loadSubBorders(3);
-	//                    } else if (level == 4) {
-	//                        $scope.border4IsVisible = items.length > 1;
-	//                        $scope.border4Items = items;
-	//                    }
-	//                }
-	//            } catch (err) {
-	//                showError(err.message);
-	//            }
-	//        }, function (err) {
-	//            log('HTTP error...');
-	//            log(err);
-	//            var msg = err.statusText == '' ? $scope.R.text_ConnectionTimeout : err.statusText;
-	//            showError(msg);
-	//        });
-	//    } catch (ex) {
-	//        showError(ex.message);
-	//    }
-	//}
 
 	function loadTopBorders() {
 	    try {
@@ -2080,49 +2001,9 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 	    }
 	}
 
-	$scope.borderChanged = function (level) {
-	    loadSubBorders(level);
-	}
-
 	function setCurrenBorder(border) {
 	    $scope.canDrawBorder = border.HasGeoData;
 	    $scope.selectedBorder = border;
-	}
-
-	function loadSubBorders(level) {
-	    var parentID = -1;
-	    if (level == 1) {
-	        parentID = $scope.border1;
-	        $scope.border2IsVisible = false;
-	        $scope.border3IsVisible = false;
-	        $scope.border4IsVisible = false;
-	        
-	        $scope.border2 = null;
-	        $scope.border3 = null;
-	        $scope.border4 = null;
-	        checkToDrawBorder($scope.border1, $scope.border1Items);
-
-	    } else if (level == 2) {
-	        parentID = $scope.border2;
-	        $scope.border3IsVisible = false;
-	        $scope.border4IsVisible = false;
-
-	        $scope.border3 = null;
-	        $scope.border4 = null;
-	        checkToDrawBorder($scope.border2, $scope.border2Items);
-	    } else if (level == 3) {
-	        parentID = $scope.border3;
-	        $scope.border4IsVisible = false;
-
-	        $scope.border4 = null;
-	        checkToDrawBorder($scope.border3, $scope.border3Items);
-	    } else if (level == 4) {
-
-	        checkToDrawBorder($scope.border4, $scope.border4Items);
-	    }
-
-	    if (parentID >= 0 && level < 4)
-	        loadBorders(parentID, level + 1);
 	}
 
 	function checkToDrawBorder(selectID, items) {
