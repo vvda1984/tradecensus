@@ -16,13 +16,20 @@
                         <div ng-message="required">{{ resource.text_ValRequired }}</div>
                     </div>
                 </md-input-container>-->
-
                 <md-input-container class="md-block" flex-gt-sm="">
                     <label>{{R.name}}</label>
                     <input id="inputName" ng-model="outlet.Name" name="name" required="" maxlength="40" ng-change="nameChanged()">
                     <div ng-messages="createOutletForm.name.$error" role="alert">
                         <div ng-message="required">{{ resource.text_ValRequired }}</div>
                     </div>
+                </md-input-container>              
+                <md-input-container class="md-block" flex-gt-sm="">
+                    <label>{{R.outlet_type}}</label>
+                    <md-select id="inputOutletType" ng-model="outlet.OTypeID">
+                        <md-option ng-repeat="o in outletTypes" value="{{o.ID}}">
+                            {{o.Name}}
+                        </md-option>
+                    </md-select>
                 </md-input-container>
                 <md-input-container class="md-block" flex-gt-sm="">
                     <label>{{R.phone}}</label>
@@ -32,27 +39,33 @@
                     </div>-->
                 </md-input-container>
                 <md-input-container class="md-block" flex-gt-sm="">
-                    <label>{{R.outlet_type}}</label>
-                    <md-select id="inputOutletType" ng-model="outlet.OTypeID">
-                        <md-option ng-repeat="o in outletTypes" value="{{o.ID}}">
-                            {{o.Name}}
-                        </md-option>
-                    </md-select>
-                </md-input-container>
-            </div>
-
-            <div layout-gt-sm="row">
-                <md-input-container class="md-block" flex-gt-sm="">
                     <label>{{R.house_no}}</label>
                     <input id="inputAdd1" ng-model="outlet.AddLine" name="houseno" required="" maxlength="40">
                     <div ng-messages="createOutletForm.houseno.$error" role="alert">
                         <div ng-message="required">{{ resource.text_ValRequired }}</div>
                     </div>
                 </md-input-container>
+            </div>
+
+            <div layout-gt-sm="row">
+                <!--<md-input-container class="md-block" flex-gt-sm="">
+                    <label>{{R.house_no}}</label>
+                    <input id="inputAdd1" ng-model="outlet.AddLine" name="houseno" required="" maxlength="40">
+                    <div ng-messages="createOutletForm.houseno.$error" role="alert">
+                        <div ng-message="required">{{ resource.text_ValRequired }}</div>
+                    </div>
+                </md-input-container>-->
                 <md-input-container class="md-block" flex-gt-sm="">
                     <label>{{R.street}}</label>
                     <input id="inputAdd2" ng-model="outlet.AddLine2" name="street" required="" maxlength="40">
                     <div ng-messages="createOutletForm.street.$error" role="alert">
+                        <div ng-message="required">{{ resource.text_ValRequired }}</div>
+                    </div>
+                </md-input-container>
+                <md-input-container class="md-block" flex-gt-sm="">
+                    <label>{{R.ward}}</label>
+                    <input id="inputAdd2" ng-model="outlet.Ward" name="ward" required="" maxlength="40">
+                    <div ng-messages="createOutletForm.ward.$error" role="alert">
                         <div ng-message="required">{{ resource.text_ValRequired }}</div>
                     </div>
                 </md-input-container>

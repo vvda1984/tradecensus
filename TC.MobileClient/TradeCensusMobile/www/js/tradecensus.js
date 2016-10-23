@@ -138,7 +138,7 @@ function newConfig() {
     //var testBuild = false;
     var c = {
         debug_build: true,
-        enable_devmode: false,
+        enable_devmode: true,
         page_size: 20,
         cluster_size: 50,
         cluster_max_zoom: 15.5,
@@ -146,11 +146,11 @@ function newConfig() {
         enable_rereverse_geo: 1,
         protocol: 'https',
         //ip: '27.0.15.234/trade-census',
-        //ip: '203.34.144.29/tc-test',
-        ip: '203.34.144.29/trade-census',
+        ip: '203.34.144.29/tc-test',
+        //ip: '203.34.144.29/trade-census',
         port: '443',
         service_name: 'TradeCensusService.svc', // absolute
-        enable_liveGPS: true,
+        enable_liveGPS: true,       
         liveGPS_distance: 10,
         map_zoom: 17,
         distance: 200,
@@ -173,13 +173,17 @@ function newConfig() {
         refresh_time: 30,           // 
         refresh_time_out: 3 * 60,   // Time to get outlet
         session_time_out: 0 * 60,
+        enable_journal: true,       //
+        journal_update_time: 1 * 60,//
+        journal_distance: 10,       // meter
         tbl_area_ver: '0',
         tbl_outlettype_ver: '0',
         tbl_province_ver: '1',
         tbl_zone_ver: '0',
         tbl_outletSync: 'uos',
         tbl_outlet: 'uo',
-        tbl_downloadProvince: 'udp',        
+        tbl_downloadProvince: 'udp',
+        tbl_journal: 'jr',
         version: '1.2p.16265.7',
         versionNum: 4,
     };
@@ -190,6 +194,8 @@ function newConfig() {
 
     if (c.enable_devmode)
         c.audit_range = 5000;
+
+    //tc.config = c;
 
     return c;
 }
@@ -405,6 +411,10 @@ function loadSettings(tx, callback) {
                         config.enable_rereverse_geo = parseInt(value);
                     } else if (name == 'download_batch_size') {
                         config.download_batch_size = parseInt(value);
+                    } else if (name == 'journal_update_time') {
+                        config.journal_update_time = parseInt(value);
+                    } else if (name == 'journal_distance') {
+                        config.journal_distance = parseInt(value);
                     }
                 }
             }
@@ -481,7 +491,8 @@ function runSync(callback) {
     }
     try{
         syncOutletsCallback(function () {
-            log('*** SYNC COMPLETED');									
+            log('*** SYNC COMPLETED');
+            journals.syncJournal();
             callback();
         }, function(err){
             log('*** SYNC ERROR: ' + err);									

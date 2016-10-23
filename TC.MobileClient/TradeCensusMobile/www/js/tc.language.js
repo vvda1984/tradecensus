@@ -99,6 +99,7 @@ function language_en() {
 		code : 'Code',
         location: 'Location',
         house_no: 'House No',
+        ward: 'Ward',
         street: 'Street',
         district: 'District',
         province: 'Province',

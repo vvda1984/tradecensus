@@ -46,7 +46,7 @@ var borders_5;
 var borders_6;
 var selected_border_0; // province
 var selected_border_1; // district
-//var selected_border_2;
+var selected_border_2; // ward
 //var selected_border_3;
 //var selected_border_4;
 //var selected_border_5;
@@ -142,7 +142,9 @@ function initializeMap() {
 		
         hideDlg();
         isMapReady = true;
+       
         if (loadMapCallback) {
+           
             log('Map is ready');
             loadMapCallback();
             loadMapCallback = null;
@@ -353,6 +355,10 @@ function displayCurrentPostion() {
         });
     }
     displayAccuracy(position);
+
+    if (!journals._map) {
+        journals.setMap(map);        
+    }
 }
 
 function displayAccuracy() {

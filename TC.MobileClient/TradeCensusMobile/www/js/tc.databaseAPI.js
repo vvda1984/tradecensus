@@ -56,7 +56,7 @@
                 });
 
             //log("ensure table [outletSync] exist");
-            //tx.executeSql('CREATE TABLE IF NOT EXISTS [outletSync] ( [ID] text PRIMARY KEY NOT NULL, [PersonID] integer NOT NULL, [LastSyncTS] text NOT NULL)');
+            //tx.executeSql('CREATE TABLE IF NOT EXISTS [outletSync] ( [ID] text PRIMARY KEY NOT NULL, [PersonID] integer NOT NULL, [LastSyncTS] text NOT NULL)');           
 
             log("initialized db successfully");
             initializeProvinces(tx, onSuccess);
@@ -398,7 +398,7 @@ function selectOutletTypes(onSuccess, onError) {
     });
 }
 
-function ensureUserOutletDBExist(isReset, outletSyncTbl, outletTbl, provinceDownloadTbl, callback) {
+function ensureUserOutletDBExist(isReset, outletSyncTbl, outletTbl, provinceDownloadTbl, journalTbl, callback) {
     db.transaction(function (tx) {
         if (isReset) {
             //resetLocalDB(tx, outletTbl, provinceDownloadTbl);
@@ -434,7 +434,7 @@ function ensureUserOutletDBExist(isReset, outletSyncTbl, outletTbl, provinceDown
 	                    '[OTypeID] text NOT NULL,' +
 	                    '[Name] text NOT NULL,' +
 	                    '[AddLine] text NULL,' +
-	                    '[AddLine2] text NULL,' +
+	                    '[AddLine2] text NULL,' +                        
 	                    '[District] text NULL,' +
 	                    '[ProvinceID] text NOT NULL,' +
 	                    '[Phone] text NULL,' +
@@ -477,10 +477,23 @@ function ensureUserOutletDBExist(isReset, outletSyncTbl, outletTbl, provinceDown
 	                    '[PSynced] bit,' +
                         '[PStatus] int,' +
 	                    '[PLastModTS] int,' +
-	                    '[PMarked] bit)');
+                        '[PMarked] bit,' +
+	                    '[Ward] text NULL)');
         logSqlCommand(sql);
-        tx.executeSql(sql);        
-        callback();
+        tx.executeSql(sql);
+
+        if (config.versionNum <= 4) {
+           tx.executeSql('ALTER TABLE ' + outletTbl + ' ADD COLUMN [Ward] text NULL',
+           [],
+           function (tx1) { },
+           function (tx1, dberr) { });
+        }
+        
+        journals.tableName = journalTbl;
+        journals.database = db;
+        journals.createTable(tx, callback);
+
+        //callback();
     });
 }
 
@@ -815,7 +828,8 @@ function addNewOutlet(tx, outletTbl, outlet, isAdd, isMod, isAud, synced, marked
     sql = sql.concat(synced ? '1' : '0', ', ');             //'[PSynced] bit,' ,
     sql = sql.concat(outlet.PStatus.toString(), ', ');      //'[PStatus] int,' +
     sql = sql.concat(n.toString(), ', ');                   //'[PLastModTS] int,' ,
-    sql = sql.concat(marked ? '1' : '0', ')');              //'[PMarked] bit)');
+    sql = sql.concat(marked ? '1' : '0', ', ');                   //'[PMarked] bit,' ,
+    sql = sql.concat('"', quoteText(outlet.Ward), '")');              //'[Ward] text)');
     logSqlCommand(sql);
     tx.executeSql(sql, [],
         function (tx1) {
@@ -841,6 +855,7 @@ function updateOutlet(tx, outletTbl, outlet, state, synced, updateImage) {
     sql = sql.concat('Name="', quoteText(outlet.Name), '", ');
     sql = sql.concat('AddLine="', quoteText(outlet.AddLine), '", ');
     sql = sql.concat('AddLine2="', quoteText(outlet.AddLine2), '", ');
+    sql = sql.concat('Ward="', quoteText(outlet.Ward), '", ');
     sql = sql.concat('District="', quoteText(outlet.District), '", ');
     sql = sql.concat('ProvinceID="', outlet.ProvinceID, '", ');
     sql = sql.concat('Phone="', quoteText(outlet.Phone), '", ');

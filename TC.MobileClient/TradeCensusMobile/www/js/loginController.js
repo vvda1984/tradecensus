@@ -243,6 +243,7 @@ function loginController($scope, $http) {
         config.tbl_outletSync = 'outletsync_' + $scope.user.id;
         config.tbl_outlet = 'outlet_' + $scope.user.id;
         config.tbl_downloadProvince = 'outlet_province_' + $scope.user.id;
+        config.tbl_journal = 'journal_tracking_' + $scope.user.id;
         
         log($scope.user.hasAuditRole);
         enableSync = true;
@@ -250,9 +251,13 @@ function loginController($scope, $http) {
 
 		log('create outlet tables');
 
-		ensureUserOutletDBExist(resetLocal, config.tbl_outletSync, config.tbl_outlet, config.tbl_downloadProvince,
+		ensureUserOutletDBExist(resetLocal, 
+            config.tbl_outletSync, 
+            config.tbl_outlet, 
+            config.tbl_downloadProvince, 
+            config.tbl_journal,
             function () {
-                showDlg(R.loading, R.please_wait);
+                showDlg(R.loading, R.please_wait);             
                 ping(function (r) {
                     hideDlg();
                     serverConnected = r;
@@ -272,7 +277,7 @@ function loginController($scope, $http) {
                         log('Navigate to home (offline)');
                         finailizeLoginView();
                     }
-                })
+                });                
             });
     }
 
@@ -414,6 +419,10 @@ function loginController($scope, $http) {
                         config.enable_rereverse_geo = parseInt(p.Value);
                     } else if (p.Key == 'download_batch_size') {
                         config.download_batch_size = parseInt(p.Value);
+                    } else if (name == 'journal_update_time') {
+                        config.journal_update_time = parseInt(p.value);
+                    } else if (name == 'journal_distance') {
+                        config.journal_distance = parseInt(p.value);
                     }
                 }
 
@@ -473,5 +482,4 @@ function loginController($scope, $http) {
         }, handleHttpError);
     }
 
-   
 };

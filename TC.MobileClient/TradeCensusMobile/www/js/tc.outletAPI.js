@@ -123,14 +123,19 @@ function initializeOutlet(outlet) {
         outlet.Distance = 0;
 
     //if (outlet.FullAddress == null || isEmpty(outlet.FullAddress))
+    var fullAddress = '';
     if (outlet.AddLine == null) outlet.AddLine = '';
     if (outlet.AddLine2 == null) outlet.AddLine2 = '';
+    if (outlet.Ward == null) outlet.Ward = '';
     if (outlet.District == null) outlet.District = '';
     if (outlet.ProvinceName == null) outlet.ProvinceName = '';
     if (outlet.PersonFirstName == null) outlet.PersonFirstName = '';
     if (outlet.PersonLastName == null) outlet.PersonLastName = '';
 
-    outlet.FullAddress = outlet.AddLine + ' ' + outlet.AddLine2 + ', ' + outlet.District + ', ' + outlet.ProvinceName;
+    outlet.FullAddress = outlet.AddLine + ' ' + outlet.AddLine2; // + ', ' + outlet.District + ', ' + outlet.ProvinceName;
+    if (outlet.Ward !== '') outlet.FullAddress += ', ' + outlet.Ward;
+    if (outlet.District !== '') outlet.FullAddress += ', ' + outlet.District;
+    if (outlet.ProvinceName !== '') outlet.FullAddress += ', ' + outlet.ProvinceName;
 
     var exname = '';
     if (outlet.PersonFirstName) {

@@ -236,9 +236,19 @@
                         </div>
                     </md-input-container>
 
-                    <div class="md-block-item" style="margin-bottom:0px;margin-top:-16px;margin-left:4px" ng-show="config.enable_devmode">
-                        <div class="md-block-item-title small-text">Mode (Online/Offline)</div>
-                        <md-switch class="md-primary" ng-model="config.mode_online">{{config.mode_online ? "Online" : "Offline"}}</md-switch>
+                    <div layout-gt-sm="row" style="margin-top:-10px;">
+                        <md-input-container class="md-block" flex-gt-sm="" style="margin-bottom:20px; margin-left:-4px">
+                            <div class="md-block-item" style="margin-bottom:0px;margin-top:-16px;margin-left:4px">
+                                <div class="md-block-item-title small-text">Track Journal (On/Off)</div>
+                                <md-switch class="md-primary" ng-model="config.enable_journal">{{config.enable_journal ? "On" : "Off"}}</md-switch>
+                            </div>                           
+                        </md-input-container>
+                        <md-input-container class="md-block" flex-gt-sm="" style="margin-bottom:20px;">
+                            <div class="md-block-item" style="margin-bottom:0px;margin-top:-16px;margin-left:4px" ng-show="config.enable_devmode">
+                                <div class="md-block-item-title small-text">Mode (Online/Offline)</div>
+                                <md-switch class="md-primary" ng-model="config.mode_online">{{config.mode_online ? "Online" : "Offline"}}</md-switch>
+                            </div>
+                        </md-input-container>
                     </div>
                 </form>
             </md-content>

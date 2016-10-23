@@ -41,8 +41,8 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     $scope.allowRefresh = true;
     $scope.hasAuditRole = user.hasAuditRole;
     $scope.outletHeader = R.near_by_outlets;
-    $scope.showNoOutletFound = true; 
-    $scope.showSyncButton = false;   
+    $scope.showNoOutletFound = true;
+    $scope.showSyncButton = false;
     $scope.outlets = [];
     $scope.showCollapseButton = false;
     $scope.showExpandButton = false;
@@ -80,32 +80,32 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     }
 
     //*************************************************************************
-    $scope.panToCurLocation = function(){
+    $scope.panToCurLocation = function () {
         moveToCurrentLocation();
     }
 
     //*************************************************************************
-    $scope.clearSearch = function(){
+    $scope.clearSearch = function () {
         $scope.searchName = '';
         $scope.searchChanged();
     };
 
     //*************************************************************************
-    $scope.searchChanged = function(){
+    $scope.searchChanged = function () {
         log('Reset page index');
         $scope.currentPage = 0;
-        if(isEmpty($scope.searchName)){
+        if (isEmpty($scope.searchName)) {
             $scope.showSearchImg = true;
             $scope.showClearSearchImg = false;
-            if(curOutlets.length == 0) return;
+            if (curOutlets.length == 0) return;
             $scope.outlets.length = 0;
-            for(var i = 0; i< curOutlets.length; i++){
+            for (var i = 0; i < curOutlets.length; i++) {
                 $scope.outlets[i] = curOutlets[i];
             }
-        } else{           
+        } else {
             $scope.showSearchImg = false;
             $scope.showClearSearchImg = true;
-            if(curOutlets.length == 0) return;
+            if (curOutlets.length == 0) return;
             $scope.outlets.length = 0;
             var foundIndex = 0;
             var searchText = changeAlias($scope.searchName).toUpperCase();
@@ -116,13 +116,13 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                     foundIndex++;
                 }
             }
-        }        
+        }
     }
 
     //*************************************************************************
-    $scope.numberOfPages = function(){        
-        return Math.ceil($scope.outlets.length/$scope.pageSize);
-    }  
+    $scope.numberOfPages = function () {
+        return Math.ceil($scope.outlets.length / $scope.pageSize);
+    }
 
     //*************************************************************************
     $scope.pageSizeChanged = function () {
@@ -152,7 +152,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     }
 
     //*************************************************************************
-    $scope.closeStreetViewMode = function(){
+    $scope.closeStreetViewMode = function () {
         panorama.setVisible(false);
     }
 
@@ -162,7 +162,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         leftPanelStatus = 0;
         //$scope.showListButton = true;
         $scope.showCollapseButton = false;
-        $scope.showExpandButton = false;      
+        $scope.showExpandButton = false;
         $scope.viewOutletFull = false;
         $scope.showNaviBar = false;
         $scope.viewOutletPanel = false;
@@ -171,24 +171,24 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     }
 
     //*************************************************************************  
-    $scope.expandOutletPanel = function(){
+    $scope.expandOutletPanel = function () {
         $scope.hideDropdown();
         leftPanelStatus = 2;
-        
+
         $scope.viewOutletPanel = true;
         $scope.showExpandButton = false;
         $scope.showCollapseButton = true; // networkReady();
         $scope.viewOutletFull = true;
-        if(isEmpty($scope.searchName)){
-            $scope.showNaviBar =  $scope.outlets.length > $scope.pageSize;
-        } else{
-            $scope.showNaviBar =  true;         
+        if (isEmpty($scope.searchName)) {
+            $scope.showNaviBar = $scope.outlets.length > $scope.pageSize;
+        } else {
+            $scope.showNaviBar = true;
         }
-        if($scope.showNaviBar)
+        if ($scope.showNaviBar)
             $("#slider-left-content").css('margin-bottom', '48px');
         else
             $("#slider-left-content").css('margin-bottom', '4px');
-        log('navBarStatus: ' + $scope.showNaviBar.toString());     
+        log('navBarStatus: ' + $scope.showNaviBar.toString());
         $("#outletPanel").css('width', '100%');
     }
 
@@ -198,14 +198,14 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         $scope.viewOutletPanel = true;
         $scope.showExpandButton = $scope.outlets.length > 0;
         $scope.showCollapseButton = false;
-        $scope.viewOutletFull = false;            
-        if(isEmpty($scope.searchName)){
-            $scope.showNaviBar =  $scope.outlets.length > $scope.pageSize;
-        } else{
-            $scope.showNaviBar =  true;         
-        }                           
+        $scope.viewOutletFull = false;
+        if (isEmpty($scope.searchName)) {
+            $scope.showNaviBar = $scope.outlets.length > $scope.pageSize;
+        } else {
+            $scope.showNaviBar = true;
+        }
         $("#outletPanel").css('width', '42%');
-        if($scope.showNaviBar)
+        if ($scope.showNaviBar)
             $("#slider-left-content").css('margin-bottom', '48px');
         else
             $("#slider-left-content").css('margin-bottom', '4px');
@@ -216,37 +216,37 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         $scope.hideDropdown();
         $scope.showCollapseButton = false;
 
-        if( $scope.viewOutletPanel){
+        if ($scope.viewOutletPanel) {
             $scope.viewOutletPanel = false;
-            leftPanelStatus = 0;           
-            $scope.showExpandButton = false;           
-            $scope.viewOutletFull = false;      
-            $scope.showNaviBar = false;                  
+            leftPanelStatus = 0;
+            $scope.showExpandButton = false;
+            $scope.viewOutletFull = false;
+            $scope.showNaviBar = false;
             $scope.clearSearch();
             $("#outletPanel").css('width', '0%');
             $("#slider-left-content").css('margin-bottom', '4px');
         } else {
             leftPanelStatus = 1;
-            $scope.viewOutletPanel = true;                       
-            $scope.showExpandButton = $scope.outlets.length > 0;            
-            $scope.viewOutletFull = false;            
-            $scope.showNaviBar = $scope.outlets.length > $scope.pageSize;     
-                                                           
+            $scope.viewOutletPanel = true;
+            $scope.showExpandButton = $scope.outlets.length > 0;
+            $scope.viewOutletFull = false;
+            $scope.showNaviBar = $scope.outlets.length > $scope.pageSize;
+
             $("#outletPanel").css('width', '42%');
-            if($scope.showNaviBar)
+            if ($scope.showNaviBar)
                 $("#slider-left-content").css('margin-bottom', '48px');
             else
                 $("#slider-left-content").css('margin-bottom', '4px');
-        }        
-    }    
+        }
+    }
 
     //*************************************************************************
     var tempPageSize = 0;
     $scope.showHideRightPanel = function () {
         if (righPanelStatus == 0) {
-			log('show right panel');
-			$("#configPanel").css('width', '360px');
-			$scope.showSettingCollapse = true;
+            log('show right panel');
+            $("#configPanel").css('width', '360px');
+            $scope.showSettingCollapse = true;
             $scope.showSettingExpand = false;
             righPanelStatus = 1;
             tempPageSize = $scope.config.page_size;
@@ -257,40 +257,40 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             $scope.showSettingCollapse = false;
             $scope.showSettingExpand = true;
             insertSettingDB($scope.config, function () { log('Updated config') }, function (err) { log(err); });
-			if(networkReady() && !isMapReady){
-				loadMapApi();		
-                getCurPosition(true, function(lat, lng){                    
-                }, function(err){});	
-			}
-			var hasNetwork = networkReady();
-			log('update view when base on network: ' + hasNetwork);
-			enableOffline(hasNetwork);
-			if (hasNetwork) {
-			    if (appReady) changeGPSTrackingStatus();
-			}
+            if (networkReady() && !isMapReady) {
+                loadMapApi();
+                getCurPosition(true, function (lat, lng) {
+                }, function (err) { });
+            }
+            var hasNetwork = networkReady();
+            log('update view when base on network: ' + hasNetwork);
+            enableOffline(hasNetwork);
+            if (hasNetwork) {
+                if (appReady) changeGPSTrackingStatus();
+            }
 
-			if (tempPageSize != $scope.config.page_size) {
-			    $scope.pageSize = $scope.config.page_size;
-			    tempPageSize = $scope.pageSize;
-			    log('Update paging');
-			    if (curOutlets.length == 0) return;
-			    $scope.outlets.length = 0;
-			    for (var i = 0; i < curOutlets.length; i++) {
-			        $scope.outlets[i] = curOutlets[i];
-			    }
-			}
+            if (tempPageSize != $scope.config.page_size) {
+                $scope.pageSize = $scope.config.page_size;
+                tempPageSize = $scope.pageSize;
+                log('Update paging');
+                if (curOutlets.length == 0) return;
+                $scope.outlets.length = 0;
+                for (var i = 0; i < curOutlets.length; i++) {
+                    $scope.outlets[i] = curOutlets[i];
+                }
+            }
         }
-    }    
+    }
 
     //*************************************************************************
     $scope.showDropdown = function () {
-        if(viewDropdown){
+        if (viewDropdown) {
             viewDropdown = 0;
             $("#outlet-dropdown").css('display', 'none');
         } else {
             viewDropdown = 1;
             $("#outlet-dropdown").css('display', 'block');
-        }        
+        }
     }
 
     //*************************************************************************
@@ -316,28 +316,28 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     //*************************************************************************
     $scope.changeOutletView = function (v) {
         $scope.hideDropdown();
-        if (curOutletView === v) return;        
-        $scope.closeLeftPanel();        
+        if (curOutletView === v) return;
+        $scope.closeLeftPanel();
         log('change view to ' + v.toString());
         curOutletView = v;
-        
+
         switch (curOutletView) {
-            case 0:                
+            case 0:
                 $scope.outletHeader = R.near_by_outlets;
                 break;
-            case 1:                
+            case 1:
                 $scope.outletHeader = R.new_outlets;
                 break;
             case 2:
                 $scope.outletHeader = R.updated_outlets;
-                break;                
-            case 3:                
+                break;
+            case 3:
                 $scope.outletHeader = R.auditted_outlets;
                 break;
             case 4:
                 $scope.outletHeader = R.my_new_outlets;
         }
-        $scope.currentPage = 0;     
+        $scope.currentPage = 0;
         getOutletsByView(false);
     }
 
@@ -370,57 +370,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                     showError(R.cannot_get_current_location);
                 });
             } else
-                addNewOutlet(); // location watching has updated current location already
-
-            //try {
-            //    getCurPosition(true, function (lat, lng) {
-            //        lat = Math.round(lat * 100000000) / 100000000;
-            //        lng = Math.round(lng * 100000000) / 100000000;                             
-            //        if (networkReady()) {
-            //            log('try reverse the address');
-            //            var geocoder = new google.maps.Geocoder();
-            //            geocoder.geocode({
-            //                'latLng': new google.maps.LatLng(lat, lng),
-            //                'language': 'vi',
-            //            }, function (results, status) {
-            //                if (status === google.maps.GeocoderStatus.OK && results.length > 0) {
-            //                    var street = '';
-            //                    var district = '';
-            //                    try {
-            //                        log(results);
-            //                        if (results[0]) {
-            //                            for (var i = 0; i < results[0].address_components.length; i++) {
-            //                                log('foreach add_comp ' + i.toString() + ':' + results[0].address_components[i].types[0]);
-            //                                if (results[0].address_components[i].types[0] == 'route') {
-            //                                    street = results[0].address_components[i].long_name;
-            //                                } else if (results[0].address_components[i].types[0] == 'administrative_area_level_2') {
-            //                                    district = results[0].address_components[i].long_name;
-            //                                    break;
-            //                                }
-            //                            }
-            //                        } else {
-            //                            log('no geocoder result.');
-            //                        }
-            //                    } catch (geoerr) {
-            //                        log('Parse geocoder failed due to: ' + geoerr);
-            //                    }
-            //                    tryCreateNewOutlet(lat, lng, street, district);
-            //                } else {
-            //                    log('Geocoder failed due to: ' + status);
-            //                    tryCreateNewOutlet(lat, lng, '', '');
-            //                }
-            //            });
-            //        } else {
-            //            tryCreateNewOutlet(lat, lng, '', '');
-            //        }
-            //        showingDialog = false;
-            //    }, function (err) {
-            //        showingDialog = false;
-            //        showError(R.cannot_get_current_location);
-            //    });          
-            //} catch (err) {
-            //    log(err);
-            //}
+                addNewOutlet(); // location watching has updated current location already  
         } else {
             //var errMsg = R.msg_validate_accuracy.replace('{distance}', $scope.config.audit_accuracy.toString());
             //errMsg = errMsg.replace('{curacc}', curAccRound);
@@ -446,16 +396,16 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                 for (var i = 0; i < dbres.rows.length; i++) {
                     unsyncedOutlets[i] = dbres.rows.item(i);
                 }
-              
+
                 submitUnsyncedOutlets(unsyncedOutlets, function () {
                     showInfo(R.synchronize_completed);
                     $("#home-topright-sync-hint").css('display', 'none');
-                }, function(err){
-                        showInfo(err);
-                    });
+                }, function (err) {
+                    showInfo(err);
+                });
             }, handleDBError);
     }
-   
+
     //*************************************************************************
     $scope.deleteOutlet = function (outlet) {
         //var outlet = $scope.outlets[i];
@@ -631,7 +581,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             }
         }
     }
-   
+
     //*************************************************************************    
     $scope.deleteOfflineOutlets = function () {
         var p = selectProvince;
@@ -662,7 +612,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             });
         }, function () { });
     }
-    
+
     function validateRange(lat, lng) {
         var d = calcDistance({ Lat: lat, Lng: lng }, { Lat: $scope.outlet.Latitude, Lng: $scope.outlet.Longitude });
         if (d > $scope.config.audit_range) {
@@ -688,7 +638,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             return;
         }
         var p = selectProvince;
-        var downloadedCount = 0;       
+        var downloadedCount = 0;
         for (var i = 0; i < $scope.dprovinces.length; i++) {
             if ($scope.dprovinces[i].download && p.id != $scope.dprovinces[i].id)
                 downloadedCount++;
@@ -812,7 +762,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                             if (dialogClosedCallback) dialogClosedCallback();
                         }
                         lastDownloadProvinceTS = new Date();
-                    }, 500);               
+                    }, 500);
                 }, function () {
                     isOutletDlgOpen = false;
                     if (dialogClosedCallback) dialogClosedCallback();
@@ -823,7 +773,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                 if (dialogClosedCallback) dialogClosedCallback();
             });
         }
-        catch(e){
+        catch (e) {
             showError(e.message);
             isOutletDlgOpen = false;
             if (dialogClosedCallback) dialogClosedCallback();
@@ -832,65 +782,26 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 
     //*************************************************************************
     function addNewOutlet() {
-        //if (networkReady() && config.enable_rereverse_geo) {
-        //    log('try reverse the address');
-        //    var geocoder = new google.maps.Geocoder();
-        //    geocoder.geocode({
-        //        'latLng': new google.maps.LatLng(curlat, curlng),
-        //        'language': 'vi',
-        //    }, function (results, status) {
-        //        if (status === google.maps.GeocoderStatus.OK && results.length > 0) {
-        //            var street = '';
-        //            var district = '';
-        //            var province = '';
-        //            try {
-        //                log(results);
-        //                if (results[0]) {
-        //                    for (var i = 0; i < results[0].address_components.length; i++) {
-        //                        log('foreach add_comp ' + i.toString() + ':' + results[0].address_components[i].types[0]);
-        //                        if (results[0].address_components[i].types[0] == 'route') {
-        //                            street = results[0].address_components[i].long_name;
-        //                        } else if (results[0].address_components[i].types[0] == 'administrative_area_level_2') {
-        //                            district = results[0].address_components[i].long_name;
-        //                            break;
-        //                        } else if (results[0].address_components[i].types[0] == 'administrative_area_level_1') {
-        //                            province = results[0].address_components[i].long_name;
-        //                            break;
-        //                        }
-        //                    }
-        //                } else {
-        //                    log('no geocoder result.');
-        //                }
-        //            } catch (geoerr) {
-        //                log('Parse geocoder failed due to: ' + geoerr);
-        //            }
-        //            tryCreateNewOutlet(curlat, curlng, street, district, province);
-        //        } else {
-        //            log('Geocoder failed due to: ' + status);
-        //            tryCreateNewOutlet(curlat, curlng, '', '', '');
-        //        }
-        //    });
-        //} else {
-        //    tryCreateNewOutlet(curlat, curlng, '', '', '');
-        //}
-
         if (networkReady()) {
-            if (selected_border_1) {
-                tryCreateNewOutlet(curlat, curlng, '', selected_border_1.Name, '');
+            if (selected_border_2) {
+                tryCreateNewOutlet(curlat, curlng, '', selected_border_2.Name, selected_border_1.Name, '');
+            } else if (selected_border_1) {
+                tryCreateNewOutlet(curlat, curlng, '', '', selected_border_1.Name, '');
             } else {
-                tryCreateNewOutlet(curlat, curlng, '', '', '');
+                tryCreateNewOutlet(curlat, curlng, '', '', '', '');
             }
         } else {
-            tryCreateNewOutlet(curlat, curlng, '', '', '');
+            tryCreateNewOutlet(curlat, curlng, '', '', '', '');
         }
     }
 
     //*************************************************************************
-    function tryCreateNewOutlet(lat, lng, address2, district, province) {
+    function tryCreateNewOutlet(lat, lng, address2, ward, district, province) {
         tryOpenDialog(function () {
             log($scope.outletTypes);
             $scope.outlet = newOutlet(province);
             $scope.outlet.AddLine2 = address2;
+            $scope.outlet.Ward = ward;
             $scope.outlet.District = district;
             $scope.isNewOutlet = true;
             hideDlg();
@@ -912,7 +823,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                     } else {
                         $scope.outlet.AuditStatus = ($scope.outlet.IsDraft) ? StatusNew : StatusPost;
                     }
-                   
+
                     log('Audit Status: ' + $scope.outlet.AuditStatus.toString());
                     showDlg(R.save_outlet, R.please_wait);
                     saveOutlet($scope.outlet,
@@ -1010,7 +921,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     }
 
     //*************************************************************************
-    function initializeView() {        
+    function initializeView() {
         var hasNetwork = networkReady();
         log('update view when base on network: ' + hasNetwork);
         enableOffline(hasNetwork);
@@ -1026,11 +937,11 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             //$scope.showListButton = false;
             //$scope.showCollapseButton = false;
             //$scope.showExpandButton = false;
-            $scope.expandOutletPanel();                
+            $scope.expandOutletPanel();
             //$("#slider-left-content").css('right', '0');            
         }
-    }    
-    
+    }
+
     //*************************************************************************
     var startGetOutletTS = new Date();
     function getOutletsByView(isbackground) {
@@ -1074,7 +985,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                 callback(false, null);
                 return;
             }
-            
+
             var url = baseURL + '/outlet/getoutlets/' + userID + '/'
                             + pass + '/'
                             + curlat.toString() + '/'
@@ -1148,31 +1059,31 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         } else {
             setOutletsToList(outlets);
         }
-    }     
+    }
 
     //*************************************************************************
     function setOutletsToList(outlets) {
-        $timeout(function () {          
+        $timeout(function () {
             $scope.showNaviBar = leftPanelStatus > 0 && outlets.length > $scope.config.page_size;
-            if($scope.showNaviBar)
+            if ($scope.showNaviBar)
                 $("#slider-left-content").css('margin-bottom', '48px');
             else
                 $("#slider-left-content").css('margin-bottom', '4px');
 
-            if(outlets.length == 0){
+            if (outlets.length == 0) {
                 $scope.showNoOutletFound = true;
                 $scope.showExpandButton = false;
                 $scope.showCollapseButton = false;
             } else {
                 $scope.showNoOutletFound = false;
             }
-            
+
             curOutlets.length = 0;
             $scope.searchName = '';
-            for(var i = 0; i< outlets.length; i++){                                
+            for (var i = 0; i < outlets.length; i++) {
                 $scope.outlets[i] = outlets[i];
                 curOutlets[i] = outlets[i];
-            }            
+            }
             $('.md-scroll-mask').remove();
             hideDlg();
 
@@ -1184,7 +1095,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             startGetOutletTS = new Date();
         }, 100);
     }
-        
+
     //*************************************************************************
     function changeGPSTrackingStatus() {
         if ($scope.config.enable_liveGPS) {
@@ -1215,23 +1126,27 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         if (!appReady) return;
         curacc = acc;
         displayAccuracy();
-
+       
         var now = new Date();
-        var dif =getDifTime(lastLoadLocationTS, now); 
+        var dif = getDifTime(lastLoadLocationTS, now);
         if (dif > $scope.config.ping_time) {
             lastLoadLocationTS = now;
 
-            var adjdistance = calcDistance({ Lat: lat, Lng: lng }, { Lat: curlat, Lng: curlng });
+            var adjDistance = calcDistance({ Lat: lat, Lng: lng }, { Lat: curlat, Lng: curlng });
 
             //curacc = acc;
             curlat = lat;
             curlng = lng;
             displayCurrentPostion();
-
-            if (adjdistance > $scope.config.liveGPS_distance) {
+           
+            if (adjDistance >= $scope.config.liveGPS_distance) {
                 refreshOutletList();
             }
-        } 
+
+            if (adjDistance >= $scope.config.journal_distance && acc <= $scope.config.audit_accuracy) {
+                journals.trackJournal();
+            }
+        }
     }
 
     //*************************************************************************
@@ -1477,7 +1392,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         if (isEmpty(outlet.StringImage1) && isEmpty(outlet.StringImage2) && isEmpty(outlet.StringImage3) && networkReady()) {
             showDlg(R.load_images, R.loading);
             try {
-                var url = baseURL + '/outlet/getimages/' +userID + '/' + pass + '/' + outlet.ID.toString();
+                var url = baseURL + '/outlet/getimages/' + userID + '/' + pass + '/' + outlet.ID.toString();
                 log('Call service api: ' + url);
                 $http({
                     method: config.http_method,
@@ -1516,7 +1431,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     }
 
     //*************************************************************************
-    function deleteDraftOutlet(outlet) {    
+    function deleteDraftOutlet(outlet) {
         log('delete outlet ' + outlet.ID.toString());
         outlet.AuditStatus = StatusDelete;
 
@@ -1541,7 +1456,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                     showError(dberr.message);
                 });
             }
-        });      
+        });
     }
 
     //*************************************************************************
@@ -1580,16 +1495,16 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     }
 
     //*************************************************************************
-	var isSyncing = false;
-	var lastAutoSyncTS = new Date();
-	function autoSyncOutlets(onSuccess, onError) {
-	    if (!config.auto_sync) {
-	        log('Auto sync is OFF');
-	        onSuccess();
-	        return;
-	    }
-	    log('Select unsynced outlets');
-	    selectUnsyncedOutlets(config.tbl_outlet,
+    var isSyncing = false;
+    var lastAutoSyncTS = new Date();
+    function autoSyncOutlets(onSuccess, onError) {
+        if (!config.auto_sync) {
+            log('Auto sync is OFF');
+            onSuccess();
+            return;
+        }
+        log('Select unsynced outlets');
+        selectUnsyncedOutlets(config.tbl_outlet,
 			function (dbres) {
 			    log('Found unsynced outlets: ' + dbres.rows.length.toString());
 			    if (dbres.rows.length == 0) {
@@ -1600,57 +1515,57 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 			    for (var i = 0; i < dbres.rows.length; i++) {
 			        unsyncedOutlets[i] = dbres.rows.item(i);
 			    }
-			   
+
 			    submitUnsyncedOutlets(unsyncedOutlets, onSuccess, onError);
 			}, function (dberr) {
 			    onError('Query unsynced outlet error');
 			    log(dberr);
 			});
-	}
+    }
 
     //*************************************************************************
-	function submitUnsyncedOutlets(unsyncedOutlets, onSuccess, onError) {
-	    if (networkReady()) {
-	        var url = baseURL + '/outlet/saveoutlets/' + userID + '/' + pass;
-	        log('Call service api: ' + url);
-	        $http({
-	            method: config.http_method,
-	            data: unsyncedOutlets,
-	            url: url,
-	            headers: { 'Content-Type': 'application/json' }
-	        }).then(function (resp) {
-	            log(resp);
-	            var data = resp.data;
-	            if (data.Status == -1) { // error
-	                onError(data.ErrorMessage);
-	            } else {
-	                if (data.Status == 1) { // warning
-	                    onError(data.ErrorMessage);
-	                }
-	                setSyncStatusDB($scope.config.tbl_outlet, data.Outlets, true,
+    function submitUnsyncedOutlets(unsyncedOutlets, onSuccess, onError) {
+        if (networkReady()) {
+            var url = baseURL + '/outlet/saveoutlets/' + userID + '/' + pass;
+            log('Call service api: ' + url);
+            $http({
+                method: config.http_method,
+                data: unsyncedOutlets,
+                url: url,
+                headers: { 'Content-Type': 'application/json' }
+            }).then(function (resp) {
+                log(resp);
+                var data = resp.data;
+                if (data.Status == -1) { // error
+                    onError(data.ErrorMessage);
+                } else {
+                    if (data.Status == 1) { // warning
+                        onError(data.ErrorMessage);
+                    }
+                    setSyncStatusDB($scope.config.tbl_outlet, data.Outlets, true,
                         function () {
                             onSuccess();
                         },
                         function (err) {
                             onError(err);
                         });
-	            }
-	        }, function (err) {
-	            log('Submit error');
-	            log(err);
-	            onError('http error');
-	        });
-	    } else {
-	        onError('Disconnected server');
-	    }
-	}
+                }
+            }, function (err) {
+                log('Submit error');
+                log(err);
+                onError('http error');
+            });
+        } else {
+            onError('Disconnected server');
+        }
+    }
 
     //*************************************************************************
-	function enableOffline(isOnline) {
-	    if (isOnline) {
-	        $("#home-topright-offline").css('display', 'none');
-	        $("#home-topright-sync-hint").css('display', 'none');
-	        selectAllUnsyncedOutlets(config.tbl_outlet,
+    function enableOffline(isOnline) {
+        if (isOnline) {
+            $("#home-topright-offline").css('display', 'none');
+            $("#home-topright-sync-hint").css('display', 'none');
+            selectAllUnsyncedOutlets(config.tbl_outlet,
               function (dbres) {
                   if (dbres.rows.length > 0) {
                       $("#home-topright-sync-hint").css('display', 'inline-block');
@@ -1658,299 +1573,301 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                       $("#home-topright-sync-hint").css('display', 'none');
                   }
               }, function (dberr) { });
-          
-	    } else {	        
-	        $("#home-topright-offline").css('display', 'inline-block');
-	        $("#home-topright-sync-hint").css('display', 'none');
-	    }
-	}
+
+        } else {
+            $("#home-topright-offline").css('display', 'inline-block');
+            $("#home-topright-sync-hint").css('display', 'none');
+        }
+    }
 
     //*************************************************************************
-	function handleConnectionChanged(networkStatus) {
-	    enableOffline(networkStatus);
-	    if (networkStatus) {
-	        if (appReady)
-	            changeGPSTrackingStatus();
+    function handleConnectionChanged(networkStatus) {
+        enableOffline(networkStatus);
+        if (networkStatus) {
+            if (appReady)
+                changeGPSTrackingStatus();
 
-	        if (!isMapReady) {
-	            loadMapCallback = handleMapLoaded;
-	            loadMapApi();
-	        }
+            if (!isMapReady) {
+                loadMapCallback = handleMapLoaded;
+                loadMapApi();
+            }
 
-	        //if (!isSyncing) {
-	        //    setTimeout(function () {
-	        //        startAutoSyncOutlets();
-	        //    }, $scope.config.sync_time);
-	        //} else {
-	        //    var now = new Date();
-	        //    var dif = (now - lastAutoSyncTS)/1000;
-	        //    if (dif > $scope.config.sync_time_out) {
-	        //        setTimeout(function () {
-	        //            startAutoSyncOutlets();
-	        //        }, $scope.config.sync_time);
-	        //    }
-	        //}
-	    }
-	}
-
-    //*************************************************************************
-	function handleMapLoaded() {
-	    showDlg(R.get_near_by_outlets, R.please_wait);
-	    getCurPosition(true, function (lat, lng) {
-	        hideDlg();
-
-	        if (isMapReady) {
-	            log('Move to current location');
-	            //$('#current-location-button').css('display', 'block');
-	            moveToCurrentLocation();
-	            $scope.mapReady = true;
-	         
-	        }
-
-	        if (networkReady()) {
-	            if (appReady)
-	                changeGPSTrackingStatus();
-
-	            if (!isOutletDlgOpen) {
-	                log('Get outlets');
-	                queryOutletsOnline(false, function (r, foundOutlets) {
-	                    if (r) loadOutlets(foundOutlets);
-	                });
-	            } else {
-	                log('Dialog is opened, refresh later');
-	                dialogClosedCallback = function () {
-	                    queryOutletsOnline(false, function (r, foundOutlets) {
-	                        if (r) loadOutlets(foundOutlets);
-	                    });
-	                    dialogClosedCallback = null;
-	                }
-	            }
-	            initializeBorders(true);
-	        } else {
-	            if (!isOutletDlgOpen) {
-	                queryOutlets(false, curOutletView, function (r, foundOutlets) {
-	                    if (r) loadOutlets(foundOutlets);
-	                });
-	            } else {
-	                dialogClosedCallback = function () {
-	                    queryOutlets(false, curOutletView, function (r, foundOutlets) {
-	                        if (r) loadOutlets(foundOutlets);
-	                    });
-	                    dialogClosedCallback = null;
-	                }
-	            }
-
-	            //initializeBorders();
-	        }
-	    }, function (err) {
-	        hideDlg();
-	        initializeBorders(false);
-	    });
-
-	    loadMapCallback = null;
-	};
+            //if (!isSyncing) {
+            //    setTimeout(function () {
+            //        startAutoSyncOutlets();
+            //    }, $scope.config.sync_time);
+            //} else {
+            //    var now = new Date();
+            //    var dif = (now - lastAutoSyncTS)/1000;
+            //    if (dif > $scope.config.sync_time_out) {
+            //        setTimeout(function () {
+            //            startAutoSyncOutlets();
+            //        }, $scope.config.sync_time);
+            //    }
+            //}
+        }
+    }
 
     //*************************************************************************
-	$scope.changePassword = function (isCancel) {
-	    if (isCancel) {
-	        $('#dlg-change-password').css('display', 'none');
-	        if (!appReady) start();
-	    } else {
-	        if (!$scope.forceChangePassword && isEmpty($scope.curPass)) {
-	            showErrorAdv(R.current_pass_is_empty, function () { $("#cur-pass").focus(); });
-	            return;
-	        }
+    function handleMapLoaded() {
+        showDlg(R.get_near_by_outlets, R.please_wait);
+        getCurPosition(true, function (lat, lng) {
+            hideDlg();
 
-	        if (isEmpty($scope.newPass)) {
-	            showErrorAdv(R.new_pass_is_empty, function () { $("#new-pass").focus(); });
-	            return;
-	        }
+            if (isMapReady) {
+                log('Move to current location');
+                //$('#current-location-button').css('display', 'block');
+                moveToCurrentLocation();
+                $scope.mapReady = true;
 
-	        if ($scope.newPass != $scope.confirmPass) {
-	            showErrorAdv(R.confirm_pass_doesnot_match, function () { $("#confirm-pass").focus(); });
-	            return;
-	        }
+            }
 
-	        showDlg(R.submitting, R.please_wait);
-	        try {
-	            var url = baseURL;
-	            if ($scope.forceChangePassword) {
-	                url = url.concat('/resetpassword');
-	                url = url.concat('/', user.token);
-	                url = url.concat('/', user.id);
-	                url = url.concat('/', hashString($scope.newPass));
-	            } else {
-	                url = url.concat('/changepassword');
-	                url = url.concat('/', user.token);
-	                url = url.concat('/', user.id);
-	                url = url.concat('/', hashString($scope.curPass));
-	                url = url.concat('/', hashString($scope.newPass));
-	            }
-	          
-	            log('Call service api: ' + url);
-	            $http({
-	                method: config.http_method,
-	                url: url
-	            }).then(function (resp) {
-	                try {
-	                    hideDlg();
-	                    var data = resp.data;
-	                    if (data.Status == -1) { // error
-	                        showError(data.ErrorMessage);
-	                    } else {
-	                        $scope.forceChangePassword = false;
-	                        changePasswordDB(userID, $scope.newPass, function () {
-	                            $scope.curPass = '';
-	                            $scope.newPass = '';
-	                            $scope.confirmPass = '';
-	                            $('#dlg-change-password').css('display', 'none');
-	                            if (!appReady) start();
-	                        }, function (dberr) {
-	                            showError(dberr.message);
-	                        });
-	                    }
-	                } catch (err) {
-	                    showError(err.message);
-	                }
-	            }, function (err) {
-	                log('HTTP error...');
-	                var msg = err.statusText == '' ? $scope.R.text_ConnectionTimeout : err.statusText;
-	                showError(msg);
-	            });
-	        } catch (ex) {
-	            showError(ex.message);
-	        }
-	    }
-	};
+            if (networkReady()) {
+                if (appReady)
+                    changeGPSTrackingStatus();
 
-    //*************************************************************************
-	$scope.displayChangePasswordDlg = function () {
-	    if (!networkReady()) {
-	        showError(R.cannot_change_password_in_offline);
-	        return;
-	    }
-
-	    $('#dlg-change-password').css('display', 'table');
-	}
-
-    //*************************************************************************
-	$scope.changeMapType = function (i) {
-	    changeMapTypeView(i);
-	    $scope.isSatellite = i == 1;
-	}
-
-    //*************************************************************************
-	var isInitializeBorders = false;
-	var borderAutoProvinceName = null;
-	var borderAutoDistrictName = null;
-	var borderAutoWardName = null;
-    
-	$scope.canDrawBorder = false;
-	$scope.selectedBorder = { ID: 0, Name: R.label_select_area};
-
-	function initializeBorders(hasLocation) {
-	    if (isInitializeBorders) return;
-
-	    showDlg(R.loading_borders, R.please_wait);
-	    isInitializeBorders = true;
-
-	    if (networkReady() && hasLocation && config.enable_rereverse_geo) {
-	        log('try reverse the address');
-	        var geocoder = new google.maps.Geocoder();
-	        geocoder.geocode({
-	            'latLng': new google.maps.LatLng(curlat, curlng),
-	            'language': 'vi',
-	        }, function (results, status) {
-	            if (status === google.maps.GeocoderStatus.OK && results.length > 0) {
-	                borderAutoProvinceName = null;
-	                borderAutoDistrictName = null;
-	                var street;
-	                try {
-	                    log(results);
-	                    if (results[0]) {
-	                        for (var i = 0; i < results[0].address_components.length; i++) {
-	                            log('foreach add_comp ' + i.toString() + ':' + results[0].address_components[i].types[0]);
-	                            if (results[0].address_components[i].types[0] == 'route') {
-	                                street = results[0].address_components[i].long_name;
-	                            } else if (results[0].address_components[i].types[0] == 'political') {
-	                                borderAutoWardName = results[0].address_components[i].long_name;
-	                            } else if (results[0].address_components[i].types[0] == 'administrative_area_level_2') {
-	                                borderAutoDistrictName = results[0].address_components[i].long_name;
-	                            } else if (results[0].address_components[i].types[0] == 'administrative_area_level_1') {
-	                                borderAutoProvinceName = results[0].address_components[i].long_name;
-	                            }
-	                        }
-	                    } else {
-	                        log('no geocoder result.');
-	                    }
-	                } catch (geoerr) {
-	                    log('Parse geocoder failed due to: ' + geoerr);
-	                }
-                    loadTopBorders();
-	            } else {
-	                log('Geocoder failed due to: ' + status);
-	                loadTopBorders();
-	            }
-	        });
-	    } else {
-	        loadTopBorders();
-	    }
-	}
-
-	function loadTopBorders() {
-	    try {
-	        var url = baseURL + '/border/getsubborders/0';
-	        log('Call service api: ' + url);
-	        $http({
-	            method: config.http_method,
-	            url: url
-	        }).then(function (resp) {
-	            hideDlg();
-	            try {
-	                var data = resp.data;
-	                if (data.Status == -1) { // error
-	                    showError(data.ErrorMessage);
-	                } else {
-	                    var items = data.Items;
-	                    setBorders(data.Items, 0);
-	                    border_level = 0;
-	                    if (borderAutoProvinceName) {
-	                        var ap = changeAlias(borderAutoProvinceName);
-	                        for (var i = 0; i < items.length; i++) {
-	                            var cp = changeAlias(items[i].Name);
-	                            if (ap === cp || cp.indexOf(ap) > -1) {
-	                                setCurrenBorder(items[i]);
-	                                break;
-	                            }
-	                        }
-	                    }
+                if (!isOutletDlgOpen) {
+                    log('Get outlets');
+                    queryOutletsOnline(false, function (r, foundOutlets) {
+                        if (r) loadOutlets(foundOutlets);
+                    });
+                } else {
+                    log('Dialog is opened, refresh later');
+                    dialogClosedCallback = function () {
+                        queryOutletsOnline(false, function (r, foundOutlets) {
+                            if (r) loadOutlets(foundOutlets);
+                        });
+                        dialogClosedCallback = null;
                     }
-	            } catch (err) {
-	                showError(err.message);
-	            }
-	        }, function (err) {
-	            log('HTTP error...');
-	            log(err);
-	            var msg = err.statusText == '' ? $scope.R.text_ConnectionTimeout : err.statusText;
-	            showError(msg);
-	        });
-	    } catch (ex) {
-	        showError(ex.message);
-	    }
-	}
+                }
+                initializeBorders(true);
+            } else {
+                if (!isOutletDlgOpen) {
+                    queryOutlets(false, curOutletView, function (r, foundOutlets) {
+                        if (r) loadOutlets(foundOutlets);
+                    });
+                } else {
+                    dialogClosedCallback = function () {
+                        queryOutlets(false, curOutletView, function (r, foundOutlets) {
+                            if (r) loadOutlets(foundOutlets);
+                        });
+                        dialogClosedCallback = null;
+                    }
+                }
 
-	$scope.showSelectedBorderDlg = function () {
-	    if (!isInitializeBorders) return;
-	    tryOpenDialog(function () {
-	        userSelectedBorder = $scope.selectedBorder;
-	        $mdDialog.show({
-	            scope: $scope.$new(),
-	            controller: selectGeoBorderController,
-	            templateUrl: 'views/selectGeoBorderView.html',
-	            parent: angular.element(document.body),
-	            clickOutsideToClose: true,
-	            fullscreen: false,
-	        })
+                //initializeBorders();
+            }
+        }, function (err) {
+            hideDlg();
+            initializeBorders(false);
+        });
+
+        loadMapCallback = null;
+    };
+
+    //*************************************************************************
+    $scope.changePassword = function (isCancel) {
+        if (isCancel) {
+            $('#dlg-change-password').css('display', 'none');
+            if (!appReady) start();
+        } else {
+            if (!$scope.forceChangePassword && isEmpty($scope.curPass)) {
+                showErrorAdv(R.current_pass_is_empty, function () { $("#cur-pass").focus(); });
+                return;
+            }
+
+            if (isEmpty($scope.newPass)) {
+                showErrorAdv(R.new_pass_is_empty, function () { $("#new-pass").focus(); });
+                return;
+            }
+
+            if ($scope.newPass != $scope.confirmPass) {
+                showErrorAdv(R.confirm_pass_doesnot_match, function () { $("#confirm-pass").focus(); });
+                return;
+            }
+
+            showDlg(R.submitting, R.please_wait);
+            try {
+                var url = baseURL;
+                if ($scope.forceChangePassword) {
+                    url = url.concat('/resetpassword');
+                    url = url.concat('/', user.token);
+                    url = url.concat('/', user.id);
+                    url = url.concat('/', hashString($scope.newPass));
+                } else {
+                    url = url.concat('/changepassword');
+                    url = url.concat('/', user.token);
+                    url = url.concat('/', user.id);
+                    url = url.concat('/', hashString($scope.curPass));
+                    url = url.concat('/', hashString($scope.newPass));
+                }
+
+                log('Call service api: ' + url);
+                $http({
+                    method: config.http_method,
+                    url: url
+                }).then(function (resp) {
+                    try {
+                        hideDlg();
+                        var data = resp.data;
+                        if (data.Status == -1) { // error
+                            showError(data.ErrorMessage);
+                        } else {
+                            $scope.forceChangePassword = false;
+                            changePasswordDB(userID, $scope.newPass, function () {
+                                $scope.curPass = '';
+                                $scope.newPass = '';
+                                $scope.confirmPass = '';
+                                $('#dlg-change-password').css('display', 'none');
+                                if (!appReady) start();
+                            }, function (dberr) {
+                                showError(dberr.message);
+                            });
+                        }
+                    } catch (err) {
+                        showError(err.message);
+                    }
+                }, function (err) {
+                    log('HTTP error...');
+                    var msg = err.statusText == '' ? $scope.R.text_ConnectionTimeout : err.statusText;
+                    showError(msg);
+                });
+            } catch (ex) {
+                showError(ex.message);
+            }
+        }
+    };
+
+    //*************************************************************************
+    $scope.displayChangePasswordDlg = function () {
+        if (!networkReady()) {
+            showError(R.cannot_change_password_in_offline);
+            return;
+        }
+
+        $('#dlg-change-password').css('display', 'table');
+    }
+
+    //*************************************************************************
+    $scope.changeMapType = function (i) {
+        changeMapTypeView(i);
+        $scope.isSatellite = i == 1;
+    }
+
+    //*************************************************************************
+    //>>>>>> BORDER >>>>>>
+
+    var isInitializeBorders = false;
+    var borderAutoProvinceName = null;
+    var borderAutoDistrictName = null;
+    var borderAutoWardName = null;
+
+    $scope.canDrawBorder = false;
+    $scope.selectedBorder = { ID: 0, Name: R.label_select_area };
+
+    function initializeBorders(hasLocation) {
+        if (isInitializeBorders) return;
+
+        showDlg(R.loading_borders, R.please_wait);
+        isInitializeBorders = true;
+
+        if (networkReady() && hasLocation && config.enable_rereverse_geo) {
+            log('try reverse the address');
+            var geocoder = new google.maps.Geocoder();
+            geocoder.geocode({
+                'latLng': new google.maps.LatLng(curlat, curlng),
+                'language': 'vi',
+            }, function (results, status) {
+                if (status === google.maps.GeocoderStatus.OK && results.length > 0) {
+                    borderAutoProvinceName = null;
+                    borderAutoDistrictName = null;
+                    var street;
+                    try {
+                        log(results);
+                        if (results[0]) {
+                            for (var i = 0; i < results[0].address_components.length; i++) {
+                                log('foreach add_comp ' + i.toString() + ':' + results[0].address_components[i].types[0]);
+                                if (results[0].address_components[i].types[0] == 'route') {
+                                    street = results[0].address_components[i].long_name;
+                                } else if (results[0].address_components[i].types[0] == 'political') {
+                                    borderAutoWardName = results[0].address_components[i].long_name;
+                                } else if (results[0].address_components[i].types[0] == 'administrative_area_level_2') {
+                                    borderAutoDistrictName = results[0].address_components[i].long_name;
+                                } else if (results[0].address_components[i].types[0] == 'administrative_area_level_1') {
+                                    borderAutoProvinceName = results[0].address_components[i].long_name;
+                                }
+                            }
+                        } else {
+                            log('no geocoder result.');
+                        }
+                    } catch (geoerr) {
+                        log('Parse geocoder failed due to: ' + geoerr);
+                    }
+                    loadTopBorders();
+                } else {
+                    log('Geocoder failed due to: ' + status);
+                    loadTopBorders();
+                }
+            });
+        } else {
+            loadTopBorders();
+        }
+    }
+
+    function loadTopBorders() {
+        try {
+            var url = baseURL + '/border/getsubborders/0';
+            log('Call service api: ' + url);
+            $http({
+                method: config.http_method,
+                url: url
+            }).then(function (resp) {
+                hideDlg();
+                try {
+                    var data = resp.data;
+                    if (data.Status == -1) { // error
+                        showError(data.ErrorMessage);
+                    } else {
+                        var items = data.Items;
+                        setBorders(data.Items, 0);
+                        border_level = 0;
+                        if (borderAutoProvinceName) {
+                            var ap = changeAlias(borderAutoProvinceName);
+                            for (var i = 0; i < items.length; i++) {
+                                var cp = changeAlias(items[i].Name);
+                                if (ap === cp || cp.indexOf(ap) > -1) {
+                                    setCurrenBorder(items[i]);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                } catch (err) {
+                    showError(err.message);
+                }
+            }, function (err) {
+                log('HTTP error...');
+                log(err);
+                var msg = err.statusText == '' ? $scope.R.text_ConnectionTimeout : err.statusText;
+                showError(msg);
+            });
+        } catch (ex) {
+            showError(ex.message);
+        }
+    }
+
+    $scope.showSelectedBorderDlg = function () {
+        if (!isInitializeBorders) return;
+        tryOpenDialog(function () {
+            userSelectedBorder = $scope.selectedBorder;
+            $mdDialog.show({
+                scope: $scope.$new(),
+                controller: selectGeoBorderController,
+                templateUrl: 'views/selectGeoBorderView.html',
+                parent: angular.element(document.body),
+                clickOutsideToClose: true,
+                fullscreen: false,
+            })
             .then(function (answer) {
                 isOutletDlgOpen = false;
                 if (dialogClosedCallback) dialogClosedCallback();
@@ -1961,78 +1878,143 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                 isOutletDlgOpen = false;
                 if (dialogClosedCallback) dialogClosedCallback();
             });
-	    });
-	}
+        });
+    }
 
-	$scope.drawBorder = function () {
-	    if ($scope.selectedBorder.GeoData != null && $scope.selectedBorder.GeoData != '')
-	        drawMapBorder($scope.selectedBorder.GeoData);
-	    else {
-	        showDlg(R.loading, R.please_wait);
-	        try {
-	            var url = baseURL + '/border/get/' + $scope.selectedBorder.ID.toString();
-	            log('Call service api: ' + url);
-	            $http({
-	                method: config.http_method,
-	                url: url
-	            }).then(function (resp) {
-	                hideDlg();
-	                try {
-	                    var data = resp.data;
-	                    if (data.Status == -1) { // error
-	                        showError(data.ErrorMessage);
-	                    } else {
-	                        var item = data.Item;
-	                        $scope.selectedBorder.GeoData = item.GeoData;
-	                        drawMapBorder($scope.selectedBorder.GeoData);
-	                    }
-	                } catch (err) {
-	                    showError(err.message);
-	                }
-	            }, function (err) {
-	                log('HTTP error...');
-	                log(err);
-	                var msg = err.statusText == '' ? $scope.R.text_ConnectionTimeout : err.statusText;
-	                showError(msg);
-	            });
-	        } catch (ex) {
-	            showError(ex.message);
-	        }
-	    }
-	}
+    $scope.drawBorder = function () {
+        if ($scope.selectedBorder.GeoData != null && $scope.selectedBorder.GeoData != '')
+            drawMapBorder($scope.selectedBorder.GeoData);
+        else {
+            showDlg(R.loading, R.please_wait);
+            try {
+                var url = baseURL + '/border/get/' + $scope.selectedBorder.ID.toString();
+                log('Call service api: ' + url);
+                $http({
+                    method: config.http_method,
+                    url: url
+                }).then(function (resp) {
+                    hideDlg();
+                    try {
+                        var data = resp.data;
+                        if (data.Status == -1) { // error
+                            showError(data.ErrorMessage);
+                        } else {
+                            var item = data.Item;
+                            $scope.selectedBorder.GeoData = item.GeoData;
+                            drawMapBorder($scope.selectedBorder.GeoData);
+                        }
+                    } catch (err) {
+                        showError(err.message);
+                    }
+                }, function (err) {
+                    log('HTTP error...');
+                    log(err);
+                    var msg = err.statusText == '' ? $scope.R.text_ConnectionTimeout : err.statusText;
+                    showError(msg);
+                });
+            } catch (ex) {
+                showError(ex.message);
+            }
+        }
+    }
 
-	function setCurrenBorder(border) {
-	    $scope.canDrawBorder = border.HasGeoData;
-	    $scope.selectedBorder = border;
-	}
+    function setCurrenBorder(border) {
+        $scope.canDrawBorder = border.HasGeoData;
+        $scope.selectedBorder = border;
+    }
 
-	function checkToDrawBorder(selectID, items) {
-	    selectedBorder = null;
-	    for (var i = 0; i < items.length; i++) {
-	        if (selectID == items[i].ID) {
-	            selectedBorder = items[i];
-	            break;
-	        }
-	    }
+    function checkToDrawBorder(selectID, items) {
+        selectedBorder = null;
+        for (var i = 0; i < items.length; i++) {
+            if (selectID == items[i].ID) {
+                selectedBorder = items[i];
+                break;
+            }
+        }
 
-	    if (selectedBorder) {
-	        $scope.canDrawBorder = selectedBorder.GeoData != null && selectedBorder.GeoData != '';
-	    }
-	}
+        if (selectedBorder) {
+            $scope.canDrawBorder = selectedBorder.GeoData != null && selectedBorder.GeoData != '';
+        }
+    }
+
+    //<<<<<<<<<<<<<<<<<<<<<
+
+    //*************************************************************************
+    //>>>>>> JOURNAL >>>>>>
+
+    function submitJournal(journal, callback) {
+        if (utils.networks.isReady()) {
+            var url = baseURL + '/journal/add/' + userID + '/' + pass;
+            utils.writeLog('Call service api: ' + url);
+            $http({
+                method: config.http_method,
+                data: journal,
+                url: url,
+                headers: { 'Content-Type': 'application/json' }
+            }).then(function (resp) {
+                utils.writeLog(resp);
+                var data = resp.data;
+                if (data.Status == -1) { // error
+                    callback(false);
+                    utils.showErrorDlg(data.ErrorMessage);
+                } else {
+                    utils.writeLog('Submit journal successfully');
+                    journal.id = data.id;
+                    callback(true);
+                }
+            }, function (err) {
+                utils.writeLog('Submit error: ' + err.message);
+                utils.writeLog(err);
+                callback(false);
+            });
+        } else {
+            callback(false);
+        }
+    }
+
+    function submitUnsyncedJournals(unsyncJournals, callback) {
+        if (utils.networks.isReady()) {
+            var url = baseURL + '/journal/sync/' + userID + '/' + pass;
+            utils.writeLog('Call service api: ' + url);
+            $http({
+                method: config.http_method,
+                data: unsyncJournals,
+                url: url,
+                headers: { 'Content-Type': 'application/json' }
+            }).then(function (resp) {
+                utils.writeLog(resp);
+                var data = resp.data;
+                if (data.Status == -1) { // error
+                    utils.writeLog(data.ErrorMessage);
+                    callback(false, null);
+                } else {
+                    callback(false, data.items);
+                }
+            }, function (err) {
+                utils.writeLog('Submit error');
+                utils.writeLog(err);
+                callback(false, null);
+            });
+        } else {
+            callback(false, null);
+        }
+    }
+
+    //<<<<<<<<<<<<<<<<<<<<<
 
     //*************************************************************************           
-	function start() {
-	    showDlg(R.loading, R.please_wait);
-	    loadMapApi();
+    function start() {
+        showDlg(R.loading, R.please_wait);
+        loadMapApi();
 
-	    //showDlg(R.get_current_location, R.please_wait);
-	    //getCurPosition(true, function (lat, lng) {
-	    //    loadMapApi();
-	    //}, function (err) {
-	    //    log(err);
-	    //    loadMapApi();
-	    //});
-	}
+        //showDlg(R.get_current_location, R.please_wait);
+        //getCurPosition(true, function (lat, lng) {
+        //    loadMapApi();
+        //}, function (err) {
+        //    log(err);
+        //    loadMapApi();
+        //});
+    }
     try {
         enableOffline(networkReady());
 
@@ -2044,31 +2026,31 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 
         enableSync = true;
 
-        mapClickedCallback = function(){ 
+        mapClickedCallback = function () {
             $scope.hideDropdown();
         };
 
-        mapViewChangedCallback = function(streetView){
-            log('Change view: ' + streetView); 
-            if(streetView){
+        mapViewChangedCallback = function (streetView) {
+            log('Change view: ' + streetView);
+            if (streetView) {
                 $("#home-topleft").css('display', 'none');
                 $("#home-bottom").css('display', 'none');
                 $("#home-bottomright").css('display', 'none');
                 $("#home-topright").css('display', 'none');
-                $("#configPanel").css('display', 'none');                
+                $("#configPanel").css('display', 'none');
                 $("#outletPanel").css('display', 'none');
 
                 $("#home-topright-street").css('display', 'inline-block');
-            } else{
-                $("#home-topleft").css('display', 'inline-block');           
-                $("#home-topright").css('display', 'inline-block');                
+            } else {
+                $("#home-topleft").css('display', 'inline-block');
+                $("#home-topright").css('display', 'inline-block');
                 $("#home-bottom").css('display', 'inline-block');
                 $("#home-bottomright").css('display', 'inline-block');
                 $("#outletPanel").css('display', 'inline');
                 $("#configPanel").css('display', 'inline');
 
                 $("#home-topright-street").css('display', 'none');
-            }            
+            }
         };
 
         initializeView();
@@ -2081,7 +2063,8 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         } else {
             start();
         }
-                           		
+
+        journals.start(submitJournal, submitUnsyncedJournals);
     } catch (err) {
         showError(err);
         log(err);

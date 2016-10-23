@@ -16,6 +16,7 @@ function selectGeoBorderController($scope, $http, $mdDialog) {
     var t_borders_6 = borders_6;
     var t_selected_border_0 = selected_border_0;
     var t_selected_border_1 = selected_border_1;
+    var t_selected_border_2 = selected_border_2;
 
     function set_t_borders(items, level) {
         if (level == 0) {
@@ -76,6 +77,9 @@ function selectGeoBorderController($scope, $http, $mdDialog) {
             t_selected_border_1 = null;
         } else if (t_level == 1) {
             t_selected_border_1 = $scope.userSelectedBorer;
+            t_selected_border_2 = null;
+        } else if (t_level == 2) {
+            t_selected_border_2 = $scope.userSelectedBorer;
         }
 
         borders_0 = t_borders_0;
@@ -89,6 +93,7 @@ function selectGeoBorderController($scope, $http, $mdDialog) {
 
         selected_border_0 = t_selected_border_0;
         selected_border_1 = t_selected_border_1;
+        selected_border_2 = t_selected_border_2;
 
         userSelectedBorder = b;
         $mdDialog.hide(true);
@@ -100,6 +105,8 @@ function selectGeoBorderController($scope, $http, $mdDialog) {
                 t_selected_border_0 = b;
             } else if (t_level == 1) {
                 t_selected_border_1 = b;
+            } else if (t_level == 2) {
+                t_selected_border_2 = b;
             }
 
             $("#loading-border").css("display", "block");
@@ -145,6 +152,8 @@ function selectGeoBorderController($scope, $http, $mdDialog) {
             t_selected_border_0 = null;
         } else if (t_level == 1) {
             t_selected_border_1 = null;
+        } else if (t_level == 2) {
+            t_selected_border_2 = null;
         }
     }
 }
