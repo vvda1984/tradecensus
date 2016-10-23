@@ -8,6 +8,7 @@ namespace TradeCensus
         IProvinceService, 
         IConfigService,
         IOutletService,
-        IBorderService
+        IBorderService,
+        IJournalService
     {}    
 }

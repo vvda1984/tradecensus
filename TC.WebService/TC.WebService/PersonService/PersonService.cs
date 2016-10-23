@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using TradeCensus.Data;
 using TradeCensus.Shared;
 
 namespace TradeCensus
@@ -17,14 +18,14 @@ namespace TradeCensus
             Log("Request login: {0}", userName);
             password = HashPassword(password);
 
-            var user = _entities.PersonRoles.FirstOrDefault(i => string.Compare(i.Username, userName, StringComparison.OrdinalIgnoreCase) == 0);
+            var user = DC.PersonRoles.FirstOrDefault(i => string.Compare(i.Username, userName, StringComparison.OrdinalIgnoreCase) == 0);
             if (user == null)
                 throw new Exception(string.Format("User {0} doesn't exist", userName));
 
             if (user.Password != password)
                 throw new Exception("Password is incorrect.");
 
-            Person person = _entities.People.FirstOrDefault(i => i.ID == user.PersonID);
+            Person person = DC.People.FirstOrDefault(i => i.ID == user.PersonID);
             if (person == null)
                 throw new Exception(string.Format("User {0} is denied.", userName));
 
@@ -56,7 +57,7 @@ namespace TradeCensus
                 user.Role = user.Role % 10;
             user.AmendBy = user.ID;
             user.AmendDate = DateTime.Now;
-            _entities.SaveChanges();
+            DC.SaveChanges();
 
             res.Token = GenerateToken(user);
 
@@ -65,7 +66,7 @@ namespace TradeCensus
 
         private void ChangePassword(string token, int personID, string oldPassword, string newPassword)
         {
-            var user = _entities.PersonRoles.FirstOrDefault(i => i.PersonID == personID);
+            var user = DC.PersonRoles.FirstOrDefault(i => i.PersonID == personID);
             if (user == null)
                 throw new Exception(string.Format("User ({0}) was not found!", personID));
 
@@ -81,12 +82,12 @@ namespace TradeCensus
                 throw new ArgumentNullException("New password is empty!");
 
             user.Password = HashPassword(newPassword);
-            _entities.SaveChanges();
+            DC.SaveChanges();
         }
 
         private void ResetPassword(string token, int personID, string password)
         {
-            var user = _entities.PersonRoles.FirstOrDefault(i => i.PersonID == personID);
+            var user = DC.PersonRoles.FirstOrDefault(i => i.PersonID == personID);
             if (user == null)
                 throw new Exception(string.Format("User ({0}) was not found!", personID));
 
@@ -96,7 +97,7 @@ namespace TradeCensus
                 throw new ArgumentNullException("Password is empty!");
 
             user.Password = HashPassword(password);
-            _entities.SaveChanges();
+            DC.SaveChanges();
         }
 
         private string HashPassword(string password)
@@ -143,7 +144,7 @@ namespace TradeCensus
             ConnectionSession connection = Parse(pingInfo); //Newtonsoft.Json.JsonConvert.DeserializeObject<ConnectionSession>(pingInfo);
             if (string.IsNullOrEmpty(connection.Uuid)) return; // should throw exception here...
 
-            var existing = _entities.ConnectionSessions.FirstOrDefault(i => i.Uuid == connection.Uuid);
+            var existing = DC.ConnectionSessions.FirstOrDefault(i => i.Uuid == connection.Uuid);
             if (existing != null)
             {
                 existing.Token = connection.Token;
@@ -153,9 +154,9 @@ namespace TradeCensus
             else
             {
                 connection.AmendDate = DateTime.Now;
-                _entities.ConnectionSessions.Add(connection);
+                DC.ConnectionSessions.Add(connection);
             }
-            _entities.SaveChanges();
+            DC.SaveChanges();
         }
 
         private ConnectionSession Parse(string pingInfo)

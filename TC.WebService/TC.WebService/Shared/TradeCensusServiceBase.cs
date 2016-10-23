@@ -1,36 +1,37 @@
 ﻿using NLog;
 using System;
 using System.Linq;
+using TradeCensus.Data;
 
 namespace TradeCensus.Shared
 {
     public abstract class TradeCensusServiceBase : IDisposable
     {
-        protected tradecensusEntities _entities;
+        protected tradecensusEntities DC;
         protected ILogger _logger;
         protected bool _isDataChanged;
         protected string _name;
 
         protected void ValidatePerson(int personID, string password)
         {
-            var user = _entities.PersonRoles.FirstOrDefault(i => i.PersonID == personID && i.Password == password);
+            var user = DC.PersonRoles.FirstOrDefault(i => i.PersonID == personID && i.Password == password);
             if (user == null)
                 throw new Exception(string.Format("Invalid user", personID));
         }
 
         protected TradeCensusServiceBase(string name)
         {            
-            _entities = new tradecensusEntities(); // throw error
+            DC = new tradecensusEntities(); // throw error
             _name = name;
-            _logger = Global.CurrentContext.LogFactory.GetLogger(name);
+            _logger = DependencyResolver.Resolve<ILogFactory>().GetLogger(name);
         }        
 
         public void Dispose()
         {
-            if (_isDataChanged && _entities != null)
+            if (_isDataChanged && DC != null)
             {
                 try {
-                    _entities.SaveChanges();
+                    DC.SaveChanges();
                 }
                 catch(Exception ex)
                 {
@@ -66,7 +67,7 @@ namespace TradeCensus.Shared
             string value;
             try
             {
-                value = _entities.Configs.FirstOrDefault(i => i.Name == key).Value;
+                value = DC.Configs.FirstOrDefault(i => i.Name == key).Value;
             }
             catch
             {

@@ -19,7 +19,7 @@
           </Key>
           <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="Name" Type="nvarchar" MaxLength="100" Nullable="false" />
-          <Property Name="Value" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="Value" Type="nvarchar" MaxLength="255" Nullable="false" />
         </EntityType>
         <EntityType Name="ConnectionSession">
           <Key>
@@ -47,6 +47,17 @@
           <Property Name="AmendBy" Type="int" Nullable="false" />
           <Property Name="AmendDate" Type="datetime" Nullable="false" />
         </EntityType>
+        <EntityType Name="Journal">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="PersonID" Type="int" Nullable="false" />
+          <Property Name="JournalDate" Type="date" Nullable="false" />
+          <Property Name="Data" Type="varchar(max)" Nullable="false" />
+          <Property Name="StartTS" Type="datetime" Nullable="false" />
+          <Property Name="EndTS" Type="datetime" Nullable="false" />
+        </EntityType>
         <EntityType Name="Outlet">
           <Key>
             <PropertyRef Name="ID" />
@@ -58,6 +69,7 @@
           <Property Name="Name" Type="nvarchar" MaxLength="40" Nullable="false" />
           <Property Name="AddLine" Type="nvarchar" MaxLength="40" />
           <Property Name="AddLine2" Type="nvarchar" MaxLength="40" />
+          <Property Name="Ward" Type="nvarchar" MaxLength="50" />
           <Property Name="District" Type="nvarchar" MaxLength="40" />
           <Property Name="ProvinceID" Type="nvarchar" MaxLength="3" Nullable="false" />
           <Property Name="Phone" Type="nvarchar" MaxLength="20" />
@@ -240,6 +252,7 @@
           <EntitySet Name="Config" EntityType="Self.Config" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="ConnectionSession" EntityType="Self.ConnectionSession" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="GeoBorder" EntityType="Self.GeoBorder" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Journal" EntityType="Self.Journal" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Outlet" EntityType="Self.Outlet" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="OutletHistory" EntityType="Self.OutletHistory" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="OutletImage" EntityType="Self.OutletImage" Schema="dbo" store:Type="Tables" />
@@ -277,7 +290,7 @@
           </Key>
           <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="Name" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
-          <Property Name="Value" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="Value" Type="String" MaxLength="255" FixedLength="false" Unicode="true" Nullable="false" />
         </EntityType>
         <EntityType Name="OutletType">
           <Key>
@@ -375,6 +388,7 @@
             <End Role="OutletImage" EntitySet="OutletImages" />
           </AssociationSet>
           <EntitySet Name="GeoBorders" EntityType="tradecensusModel.GeoBorder" />
+          <EntitySet Name="Journals" EntityType="tradecensusModel.Journal" />
         </EntityContainer>
         <EntityType Name="OutletHistory">
           <Key>
@@ -480,6 +494,7 @@
           <Property Name="PRowID" Type="Guid" Nullable="false" />
           <Property Name="PModifiedStatus" Type="Int32" Nullable="false" />
           <NavigationProperty Name="OutletImages" Relationship="tradecensusModel.FK_OutletImage_Outlet" FromRole="Outlet" ToRole="OutletImage" />
+          <Property Name="Ward" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
         </EntityType>
         <EntityType Name="OutletImage">
           <Key>
@@ -517,6 +532,17 @@
           <Property Name="GeoData" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="AmendBy" Type="Int32" Nullable="false" />
           <Property Name="AmendDate" Type="DateTime" Nullable="false" Precision="3" />
+        </EntityType>
+        <EntityType Name="Journal">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="PersonID" Type="Int32" Nullable="false" />
+          <Property Name="JournalDate" Type="DateTime" Nullable="false" Precision="0" />
+          <Property Name="Data" Type="String" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="false" />
+          <Property Name="StartTS" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="EndTS" Type="DateTime" Nullable="false" Precision="3" />
         </EntityType>
       </Schema>
     </edmx:ConceptualModels>
@@ -671,6 +697,7 @@
           <EntitySetMapping Name="Outlets">
             <EntityTypeMapping TypeName="tradecensusModel.Outlet">
               <MappingFragment StoreEntitySet="Outlet">
+                <ScalarProperty Name="Ward" ColumnName="Ward" />
                 <ScalarProperty Name="PModifiedStatus" ColumnName="PModifiedStatus" />
                 <ScalarProperty Name="PRowID" ColumnName="PRowID" />
                 <ScalarProperty Name="LegalName" ColumnName="LegalName" />
@@ -737,6 +764,18 @@
                 <ScalarProperty Name="GeoData" ColumnName="GeoData" />
                 <ScalarProperty Name="Name" ColumnName="Name" />
                 <ScalarProperty Name="ParentID" ColumnName="ParentID" />
+                <ScalarProperty Name="ID" ColumnName="ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Journals">
+            <EntityTypeMapping TypeName="tradecensusModel.Journal">
+              <MappingFragment StoreEntitySet="Journal">
+                <ScalarProperty Name="EndTS" ColumnName="EndTS" />
+                <ScalarProperty Name="StartTS" ColumnName="StartTS" />
+                <ScalarProperty Name="Data" ColumnName="Data" />
+                <ScalarProperty Name="JournalDate" ColumnName="JournalDate" />
+                <ScalarProperty Name="PersonID" ColumnName="PersonID" />
                 <ScalarProperty Name="ID" ColumnName="ID" />
               </MappingFragment>
             </EntityTypeMapping>

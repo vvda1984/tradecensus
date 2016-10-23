@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using TradeCensus.Data;
 using TradeCensus.Shared;
 
 namespace TradeCensus
@@ -25,7 +26,7 @@ namespace TradeCensus
                 var command = string.Format(@"SELECT gb.*, (select COUNT(Id) from GeoBorder as tmp where tmp.ParentID = gb.ID) as 'ChildrenCount'
                     FROM GeoBorder as gb
                     WHERE gb.ParentID = {0} order by gb.Name", parentID);
-                var query = _entities.Database.SqlQuery<GeoBorderEx>(command);
+                var query = DC.Database.SqlQuery<GeoBorderEx>(command);
                 if (query.Any())
                     foreach (var i in query)
                         resp.Items.Add(new BorderModel()
@@ -53,7 +54,7 @@ namespace TradeCensus
             {
                 //int geoID = int.Parse(id);
                 //var border = _entities.GeoBorders.FirstOrDefault(i => i.ID == geoID);
-                var query = _entities.Database.SqlQuery<GeoBorderEx>(
+                var query = DC.Database.SqlQuery<GeoBorderEx>(
                       string.Format(@"SELECT TOP 1 gb.*, (select COUNT(Id) from GeoBorder as tmp where tmp.ParentID = gb.ID) as 'ChildrenCount'
                         FROM GeoBorder as gb
                         WHERE gb.ID = {0}", id));
@@ -88,7 +89,7 @@ namespace TradeCensus
                 int id = int.Parse(provinceID);
                 //var border = _entities.GeoBorders.FirstOrDefault(i => i.ID == id || string.Compare(i.Name, provinceName, StringComparison.OrdinalIgnoreCase) == 0);
 
-                var query = _entities.Database.SqlQuery<GeoBorderEx>(
+                var query = DC.Database.SqlQuery<GeoBorderEx>(
                     string.Format(@"SELECT TOP 1 gb.*, (select COUNT(Id) from GeoBorder as tmp where tmp.ParentID = gb.ID) as 'ChildrenCount'
                                     FROM GeoBorder as gb
                                     WHERE gb.ID = {0} OR gb.Name LIKE '%{1}%'", id, provinceName));
@@ -122,7 +123,7 @@ namespace TradeCensus
         private void AppendChildren(int id, List<BorderModel> items)
         {
             //var query = _entities.GeoBorders.Where(i => i.ParentID == id).OrderBy(i => i.Name);
-            var query = _entities.Database.SqlQuery<GeoBorderEx>(
+            var query = DC.Database.SqlQuery<GeoBorderEx>(
                    string.Format(@"SELECT gb.*, (select COUNT(Id) from GeoBorder as tmp where tmp.ParentID = gb.ID) as 'ChildrenCount'
                                     FROM GeoBorder as gb
                                     WHERE gb.ParentID = {0}

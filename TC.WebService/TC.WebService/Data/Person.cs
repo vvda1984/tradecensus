@@ -7,7 +7,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace TradeCensus
+namespace TradeCensus.Data
 {
     using System;
     using System.Collections.Generic;

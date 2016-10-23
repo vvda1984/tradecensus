@@ -7,7 +7,7 @@ using System.Text;
 namespace TradeCensus
 {
     [ServiceContract]
-    public interface IBorderService : ITCService
+    public interface IBorderService
     {
         [OperationContract]
         GetBorderArrayResponse GetBorderByParent(string parentID);

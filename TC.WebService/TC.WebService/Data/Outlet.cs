@@ -7,7 +7,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace TradeCensus
+namespace TradeCensus.Data
 {
     using System;
     using System.Collections.Generic;
@@ -61,6 +61,7 @@ namespace TradeCensus
         public string LegalName { get; set; }
         public System.Guid PRowID { get; set; }
         public int PModifiedStatus { get; set; }
+        public string Ward { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<OutletImage> OutletImages { get; set; }

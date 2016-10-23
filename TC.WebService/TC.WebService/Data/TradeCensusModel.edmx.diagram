@@ -21,6 +21,7 @@
         <EntityTypeShape EntityType="tradecensusModel.OutletImage" Width="1.5" PointX="2.75" PointY="10.125" />
         <AssociationConnector Association="tradecensusModel.FK_OutletImage_Outlet" />
         <EntityTypeShape EntityType="tradecensusModel.GeoBorder" Width="1.5" PointX="4.75" PointY="6.75" />
+        <EntityTypeShape EntityType="tradecensusModel.Journal" Width="1.5" PointX="7.375" PointY="7.75" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

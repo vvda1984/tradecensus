@@ -7,18 +7,19 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace TradeCensus
+namespace TradeCensus.Data
 {
     using System;
     using System.Collections.Generic;
     
-    public partial class GeoBorder
+    public partial class OutletHistory
     {
         public int ID { get; set; }
-        public int ParentID { get; set; }
-        public string Name { get; set; }
-        public string GeoData { get; set; }
-        public int AmendBy { get; set; }
-        public System.DateTime AmendDate { get; set; }
+        public int OutletID { get; set; }
+        public int Action { get; set; }
+        public string Note { get; set; }
+        public int PersonID { get; set; }
+        public int InputBy { get; set; }
+        public System.DateTime InputDate { get; set; }
     }
 }

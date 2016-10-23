@@ -17,7 +17,7 @@ namespace TradeCensus
             try
             {
                 Log("Get all config");
-                var items = _entities.Configs.ToArray();
+                var items = DC.Configs.ToArray();
                 Dictionary<string, string> configDict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                 foreach (var i in items)
                     if (!configDict.ContainsKey(i.Name))
@@ -39,7 +39,7 @@ namespace TradeCensus
             try
             {
                 Log("Get all config");
-                var latestVersion = _entities.Configs.FirstOrDefault(i=>string.Compare(i.Name, "Version", StringComparison.OrdinalIgnoreCase) == 0);
+                var latestVersion = DC.Configs.FirstOrDefault(i=>string.Compare(i.Name, "Version", StringComparison.OrdinalIgnoreCase) == 0);
                 if (latestVersion != null)
                 {
                     int lastVersionNumber = int.Parse(latestVersion.Value);
@@ -47,7 +47,7 @@ namespace TradeCensus
 
                     if (lastVersionNumber > currVersionNumber)
                     {
-                        var msg = _entities.Configs.FirstOrDefault(i => string.Compare(i.Name, "NewVersionMessage", StringComparison.OrdinalIgnoreCase) == 0);
+                        var msg = DC.Configs.FirstOrDefault(i => string.Compare(i.Name, "NewVersionMessage", StringComparison.OrdinalIgnoreCase) == 0);
 
 
                         resp.Version = lastVersionNumber;

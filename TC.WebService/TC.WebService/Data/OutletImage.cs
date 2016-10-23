@@ -7,15 +7,22 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace TradeCensus
+namespace TradeCensus.Data
 {
     using System;
     using System.Collections.Generic;
     
-    public partial class Area
+    public partial class OutletImage
     {
-        public string ID { get; set; }
-        public string Name { get; set; }
-        public string ZoneID { get; set; }
+        public int ID { get; set; }
+        public int OutletID { get; set; }
+        public string Image1 { get; set; }
+        public string Image2 { get; set; }
+        public string Image3 { get; set; }
+        public byte[] ImageData1 { get; set; }
+        public byte[] ImageData2 { get; set; }
+        public byte[] ImageData3 { get; set; }
+    
+        public virtual Outlet Outlet { get; set; }
     }
 }

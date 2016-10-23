@@ -16,7 +16,7 @@ namespace TradeCensus
             try
             {
                 _logger.Debug("Get all provinces");
-                resp.Items = _entities.Provinces.ToList();
+                resp.Items = DC.Provinces.ToList();
             }
             catch (Exception ex)
             {

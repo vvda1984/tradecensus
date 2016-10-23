@@ -7,20 +7,21 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace TradeCensus
+namespace TradeCensus.Data
 {
     using System;
     using System.Collections.Generic;
     
-    public partial class PersonRole
+    public partial class ConnectionSession
     {
         public int ID { get; set; }
-        public int PersonID { get; set; }
-        public int Role { get; set; }
-        public string Username { get; set; }
-        public string Password { get; set; }
-        public System.DateTime InputDate { get; set; }
-        public int InputBy { get; set; }
+        public string Uuid { get; set; }
+        public string Model { get; set; }
+        public string Platform { get; set; }
+        public string Version { get; set; }
+        public string Manufacturer { get; set; }
+        public string Token { get; set; }
+        public string AppVersion { get; set; }
         public System.DateTime AmendDate { get; set; }
         public int AmendBy { get; set; }
     }

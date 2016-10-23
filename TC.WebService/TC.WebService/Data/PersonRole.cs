@@ -7,16 +7,21 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace TradeCensus
+namespace TradeCensus.Data
 {
     using System;
     using System.Collections.Generic;
     
-    public partial class Zone
+    public partial class PersonRole
     {
-        public string ID { get; set; }
-        public string Name { get; set; }
-        public string RegionID { get; set; }
-        public string ZoneCode { get; set; }
+        public int ID { get; set; }
+        public int PersonID { get; set; }
+        public int Role { get; set; }
+        public string Username { get; set; }
+        public string Password { get; set; }
+        public System.DateTime InputDate { get; set; }
+        public int InputBy { get; set; }
+        public System.DateTime AmendDate { get; set; }
+        public int AmendBy { get; set; }
     }
 }

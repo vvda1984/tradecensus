@@ -7,22 +7,18 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace TradeCensus
+namespace TradeCensus.Data
 {
     using System;
     using System.Collections.Generic;
     
-    public partial class ConnectionSession
+    public partial class SyncDetail
     {
         public int ID { get; set; }
-        public string Uuid { get; set; }
-        public string Model { get; set; }
-        public string Platform { get; set; }
-        public string Version { get; set; }
-        public string Manufacturer { get; set; }
-        public string Token { get; set; }
-        public string AppVersion { get; set; }
-        public System.DateTime AmendDate { get; set; }
-        public int AmendBy { get; set; }
+        public int SyncHistoryID { get; set; }
+        public System.Guid RowID { get; set; }
+        public byte Action { get; set; }
+    
+        public virtual SyncHistory SyncHistory { get; set; }
     }
 }

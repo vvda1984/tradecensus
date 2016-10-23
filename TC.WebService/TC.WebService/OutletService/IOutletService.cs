@@ -3,7 +3,7 @@
 namespace TradeCensus
 {
     [ServiceContract]
-    public interface IOutletService : ITCService
+    public interface IOutletService
     {
         //[OperationContract]
         //GetOutletIDResponse GetOutletsByProvince(string personID, string provinceID);

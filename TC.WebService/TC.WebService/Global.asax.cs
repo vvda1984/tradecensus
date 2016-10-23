@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -10,13 +12,28 @@ namespace TradeCensus
 {
     public class Global : System.Web.HttpApplication
     {
-        public static TradeCensusContext CurrentContext { get; set; }
-
         protected void Application_Start(object sender, EventArgs e)
-        {
-            CurrentContext = new TradeCensusContext();
-        }
+        {           
+            //JsonConvert.DefaultSettings = () => new JsonSerializerSettings
+            //{
+            //    DateFormatHandling = DateFormatHandling.IsoDateFormat,
+            //    DateTimeZoneHandling = DateTimeZoneHandling.Utc,
+            //    ContractResolver = new CamelCasePropertyNamesContractResolver(),
+            //    ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+            //};
 
+            DependencyResolver.SetResolver(new DefaultResolver(), resolver =>
+            {
+                resolver.Register<ILogFactory>(() => new LogFactory(), true);
+                resolver.Register<IConfigService>(() => new ConfigService());
+                resolver.Register<IPersonService>(() => new PersonService());
+                resolver.Register<IProvinceService>(() => new ProvinceService());
+                resolver.Register<IOutletService>(() => new OutletService());
+                resolver.Register<IBorderService>(() => new BorderService());
+                resolver.Register<IJournalService>(() => new JournalService());
+            });
+        }
+      
         protected void Session_Start(object sender, EventArgs e)
         {
 

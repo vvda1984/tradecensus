@@ -4,7 +4,7 @@ using System.Web.Services;
 namespace TradeCensus
 {
     [ServiceContract]
-    public interface IPersonService : ITCService
+    public interface IPersonService 
     {     
         [OperationContract]       
         LoginResponse Login(string username, string password);

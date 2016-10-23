@@ -7,18 +7,15 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace TradeCensus
+namespace TradeCensus.Data
 {
     using System;
     using System.Collections.Generic;
     
-    public partial class SyncDetail
+    public partial class Area
     {
-        public int ID { get; set; }
-        public int SyncHistoryID { get; set; }
-        public System.Guid RowID { get; set; }
-        public byte Action { get; set; }
-    
-        public virtual SyncHistory SyncHistory { get; set; }
+        public string ID { get; set; }
+        public string Name { get; set; }
+        public string ZoneID { get; set; }
     }
 }

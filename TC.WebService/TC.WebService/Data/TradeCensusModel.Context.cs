@@ -7,7 +7,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace TradeCensus
+namespace TradeCensus.Data
 {
     using System;
     using System.Data.Entity;
@@ -39,5 +39,6 @@ namespace TradeCensus
         public virtual DbSet<Outlet> Outlets { get; set; }
         public virtual DbSet<OutletImage> OutletImages { get; set; }
         public virtual DbSet<GeoBorder> GeoBorders { get; set; }
+        public virtual DbSet<Journal> Journals { get; set; }
     }
 }

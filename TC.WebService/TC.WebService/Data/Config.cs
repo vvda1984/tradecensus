@@ -7,19 +7,15 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace TradeCensus
+namespace TradeCensus.Data
 {
     using System;
     using System.Collections.Generic;
     
-    public partial class OutletHistory
+    public partial class Config
     {
         public int ID { get; set; }
-        public int OutletID { get; set; }
-        public int Action { get; set; }
-        public string Note { get; set; }
-        public int PersonID { get; set; }
-        public int InputBy { get; set; }
-        public System.DateTime InputDate { get; set; }
+        public string Name { get; set; }
+        public string Value { get; set; }
     }
 }

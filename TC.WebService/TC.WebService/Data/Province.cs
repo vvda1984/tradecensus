@@ -7,15 +7,14 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace TradeCensus
+namespace TradeCensus.Data
 {
     using System;
     using System.Collections.Generic;
     
-    public partial class Config
+    public partial class Province
     {
-        public int ID { get; set; }
+        public string ID { get; set; }
         public string Name { get; set; }
-        public string Value { get; set; }
     }
 }

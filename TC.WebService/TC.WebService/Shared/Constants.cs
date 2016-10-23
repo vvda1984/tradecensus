@@ -34,5 +34,8 @@
         public const string FieldDelimeter = ",";
         public const string DataDelimeter = "|||";
         public const string Base64 = "base64";
+
+        public const string ShortDateFormat = "yyyy-MM-dd";
+        public const string DatetimeFormat = "yyyy-MM-dd HH:mm:ss";
     }
 }

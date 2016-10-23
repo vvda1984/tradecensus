@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Web;
+using TradeCensus.Data;
 using TradeCensus.Shared;
 
 namespace TradeCensus
@@ -53,12 +54,12 @@ namespace TradeCensus
         private List<OutletType> GetAllOutletTypes()
         {
             Log("Get list of OutletTypes");
-            return _entities.OutletTypes.ToList();
+            return DC.OutletTypes.ToList();
         }
 
         private List<OutletModel> GetOutletsByLocation(int personID, double lat, double lng, double meter, int count, int status)
         {
-            var user = _entities.PersonRoles.FirstOrDefault(i => i.PersonID == personID);
+            var user = DC.PersonRoles.FirstOrDefault(i => i.PersonID == personID);
             if (user == null)
                 throw new Exception(string.Format("User {0} doesn't exist", personID));
             var auditor = user.Role == Constants.RoleAudit || user.Role == Constants.RoleAudit1;
@@ -74,7 +75,7 @@ namespace TradeCensus
             List<OutletModel> res = new List<OutletModel>();
             var command = QueryOutletCommand(status, bl.Lat, tl.Lat, bl.Lng, br.Lng,  personID, auditor);
 
-            var query = _entities.Database.SqlQuery<OutletEntity>(command); 
+            var query = DC.Database.SqlQuery<OutletEntity>(command); 
             if (query.Any())
             {
                 var arr = query.ToArray();
@@ -253,6 +254,7 @@ namespace TradeCensus
                 Name = outlet.Name,
                 AddLine = outlet.AddLine,
                 AddLine2 = outlet.AddLine2,
+                Ward = outlet.Ward,
                 AreaID = outlet.AreaID,
                 CloseDate = outlet.CloseDate == null ? "" : outlet.CloseDate.Value.ToString("yyyy-MM-dd"),
                 IsOpened = outlet.CloseDate == null,
@@ -300,7 +302,7 @@ namespace TradeCensus
             //else if (outlet.DISAlias != null)
             //    foundOutlet.OutletSource = string.IsNullOrEmpty(outlet.DISAlias.Trim()) ? 0 : 1;
 
-            foundOutlet.FullAddress = string.Format("{0} {1} {2} {3}", outlet.AddLine, outlet.AddLine2, outlet.District, foundOutlet.ProvinceName);
+            foundOutlet.FullAddress = string.Format("{0} {1} {2} {3} {4}", outlet.AddLine, outlet.AddLine2, outlet.Ward, outlet.District, foundOutlet.ProvinceName);
             foundOutlet.FullAddress = foundOutlet.FullAddress.Trim().Replace("  ", " ");
 
             var outletImg = outlet.OutletImages.FirstOrDefault();
@@ -323,7 +325,7 @@ namespace TradeCensus
                 //}
             }
 
-            var person = _entities.People.FirstOrDefault(p=>p.ID == outlet.PersonID);
+            var person = DC.People.FirstOrDefault(p=>p.ID == outlet.PersonID);
             if(person != null)
             {
                 foundOutlet.PersonLastName = person.LastName;
@@ -391,10 +393,10 @@ namespace TradeCensus
         {
             Outlet existingOutlet = null;
             if (!string.IsNullOrEmpty(outlet.PRowID))
-                existingOutlet = _entities.Outlets.FirstOrDefault(i => i.PRowID.ToString() == outlet.PRowID);
+                existingOutlet = DC.Outlets.FirstOrDefault(i => i.PRowID.ToString() == outlet.PRowID);
 
             if (existingOutlet == null && outlet.ID != 600000000)
-                existingOutlet = _entities.Outlets.FirstOrDefault(i => i.ID == outlet.ID);
+                existingOutlet = DC.Outlets.FirstOrDefault(i => i.ID == outlet.ID);
 
             if (existingOutlet == null && outlet.AuditStatus == Constants.StatusDelete)
                 return null;
@@ -418,6 +420,7 @@ namespace TradeCensus
                         LastContact = "",
                         Tracking = 0,
                         Class = "",
+                        Ward = outlet.Ward,
                         Open1st = null,
                         Close1st = null,
                         Open2nd = null,
@@ -436,7 +439,7 @@ namespace TradeCensus
                         AuditStatus = Constants.StatusNew,
                         PModifiedStatus = 0,
                     };
-                    _entities.Outlets.Add(existingOutlet);
+                    DC.Outlets.Add(existingOutlet);
                     return UpdateOutlet(outlet, existingOutlet, saveChanged);
                 }
             }
@@ -455,7 +458,7 @@ namespace TradeCensus
             {
                 AppendOutletHistory(outlet.AmendBy, outlet.ID, Constants.StatusDeny, "Cannot update audited outlet");
                 if (saveChanged)
-                    _entities.SaveChanges();
+                    DC.SaveChanges();
                 throw new DeniedException("Cannot update because outlet(s) audited!");
             }
 
@@ -475,6 +478,7 @@ namespace TradeCensus
                 dbOutlet.OTypeID = outlet.OTypeID;
                 dbOutlet.AddLine = outlet.AddLine;
                 dbOutlet.AddLine2 = outlet.AddLine2;
+                dbOutlet.Ward = outlet.Ward;
                 dbOutlet.District = outlet.District;
                 dbOutlet.ProvinceID = outlet.ProvinceID;
                 dbOutlet.Phone = outlet.Phone;
@@ -565,7 +569,7 @@ namespace TradeCensus
 
                 AppendOutletHistory(outlet.AmendBy, outlet.ID, (byte)outlet.AuditStatus, ToActionMsg(outlet.AuditStatus));
                 if (saveChanged)
-                    _entities.SaveChanges();
+                    DC.SaveChanges();
                 return dbOutlet;
             }
         }
@@ -573,7 +577,7 @@ namespace TradeCensus
         private int GetNextOutletID(int provinceID)
         {
             var proId = provinceID.ToString("D2");
-            var q = _entities.Database.SqlQuery<int>(string.Format("select top 1 dbo.ufn_GetNewOCode('{0}')", proId));
+            var q = DC.Database.SqlQuery<int>(string.Format("select top 1 dbo.ufn_GetNewOCode('{0}')", proId));
             if (q.Any()) return q.FirstOrDefault();
             var num = (new Random()).Next(10000, 99999);
             return int.Parse("6" + proId + num.ToString("D5"));
@@ -581,13 +585,13 @@ namespace TradeCensus
 
         private string GetOutletType(string id)
         {
-            var item =_entities.OutletTypes.FirstOrDefault(i => i.ID == id);
+            var item =DC.OutletTypes.FirstOrDefault(i => i.ID == id);
             return item == null ? "" : item.Name;
         }
 
         private string GetProvinceName(string id)
         {
-            var item = _entities.Provinces.FirstOrDefault(i => i.ID == id);
+            var item = DC.Provinces.FirstOrDefault(i => i.ID == id);
             return item == null ? "" : item.Name;
         }      
   
@@ -603,7 +607,7 @@ namespace TradeCensus
         private string GetOutletImage(string outletID, string index)
         {           
             var id = int.Parse(outletID);
-            Outlet outlet = _entities.Outlets.FirstOrDefault(i => i.ID == id);
+            Outlet outlet = DC.Outlets.FirstOrDefault(i => i.ID == id);
             if (outlet != null)
             {
                 OutletImage outletImage = outlet.OutletImages.FirstOrDefault();
@@ -657,28 +661,28 @@ namespace TradeCensus
                 InputBy = personID,
                 InputDate = DateTime.Now,
             };
-            _entities.OutletHistories.Add(hist);
+            DC.OutletHistories.Add(hist);
         }
 
         private void DeleteOutlet(int personID, int outletID)
         {
-            Outlet existingOutlet = _entities.Outlets.FirstOrDefault(i => i.ID == outletID);
+            Outlet existingOutlet = DC.Outlets.FirstOrDefault(i => i.ID == outletID);
             if (existingOutlet != null)
             {
                 var imgs = existingOutlet.OutletImages.ToArray();
                 foreach(var img in imgs)
                 {
                     img.Outlet = null;
-                    _entities.OutletImages.Remove(img);
+                    DC.OutletImages.Remove(img);
                 }
                 existingOutlet.OutletImages.Clear();
 
-                _entities.Outlets.Remove(existingOutlet);
+                DC.Outlets.Remove(existingOutlet);
 
                 AppendOutletHistory(personID, outletID, Constants.StatusDelete, ToActionMsg(Constants.StatusDelete));
             }
 
-            _entities.SaveChanges();
+            DC.SaveChanges();
         }
 
         private string DownloadOutletsZip(string provinceID, int from, int to)
@@ -709,7 +713,7 @@ namespace TradeCensus
                         ) as tmp
                         where RowNo between {0} and {1}", from + 1, to, provinceID);
 
-                var query = _entities.Database.SqlQuery<DownloadOutlet>(command);
+                var query = DC.Database.SqlQuery<DownloadOutlet>(command);
                 results = query.ToArray();
 
                 var outletHasImages = results.Where(o => (o.ImageData1 != null || o.ImageData2 != null || o.ImageData3 != null));
@@ -744,7 +748,7 @@ namespace TradeCensus
                         ) as tmp
                         where RowNo between {0} and {1}", from + 1, to, provinceID);
 
-                var query = _entities.Database.SqlQuery<DownloadOutlet>(command);
+                var query = DC.Database.SqlQuery<DownloadOutlet>(command);
                 results = query.ToArray();
             }
 
@@ -832,7 +836,7 @@ namespace TradeCensus
 
         private bool AllowDownloadImages()
         {
-            var allowDownloadImage = _entities.Configs.FirstOrDefault(c => string.Compare(c.Name, "enable_download_image", StringComparison.OrdinalIgnoreCase) == 0);
+            var allowDownloadImage = DC.Configs.FirstOrDefault(c => string.Compare(c.Name, "enable_download_image", StringComparison.OrdinalIgnoreCase) == 0);
             return (allowDownloadImage != null && allowDownloadImage.Value == "1");
         }
 
@@ -902,7 +906,7 @@ namespace TradeCensus
             {
                 ValidatePerson(int.Parse(personID), password);
 
-                return _entities.Outlets.Count(i => i.ProvinceID == provinceID);
+                return DC.Outlets.Count(i => i.ProvinceID == provinceID);
             }
             catch
             {
@@ -959,7 +963,7 @@ namespace TradeCensus
                 resp.Image2 = "";
                 resp.Image3 = "";
                 int id = int.Parse(outletID);
-                var o = _entities.OutletImages.FirstOrDefault(i=>i.OutletID == id);
+                var o = DC.OutletImages.FirstOrDefault(i=>i.OutletID == id);
                 if(o != null)
                 {
                     if (o.ImageData1 != null)
