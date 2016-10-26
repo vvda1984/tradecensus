@@ -159,11 +159,19 @@
         </div>
         <div class="cirle-button white float-right" ng-show="showSettingExpand" ng-click="showHideRightPanel()">
             <img src="assets/img/setting-white.svg" />
-        </div>    
-        <div class="cirle-button blue float-right" ng-show="canAddNewOutlet" style="z-index:2" ng-click="createNewOutlet()">
+        </div>   
+        
+        <div class="cirle-button white float-right margin-right-4" style="z-index:2" ng-show="journal.showCollapse" ng-click="journal.showHideJournalPanel()">
+            <img src="assets/img/arrow-right.svg" />
+        </div>
+        <div class="cirle-button white float-right margin-right-4" style="z-index:2" ng-show="journal.showExpend" ng-click="journal.showHideJournalPanel()">
+            <img id="journalImage" src="assets/img/journal.svg" />
+        </div>
+         
+        <div class="cirle-button blue float-right margin-right-4" ng-show="canAddNewOutlet" style="z-index:2" ng-click="createNewOutlet()">
             <img src="assets/img/add.svg" />
         </div>
-
+       
         <div class="square-box-red float-right">
             <span id="status" class="blue-color"></span>
         </div>   
@@ -181,6 +189,10 @@
         <input placeholder="lng" ng-model="testlng" style="width:80px;height:28px;" type="number">
         <button ng-click="testChangeLocation()">Set</button>
     </div>
+
+    <div id="home-leftbottom" ng-show="config.enable_logview">
+        <span id="textLogMessage" class="float-left small-text">Log message</span>        
+    </div>     
 
     <div id="home-topright-offline">      
        <div class="square-box-red float-right normal-text">
@@ -236,17 +248,27 @@
                         </div>
                     </md-input-container>
 
-                    <div layout-gt-sm="row" style="margin-top:-10px;">
+                    <!--<div layout-gt-sm="row" style="margin-top:-10px;">
                         <md-input-container class="md-block" flex-gt-sm="" style="margin-bottom:20px; margin-left:-4px">
                             <div class="md-block-item" style="margin-bottom:0px;margin-top:-16px;margin-left:4px">
                                 <div class="md-block-item-title small-text">Track Journal (On/Off)</div>
                                 <md-switch class="md-primary" ng-model="config.enable_journal">{{config.enable_journal ? "On" : "Off"}}</md-switch>
                             </div>                           
                         </md-input-container>
-                        <md-input-container class="md-block" flex-gt-sm="" style="margin-bottom:20px;">
+                    </div>-->
+
+                    <div layout-gt-sm="row" style="margin-top:-10px;">
+                        <md-input-container class="md-block" style="margin-top:-24px;margin-left:-4px">
                             <div class="md-block-item" style="margin-bottom:0px;margin-top:-16px;margin-left:4px" ng-show="config.enable_devmode">
                                 <div class="md-block-item-title small-text">Mode (Online/Offline)</div>
                                 <md-switch class="md-primary" ng-model="config.mode_online">{{config.mode_online ? "Online" : "Offline"}}</md-switch>
+                            </div>
+                        </md-input-container>
+
+                        <md-input-container class="md-block" style="margin-bottom:0px; margin-left:-4px">
+                            <div class="md-block-item" style="margin-bottom:0px;margin-top:-16px;margin-left:4px">
+                                <div class="md-block-item-title small-text">View Log</div>
+                                <md-switch class="md-primary" ng-model="config.enable_logview">{{config.enable_logview ? "Enable" : "Disable"}}</md-switch>
                             </div>
                         </md-input-container>
                     </div>
@@ -267,6 +289,64 @@
                     <div class="title">{{R.btn_logout}}</div>
                 </div>
             </div>              
+        </div>
+    </div>
+
+    <div id="journal-panel" class="slider-right">
+        <!--<div class=hidden-overlay" ng-click="showRightPanel()"></div> -->
+        <div id="slider-right-content">
+            <md-content layout-padding="" class="md-content-white">
+                <form name="journalForm">
+                    <!--<md-input-container class="md-block" flex-gt-sm="" style="margin-bottom:0px; margin-left:-6px">
+                        <div class="md-block-item" style="margin-bottom:0px;margin-top:-16px;margin-left:4px">
+                            <div class="md-block-item-title small-text">Track Journal</div>
+                            <md-switch class="md-primary" 
+                                       ng-model="config.enable_journal">{{config.enable_journal ? "Tracking" : "Off"}}</md-switch>
+                        </div>
+                    </md-input-container>-->
+
+                    <md-input-container id="btnStartJournal" class="md-block" style="margin-left:-4px; margin-bottom:0px;">
+                        <div class="m-flat-button float-left margin-top-4" ng-click="journal.start()">
+                            <!--<img src="assets/img/journal-fill.svg">-->
+                            <span>{{R.btn_start_journal_tracking}}</span>
+                        </div>
+                    </md-input-container>
+
+                    <md-input-container id="btnStopJournal" class="md-block" style="margin-left:-4px; margin-bottom:0px; display:none">
+                        <div class="m-flat-button float-left margin-top-4" ng-click="journal.stop()">
+                            <!--<img src="assets/img/journal-fill.svg">-->
+                            <span style="color:#F44336">{{R.btn_stop_journal_tracking}}</span>
+                        </div>
+                    </md-input-container>
+
+                    <div class="md-block-item" style="margin-bottom:0px;margin-top:8px;">
+                        <div class="md-block-item-title extra-large-text black-color">JOURNAL HISTORY</div>
+                    </div>
+
+                    <div class="md-block-item" style="margin-bottom:0px;margin-top:-16px;">
+                        <div class="md-block-item-title small-text">Date From</div>
+                        <md-datepicker ng-model="journal.from" md-placeholder="Enter date"></md-datepicker>
+                    </div>
+
+                    <div class="md-block-item" style="margin-bottom:0px;margin-top:-16px;">
+                        <div class="md-block-item-title small-text">Date To</div>
+                        <md-datepicker ng-model="journal.to" md-placeholder="Enter date"></md-datepicker>
+                    </div>
+
+                    <md-input-container class="md-block" flex-gt-sm="" style="margin-top:-4px;margin-bottom:0px;">
+                        <div class="m-flat-button float-left margin-top-4" ng-click="journal.viewJournal()">
+                            <img src="assets/img/journal-fill.svg">
+                            <span>{{R.btn_view_journals}}</span>
+                        </div>
+                    </md-input-container>
+                    <md-input-container class="md-block" flex-gt-sm="" style="margin-bottom:0px; margin-top:-8px;">
+                        <div class="m-flat-button float-left margin-top-4" ng-click="journal.clearJournal()">
+                            <img src="assets/img/clear.svg">
+                            <span>{{R.btn_clear_journals}}</span>
+                        </div>
+                    </md-input-container>
+                </form>
+            </md-content>
         </div>
     </div>
 

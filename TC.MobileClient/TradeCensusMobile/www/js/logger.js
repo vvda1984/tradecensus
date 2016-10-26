@@ -58,6 +58,9 @@ var logger = {
 }
 
 function log(msg) {
+    //var formatedMsg = utils.nowTime() + ": " + msg;
+    //$('#textLogMessage').html(formatedMsg);
+
     console.log(msg);
     logger.info(msg);
 }

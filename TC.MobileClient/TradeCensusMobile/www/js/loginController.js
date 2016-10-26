@@ -82,7 +82,7 @@ function loginController($scope, $http) {
 
     $scope.changeMode = function () {
         $scope.config = config;
-        log('Change mode: ' + i.toString());
+        //log('Change mode: ' + i.toString());
         $("#loginscreen").css('display', 'none');
         $("#configscreen").css('display', 'block');
     };
@@ -358,71 +358,84 @@ function loginController($scope, $http) {
             } else {
                 setDlgMsg(R.update_settings);
 
-                var syncProvinces = false;
+                var syncProvinces = true;
                 var syncOutletTypes = false;
-                for (var i in data.Items) {
+                for (var i = 0; i < data.Items.length;i++) {
                     p = data.Items[i];
-                    if (p.Key == 'calc_distance_algorithm') {
-                        config.calc_distance_algorithm = p.Value;
-                    } else if (p.Key == 'tbl_area_ver') {
+                    var name = data.Items[i].Key;
+                    var value = data.Items[i].Value;
+                    if (name == 'calc_distance_algorithm') {
+                        config.calc_distance_algorithm = value;
+                    } else if (name == 'tbl_area_ver') {
                         // do nothing
-                    } else if (p.Key == 'tbl_outlettype_ver') {
-                        syncOutletTypes = config.tbl_outlettype_ver != p.Value;
-                        config.tbl_outlettype_ver = p.Value;
-                    } else if (p.Key == 'tbl_province_ver') {
-                        syncProvinces = config.tbl_province_ver != p.Value;
-                        config.tbl_province_ver = p.Value;
-                    } else if (p.Key == 'tbl_zone_ver') {
+                    } else if (name == 'tbl_outlettype_ver') {
+                        syncOutletTypes = config.tbl_outlettype_ver != value;
+                        config.tbl_outlettype_ver = value;
+                    } else if (name == 'tbl_province_ver') {
+                        //syncProvinces = config.tbl_province_ver != value;
+                        //config.tbl_province_ver = value;
+                    } else if (name == 'tbl_zone_ver') {
                         // do nothing
-                    } else if (p.Key == 'map_api_key') {
-                        config.map_api_key = p.Value;                      
-                    } else if (p.Key == 'http_method') {
-                        config.http_method = p.Value;
-                    } else if (p.Key == 'sync_time') {                        
-                        config.sync_time = parseInt(p.Value);
-                    } else if (p.Key == 'protocol') {
-                        config.protocol = p.Value;
-                    } else if (p.Key == 'max_province_download') {
-                        config.max_oulet_download = p.Value;
-                    } else if (p.Key == 'map_zoom') {
-                        config.map_zoom = parseInt(p.Value);
+                    } else if (name == 'map_api_key') {
+                        config.map_api_key = value;
+                    } else if (name == 'http_method') {
+                        config.http_method = value;
+                    } else if (name == 'sync_time') {
+                        config.sync_time = parseInt(value);
+                    } else if (name == 'protocol') {
+                        config.protocol = value;
+                    } else if (name == 'max_province_download') {
+                        config.max_oulet_download = value;
+                    } else if (name == 'map_zoom') {
+                        config.map_zoom = parseInt(value);
                         if (config.map_zoom > 21) config.map_zoom = 21;
-                    } else if (p.Key == 'cluster_size') {
-                        config.cluster_size = p.Value;
-                    } else if (p.Key == 'cluster_max_zoom') {
-                        config.cluster_max_zoom = p.Value;
-                    } else if (p.Key == 'audit_range') {
-                        config.audit_range = parseInt(p.Value);
-                    } else if (p.Key == 'audit_accuracy') {
-                        config.audit_accuracy = parseInt(p.Value);
-                    } else if (p.Key == 'download_batch_size') {
-                        config.download_batch_size = parseInt(p.Value);
-                    } else if (p.Key == 'auto_sync') {
-                        config.auto_sync = parseInt(p.Value);
-                    } else if (p.Key == 'sync_time') {
-                        config.sync_time = parseInt(p.Value);
-                    } else if (p.Key == 'sync_time_out') {
-                        config.sync_time_out = parseInt(p.Value);
-                    } else if (p.Key == 'sync_batch_size') {
-                        config.sync_batch_size = parseInt(p.Value);
-                    } else if (p.Key == 'ping_time') {
-                        config.ping_time = parseInt(p.Value);
-                    } else if (p.Key == 'refresh_time') {
-                        config.refresh_time = parseInt(p.Value);
-                    } else if (p.Key == 'refresh_time_out') {
-                        config.refresh_time_out = parseInt(p.Value);
+                    } else if (name == 'cluster_size') {
+                        config.cluster_size = value;
+                    } else if (name == 'cluster_max_zoom') {
+                        config.cluster_max_zoom = value;
+                    } else if (name == 'audit_range') {
+                        config.audit_range = parseInt(value);
+                    } else if (name == 'audit_accuracy') {
+                        config.audit_accuracy = parseInt(value);
+                    } else if (name == 'download_batch_size') {
+                        config.download_batch_size = parseInt(value);
+                    } else if (name == 'auto_sync') {
+                        config.auto_sync = parseInt(value);
+                    } else if (name == 'sync_time') {
+                        config.sync_time = parseInt(value);
+                    } else if (name == 'sync_time_out') {
+                        config.sync_time_out = parseInt(value);
+                    } else if (name == 'sync_batch_size') {
+                        config.sync_batch_size = parseInt(value);
+                    } else if (name == 'ping_time') {
+                        config.ping_time = parseInt(value);
+                    } else if (name == 'refresh_time') {
+                        config.refresh_time = parseInt(value);
+                    } else if (name == 'refresh_time_out') {
+                        config.refresh_time_out = parseInt(value);
                     } else if (name == 'session_time_out') {
-                        config.session_time_out = parseInt(p.Value);
-                    } else if (p.Key == 'border_fill_opacity') {
-                        config.border_fill_opacity = parseFloat(p.Value);
-                    } else if (p.Key == 'enable_rereverse_geo') {
-                        config.enable_rereverse_geo = parseInt(p.Value);
-                    } else if (p.Key == 'download_batch_size') {
-                        config.download_batch_size = parseInt(p.Value);
+                        config.session_time_out = parseInt(value);
+                    } else if (name == 'border_fill_opacity') {
+                        config.border_fill_opacity = parseFloat(value);
+                    } else if (name == 'enable_rereverse_geo') {
+                        config.enable_rereverse_geo = parseInt(value);
+                    } else if (name == 'download_batch_size') {
+                        config.download_batch_size = parseInt(value);
                     } else if (name == 'journal_update_time') {
-                        config.journal_update_time = parseInt(p.value);
+                        config.journal_update_time = parseInt(value);
                     } else if (name == 'journal_distance') {
-                        config.journal_distance = parseInt(p.value);
+                        config.journal_distance = parseInt(value);
+                    } else if (name == 'journal_accuracy') {
+                        config.journal_accuracy = parseInt(value);
+                    } else if (name == 'journal_color') {
+                        config.journal_color = value;
+                    } else if (name == 'journal_opacity') {
+                        try { config.journal_opacity = parseFloat(value); }
+                        catch (err) { }
+                    } else if (name == 'journal_weight') {
+                        config.journal_weight = parseInt(value);
+                    } else if (name == 'journal_nonstop') {
+                        config.journal_nonstop = parseInt(value);
                     }
                 }
 

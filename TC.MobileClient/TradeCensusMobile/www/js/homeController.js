@@ -53,6 +53,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     $scope.viewOutletPanel = false;
     $scope.currentPage = 0;
     $scope.pageSize = config.page_size;
+    
 
     for (var i = 0; i < dprovinces.length; i++) {
         if (dprovinces[i].id == $scope.config.province_id) {
@@ -70,10 +71,18 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         }
     }
 
+    for (var i = 0; i < provinces.length; i++) {
+        if (provinces[i].id === $scope.config.province_id) {
+            addressModel.provinceRaw = provinces[i];
+            break;
+        }
+    }
+
     //*************************************************************************
     $scope.testChangeLocation = function () {
         devLat = $scope.testlat;
         devLng = $scope.testlng;
+        lastLoadLocationTS = null;
         handleLocationChange($scope.testlat, $scope.testlng, $scope.testacc);
         //if(locationChangedCallback)
         //    locationChangedCallback($scope.testlat, $scope.testlng, $scope.testacc);   
@@ -244,42 +253,51 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     var tempPageSize = 0;
     $scope.showHideRightPanel = function () {
         if (righPanelStatus == 0) {
-            log('show right panel');
-            $("#configPanel").css('width', '360px');
-            $scope.showSettingCollapse = true;
-            $scope.showSettingExpand = false;
-            righPanelStatus = 1;
-            tempPageSize = $scope.config.page_size;
-        } else {
-            log('hide right panel');
-            $("#configPanel").css('width', '0');
-            righPanelStatus = 0;
-            $scope.showSettingCollapse = false;
-            $scope.showSettingExpand = true;
-            insertSettingDB($scope.config, function () { log('Updated config') }, function (err) { log(err); });
-            if (networkReady() && !isMapReady) {
-                loadMapApi();
-                getCurPosition(true, function (lat, lng) {
-                }, function (err) { });
-            }
-            var hasNetwork = networkReady();
-            log('update view when base on network: ' + hasNetwork);
-            enableOffline(hasNetwork);
-            if (hasNetwork) {
-                if (appReady) changeGPSTrackingStatus();
-            }
+            if ($scope.journal.viewPanel)
+                $scope.journal.hidePanel();
 
-            if (tempPageSize != $scope.config.page_size) {
-                $scope.pageSize = $scope.config.page_size;
-                tempPageSize = $scope.pageSize;
-                log('Update paging');
-                if (curOutlets.length == 0) return;
-                $scope.outlets.length = 0;
-                for (var i = 0; i < curOutlets.length; i++) {
-                    $scope.outlets[i] = curOutlets[i];
-                }
-            }
+            $scope.cfg.showPanel();
+        } else {
+            $scope.cfg.hidePanel();
         }
+
+        //if (righPanelStatus == 0) {
+        //    log('show right panel');
+        //    $("#configPanel").css('width', '360px');
+        //    $scope.showSettingCollapse = true;
+        //    $scope.showSettingExpand = false;
+        //    righPanelStatus = 1;
+        //    tempPageSize = $scope.config.page_size;
+        //} else {
+        //    log('hide right panel');
+        //    $("#configPanel").css('width', '0');
+        //    righPanelStatus = 0;
+        //    $scope.showSettingCollapse = false;
+        //    $scope.showSettingExpand = true;
+        //    insertSettingDB($scope.config, function () { log('Updated config') }, function (err) { log(err); });
+        //    if (networkReady() && !isMapReady) {
+        //        loadMapApi();
+        //        getCurPosition(true, function (lat, lng) {
+        //        }, function (err) { });
+        //    }
+        //    var hasNetwork = networkReady();
+        //    log('update view when base on network: ' + hasNetwork);
+        //    enableOffline(hasNetwork);
+        //    if (hasNetwork) {
+        //        if (appReady) changeGPSTrackingStatus();
+        //    }
+
+        //    if (tempPageSize != $scope.config.page_size) {
+        //        $scope.pageSize = $scope.config.page_size;
+        //        tempPageSize = $scope.pageSize;
+        //        log('Update paging');
+        //        if (curOutlets.length == 0) return;
+        //        $scope.outlets.length = 0;
+        //        for (var i = 0; i < curOutlets.length; i++) {
+        //            $scope.outlets[i] = curOutlets[i];
+        //        }
+        //    }
+        //}
     }
 
     //*************************************************************************
@@ -361,16 +379,20 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 
             log('create new outlet');
             showDlg(R.get_current_location, R.please_wait);
-            if (curlat == START_LAT && curlng == START_LNG) {
-                //addNewOutlet();
-                getCurPosition(false, function (lat, lng) {
-                    addNewOutlet();
-                }, function (err) {
-                    hideDlg();
-                    showError(R.cannot_get_current_location);
-                });
-            } else
-                addNewOutlet(); // location watching has updated current location already  
+            if (tcapp.checkToCreateNewOutlet()) {
+                addNewOutlet();
+            } else {
+                if (curlat == START_LAT && curlng == START_LNG) {
+                    //addNewOutlet();
+                    getCurPosition(false, function (lat, lng) {
+                        addNewOutlet();
+                    }, function (err) {
+                        hideDlg();
+                        showError(R.cannot_get_current_location);
+                    });
+                } else
+                    addNewOutlet(); // location watching has updated current location already  
+            }
         } else {
             //var errMsg = R.msg_validate_accuracy.replace('{distance}', $scope.config.audit_accuracy.toString());
             //errMsg = errMsg.replace('{curacc}', curAccRound);
@@ -580,6 +602,13 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                 break;
             }
         }
+
+        for (var i = 0; i < provinces.length; i++) {
+            if (provinces[i].id === provId) {
+                addressModel.provinceRaw = provinces[i];
+                break;
+            }
+        }
     }
 
     //*************************************************************************    
@@ -628,7 +657,6 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     var downloadSession = 1;
     $scope.downloadOutlets = function () {
         var now = new Date();
-
         if (getDifTime(lastDownloadProvinceTS, now) < 5) {
             return;
         }
@@ -646,6 +674,15 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             if (downloadedCount >= config.max_oulet_download) {
                 showError(R.reach_maximum_download);
                 return;
+            }
+        }
+
+        if (!addressModel.provinceRaw) {
+            for (var i = 0; i < provinces.length; i++) {
+                if (provinces[i].id === selectProvince.id) {
+                    addressModel.provinceRaw = provinces[i];
+                    break;
+                }
             }
         }
 
@@ -697,22 +734,24 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 
                                                 downloadProvinceOutletsZip(selectProvince.id, sessionID, 0, maxPage,
                                                     function () {
-                                                        isOutletDlgOpen = false;
-                                                        if (dialogClosedCallback) dialogClosedCallback();
-                                                        if (sessionID == downloadSession) {
-                                                            changeDownloadProvinceStatusDB(config.tbl_downloadProvince, selectProvince.id, 1, function () {
-                                                                selectProvince.download = 1;
-                                                                hideLoadingDlg();
-                                                                showInfo('Download outlets completed!');
-                                                                if (selectProvince.download) {
-                                                                    $("#buttonDownload").css('display', 'none');
-                                                                    $("#buttonRedownload").css('display', 'table');
-                                                                    $("#buttonDeleteOffline").css('display', 'table');
-                                                                }
-                                                            }, function (dberr) {
-                                                                showError(dberr.message);
-                                                            });
-                                                        }
+                                                        downloadDistricts(addressModel.provinceRaw.referenceGeoID, function () {
+                                                            isOutletDlgOpen = false;
+                                                            if (dialogClosedCallback) dialogClosedCallback();
+                                                            if (sessionID == downloadSession) {
+                                                                changeDownloadProvinceStatusDB(config.tbl_downloadProvince, selectProvince.id, 1, function () {
+                                                                    selectProvince.download = 1;
+                                                                    hideLoadingDlg();
+                                                                    showInfo('Download outlets completed!');
+                                                                    if (selectProvince.download) {
+                                                                        $("#buttonDownload").css('display', 'none');
+                                                                        $("#buttonRedownload").css('display', 'table');
+                                                                        $("#buttonDeleteOffline").css('display', 'table');
+                                                                    }
+                                                                }, function (dberr) {
+                                                                    showError(dberr.message);
+                                                                });
+                                                            }
+                                                        });
                                                     }, function (errMsg) {
                                                         isOutletDlgOpen = false;
                                                         if (dialogClosedCallback) dialogClosedCallback();
@@ -782,17 +821,99 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 
     //*************************************************************************
     function addNewOutlet() {
+        var provinceId = 0;
+        if (addressModel.province) {
+            provinceId = addressModel.province.ID;
+        }
+        else {
+            var provId = $scope.config.province_id;
+            for (var i = 0; i < provinces.length; i++) {
+                if (provinces[i].id == $scope.config.province_id) {
+                    provinceId = provinces[i].referenceGeoID;
+                    break;
+                }
+            }
+        }
+
         if (networkReady()) {
-            if (selected_border_2) {
-                tryCreateNewOutlet(curlat, curlng, '', selected_border_2.Name, selected_border_1.Name, '');
-            } else if (selected_border_1) {
-                tryCreateNewOutlet(curlat, curlng, '', '', selected_border_1.Name, '');
-            } else {
-                tryCreateNewOutlet(curlat, curlng, '', '', '', '');
+            if (addressModel.districtArr.length == 0 && provinceId > 0) {
+                //var url = baseURL + '/border/getsubbordersbyparentname/' + addressModel.province;
+                var url = baseURL + '/border/getsubborders/' + provinceId.toString();
+                log('Call service api: ' + url);
+                //utils.messageBox.loading(R.loading, R.please_wait);
+                $http({
+                    method: config.http_method,
+                    url: url
+                }).then(function (resp) {
+                    //utils.messageBox.hide();
+                    try {
+                        var data = resp.data;
+                        if (data.Status == -1) { // error
+                            utils.messageBox.error(data.ErrorMessage);
+                        } else {
+                            addressModel.districtArr = data.Items;
+                            loadWardIfNot(function () {
+                                tryCreateNewOutlet(curlat, curlng,
+                                    '',
+                                    addressModel.ward ? addressModel.ward.Name : '',
+                                    addressModel.district ? addressModel.district.Name : '',
+                                    '');
+                            });
+                        }
+                        //tryCreateNewOutlet(curlat, curlng, '', '', '', '');
+                    } catch (err) {
+                        utils.messageBox.error(err.message);
+                        //tryCreateNewOutlet(curlat, curlng, '', '', '', '');
+                    }
+                }, function (err) {
+                    log(err);
+                    //utils.messageBox.hide();
+                    tryCreateNewOutlet(curlat, curlng, '', '', '', '');
+                    //utils.messageBox.error(data.ErrorMessage);
+                });
+            }
+            else {
+                loadWardIfNot(function () {
+                    tryCreateNewOutlet(curlat, curlng,
+                                    '',
+                                    addressModel.ward ? addressModel.ward.Name : '',
+                                    addressModel.district ? addressModel.district.Name : '',
+                                    '');
+                });
             }
         } else {
-            tryCreateNewOutlet(curlat, curlng, '', '', '', '');
+            addressModel.getDistricts(provinceId, function (districts) {
+                addressModel.districtArr = districts;
+                tryCreateNewOutlet(curlat, curlng, '', '', '', '');
+            });
         }
+    }
+
+    function loadWardIfNot(callback) {
+        if (addressModel.wardArr.length == 0 && addressModel.district) {
+            var url = baseURL + '/border/getsubborders/' + addressModel.district.ID;
+            log('Call service api: ' + url);
+            utils.messageBox.loading(R.loading, R.please_wait);
+            $http({
+                method: config.http_method,
+                url: url
+            }).then(function (resp) {
+                utils.messageBox.hide();
+                var data = resp.data;
+                if (data.Status == -1){ // error
+                    utils.logging.error(data.ErrorMessage);
+                } else {
+                    addressModel.wardArr = data.Items;
+                }
+                callback();
+            }, function (err) {
+                utils.logging.error(err);
+                //utils.messageBox.hide();
+                callback();
+            });
+        }
+        else
+            callback();
     }
 
     //*************************************************************************
@@ -842,7 +963,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                 isOutletDlgOpen = false;
                 if (dialogClosedCallback) dialogClosedCallback();
             });
-            try { $scope.$apply(); } catch (er) { }
+            //try { $scope.$apply(); } catch (er) { }
         });
     }
 
@@ -1124,29 +1245,34 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     var lastLoadLocationTS = new Date();
     function handleLocationChange(lat, lng, acc) {
         if (!appReady) return;
+
         curacc = acc;
-        displayAccuracy();
-       
-        var now = new Date();
-        var dif = getDifTime(lastLoadLocationTS, now);
-        if (dif > $scope.config.ping_time) {
-            lastLoadLocationTS = now;
+        curlat = lat;
+        curlng = lng;
+        tcapp.lastUpdateLocationTS = new Date();
 
-            var adjDistance = calcDistance({ Lat: lat, Lng: lng }, { Lat: curlat, Lng: curlng });
+        displayCurrentPostion();
 
-            //curacc = acc;
-            curlat = lat;
-            curlng = lng;
-            displayCurrentPostion();
-           
-            if (adjDistance >= $scope.config.liveGPS_distance) {
-                refreshOutletList();
-            }
+        journals.trackJournal(lat, lng, acc);
 
-            if (adjDistance >= $scope.config.journal_distance && acc <= $scope.config.audit_accuracy) {
-                journals.trackJournal();
-            }
+        if (tcapp.checkToRefreshOutlet(lat, lng)) {
+            utils.logging.info('Refreshing outlet list...');
+            refreshOutletList();
         }
+        
+        //var distance = utils.locations.calculateDistance(lat, lng, curlat, curlng);
+        //var now = new Date();
+        //var dif = getDifTime(lastLoadLocationTS, now);
+        //if (dif > $scope.config.ping_time) {
+        //    lastLoadLocationTS = now;
+        //    if (distance >= $scope.config.liveGPS_distance) {
+        //        utils.logging.info('Refreshing outlet list...');
+        //        refreshOutletList();
+        //    }
+        //}
+        //if (distance >= $scope.config.journal_distance && acc <= $scope.config.journal_accuracy) {
+        //    journals.trackJournal();
+        //}
     }
 
     //*************************************************************************
@@ -1755,7 +1881,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     }
 
     //*************************************************************************
-    //>>>>>> BORDER >>>>>>
+    // BORDER
 
     var isInitializeBorders = false;
     var borderAutoProvinceName = null;
@@ -1836,6 +1962,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                             for (var i = 0; i < items.length; i++) {
                                 var cp = changeAlias(items[i].Name);
                                 if (ap === cp || cp.indexOf(ap) > -1) {
+                                    addressModel.province = items[i];
                                     setCurrenBorder(items[i]);
                                     break;
                                 }
@@ -1937,70 +2064,246 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         }
     }
 
-    //<<<<<<<<<<<<<<<<<<<<<
+    //*************************************************************************
+    $scope.cfg = {
+        showPanel: function () {
+            log('show right panel');
+            $("#configPanel").css('width', '360px');
+            $scope.showSettingCollapse = true;
+            $scope.showSettingExpand = false;
+            righPanelStatus = 1;
+            tempPageSize = $scope.config.page_size;
+        },
+
+        hidePanel: function () {
+            log('hide right panel');
+            $("#configPanel").css('width', '0');
+            righPanelStatus = 0;
+            $scope.showSettingCollapse = false;
+            $scope.showSettingExpand = true;
+            insertSettingDB($scope.config, function () { log('Updated config') }, function (err) { log(err); });
+            if (networkReady() && !isMapReady) {
+                loadMapApi();
+                getCurPosition(true, function (lat, lng) {
+                }, function (err) { });
+            }
+            var hasNetwork = networkReady();
+            log('update view when base on network: ' + hasNetwork);
+            enableOffline(hasNetwork);
+            if (hasNetwork) {
+                if (appReady) changeGPSTrackingStatus();
+            }
+
+            if (tempPageSize != $scope.config.page_size) {
+                $scope.pageSize = $scope.config.page_size;
+                tempPageSize = $scope.pageSize;
+                log('Update paging');
+                if (curOutlets.length == 0) return;
+                $scope.outlets.length = 0;
+                for (var i = 0; i < curOutlets.length; i++) {
+                    $scope.outlets[i] = curOutlets[i];
+                }
+            }
+        }
+    }
+
 
     //*************************************************************************
-    //>>>>>> JOURNAL >>>>>>
+    $scope.journal = {
+        from: new Date(),
+        to: new Date(),
+        viewPanel: false,
+        showCollapse: false,
+        showExpend: true,
+        isStoped : true,
+        isStarted: false,
 
-    function submitJournal(journal, callback) {
-        if (utils.networks.isReady()) {
-            var url = baseURL + '/journal/add/' + userID + '/' + pass;
-            utils.writeLog('Call service api: ' + url);
-            $http({
-                method: config.http_method,
-                data: journal,
-                url: url,
-                headers: { 'Content-Type': 'application/json' }
-            }).then(function (resp) {
-                utils.writeLog(resp);
-                var data = resp.data;
-                if (data.Status == -1) { // error
+        showPanel: function () {
+            if (righPanelStatus === 1)
+                $scope.cfg.hidePanel();
+
+            $("#journal-panel").css('width', '280px');
+            $scope.journal.viewPanel = true;
+            $scope.journal.showCollapse = true;
+            $scope.journal.showExpend = false;
+        },
+
+        hidePanel : function(){
+            $("#journal-panel").css('width', '0px');
+            $scope.journal.viewPanel = false;
+            $scope.journal.showCollapse = false;
+            $scope.journal.showExpend = true;
+        },
+
+        showHideJournalPanel: function () {
+            if (righPanelStatus === 1)
+                 $scope.showHideRightPanel();
+            
+            if ($scope.journal.viewPanel) {
+                $scope.journal.hidePanel();
+            } else {
+                $scope.journal.showPanel();
+            }
+        },
+
+        submitJournal: function (journal, callback) {
+            if (utils.networks.isReady()) {
+                var url = baseURL + '/journal/add/' + userID + '/' + pass;
+                //utils.writeLog('Call service api: ' + url);
+                utils.logging.debug('Call service api: ' + url);
+                $http({
+                    method: config.http_method,
+                    data: journal,
+                    url: url,
+                    headers: { 'Content-Type': 'application/json' }
+                }).then(function (resp) {
+                    utils.writeLog(resp);
+                    var data = resp.data;
+                    if (data.Status == -1) { // error
+                        callback(false);
+                        utils.showErrorDlg(data.ErrorMessage);
+                    } else {
+                        utils.writeLog('Submit journal successfully');
+                        journal.id = data.id;
+                        callback(true);
+                    }
+                }, function (err) {
+                    utils.writeLog('Submit error: ' + err.message);
+                    utils.writeLog(err);
                     callback(false);
-                    utils.showErrorDlg(data.ErrorMessage);
-                } else {
-                    utils.writeLog('Submit journal successfully');
-                    journal.id = data.id;
-                    callback(true);
-                }
-            }, function (err) {
-                utils.writeLog('Submit error: ' + err.message);
-                utils.writeLog(err);
+                });
+            } else {
                 callback(false);
-            });
-        } else {
-            callback(false);
-        }
-    }
+            }
+        },
 
-    function submitUnsyncedJournals(unsyncJournals, callback) {
-        if (utils.networks.isReady()) {
-            var url = baseURL + '/journal/sync/' + userID + '/' + pass;
-            utils.writeLog('Call service api: ' + url);
-            $http({
-                method: config.http_method,
-                data: unsyncJournals,
-                url: url,
-                headers: { 'Content-Type': 'application/json' }
-            }).then(function (resp) {
-                utils.writeLog(resp);
-                var data = resp.data;
-                if (data.Status == -1) { // error
-                    utils.writeLog(data.ErrorMessage);
+        submitUnsyncedJournals: function (unsyncJournals, callback) {
+            if (utils.networks.isReady()) {
+                var url = baseURL + '/journal/sync/' + userID + '/' + pass;
+                utils.writeLog('Call service api: ' + url);
+                $http({
+                    method: config.http_method,
+                    data: unsyncJournals,
+                    url: url,
+                    headers: { 'Content-Type': 'application/json' }
+                }).then(function (resp) {
+                    utils.writeLog(resp);
+                    var data = resp.data;
+                    if (data.Status == -1) { // error
+                        utils.writeLog(data.ErrorMessage);
+                        callback(false, null);
+                    } else {
+                        callback(false, data.items);
+                    }
+                }, function (err) {
+                    utils.writeLog('Submit error');
+                    utils.writeLog(err);
                     callback(false, null);
-                } else {
-                    callback(false, data.items);
-                }
-            }, function (err) {
-                utils.writeLog('Submit error');
-                utils.writeLog(err);
+                });
+            } else {
                 callback(false, null);
-            });
-        } else {
-            callback(false, null);
-        }
-    }
+            }
+        },
 
-    //<<<<<<<<<<<<<<<<<<<<<
+        queryJournals: function (from, to, callback){
+            if (utils.networks.isReady()) {
+                utils.messageBox.loading(R.get_journals, R.please_wait)
+                var url = baseURL + '/journal/get/' + userID + '/' + pass + '/' + from + '/' + to;
+                utils.writeLog('Call service api: ' + url);
+                $http({
+                    method: config.http_method,
+                    data: null,
+                    url: url,
+                    headers: { 'Content-Type': 'application/json' }
+                }).then(function (resp) {
+                    utils.messageBox.hide();
+                    utils.writeLog(resp);
+                    var data = resp.data;
+                    if (data.Status == -1) { // error
+                        //utils.writeLog(data.ErrorMessage);
+                        utils.messageBox.error(data.ErrorMessage);
+                        callback(false, null);
+                    } else {
+                        callback(true, data.items);
+                    }
+                }, function (err) {
+                    utils.messageBox.hide();
+                    utils.messageBox.error("Error while get journal history, please try again!");
+                    utils.writeLog(err);
+                    callback(false, null);
+                });
+            } else {
+                utils.messageBox.hide();
+                utils.messageBox.info("This feature is only work for Online Mode!");
+            }
+        },
+
+        viewJournal: function () {
+            journals.viewJournalHistory($scope.journal.from, $scope.journal.to);
+        },
+
+        clearJournal: function () {
+            journals.clearJournalHistory();
+        },
+
+        //statusChanged: function () {
+        //    if (config.enable_journal) {
+        //        $("#journalImage").attr("src", "assets/img/journal-red.svg");
+        //        journals.start();
+        //    } else {
+        //        $("#journalImage").attr("src", "assets/img/journal.svg");
+        //        journals.end();
+        //    }
+        //},
+
+        start: function () {
+            $("#journalImage").attr("src", "assets/img/journal-red.svg");
+            $("#btnStartJournal").css('display', 'none');
+            $("#btnStopJournal").css('display', 'inline-block');
+            //$scope.journal.isStoped = false;
+            //$scope.journal.isStarted = true;
+            journals.start();
+        },
+
+        stop: function () {
+            $("#journalImage").attr("src", "assets/img/journal.svg");
+            $("#btnStartJournal").css('display', 'inline-block');
+            $("#btnStopJournal").css('display', 'none');
+            //$scope.journal.isStoped = true;
+            //$scope.journal.isStarted = false;
+            journals.end();
+        },
+    };
+    
+    function downloadDistricts(geoProvinceId, callback) {
+        addressModel.isDistrictsDownloaded(geoProvinceId.toString(), function (isdownloaded) {
+            if (isdownloaded) {
+                callback();
+            } else {
+                var url = baseURL + '/provinces/getdistricts/' + geoProvinceId.toString();
+                log('Call service api: ' + url);
+                $http({
+                    method: config.http_method,
+                    url: url
+                }).then(function (resp) {
+                    try {
+                        var data = resp.data;
+                        if (data.Status == -1) { // error
+                            utils.logging.error(data.ErrorMessage);
+                        } else {
+                            addressModel.insertDistricts(geoProvinceId.toString(), data.items, callback);
+                        }
+                    } catch (err) {
+                        utils.logging.error(err.message);
+                        callback();
+                    }
+                }, function (err) {
+                    utils.logging.error(err);
+                    callback();
+                });
+            }
+        });
+    }
 
     //*************************************************************************           
     function start() {
@@ -2064,7 +2367,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             start();
         }
 
-        journals.start(submitJournal, submitUnsyncedJournals);
+        journals.initialize($scope.journal.submitJournal, $scope.journal.submitUnsyncedJournals, $scope.journal.queryJournals);
     } catch (err) {
         showError(err);
         log(err);

@@ -88,18 +88,19 @@
         "is_top_level": true,
         "variables": {}
     },
-    "cordova-plugin-console": {
+    "cordova-plugin-locationservices": {
         "source": {
-            "type": "registry",
-            "id": "cordova-plugin-console"
+            "type": "git",
+            "url": "https://github.com/louisbl/cordova-plugin-locationservices",
+            "subdir": "."
         },
         "is_top_level": true,
         "variables": {}
     },
-    "cordova-plugin-zip": {
+    "cordova-plugin-background-mode": {
         "source": {
             "type": "git",
-            "url": "https://github.com/MobileChromeApps/cordova-plugin-zip",
+            "url": "https://github.com/katzer/cordova-plugin-background-mode",
             "subdir": "."
         },
         "is_top_level": true,

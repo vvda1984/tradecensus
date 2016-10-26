@@ -62,24 +62,45 @@
                         <div ng-message="required">{{ resource.text_ValRequired }}</div>
                     </div>
                 </md-input-container>
-                <md-input-container class="md-block" flex-gt-sm="">
+
+                <md-input-container class="md-block" flex-gt-sm="" ng-hide="autoSelectedWard">
                     <label>{{R.ward}}</label>
                     <input id="inputAdd2" ng-model="outlet.Ward" name="ward" required="" maxlength="40">
                     <div ng-messages="createOutletForm.ward.$error" role="alert">
                         <div ng-message="required">{{ resource.text_ValRequired }}</div>
                     </div>
                 </md-input-container>
-                <md-input-container class="md-block" flex-gt-sm="">
+                <md-input-container class="md-block" flex-gt-sm="" ng-show="autoSelectedWard">
+                    <label>{{R.ward}}</label>
+                    <!--<input ng-model="outlet.Ward" disabled="">-->
+                    <md-select id="inputWard" ng-model="outlet.Ward">
+                        <md-option ng-repeat="p in address.wardArr" value="{{p.Name}}">
+                            {{p.Name}}
+                        </md-option>
+                    </md-select>
+                </md-input-container>
+
+                <md-input-container class="md-block" flex-gt-sm="" ng-hide="autoSelectedDistrict">
                     <label>{{R.district}}</label>
                     <input id="inputDistrict" ng-model="outlet.District" name="district" required="" maxlength="40">
                     <div ng-messages="createOutletForm.district.$error" role="alert">
                         <div ng-message="required">{{ resource.text_ValRequired }}</div>
                     </div>
                 </md-input-container>
+                <md-input-container class="md-block" flex-gt-sm="" ng-show="autoSelectedDistrict">
+                    <label>{{R.district}}</label>
+                    <!--<input ng-model="outlet.District" disabled="">-->
+                    <md-select id="inputDistrict" ng-model="outlet.District" ng-change="districtChanged()">
+                        <md-option ng-repeat="p in address.districtArr" value="{{p.Name}}">
+                            {{p.Name}}
+                        </md-option>
+                    </md-select>
+                </md-input-container>
+
                 <md-input-container class="md-block" flex-gt-sm="">
                     <label>{{R.province}}</label>
                     <!--<input ng-model="outlet.ProvinceName" disabled="">-->
-                    <md-select id="inputOutletType" ng-model="outlet.ProvinceID">
+                    <md-select id="inputOutletType" ng-model="outlet.ProvinceID" ng-change="provinceChanged()">
                         <md-option ng-repeat="p in provinces" value="{{p.id}}">
                             {{p.name}}
                         </md-option>

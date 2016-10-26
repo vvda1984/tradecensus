@@ -1,15 +1,11 @@
 ﻿var utils = {
+    tc: {
+        isRunningInBackgound: false,
+    },
+
     nowDate: function () {
         var today = new Date();
-        var d = today.getDate();
-        var m = today.getMonth() + 1; //January is 0!
-        var y = today.getFullYear();
-
-        if (d < 10) d = '0' + d;
-
-        if (m < 10) m = '0' + m;
-
-        return y + '-' + m + '-' + d;
+        return this.formatDate(today);
     },
 
     nowDatetime: function () {
@@ -28,6 +24,31 @@
         if (s < 10) s = '0' + s;
 
         return y + '-' + m + '-' + d + ' ' + h + ':' + mm + ':' + s;
+    },
+
+    nowTime: function () {
+        var today = new Date();        
+        var h = today.getHours();
+        var mm = today.getMinutes();
+        var s = today.getSeconds();
+        
+        if (h < 10) h = '0' + h;
+        if (mm < 10) mm = '0' + mm;
+        if (s < 10) s = '0' + s;
+
+        return h + ':' + mm + ':' + s;
+    },
+
+    formatDate: function (date) {
+        var d = date.getDate();
+        var m = date.getMonth() + 1; //January is 0!
+        var y = date.getFullYear();
+
+        if (d < 10) d = '0' + d;
+
+        if (m < 10) m = '0' + m;
+
+        return y + '-' + m + '-' + d;
     },
 
     getTimeSpanInSecond: function (startTS, endTS) {
@@ -54,9 +75,89 @@
         log(msg);
     },
 
+    messageBox: {
+        error: function (msg) {
+            hideDlg();
+            showError(msg);
+        },
+
+        info: function (msg) {
+            hideDlg();
+            showInfo(msg);
+        },
+
+        loading: function (title, message) {
+            showDlg(title, message);
+        },
+
+        hide: function () {
+            hideDlg();
+        }
+    },
+
+    logging: {
+        error: function (msg) {
+            var formatedMsg = utils.nowTime() + ": " + msg;
+            $('#textLogMessage').html(formatedMsg);
+            log(msg);
+        },
+
+        info : function(msg) {
+            var formatedMsg = utils.nowTime() + ": " + msg;
+            $('#textLogMessage').html(formatedMsg);
+            log(msg);
+        },
+
+        debug : function(msg) {
+            //var formatedMsg = utils.nowTime() + ": " + msg;
+            //$('#textLogMessage').html(formatedMsg);
+            log(msg);
+        }
+    },
+
     networks: {
         isReady: function () {
             return serverConnected && getNetworkState();
         },
+    },
+
+    locations :{
+        calculateDistance(lat1, lng1, lat2, lng2) {
+            return calcDistance({ Lat: lat1, Lng: lng1 }, { Lat: lat2, Lng: lng2 });
+        },
+    },
+
+    datetimes: {
+        calculateDiffInSecond: function (st, en) {
+            return (en - st) / 1000;
+        },
+    },
+}
+
+var tcapp = {
+    lastUpdateLocationTS: null,
+
+    lastRefreshOutletsTS: null,
+    lastRefreshLat: 0,
+    lastRefreshLng: 0,
+
+    checkToRefreshOutlet: function (newLat, newLng) {
+        var now = new Date();
+        var dif = utils.datetimes.calculateDiffInSecond(tcapp.lastRefreshOutletsTS, now);
+        if (dif >= config.ping_time) {
+            var distance = utils.locations.calculateDistance(newLat, newLng, tcapp.lastRefreshLat, tcapp.lastRefreshLng);
+            if (distance >= config.liveGPS_distance) {
+                tcapp.lastRefreshOutletsTS = now;
+                tcapp.lastRefreshLat = newLat;
+                tcapp.lastRefreshLng = newLng;
+                return true;
+            }
+        }
+        return false;
+    },
+
+    checkToCreateNewOutlet: function () {
+        var dif = utils.datetimes.calculateDiffInSecond(tcapp.lastUpdateLocationTS, new Date());
+        return (dif <= config.location_age);
     },
 }

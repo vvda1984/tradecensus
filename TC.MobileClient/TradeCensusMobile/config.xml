@@ -121,6 +121,6 @@
   <plugin name="cordova-plugin-file-transfer" version="1.5.1" />
   <preference name="android-minSdkVersion" value="19" />
   <preference name="android-targetSdkVersion" value="21" />
-  <plugin name="cordova-plugin-console" version="1.0.3" />
-  <plugin name="cordova-plugin-zip" version="3.1.0" src="https://github.com/MobileChromeApps/cordova-plugin-zip" />
+  <plugin name="cordova-plugin-locationservices" version="2.1.0" src="https://github.com/louisbl/cordova-plugin-locationservices" />
+  <plugin name="cordova-plugin-background-mode" version="0.6.6-dev" src="https://github.com/katzer/cordova-plugin-background-mode" />
 </widget>

@@ -3,10 +3,15 @@
 /// <reference path="tc.appAPI.js" />
 
 
-function newOutletController($scope, $mdDialog) {
+function newOutletController($scope, $http, $mdDialog) {
     isOutletDlgOpen = true;
 
     $scope.R = R;
+    $scope.address = addressModel;
+
+    $scope.autoSelectedDistrict = $scope.address.districtArr && $scope.address.districtArr.length > 0;
+    $scope.autoSelectedWard = $scope.autoSelectedDistrict; // utils.networks.isReady() && $scope.address.wardArr && $scope.address.wardArr.length > 0;
+    
     $scope.outletTypes = outletTypes;
     $scope.allowCapture = true;
     $scope.showImage1 = false;
@@ -24,6 +29,7 @@ function newOutletController($scope, $mdDialog) {
     $scope.canPost = $scope.outlet.canPost;
     $scope.canApprove = $scope.outlet.canApprove;
 
+ 
     if (user.hasAuditRole) {
         $scope.outlet.canComment = $scope.outlet.AuditStatus == StatusAuditorNew;
     } else {
@@ -224,6 +230,95 @@ function newOutletController($scope, $mdDialog) {
 
     $scope.nameChanged = function(){
         $scope.title = buildTitle();
+    }
+
+    $scope.provinceChanged = function () {
+        if (!$scope.autoSelectedDistrict) return;
+
+        $scope.outlet.District = '';
+        var selectedProvince = null;
+        for (var i = 0; i < $scope.address.length; i++) {
+            if ($scope.provinces[i].id === $scope.outlet.ProvinceID) {
+                selectedProvince = $scope.provinces[i];
+                break;
+            }
+        }
+
+        utils.messageBox.loading(R.loading, R.please_wait);
+        if (utils.networks.isReady()) {
+            //var url = baseURL + '/border/getsubbordersbyparentname/' + selectedProvince.name;
+            var url = baseURL + '/border/getsubborders/' + selectedProvince.referenceGeoID;
+            log('Call service api: ' + url);
+            $http({
+                method: config.http_method,
+                url: url
+            }).then(function (resp) {
+                utils.messageBox.hide();
+                try {
+                    var data = resp.data;
+                    if (data.Status == -1) { // error
+                        utils.messageBox.error(data.ErrorMessage);
+                    } else {
+                        $scope.address.districtArr = data.Items;
+                    }
+                } catch (err) {
+                    utils.messageBox.error(err.message);
+                }
+            }, function (err) {
+                log(err);
+                utils.messageBox.hide();
+                //utils.messageBox.error(data.ErrorMessage);
+            });
+        } else {
+            addressModel.getDistricts(selectedProvince.referenceGeoID, function (items) {
+                $scope.address.districtArr = data.Items;
+                utils.messageBox.hide();
+            });
+        }
+    }
+
+    $scope.districtChanged = function () {
+        if (!$scope.autoSelectedWard) return;
+
+        $scope.outlet.Ward = '';
+        var selectedDistrict = null;
+        for (var i = 0; i < $scope.address.districtArr.length; i++) {
+            if ($scope.address.districtArr[i].Name === $scope.outlet.District) {
+                selectedDistrict = $scope.address.districtArr[i];
+                break;
+            }
+        }
+
+        if (utils.networks.isReady()) {
+            var url = baseURL + '/border/getsubbordersbyparentname/' + $scope.outlet.District;
+            log('Call service api: ' + url);
+            utils.messageBox.loading(R.loading, R.please_wait);
+            $http({
+                method: config.http_method,
+                url: url
+            }).then(function (resp) {
+                utils.messageBox.hide();
+                try {
+                    var data = resp.data;
+                    if (data.Status == -1) { // error
+                        utils.messageBox.error(data.ErrorMessage);
+                    } else {
+                        $scope.address.wardArr = data.Items;
+                    }
+                } catch (err) {
+                    utils.messageBox.error(err.message);
+                }
+            }, function (err) {
+                log(err);
+                utils.messageBox.hide();
+                //utils.messageBox.error(data.ErrorMessage);
+            });
+        } else {
+            addressModel.getWards(selectedDistrict.ID, function (items) {
+                $scope.address.wardArr = items;
+                utils.messageBox.hide();
+            });
+        }
     }
 
     function checkDistance(callback) {

@@ -354,7 +354,7 @@ function displayCurrentPostion() {
             infoWindow.open(map, homeMarker);
         });
     }
-    displayAccuracy(position);
+    displayAccuracy();
 
     if (!journals._map) {
         journals.setMap(map);        
@@ -659,4 +659,26 @@ function getBorders(level) {
         return borders_6;
     }
     return [];
+}
+
+function trackLocationWhenAppInBackground(callback) {
+    if (locationChangedCallback) {
+        getCurPosition(false, function (lat, lng) {
+            locationChangedCallback(lat, lng, curacc);
+            callback();
+        }, function (err) {
+            log(err);
+            callback();
+        });
+    }
+}
+
+function turnOntrackLocationWhenAppInBackground() {
+    if (locationChangedCallback && utils.tc.isRunningInBackgound) {
+        setTimeout(function () {
+            trackLocationWhenAppInBackground(function () {
+                turnOntrackLocationWhenAppInBackground();
+            });
+        }, 1000 * config.journal_update_time);
+    }
 }

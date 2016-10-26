@@ -1,5 +1,74 @@
-﻿/// <reference path="tc.language.js" />
-/// <reference path="tc.appAPI.js" />
+﻿(function (global) {
+    "use strict";
+    function onDeviceReady() {
+        console.log('Device Ready!');
+        inactivityTime();
+
+        // disable back button
+        document.addEventListener("backbutton", function (e) { e.preventDefault(); }, false);
+        document.addEventListener("resume", function () { }, false);
+        //document.addEventListener("online", onNetworkConnected, false);
+        //document.addEventListener("offline", onNetworkDisconnected, false);
+        document.addEventListener("resume", function () { }, false);
+
+        //logger.initialize('tradecencus');
+
+        initializeEnvironment(function () { initializeApp(); });
+
+        document.onmousedown = function () { inactivityTime(); };
+        document.onkeypress = function () { inactivityTime(); };
+        document.ontouchstart = function () { inactivityTime(); };
+
+        try {
+            // Android customization
+            cordova.plugins.backgroundMode.setDefaults({ text: 'Trade Census.' });
+            // Enable background mode
+            cordova.plugins.backgroundMode.enable();
+            // Called when background mode has been activated
+            cordova.plugins.backgroundMode.onactivate = function () {
+                try {
+                    utils.tc.isRunningInBackgound = true;
+                    turnOntrackLocationWhenAppInBackground();
+                }
+                catch (err) {
+                    log(err);
+                }
+
+                setTimeout(function () {
+                    // Modify the currently displayed notification
+                    cordova.plugins.backgroundMode.configure({
+                        text: 'Running in background.'
+                    });
+                }, 5000);
+            };
+
+            cordova.plugins.backgroundMode.ondeactivate = function () {
+                utils.tc.isRunningInBackgound = false;
+            };
+
+            //cordova.plugins.backgroundMode.onactivate = function () {
+            //    setTimeout(function () {
+            //        // Modify the currently displayed notification
+            //        cordova.plugins.backgroundMode.configure({
+            //            text: 'Running in background for more than 5s now.'
+            //        });
+            //    }, 5000);
+            //    try {
+            //        turnOntrackLocationWhenAppInBackground();
+            //    }
+            //    catch (err) {
+            //        log(err);
+            //    }
+            //}
+        }
+        catch (err) {
+            log(err);
+        }
+    }
+
+    $(document).ready(function () { onDeviceReady(); });
+    //document.addEventListener("deviceready", onDeviceReady, false);
+})(window);
 
 var resetDB = false;                // force reset database - testing only
 var db;                             // database instance
@@ -17,7 +86,6 @@ var pass = '';
 var user = newUser();
 var config = newConfig();
 var deviceInfo = newDeviceInfo();
-var provinces = [];
 var outletTypes = [];
 var provinces = [];
 var dprovinces = [];
@@ -70,41 +138,6 @@ var app = angular.module('TradeCensus', ['ngRoute', 'ngMaterial', 'ngMessages'])
     }
 });
 
-(function (global) {
-    "use strict";
-    function onDeviceReady() {
-        console.log('Device Ready!');
-        inactivityTime();
-
-        // disable back button
-        document.addEventListener("backbutton", function (e) { e.preventDefault(); }, false);
-        document.addEventListener("resume", function () { }, false);
-        //document.addEventListener("online", onNetworkConnected, false);
-        //document.addEventListener("offline", onNetworkDisconnected, false);
-        //document.addEventListener("resume", loadMapApi, false);
-
-        //logger.initialize('tradecencus');
-       
-        initializeEnvironment(function () { initializeApp(); });
-        
-        document.onmousedown = function () {
-            inactivityTime();
-        };
-        document.onkeypress = function () {
-            inactivityTime();
-        };
-        document.ontouchstart = function () {
-            inactivityTime();
-        };
-    }
-
-    $(document).ready(function () {
-        onDeviceReady();
-    });
-    //document.addEventListener("deviceready", onDeviceReady, false);
-})(window);
-
-
 function newResource() {
     return {
         text_AppName: 'Trade Censue',
@@ -138,7 +171,8 @@ function newConfig() {
     //var testBuild = false;
     var c = {
         debug_build: true,
-        enable_devmode: true,
+        enable_devmode: false,
+        enable_logview : false,
         page_size: 20,
         cluster_size: 50,
         cluster_max_zoom: 15.5,
@@ -173,9 +207,18 @@ function newConfig() {
         refresh_time: 30,           // 
         refresh_time_out: 3 * 60,   // Time to get outlet
         session_time_out: 0 * 60,
-        enable_journal: true,       //
-        journal_update_time: 1 * 60,//
+        location_age: 10,           // last avaliable location
+
+        enable_journal: false,      // False after login until user start
+        journal_update_time: 1 * 10,//
+        journal_accuracy : 100,     //
         journal_distance: 10,       // meter
+        journal_refresh_time: 1,    // second
+        journal_color: '#00551E',   // 
+        journal_opacity: 1.0,       // 
+        journal_weight: 3,          //
+        journal_nonstop : 1,        //
+
         tbl_area_ver: '0',
         tbl_outlettype_ver: '0',
         tbl_province_ver: '1',
@@ -184,8 +227,8 @@ function newConfig() {
         tbl_outlet: 'uo',
         tbl_downloadProvince: 'udp',
         tbl_journal: 'jr',
-        version: '1.2p.16265.7',
-        versionNum: 4,
+        version: '1.2a.16298.8',
+        versionNum: 5,
     };
     if (isHttp) {
         c.protocol = 'http';
@@ -208,7 +251,7 @@ var inactivityTime = function () {
     document.ontouchstart = resetTimer;
 
     function logout() {
-        if (logoutCallback && config.session_time_out > 0)
+        if (!config.enable_journal && logoutCallback && config.session_time_out > 0)
             logoutCallback();
     }
 
@@ -302,34 +345,37 @@ function loadOutletTypes(tx, callback) {
 }
 
 function loadProvinces(tx, callback) {
-    log('Load provinces...');
-    if (provinces != null && provinces.length > 0) {
-        log('Outlets have been loaded before.');
-        callback(tx);
-        return;
-    } 
-    log('Load provinces from db');
     provinces = [];
-    selectProvincesDB(tx, function (tx1, dbrow) {
-        try {
-            var rowLen = dbrow.rows.length;
-            log('Provinces found: ' + rowLen.toString());
-            if (rowLen) {
-                for (i = 0; i < rowLen; i++) {
-                    provinces[i] = {
-                        id: dbrow.rows.item(i).ID,
-                        name: dbrow.rows.item(i).Name,
-                    }
-                }
-            }
-        } catch (ex) {
-            showError(ex.message);
-        }
+    callback(tx);
 
-        callback(tx1);
-    }, function (dberr) {  
-        showError(dberr.message);
-    });
+    //log('Load provinces...');
+    //if (provinces != null && provinces.length > 0) {
+    //    log('Outlets have been loaded before.');
+    //    callback(tx);
+    //    return;
+    //} 
+    //log('Load provinces from db');
+    //provinces = [];
+    //selectProvincesDB(tx, function (tx1, dbrow) {
+    //    try {
+    //        var rowLen = dbrow.rows.length;
+    //        log('Provinces found: ' + rowLen.toString());
+    //        if (rowLen) {
+    //            for (i = 0; i < rowLen; i++) {
+    //                provinces[i] = {
+    //                    id: dbrow.rows.item(i).ID,
+    //                    name: dbrow.rows.item(i).Name,
+    //                }
+    //            }
+    //        }
+    //        addressModel.provinceArr = provinces;
+    //    } catch (ex) {
+    //        showError(ex.message);
+    //    }
+    //    callback(tx1);
+    //}, function (dberr) {  
+    //    showError(dberr.message);
+    //});
 }
 
 function loadSettings(tx, callback) {
@@ -415,6 +461,17 @@ function loadSettings(tx, callback) {
                         config.journal_update_time = parseInt(value);
                     } else if (name == 'journal_distance') {
                         config.journal_distance = parseInt(value);
+                    } else if (name == 'journal_accuracy') {
+                        config.journal_accuracy = parseInt(value);
+                    } else if (name == 'journal_color') {
+                        config.journal_color = value;
+                    } else if (name == 'journal_opacity') {
+                        try { config.journal_opacity = parseFloat(value); }
+                        catch (err) { }
+                    } else if (name == 'journal_weight') {
+                        config.journal_weight = parseInt(value);
+                    } else if (name == 'journal_nonstop') {
+                        config.journal_nonstop = parseInt(value);
                     }
                 }
             }
@@ -492,7 +549,8 @@ function runSync(callback) {
     try{
         syncOutletsCallback(function () {
             log('*** SYNC COMPLETED');
-            journals.syncJournal();
+            if(user.id > 0)
+                journals.syncJournal();
             callback();
         }, function(err){
             log('*** SYNC ERROR: ' + err);									

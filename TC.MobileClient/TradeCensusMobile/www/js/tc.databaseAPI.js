@@ -10,8 +10,17 @@
                 tx.executeSql('DROP TABLE IF EXISTS [outletImage1]');
             }
 
+            if (config.versionNum < 5) {
+                tx.executeSql('DROP TABLE IF EXISTS [province]', [],
+                function (tx1) {
+                },
+                function (tx1, dberr) {
+                    onError(dberr.message);
+                });
+            }
+
             log("ensure table [user] exist");
-            tx.executeSql('CREATE TABLE IF NOT EXISTS [user1] ( [ID] integer PRIMARY KEY NOT NULL, [UserName] text, [FirstName] text, [LastName] text, [IsTerminate] text NOT NULL,	[HasAuditRole] text NOT NULL COLLATE NOCASE, [PosID] text NOT NULL COLLATE NOCASE, [ZoneID] text NOT NULL COLLATE NOCASE, [AreaID] text NOT NULL COLLATE NOCASE, [ProvinceID] text NOT NULL COLLATE NOCASE, [Email] text, [EmailTo] text, [HouseNo] text, [Street] text, [District] text, [HomeAddress] text, [WorkAddress] text, [Phone] text, [IsDSM] text NOT NULL, [OfflinePassword] text NOT NULL)',
+            tx.executeSql('CREATE TABLE IF NOT EXISTS [user1] ([ID] integer PRIMARY KEY NOT NULL, [UserName] text, [FirstName] text, [LastName] text, [IsTerminate] text NOT NULL,	[HasAuditRole] text NOT NULL COLLATE NOCASE, [PosID] text NOT NULL COLLATE NOCASE, [ZoneID] text NOT NULL COLLATE NOCASE, [AreaID] text NOT NULL COLLATE NOCASE, [ProvinceID] text NOT NULL COLLATE NOCASE, [Email] text, [EmailTo] text, [HouseNo] text, [Street] text, [District] text, [HomeAddress] text, [WorkAddress] text, [Phone] text, [IsDSM] text NOT NULL, [OfflinePassword] text NOT NULL)',
                 [],
                 function (tx1) {
                 },
@@ -29,7 +38,7 @@
                 });
 
             log("ensure table [province] exist");
-            tx.executeSql('CREATE TABLE IF NOT EXISTS [province] ( [ID] text PRIMARY KEY NOT NULL, [Name] text COLLATE NOCASE)',
+            tx.executeSql('CREATE TABLE IF NOT EXISTS [province] ( [id] text PRIMARY KEY NOT NULL, [name] text COLLATE NOCASE, [referenceGeoID])',
                 [],
                 function (tx1) {
                 },
@@ -58,8 +67,15 @@
             //log("ensure table [outletSync] exist");
             //tx.executeSql('CREATE TABLE IF NOT EXISTS [outletSync] ( [ID] text PRIMARY KEY NOT NULL, [PersonID] integer NOT NULL, [LastSyncTS] text NOT NULL)');           
 
+            addressModel.initialize(db, tx);
+            onSuccess(tx);
+
             log("initialized db successfully");
-            initializeProvinces(tx, onSuccess);
+            //initializeProvinces(tx, onSuccess);
+        },
+        function (error) {
+            // error
+            System.out.println(error);
         });
     }
     catch(ex){
@@ -218,8 +234,9 @@ function insertProvinces(items, onSuccess, onError) {
             var p = items[i];
             provinces[i] = p;
             var sql = "INSERT OR REPLACE INTO [province] VALUES (";           
-            sql = sql.concat("'", p.ID, "', ");            
-            sql = sql.concat("'", quoteText(p.Name), "')");
+            sql = sql.concat("'", p.id, "', ");
+            sql = sql.concat("'", quoteText(p.name), "', ");
+            sql = sql.concat(p.referenceGeoID, ")");
             logSqlCommand(sql);
             tx.executeSql(sql, [], function(tx){}, onError);
         };

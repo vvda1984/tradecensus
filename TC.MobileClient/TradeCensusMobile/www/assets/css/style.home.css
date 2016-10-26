@@ -593,6 +593,17 @@
     display: none;
 } 
 
+#home-leftbottom {
+    position: fixed;
+    bottom: 4px;
+    left: 4px;    
+    z-index: 3;
+    border: 0px;
+    display: inline-block;
+    background: white;
+    padding:4px;
+} 
+
 #home-topright-test {
     position: fixed;
     bottom: 4px;
@@ -615,7 +626,7 @@
 #home-topright-offline, #home-topright-sync-hint {
     position: fixed;
     top: 4px;
-    right: 96px;    
+    right: 142px;    
     z-index: 3;
     border: 0px;
     display: none;

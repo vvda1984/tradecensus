@@ -1,10 +1,18 @@
 ﻿var journals = {
     _lastUpdateTS: null,
     _lastSyncedTS: null,
+    _expiredLines: [],
+    _colors: [],
 
     _newJournal: function () {
         if (journals._map) {
-            journals._newJournalPolyline;
+            //if (journals._polyline) {
+            //    if(!config.journal_nonstop) journals._newJournalPolyline();
+            //}
+            //else {
+            //    journals._newJournalPolyline();
+            //}
+            journals._newJournalPolyline();
             journals._appendPolyline();
         }
 
@@ -15,16 +23,20 @@
             personId: user.id,
             startTS: utils.nowDatetime(),
             endTS: utils.nowDatetime(),
-            data: curlat.toString() + ',' + curlng.toString(),
+            data: curlng.toString() + ',' + curlat.toString(),
             line: [{ lat: curlat, lng: curlng }],
         };
     },
 
     _newJournalPolyline: function (line) {
+        if (journals._polyline)
+            journals._expiredLines.push(journals._polyline);
+
         journals._polyline = new google.maps.Polyline({
-            strokeColor: '#00551E',
-            strokeOpacity: 1.0,
-            strokeWeight: 3
+            geodesic: true,
+            strokeColor: config.journal_color,
+            strokeOpacity: config.journal_opacity,
+            strokeWeight: config.journal_weight,
         });
         journals._polyline.setMap(journals._map);
 
@@ -50,7 +62,7 @@
         sql = sql.concat('startTS="', journal.startTS, '", ');
         sql = sql.concat('endTS="', journal.endTS, '", ');
         sql = sql.concat('data="', journal.data, '", ');
-        sql = sql.concat('jounalDate="', journal.jounalDate, '", ');
+        sql = sql.concat('journalDate="', journal.journalDate, '", ');
         sql = sql.concat('status=', status, ' ');
         sql = sql.concat('WHERE journalId = "', journal.journalId, '"');
 
@@ -85,43 +97,57 @@
             });
     },
 
-    _track: function (callback) {
-        var now = new Date();
+    _canUpdate : function (now){
         var difSecond = utils.getTimeSpanInSecond(journals._lastUpdateTS, now);
-        if (difSecond < config.ping_time) {
-            callback(); 
-            return; // END
+        if (difSecond < config.journal_refresh_time) {
+            return false;
+        }
+        journals._lastUpdateTS = now;
+        return true;
+    },
+
+    _saveToServer : function(callback){
+        if (journals._submit) {
+            journals._submit(journals.current, function (isSucceded) {
+                var status = isSucceded ? journals.statusEnum.synced : journals.statusEnum.unsynced;
+                if (journals.current.journalId === '') {
+                    journals.newJournal(journals.current, status, function (errMsg) {
+                        if(errMsg) utils.logging.error(errMsg);
+                        callback();
+                    });
+                } else {
+                    journals.updateJournal(journals.current, status, function (errMsg) {
+                        if (errMsg) utils.logging.error(errMsg);
+                        callback();
+                    });
+                }
+            });
+        } else
+            callback();
+    },
+
+    _track: function (callback) {
+        if (journals.current == null) return;
+        var now = new Date();
+        if (!journals._canUpdate(now)) {
+            callback();
+            return;//END
         }
 
-        journals._lastUpdateTS = now;
-        if (config.enable_journal) {
+        utils.logging.info('Track journal (' + curlat.toString() + ', ' + curlng.toString() + ')');
+
+        if (journals.isTracking) {
             var curDate = utils.nowDate();
             if (journals.current.journalDate === curDate) {                
-                journals.current.data += ',' + curlat.toString() + ',' + curlng.toString();
+                journals.current.data += ',' + curlng.toString() + ',' + curlat.toString();
                 journals.current.line.push({ lat: curlat, lng: curlng });
                 journals.current.endTS = utils.nowDatetime();
                 journals._appendPolyline();
+                journals._saveToServer(callback);
             } else {
                 journals.current = journals._newJournal();
-            }
-
-            if (journals._submit) {
-                journals._submit(journals.current, function (isSucceded) {    
-                    var status = isSucceded ? journals.statusEnum.synced : journals.statusEnum.unsynced;
-                    if (journals.current.journalId === '') {
-                        journals.newJournal(journals.current, status, function (errMsg) {
-                            utils.writeLog(errMsg);
-                            callback();
-                        });
-                    } else {
-                        journals.updateJournal(journals.current, status, function (errMsg) {
-                            utils.writeLog(errMsg);
-                            callback();
-                        });
-                    }
-                });
-            } else
                 callback();
+            }
         }
         else
             callback();        
@@ -135,24 +161,44 @@
         }, config.journal_update_time * 1000);
     },
 
+    _clearPolyines : function(){
+        for (var i = 0; i < journals._historyPolyines.length; i++) {
+            var line = journals._historyPolyines[i];
+            line.polyline.setMap(null);
+        }
+        journals._historyPolyines = [];
+
+        for (var i = 0; i < journals._expiredLines.length; i++) {
+            var line = journals._expiredLines[i];
+            line.setMap(null);
+        }
+        journals._expiredLines = [];
+    },
+
     _submit: null,
     _sync: null,
+    _query:null,
     _polyline : null,
     _map: null,
+    _historyPolyines: [],
+
     database: null,
     tableName: '',
     current: null,
+    isTracking: false,
+    lastTrackedLat: 0,
+    lastTrackedLng: 0,
    
     statusEnum : { 
         synced : 0,
         unsynced : 1,
     },
-   
+  
     createTable: function (dbtran, callback) {
         log('ensure table [' + journals.tableName + '] exist');
         var sql = ('CREATE TABLE IF NOT EXISTS [' + journals.tableName + '](' +
                     '[journalId] text PRIMARY KEY, ' +
-                    '[jounalDate] text NOT NULL, ' +
+                    '[journalDate] text NOT NULL, ' +
 	                '[id] int NOT NULL, ' +
                     '[startTS] text NOT NULL, ' +
                     '[endTS] text NOT NULL,	' +
@@ -187,33 +233,34 @@
         }
     },
     
-    start: function (submit, sync) {        
-        journals.current = journals._newJournal();
+    initialize: function (submit, sync, query) {        
         journals._submit = submit;
         journals._sync = sync;
-        journals._startTrackJournalTimer();
-
-        //db.transaction(function (tx) {
-        //    //var curDate = utils.nowDate();
-        //    //var sql = 'SELECT * FROM ' + journals.tableName + ' WHERE jounalDate = "' + curDate + '"';
-        //    //logSqlCommand(sql);
-        //    //tx.executeSql(sql, [],
-        //    //    function (tx, dbres) { // SUCCESS
-        //    //        if (dbres.rows.length === 0) {
-        //    //            journals.current = journals.newJournal();
-        //    //            journals._addJournal(tx.journals.current, journals.statusEnum.synced, callback);
-        //    //        } else {
-        //    //            journals.current = dbres.rows.item(0);
-        //    //        }
-        //    //    }, function (tx, dberr) { // ERROR
-        //    //        journals.current = journals.newJournal();
-        //    //        journals._addJournal(tx.journals.current, journals.statusEnum.synced, callback);
-        //    //    });
-        //});
+        journals._query = query;
+        //journals._startTrackJournalTimer();
     },
 
-    trackJournal: function () {       
-        journals._track(function () { utils.writeLog('Tracked current location to journal'); });
+    start: function () {
+        utils.logging.info('Start tracking journal');
+        journals.isTracking = true;
+        journals.current = journals._newJournal();
+    },
+
+    end: function () {
+        utils.logging.info('Stop tracking journal');
+        journals._saveToServer(function () {
+            journals.current = null;
+            if (journals._polyline) {
+                journals._expiredLines.push(journals._polyline);
+                journals._polyline = null;
+            }
+        });
+    },
+
+    trackJournal: function (newLat, newLng, acc) {
+        if (!journals.isTracking) return;
+        if (journals.validateNewLocation(newLat, newLng, acc))
+            journals._track(function () { utils.logging.debug('Tracked current location to journal'); });
     },
 
     syncJournal: function () {
@@ -223,7 +270,7 @@
 
         var now = new Date();
         var difSecond = utils.getTimeSpanInSecond(journals._lastSyncedTS, now);
-        if (difSecond < config.ping_time) {            
+        if (difSecond < config.journal_refresh_time) {
             return; // END
         }
         journals._lastSyncedTS = now;
@@ -232,14 +279,19 @@
             var sql = 'SELECT * FROM ' + journals.tableName + ' WHERE status = ' + journals.statusEnum.unsynced.toString();
             logSqlCommand(sql);
             tx.executeSql(sql, [], function (tx, dbres) {
-                utils.writeLog('Found unsynced journals: ' + dbres.rows.length.toString());
-                if (dbres.rows.length > 0) {                    
+                utils.logging.debug('Found unsynced journals: ' + dbres.rows.length.toString());
+                if (dbres.rows.length > 0) {
                     var unsyncedItems = [];
+                    var index = 0;
                     for (var i = 0; i < dbres.rows.length; i++) {
-                        var unsyncedItem = dbres.rows.item(i);
-                        if (unsyncedItem.journalDate)
-                            unsyncedItems[i] = unsyncedItem;
+                        var item = dbres.rows.item(i);
+                        if (item.journalDate != null && item.journalDate != undefined)
+                            unsyncedItems[index++] = item;
                     }
+
+                    if (unsyncedItems.length == 0) return; //END
+
+                    utils.logging.info("Syncing journals...");
                     journals._sync(unsyncedItems, function (isSucceeded, items) {
                         if (isSucceeded) {
                             for (var i = 0; i < items; i++) {
@@ -251,7 +303,7 @@
                                     'WHERE journalId = "' + item.journalId + '"';
                                 logSqlCommand(updateSql);
                                 tx.executeSql(updateSql, [], function () { }, function (dberr) {
-                                    utils.writeLog(dberr.message);
+                                    utils.logging.debug(dberr.message);
                                 });
                             }
                         }
@@ -259,8 +311,82 @@
                 }
                 
             }, function (tx, dberr) {
-                utils.writeLog(dberr.message);
+                utils.logging.error(dberr.message);
             });
         });
+    },
+
+    viewJournalHistory: function (dateFrom, dateTo) {
+        if (journals._query) {
+            if (dateFrom > dateTo) {
+                utils.messageBox.error("Date range is invalid!");
+                return;
+            }
+
+            journals._query(utils.formatDate(dateFrom), utils.formatDate(dateTo), function (isSucceeded, items) {
+                if (isSucceeded) {
+                    journals._clearPolyines();
+                    if (items.length > 0) {
+                        for (var i = 0; i < items.length; i++) {
+                            var journalDate = items[i];
+                            
+                            var color = '';
+                            if (i < journals._colors.length) {
+                                color = journals._colors[i];
+                            } else {
+                                color = utils.randomColor();
+                                journals._colors.push(color);
+                            }
+                                
+                            while (color === config.journal_color) {
+                                color = utils.randomColor();
+                            }
+
+                            for (var j = 0; j < journalDate.journals.length; j++) {
+                                var journal = journalDate.journals[j];
+                                var coorArr = JSON.parse(journal.data);
+                                var ggline = new google.maps.Polyline({
+                                    path: coorArr,
+                                    geodesic: true,
+                                    fillOpacity: 0,
+                                    strokeColor: color,
+                                    strokeOpacity: 1,
+                                    strokeWeight: 4,
+                                });
+
+                                ggline.setMap(journals._map);
+
+                                var line = {
+                                    date: journalDate.date,
+                                    polyline: ggline,
+                                };
+                                journals._historyPolyines.push(line);
+                            }
+                        }
+                    } else
+                        utils.messageBox.info("No journals for selected date(s)!");
+                }
+            });
+        }
+    },
+
+    clearJournalHistory: function () {
+        journals._clearPolyines();
+        utils.messageBox.info('Clear journal histories');
+    },
+
+    validateNewLocation: function (newLat, newLng, acc) {
+        if (acc > config.journal_accuracy) {
+            utils.logging.info('Ingore new location > accuracy is too high.');
+            return false;
+        }
+
+        var distance = utils.locations.calculateDistance(newLat, newLng, journals.lastTrackedLat, journals.lastTrackedLng);
+        if (distance >= config.journal_distance) {
+            journals.lastTrackedLat = newLat;
+            journals.lastTrackedLng = newLng;
+            return true;
+        }
+        return false;
     },
 };

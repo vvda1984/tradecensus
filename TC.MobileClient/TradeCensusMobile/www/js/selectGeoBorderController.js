@@ -95,6 +95,8 @@ function selectGeoBorderController($scope, $http, $mdDialog) {
         selected_border_1 = t_selected_border_1;
         selected_border_2 = t_selected_border_2;
 
+        addressModel.update(selected_border_0, selected_border_1, selected_border_2, borders_1, borders_2);
+
         userSelectedBorder = b;
         $mdDialog.hide(true);
     }

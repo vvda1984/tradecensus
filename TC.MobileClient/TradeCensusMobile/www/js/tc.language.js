@@ -22,6 +22,11 @@ function language_en() {
         btn_approve: 'APPROVE',
         btn_deny: 'DENY',
         btn_back: 'BACK',
+        btn_view: 'VIEW',
+        btn_view_journals: 'View Journals',
+        btn_start_journal_tracking: 'Start Track Journal',
+        btn_stop_journal_tracking: 'Stop Track Journal',
+        btn_clear_journals: 'Clear Journals',
         btn_changePassword : 'CHANGE PASSWORD',
         label_select_zone: 'SELECT ZONE',
         label_select_area: 'Please select Area',
@@ -65,7 +70,11 @@ function language_en() {
         title_new_version: 'NEW VERSION',
         distance: 'Distance',
         max_outlets: 'Max Outlets',
-		page_size : 'Outlet Page Size',
+        page_size: 'Outlet Page Size',
+
+        title_select_date: 'SELECT DATE',
+        title_date_from: 'From',
+        title_date_to: 'To',
 
 		near_by_outlets: 'Near-by Outlets',
 		new_outlets: 'New Outlets',
@@ -208,5 +217,6 @@ function language_en() {
 		tracking_status: 'Tracking',
 		load_images: 'Loading outlet images',
 		cannot_get_outlet_images: 'Cannot load outlet images!',
+		get_journals: 'Get journal history',
     }
 };
