@@ -68,3 +68,8 @@ Fix bug:
 - Remove un-used api
 - Add user/password to authorize request
 
+[1.1.16298.12] 2016-10-24
+- Add ward
+- Add Journal
+
+

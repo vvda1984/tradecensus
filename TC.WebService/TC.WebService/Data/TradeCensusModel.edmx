@@ -190,6 +190,7 @@
           </Key>
           <Property Name="ID" Type="varchar" MaxLength="10" Nullable="false" />
           <Property Name="Name" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="RefGeoID" Type="int" />
         </EntityType>
         <EntityType Name="SyncDetail">
           <Key>
@@ -315,13 +316,6 @@
           <Property Name="AmendDate" Type="DateTime" Nullable="false" Precision="3" />
           <Property Name="AmendBy" Type="Int32" Nullable="false" />
         </EntityType>
-        <EntityType Name="Province">
-          <Key>
-            <PropertyRef Name="ID" />
-          </Key>
-          <Property Name="ID" Type="String" MaxLength="10" FixedLength="false" Unicode="false" Nullable="false" />
-          <Property Name="Name" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
-        </EntityType>
         <EntityType Name="SyncDetail">
           <Key>
             <PropertyRef Name="ID" />
@@ -370,7 +364,6 @@
           <EntitySet Name="Configs" EntityType="Self.Config" />
           <EntitySet Name="OutletTypes" EntityType="Self.OutletType" />
           <EntitySet Name="PersonRoles" EntityType="Self.PersonRole" />
-          <EntitySet Name="Provinces" EntityType="Self.Province" />
           <EntitySet Name="SyncDetails" EntityType="Self.SyncDetail" />
           <EntitySet Name="SyncHistories" EntityType="Self.SyncHistory" />
           <EntitySet Name="Zones" EntityType="Self.Zone" />
@@ -389,6 +382,7 @@
           </AssociationSet>
           <EntitySet Name="GeoBorders" EntityType="tradecensusModel.GeoBorder" />
           <EntitySet Name="Journals" EntityType="tradecensusModel.Journal" />
+          <EntitySet Name="Provinces" EntityType="tradecensusModel.Province" />
         </EntityContainer>
         <EntityType Name="OutletHistory">
           <Key>
@@ -544,6 +538,14 @@
           <Property Name="StartTS" Type="DateTime" Nullable="false" Precision="3" />
           <Property Name="EndTS" Type="DateTime" Nullable="false" Precision="3" />
         </EntityType>
+        <EntityType Name="Province">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="String" Nullable="false" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="Name" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="RefGeoID" Type="Int32" />
+        </EntityType>
       </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -590,14 +592,6 @@
                 <ScalarProperty Name="InputBy" ColumnName="InputBy" />
                 <ScalarProperty Name="AmendDate" ColumnName="AmendDate" />
                 <ScalarProperty Name="AmendBy" ColumnName="AmendBy" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="Provinces">
-            <EntityTypeMapping TypeName="tradecensusModel.Province">
-              <MappingFragment StoreEntitySet="Province">
-                <ScalarProperty Name="ID" ColumnName="ID" />
-                <ScalarProperty Name="Name" ColumnName="Name" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -776,6 +770,15 @@
                 <ScalarProperty Name="Data" ColumnName="Data" />
                 <ScalarProperty Name="JournalDate" ColumnName="JournalDate" />
                 <ScalarProperty Name="PersonID" ColumnName="PersonID" />
+                <ScalarProperty Name="ID" ColumnName="ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Provinces">
+            <EntityTypeMapping TypeName="tradecensusModel.Province">
+              <MappingFragment StoreEntitySet="Province">
+                <ScalarProperty Name="RefGeoID" ColumnName="RefGeoID" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
                 <ScalarProperty Name="ID" ColumnName="ID" />
               </MappingFragment>
             </EntityTypeMapping>

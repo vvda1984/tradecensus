@@ -8,5 +8,8 @@ namespace TradeCensus
     {
         [OperationContract]
         ProvinceResponse GetProvinces();
+
+        [OperationContract]
+        GetDistrictsResponse GetDistricts(string provinceGeoID);
     }
 }

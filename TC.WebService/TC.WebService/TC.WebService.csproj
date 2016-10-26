@@ -198,6 +198,9 @@
     </Compile>
     <Compile Include="Data\Outlet.Entity.cs" />
     <Compile Include="Data\Outlet.Extented.cs" />
+    <Compile Include="Data\Province.cs">
+      <DependentUpon>TradeCensusModel.tt</DependentUpon>
+    </Compile>
     <Compile Include="DependencyInjection\DependencyResolver.cs" />
     <Compile Include="DependencyInjection\DefaultResolver.cs" />
     <Compile Include="DependencyInjection\IDependencyResolver.cs" />
@@ -242,10 +245,8 @@
     <Compile Include="PersonService\PersonModel.cs" />
     <Compile Include="PersonService\PersonService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Data\Province.cs">
-      <DependentUpon>TradeCensusModel.tt</DependentUpon>
-    </Compile>
     <Compile Include="ProvinceService\IProvinceService.cs" />
+    <Compile Include="ProvinceService\ProvinceModel.cs" />
     <Compile Include="ProvinceService\ProvinceService.cs" />
     <Compile Include="Shared\DeniedException.cs" />
     <Compile Include="Shared\GeoCoordinate.cs" />

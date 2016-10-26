@@ -9,7 +9,6 @@
         <EntityTypeShape EntityType="tradecensusModel.Config" Width="1.5" PointX="4.75" PointY="4.75" IsExpanded="true" />
         <EntityTypeShape EntityType="tradecensusModel.OutletType" Width="1.5" PointX="6.75" PointY="4.75" IsExpanded="true" />
         <EntityTypeShape EntityType="tradecensusModel.PersonRole" Width="1.5" PointX="4.75" PointY="1" IsExpanded="true" />
-        <EntityTypeShape EntityType="tradecensusModel.Province" Width="1.5" PointX="8.75" PointY="1" IsExpanded="true" />
         <EntityTypeShape EntityType="tradecensusModel.SyncDetail" Width="1.5" PointX="2.75" PointY="1" IsExpanded="true" />
         <EntityTypeShape EntityType="tradecensusModel.SyncHistory" Width="1.5" PointX="0.75" PointY="1" IsExpanded="true" />
         <EntityTypeShape EntityType="tradecensusModel.Zone" Width="1.5" PointX="8.75" PointY="4.75" IsExpanded="true" />
@@ -22,6 +21,7 @@
         <AssociationConnector Association="tradecensusModel.FK_OutletImage_Outlet" />
         <EntityTypeShape EntityType="tradecensusModel.GeoBorder" Width="1.5" PointX="4.75" PointY="6.75" />
         <EntityTypeShape EntityType="tradecensusModel.Journal" Width="1.5" PointX="7.375" PointY="7.75" />
+        <EntityTypeShape EntityType="tradecensusModel.Province" Width="1.5" PointX="9.375" PointY="8.75" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

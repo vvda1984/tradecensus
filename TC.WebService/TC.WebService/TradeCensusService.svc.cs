@@ -32,6 +32,26 @@ namespace TradeCensus
                     ErrorMessage = "Service internal error",
                 };
             }
-        }        
+        }
+
+        [WebInvoke(Method = "POST", UriTemplate = "provinces/getdistricts/{provinceGeoID}", ResponseFormat = WebMessageFormat.Json)]
+        public GetDistrictsResponse GetDistricts(string provinceGeoID)
+        {
+            _logger.Debug("Receive get district request");
+            try
+            {
+                IProvinceService service = DependencyResolver.Resolve<IProvinceService>();
+                return service.GetDistricts(provinceGeoID);
+            }
+            catch (Exception ex)
+            {
+                _logger.Warn(ex, "Cannot get districts");
+                return new GetDistrictsResponse
+                {
+                    Status = Constants.ErrorCode,
+                    ErrorMessage = "Service internal error",
+                };
+            }
+        }
     }
 }

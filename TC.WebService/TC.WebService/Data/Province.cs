@@ -16,5 +16,6 @@ namespace TradeCensus.Data
     {
         public string ID { get; set; }
         public string Name { get; set; }
+        public Nullable<int> RefGeoID { get; set; }
     }
 }

@@ -103,10 +103,10 @@ namespace TradeCensus
                     }
 
                     if (step % 2 == 0)
-                        curCoor.Lat = double.Parse(number.ToString());
+                        curCoor.Lng = double.Parse(number.ToString());
                     else
                     {
-                        curCoor.Lng = double.Parse(number.ToString());
+                        curCoor.Lat = double.Parse(number.ToString());
                         curCoor = null;
                     }
 
@@ -118,7 +118,7 @@ namespace TradeCensus
             }
 
             if (curCoor != null)
-                curCoor.Lng = double.Parse(number.ToString());
+                curCoor.Lat = double.Parse(number.ToString());
 
             return JsonConvert.SerializeObject(coors, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
         }

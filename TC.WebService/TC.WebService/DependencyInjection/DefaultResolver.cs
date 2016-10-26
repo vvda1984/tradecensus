@@ -31,7 +31,7 @@ namespace TradeCensus
                     if (entry.Item1)
                         return (T)entry.Item3;
                     else
-                        return ((Func<T>)entry.Item3).Invoke();
+                        return ((Func<T>)entry.Item2).Invoke();
                 }
                 else
                     return default(T);

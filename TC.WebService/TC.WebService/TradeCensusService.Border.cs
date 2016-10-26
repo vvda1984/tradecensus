@@ -48,6 +48,26 @@ namespace TradeCensus
             }
         }
 
+        [WebInvoke(Method = "POST", UriTemplate = "border/getsubbordersbyparentname/{parentName}", ResponseFormat = WebMessageFormat.Json)]
+        public GetBorderArrayResponse GetBorderByParentName(string parentName)
+        {
+            _logger.Debug("Receive get border request");
+            try
+            {
+                IBorderService service = DependencyResolver.Resolve<IBorderService>();
+                return service.GetBorderByParentName(parentName);
+            }
+            catch (Exception ex)
+            {
+                _logger.Warn(ex, "Process request error");
+                return new GetBorderArrayResponse
+                {
+                    Status = Constants.ErrorCode,
+                    ErrorMessage = "Service internal error",
+                };
+            }
+        }
+
         [WebInvoke(Method = "POST", UriTemplate = "border/download/{provinceID}/{provinceName}", ResponseFormat = WebMessageFormat.Json)]
         public GetBorderArrayResponse DownloadBorders(string provinceID, string provinceName)
         {

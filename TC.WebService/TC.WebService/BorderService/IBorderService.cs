@@ -16,6 +16,9 @@ namespace TradeCensus
         GetBorderResponse GetBorder(string id);
 
         [OperationContract]
+        GetBorderArrayResponse GetBorderByParentName(string parentName);
+
+        [OperationContract]
         GetBorderArrayResponse DownloadBorders(string provinceID, string provinceName);
     }
 }

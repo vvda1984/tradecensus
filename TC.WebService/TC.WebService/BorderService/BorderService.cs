@@ -80,6 +80,24 @@ namespace TradeCensus
             return resp;
         }
 
+        public GetBorderArrayResponse GetBorderByParentName(string parentName)
+        {
+            GetBorderArrayResponse resp = new GetBorderArrayResponse();
+            try
+            {
+                string name = parentName;//.ToUpper().Replace("THÀNH PHỐ", "").Replace("TỈNH", "").Trim();
+                var border = DC.GeoBorders.FirstOrDefault(i => string.Compare(i.Name, name, StringComparison.OrdinalIgnoreCase) == 0);
+                if (border != null)
+                    return GetBorderByParent(border.ID.ToString());
+            }
+            catch (Exception ex)
+            {
+                resp.Status = Constants.ErrorCode;
+                resp.ErrorMessage = ex.Message;
+            }
+            return resp;
+        }
+
         public GetBorderArrayResponse DownloadBorders(string provinceID, string provinceName)
         {
             GetBorderArrayResponse resp = new GetBorderArrayResponse();

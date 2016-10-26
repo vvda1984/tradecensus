@@ -8,6 +8,13 @@ namespace TradeCensus.Shared
     public class ProvinceResponse : Response
     {
         [DataMember]
-        public List<Province> Items { get; set; }
+        public List<ProvinceModel> Items { get; set; }
+    }
+
+    [DataContract]
+    public class GetDistrictsResponse : Response
+    {
+        [DataMember(Name = "items")]
+        public List<DistrictModel> Items { get; set; }
     }
 }

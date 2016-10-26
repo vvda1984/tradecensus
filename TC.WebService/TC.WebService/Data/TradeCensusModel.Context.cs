@@ -29,7 +29,6 @@ namespace TradeCensus.Data
         public virtual DbSet<Config> Configs { get; set; }
         public virtual DbSet<OutletType> OutletTypes { get; set; }
         public virtual DbSet<PersonRole> PersonRoles { get; set; }
-        public virtual DbSet<Province> Provinces { get; set; }
         public virtual DbSet<SyncDetail> SyncDetails { get; set; }
         public virtual DbSet<SyncHistory> SyncHistories { get; set; }
         public virtual DbSet<Zone> Zones { get; set; }
@@ -40,5 +39,6 @@ namespace TradeCensus.Data
         public virtual DbSet<OutletImage> OutletImages { get; set; }
         public virtual DbSet<GeoBorder> GeoBorders { get; set; }
         public virtual DbSet<Journal> Journals { get; set; }
+        public virtual DbSet<Province> Provinces { get; set; }
     }
 }
