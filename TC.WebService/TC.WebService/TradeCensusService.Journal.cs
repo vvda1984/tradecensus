@@ -67,5 +67,25 @@ namespace TradeCensus
                 };
             }
         }
+
+        [WebInvoke(Method = "POST", UriTemplate = "journal/getsales/{personID}/{password}/{salemanID}/{dateFrom}/{dateTo}", ResponseFormat = WebMessageFormat.Json)]
+        public GetJournalResponse GetsalesmanJournals(string personID, string password, string salemanID, string dateFrom, string dateTo)
+        {
+            _logger.Debug("Receive sync outlets request");
+            try
+            {
+                IJournalService service = DependencyResolver.Resolve<IJournalService>();
+                return service.GetsalesmanJournals(personID, password, salemanID, dateFrom, dateTo);
+            }
+            catch (Exception ex)
+            {
+                _logger.Warn(ex, "Process request error");
+                return new GetJournalResponse
+                {
+                    Status = Constants.ErrorCode,
+                    ErrorMessage = "Service internal error",
+                };
+            }
+        }
     }
 }

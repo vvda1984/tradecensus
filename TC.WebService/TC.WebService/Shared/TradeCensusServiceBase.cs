@@ -12,32 +12,38 @@ namespace TradeCensus.Shared
         protected bool _isDataChanged;
         protected string _name;
 
-        protected void ValidatePerson(int personID, string password)
-        {
-            var user = DC.PersonRoles.FirstOrDefault(i => i.PersonID == personID && i.Password == password);
-            if (user == null)
-                throw new Exception(string.Format("Invalid user", personID));
-        }
-
         protected TradeCensusServiceBase(string name)
-        {            
+        {
             DC = new tradecensusEntities(); // throw error
             _name = name;
             _logger = DependencyResolver.Resolve<ILogFactory>().GetLogger(name);
-        }        
+        }
+
 
         public void Dispose()
         {
             if (_isDataChanged && DC != null)
             {
-                try {
+                try
+                {
                     DC.SaveChanges();
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Log("[{0}] Save changes error: {1}", _name, ex);
-                }                
+                }
             }
+        }
+
+
+        protected void ValidatePerson(int personID, string password, bool mustAuditor = false)
+        {
+            var person = DC.PersonRoles.FirstOrDefault(i => i.PersonID == personID && i.Password == password);
+            if (person == null)
+                throw new Exception($"Invalid user {personID}");
+
+            if (mustAuditor && !person.IsAuditor)
+                throw new Exception($"Person {personID} is not auditor");
         }
 
         protected void Log(string message)
@@ -75,11 +81,6 @@ namespace TradeCensus.Shared
                 value = defaultValue;
             }
             return value;
-        }
-
-        protected bool IsAuditor(PersonRole person)
-        {
-            return person.Role == 1 || person.Role % 10 == 1;
         }
     }
 }

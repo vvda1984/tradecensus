@@ -198,6 +198,7 @@
     </Compile>
     <Compile Include="Data\Outlet.Entity.cs" />
     <Compile Include="Data\Outlet.Extented.cs" />
+    <Compile Include="Data\PersonRole.Extended.cs" />
     <Compile Include="Data\Province.cs">
       <DependentUpon>TradeCensusModel.tt</DependentUpon>
     </Compile>
@@ -241,6 +242,7 @@
     <Compile Include="Data\PersonRole.cs">
       <DependentUpon>TradeCensusModel.tt</DependentUpon>
     </Compile>
+    <Compile Include="PersonService\GetSalesmanResponse.cs" />
     <Compile Include="PersonService\IPersonService.cs" />
     <Compile Include="PersonService\PersonModel.cs" />
     <Compile Include="PersonService\PersonService.cs" />

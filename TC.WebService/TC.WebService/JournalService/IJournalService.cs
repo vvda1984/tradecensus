@@ -16,6 +16,9 @@ namespace TradeCensus
         GetJournalResponse GetJournals(string personID, string password, string dateFrom, string dateTo);
 
         [OperationContract]
+        GetJournalResponse GetsalesmanJournals(string personID, string password, string salemanID, string dateFrom, string dateTo);
+
+        [OperationContract]
         SyncJournalResponse SyncJournals(string personID, string password, Journal[] entries);
     }
 }

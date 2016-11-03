@@ -55,45 +55,13 @@ namespace TradeCensus
             }
         }
 
-        public JournalResponse AddJournal(string personID, string password, Journal journal)
+        private JournalHistory[] GetJournalHistory(int person, string dateFrom, string dateTo)
         {
-            var person = int.Parse(personID);
-            ValidatePerson(person, password);
-
-            return new JournalResponse { JournalID = AddOrUpdateJournal(journal).ID };
-        }
-
-        public GetJournalResponse GetJournals(string personID, string password, string dateFrom, string dateTo)
-        {
-            var person = int.Parse(personID);
-            ValidatePerson(person, password);
-
-            //bool nonStop = true;
-            //var config = DC.Configs.FirstOrDefault(x => string.Compare(x.Name, "journal_nonstop", StringComparison.OrdinalIgnoreCase) == 0);
-            //if (config != null)
-            //    nonStop = config.Value == "1";
-
             List<JournalHistory> journals = new List<JournalHistory>();
             Dictionary<string, JournalHistory> dict = new Dictionary<string, JournalHistory>(StringComparer.InvariantCultureIgnoreCase);
             IQueryable<Data.Journal> query;
 
-            //if (dateFrom == dateTo)
-            //{
-            //    DateTime fromTS = DateTime.ParseExact(dateFrom, Constants.ShortDateFormat, null);
-            //    query = DC.Journals.Where(x =>
-            //        x.PersonID == person && 
-            //        x.JournalDate.ToString(Constants.ShortDateFormat) == dateFrom);
-            //}
-            //else
-            //{
-            //    DateTime fromTS = DateTime.ParseExact(dateFrom, Constants.ShortDateFormat, null);
-            //    DateTime toTSTemp = DateTime.ParseExact(dateTo, Constants.ShortDateFormat, null);
-            //    DateTime toTS = new DateTime(toTSTemp.Year, toTSTemp.Month, toTSTemp.Day, 23, 59, 59);
-            //    query = DC.Journals.Where(x => x.PersonID == person && x.JournalDate >= fromTS && x.JournalDate <= toTS);
-            //}
-
             DateTime fromTS = DateTime.ParseExact(dateFrom, Constants.ShortDateFormat, null);
-            //DateTime fromTS = fromTSTemp.Subtract(new TimeSpan(0, 0, 1));
             DateTime toTSTemp = DateTime.ParseExact(dateTo, Constants.ShortDateFormat, null);
             DateTime toTS = new DateTime(toTSTemp.Year, toTSTemp.Month, toTSTemp.Day, 23, 59, 59);
             query = DC.Journals.Where(x => x.PersonID == person && x.JournalDate >= fromTS && x.JournalDate <= toTS);
@@ -123,7 +91,22 @@ namespace TradeCensus
                     StartTS = item.StartTS.ToString(Constants.DatetimeFormat)
                 });
             }
-            response.Items = journals.ToArray();
+            return journals.ToArray();
+        }
+
+        public JournalResponse AddJournal(string personID, string password, Journal journal)
+        {
+            var person = int.Parse(personID);
+            ValidatePerson(person, password);
+
+            return new JournalResponse { JournalID = AddOrUpdateJournal(journal).ID };
+        }
+
+        public GetJournalResponse GetJournals(string personID, string password, string dateFrom, string dateTo)
+        {
+            var person = int.Parse(personID);
+            ValidatePerson(person, password);
+            GetJournalResponse response = new GetJournalResponse { Items = GetJournalHistory(person, dateFrom, dateTo) };
             return response;
         }
 
@@ -136,6 +119,14 @@ namespace TradeCensus
                 res.JournalIDs.Add(new JournalSync { Id = AddOrUpdateJournal(entry).ID, JournalID = entry.JournalID });
             }
             return res;
+        }
+
+        public GetJournalResponse GetsalesmanJournals(string personID, string password, string salemanID, string dateFrom, string dateTo)
+        {
+            var person = int.Parse(personID);
+            ValidatePerson(person, password);
+            GetJournalResponse response = new GetJournalResponse { Items = GetJournalHistory(int.Parse(salemanID), dateFrom, dateTo) };
+            return response;
         }
     }
 }

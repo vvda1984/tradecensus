@@ -87,5 +87,25 @@ namespace TradeCensus
                 };
             }
         }
+
+        [WebInvoke(Method = "POST", UriTemplate = "getsalesmans/{personid}/{password}", ResponseFormat = WebMessageFormat.Json)]
+        public GetSalesmanResponse GetSalesmansOfAuditor(string personid, string password)
+        {
+            _logger.Debug("Receive GetSalesmansOfAuditor resquest");
+            try
+            {
+                IPersonService service = DependencyResolver.Resolve<IPersonService>();
+                return service.GetSalesmansOfAuditor(personid, password);
+            }
+            catch (Exception ex)
+            {
+                _logger.Warn(ex, "Cannot reset password resquest");
+                return new GetSalesmanResponse
+                {
+                    Status = Constants.ErrorCode,
+                    ErrorMessage = "Service internal error",
+                };
+            }
+        }
     }
 }

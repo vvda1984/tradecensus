@@ -278,6 +278,26 @@ namespace TradeCensus
             return res;
         }
 
+        public GetSalesmanResponse GetSalesmansOfAuditor(string personid, string password)
+        {
+            var response = new GetSalesmanResponse() { Items = new System.Collections.Generic.List<Salesman>() };
+            int personID = int.Parse(personid);
+            ValidatePerson(personID, password, true);
+            var personArr = DC.Database.SqlQuery<Person>(@"With cte(EmployeeID) as (
+                                                select ID from Person where ReportTo = @p0
+                                                UNION ALL 
+                                                select ID from Person JOIN cte d ON Person.ReportTo = d.EmployeeID
+                                                where Person.TerminateDate is null
+                                            )
+                                            select * from person join cte on cte.EmployeeID=person.ID
+                                            where ltrim(Person.FirstName) not like 'TBA%'", personID).ToArray();
+            if (personArr.Length > 0)
+                foreach (var person in personArr)
+                    response.Items.Add(new Salesman { Id = person.ID, FirstName = person.FirstName, LastName = person.LastName });
+
+            return response;
+        }
+
         #endregion
     }
 

@@ -17,5 +17,8 @@ namespace TradeCensus
 
         [OperationContract]
         Response Ping(string deviceinfo);
+
+        [OperationContract]
+        GetSalesmanResponse GetSalesmansOfAuditor(string personid,string password);
     }
 }
