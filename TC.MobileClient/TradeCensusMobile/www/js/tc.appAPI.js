@@ -360,3 +360,4 @@ function getFileContentAsBase64(path, callback) {
         });
     }
 }
+

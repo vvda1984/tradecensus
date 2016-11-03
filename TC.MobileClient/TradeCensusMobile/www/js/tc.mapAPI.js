@@ -356,9 +356,7 @@ function displayCurrentPostion() {
     }
     displayAccuracy();
 
-    if (!journals._map) {
-        journals.setMap(map);        
-    }
+    journals.setMap(map);   
 }
 
 function displayAccuracy() {
@@ -661,6 +659,7 @@ function getBorders(level) {
     return [];
 }
 
+var isRunningInBackgound = false;
 function trackLocationWhenAppInBackground(callback) {
     if (locationChangedCallback) {
         getCurPosition(false, function (lat, lng) {
@@ -674,7 +673,7 @@ function trackLocationWhenAppInBackground(callback) {
 }
 
 function turnOntrackLocationWhenAppInBackground() {
-    if (locationChangedCallback && utils.tc.isRunningInBackgound) {
+    if (locationChangedCallback && isRunningInBackgound) {
         setTimeout(function () {
             trackLocationWhenAppInBackground(function () {
                 turnOntrackLocationWhenAppInBackground();

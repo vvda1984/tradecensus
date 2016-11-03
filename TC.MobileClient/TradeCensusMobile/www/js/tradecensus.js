@@ -27,7 +27,7 @@
             // Called when background mode has been activated
             cordova.plugins.backgroundMode.onactivate = function () {
                 try {
-                    utils.tc.isRunningInBackgound = true;
+                    isRunningInBackgound = true;
                     turnOntrackLocationWhenAppInBackground();
                 }
                 catch (err) {
@@ -43,31 +43,16 @@
             };
 
             cordova.plugins.backgroundMode.ondeactivate = function () {
-                utils.tc.isRunningInBackgound = false;
-            };
-
-            //cordova.plugins.backgroundMode.onactivate = function () {
-            //    setTimeout(function () {
-            //        // Modify the currently displayed notification
-            //        cordova.plugins.backgroundMode.configure({
-            //            text: 'Running in background for more than 5s now.'
-            //        });
-            //    }, 5000);
-            //    try {
-            //        turnOntrackLocationWhenAppInBackground();
-            //    }
-            //    catch (err) {
-            //        log(err);
-            //    }
-            //}
+                isRunningInBackgound = false;
+            };            
         }
         catch (err) {
             log(err);
         }
     }
 
-    $(document).ready(function () { onDeviceReady(); });
-    //document.addEventListener("deviceready", onDeviceReady, false);
+    //(document).ready(function () { onDeviceReady(); });
+    document.addEventListener("deviceready", onDeviceReady, false);
 })(window);
 
 var resetDB = false;                // force reset database - testing only
@@ -180,8 +165,8 @@ function newConfig() {
         enable_rereverse_geo: 1,
         protocol: 'https',
         //ip: '27.0.15.234/trade-census',
-        ip: '203.34.144.29/tc-test',
-        //ip: '203.34.144.29/trade-census',
+        //ip: '203.34.144.29/tc-test',
+        ip: '203.34.144.29/trade-census',
         port: '443',
         service_name: 'TradeCensusService.svc', // absolute
         enable_liveGPS: true,       
@@ -213,11 +198,12 @@ function newConfig() {
         journal_update_time: 1 * 10,//
         journal_accuracy : 100,     //
         journal_distance: 10,       // meter
-        journal_refresh_time: 1,    // second
+        journal_refresh_time: 3,    // second
         journal_color: '#00551E',   // 
         journal_opacity: 1.0,       // 
         journal_weight: 3,          //
-        journal_nonstop : 1,        //
+        journal_nonstop: 1,         //
+        journal_daily_mode: true,   // 
 
         tbl_area_ver: '0',
         tbl_outlettype_ver: '0',
@@ -227,8 +213,8 @@ function newConfig() {
         tbl_outlet: 'uo',
         tbl_downloadProvince: 'udp',
         tbl_journal: 'jr',
-        version: '1.2a.16298.8',
-        versionNum: 5,
+        version: '1.2p.16232.9',
+        versionNum: 6,
     };
     if (isHttp) {
         c.protocol = 'http';

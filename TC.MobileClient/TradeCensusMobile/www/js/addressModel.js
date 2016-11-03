@@ -50,12 +50,12 @@
 
     initialize: function (db, tran) {
         database = db;
-        utils.logging.debug('Ensure table [District] exist');
+        //tcutils.logging.debug('Ensure table [District] exist');
         var sql = ('CREATE TABLE IF NOT EXISTS [District] ([id] text PRIMARY KEY, [Name] text NOT NULL, [parentId] text NOT NULL)');
         logSqlCommand(sql);
         tran.executeSql(sql, [], function (tx) { }, function (tx, dberr) { });
 
-        utils.logging.debug('Ensure table [Ward] exist');
+        //tcutils.logging.debug('Ensure table [Ward] exist');
         var sql1 = ('CREATE TABLE IF NOT EXISTS [Ward] ([id] text PRIMARY KEY, [Name] text NOT NULL, [parentId] text NOT NULL)');
 
         logSqlCommand(sql1);
@@ -73,7 +73,7 @@
                     '"' + district.name + '", ' +
                     '"' + provinceId + '")');
                 logSqlCommand(sql);
-                tx.executeSql(sql, [], null, function (tx, dberr) { utils.logging.error(dberr.message); });
+                tx.executeSql(sql, [], null, function (tx, dberr) { tcutils.logging.error(dberr.message); });
 
                 for (var j = 0; j < district.wards.length; j++) {
                     var ward = district.wards[j];
@@ -82,7 +82,7 @@
                         '"' + ward.name + '", ' +
                         '"' + district.id + '")');
                     logSqlCommand(sql1);
-                    tx.executeSql(sql1, [], null, function (tx, dberr) { utils.logging.error(dberr.message); });
+                    tx.executeSql(sql1, [], null, function (tx, dberr) { tcutils.logging.error(dberr.message); });
                 }
             }
             callback();

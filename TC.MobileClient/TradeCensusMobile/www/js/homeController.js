@@ -379,7 +379,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 
             log('create new outlet');
             showDlg(R.get_current_location, R.please_wait);
-            if (tcapp.checkToCreateNewOutlet()) {
+            if (tcutils.tcapp.checkToCreateNewOutlet()) {
                 addNewOutlet();
             } else {
                 if (curlat == START_LAT && curlng == START_LNG) {
@@ -840,16 +840,16 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                 //var url = baseURL + '/border/getsubbordersbyparentname/' + addressModel.province;
                 var url = baseURL + '/border/getsubborders/' + provinceId.toString();
                 log('Call service api: ' + url);
-                //utils.messageBox.loading(R.loading, R.please_wait);
+                //tcutils.messageBox.loading(R.loading, R.please_wait);
                 $http({
                     method: config.http_method,
                     url: url
                 }).then(function (resp) {
-                    //utils.messageBox.hide();
+                    //tcutils.messageBox.hide();
                     try {
                         var data = resp.data;
                         if (data.Status == -1) { // error
-                            utils.messageBox.error(data.ErrorMessage);
+                            tcutils.messageBox.error(data.ErrorMessage);
                         } else {
                             addressModel.districtArr = data.Items;
                             loadWardIfNot(function () {
@@ -862,14 +862,14 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                         }
                         //tryCreateNewOutlet(curlat, curlng, '', '', '', '');
                     } catch (err) {
-                        utils.messageBox.error(err.message);
+                        tcutils.messageBox.error(err.message);
                         //tryCreateNewOutlet(curlat, curlng, '', '', '', '');
                     }
                 }, function (err) {
                     log(err);
-                    //utils.messageBox.hide();
+                    //tcutils.messageBox.hide();
                     tryCreateNewOutlet(curlat, curlng, '', '', '', '');
-                    //utils.messageBox.error(data.ErrorMessage);
+                    //tcutils.messageBox.error(data.ErrorMessage);
                 });
             }
             else {
@@ -893,22 +893,22 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         if (addressModel.wardArr.length == 0 && addressModel.district) {
             var url = baseURL + '/border/getsubborders/' + addressModel.district.ID;
             log('Call service api: ' + url);
-            utils.messageBox.loading(R.loading, R.please_wait);
+            tcutils.messageBox.loading(R.loading, R.please_wait);
             $http({
                 method: config.http_method,
                 url: url
             }).then(function (resp) {
-                utils.messageBox.hide();
+                tcutils.messageBox.hide();
                 var data = resp.data;
                 if (data.Status == -1){ // error
-                    utils.logging.error(data.ErrorMessage);
+                    tcutils.logging.error(data.ErrorMessage);
                 } else {
                     addressModel.wardArr = data.Items;
                 }
                 callback();
             }, function (err) {
-                utils.logging.error(err);
-                //utils.messageBox.hide();
+                tcutils.logging.error(err);
+                //tcutils.messageBox.hide();
                 callback();
             });
         }
@@ -1249,24 +1249,25 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         curacc = acc;
         curlat = lat;
         curlng = lng;
-        tcapp.lastUpdateLocationTS = new Date();
+
+        tcutils.tcapp.lastUpdateLocationTS = new Date();
 
         displayCurrentPostion();
 
         journals.trackJournal(lat, lng, acc);
 
-        if (tcapp.checkToRefreshOutlet(lat, lng)) {
-            utils.logging.info('Refreshing outlet list...');
+        if (tcutils.tcapp.checkToRefreshOutlet(lat, lng)) {
+            tcutils.logging.info('Refreshing outlet list...');
             refreshOutletList();
         }
         
-        //var distance = utils.locations.calculateDistance(lat, lng, curlat, curlng);
+        //var distance = tcutils.locations.calculateDistance(lat, lng, curlat, curlng);
         //var now = new Date();
         //var dif = getDifTime(lastLoadLocationTS, now);
         //if (dif > $scope.config.ping_time) {
         //    lastLoadLocationTS = now;
         //    if (distance >= $scope.config.liveGPS_distance) {
-        //        utils.logging.info('Refreshing outlet list...');
+        //        tcutils.logging.info('Refreshing outlet list...');
         //        refreshOutletList();
         //    }
         //}
@@ -2106,7 +2107,33 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             }
         }
     }
+    //*************************************************************************    
+    //$scope.olocation = {
+    //    lastUpdateLocationTS: null,
+    //    lastRefreshOutletsTS: null,
+    //    lastRefreshLat: 0,
+    //    lastRefreshLng: 0,
 
+    //    checkToRefreshOutlet: function (newLat, newLng) {
+    //        var now = new Date();
+    //        var dif = getDifTime($scope.olocation.lastRefreshOutletsTS, now);
+    //        if (dif >= config.ping_time) {
+    //            var distance = calcDistance(newLat, newLng, tcutils.tcapp.lastRefreshLat, tcutils.tcapp.lastRefreshLng);
+    //            if (distance >= config.liveGPS_distance) {
+    //                tcutils.tcapp.lastRefreshOutletsTS = now;
+    //                tcutils.tcapp.lastRefreshLat = newLat;
+    //                tcutils.tcapp.lastRefreshLng = newLng;
+    //                return true;
+    //            }
+    //        }
+    //        return false;
+    //    },
+
+    //    checkToCreateNewOutlet: function () {
+    //        var dif = getDifTime(tcutils.tcapp.lastUpdateLocationTS, new Date());
+    //        return (dif <= config.location_age);
+    //    },
+    //};
 
     //*************************************************************************
     $scope.journal = {
@@ -2146,98 +2173,6 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             }
         },
 
-        submitJournal: function (journal, callback) {
-            if (utils.networks.isReady()) {
-                var url = baseURL + '/journal/add/' + userID + '/' + pass;
-                //utils.writeLog('Call service api: ' + url);
-                utils.logging.debug('Call service api: ' + url);
-                $http({
-                    method: config.http_method,
-                    data: journal,
-                    url: url,
-                    headers: { 'Content-Type': 'application/json' }
-                }).then(function (resp) {
-                    utils.writeLog(resp);
-                    var data = resp.data;
-                    if (data.Status == -1) { // error
-                        callback(false);
-                        utils.showErrorDlg(data.ErrorMessage);
-                    } else {
-                        utils.writeLog('Submit journal successfully');
-                        journal.id = data.id;
-                        callback(true);
-                    }
-                }, function (err) {
-                    utils.writeLog('Submit error: ' + err.message);
-                    utils.writeLog(err);
-                    callback(false);
-                });
-            } else {
-                callback(false);
-            }
-        },
-
-        submitUnsyncedJournals: function (unsyncJournals, callback) {
-            if (utils.networks.isReady()) {
-                var url = baseURL + '/journal/sync/' + userID + '/' + pass;
-                utils.writeLog('Call service api: ' + url);
-                $http({
-                    method: config.http_method,
-                    data: unsyncJournals,
-                    url: url,
-                    headers: { 'Content-Type': 'application/json' }
-                }).then(function (resp) {
-                    utils.writeLog(resp);
-                    var data = resp.data;
-                    if (data.Status == -1) { // error
-                        utils.writeLog(data.ErrorMessage);
-                        callback(false, null);
-                    } else {
-                        callback(false, data.items);
-                    }
-                }, function (err) {
-                    utils.writeLog('Submit error');
-                    utils.writeLog(err);
-                    callback(false, null);
-                });
-            } else {
-                callback(false, null);
-            }
-        },
-
-        queryJournals: function (from, to, callback){
-            if (utils.networks.isReady()) {
-                utils.messageBox.loading(R.get_journals, R.please_wait)
-                var url = baseURL + '/journal/get/' + userID + '/' + pass + '/' + from + '/' + to;
-                utils.writeLog('Call service api: ' + url);
-                $http({
-                    method: config.http_method,
-                    data: null,
-                    url: url,
-                    headers: { 'Content-Type': 'application/json' }
-                }).then(function (resp) {
-                    utils.messageBox.hide();
-                    utils.writeLog(resp);
-                    var data = resp.data;
-                    if (data.Status == -1) { // error
-                        //utils.writeLog(data.ErrorMessage);
-                        utils.messageBox.error(data.ErrorMessage);
-                        callback(false, null);
-                    } else {
-                        callback(true, data.items);
-                    }
-                }, function (err) {
-                    utils.messageBox.hide();
-                    utils.messageBox.error("Error while get journal history, please try again!");
-                    utils.writeLog(err);
-                    callback(false, null);
-                });
-            } else {
-                utils.messageBox.hide();
-                utils.messageBox.info("This feature is only work for Online Mode!");
-            }
-        },
-
         viewJournal: function () {
             journals.viewJournalHistory($scope.journal.from, $scope.journal.to);
         },
@@ -2274,6 +2209,98 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             journals.end();
         },
     };
+
+    function submitJournal(journal, callback) {
+        if (tcutils.networks.isReady()) {
+            var url = baseURL + '/journal/add/' + user.id + '/' + pass;
+            //tcutils.writeLog('Call service api: ' + url);
+            tcutils.logging.debug('Call service api: ' + url);
+            $http({
+                method: config.http_method,
+                data: journal,
+                url: url,
+                headers: { 'Content-Type': 'application/json' }
+            }).then(function (resp) {
+                tcutils.writeLog(resp);
+                var data = resp.data;
+                if (data.Status == -1) { // error
+                    callback(false);
+                    tcutils.showErrorDlg(data.ErrorMessage);
+                } else {
+                    tcutils.writeLog('Submit journal successfully');
+                    journal.id = data.id;
+                    callback(true);
+                }
+            }, function (err) {
+                tcutils.writeLog('Submit error: ' + err.message);
+                tcutils.writeLog(err);
+                callback(false);
+            });
+        } else {
+            callback(false);
+        }
+    };
+
+    function submitUnsyncedJournals(unsyncJournals, callback) {
+        if (tcutils.networks.isReady()) {
+            var url = baseURL + '/journal/sync/' + userID + '/' + pass;
+            tcutils.writeLog('Call service api: ' + url);
+            $http({
+                method: config.http_method,
+                data: unsyncJournals,
+                url: url,
+                headers: { 'Content-Type': 'application/json' }
+            }).then(function (resp) {
+                tcutils.writeLog(resp);
+                var data = resp.data;
+                if (data.Status == -1) { // error
+                    tcutils.writeLog(data.ErrorMessage);
+                    callback(false, null);
+                } else {
+                    callback(false, data.items);
+                }
+            }, function (err) {
+                tcutils.writeLog('Submit error');
+                tcutils.writeLog(err);
+                callback(false, null);
+            });
+        } else {
+            callback(false, null);
+        }
+    };
+
+    function queryJournals (from, to, callback){
+        if (tcutils.networks.isReady()) {
+            tcutils.messageBox.loading(R.get_journals, R.please_wait)
+            var url = baseURL + '/journal/get/' + userID + '/' + pass + '/' + from + '/' + to;
+            tcutils.writeLog('Call service api: ' + url);
+            $http({
+                method: config.http_method,
+                data: null,
+                url: url,
+                headers: { 'Content-Type': 'application/json' }
+            }).then(function (resp) {
+                tcutils.messageBox.hide();
+                tcutils.writeLog(resp);
+                var data = resp.data;
+                if (data.Status == -1) { // error
+                    //tcutils.writeLog(data.ErrorMessage);
+                    tcutils.messageBox.error(data.ErrorMessage);
+                    callback(false, null);
+                } else {
+                    callback(true, data.items);
+                }
+            }, function (err) {
+                tcutils.messageBox.hide();
+                tcutils.messageBox.error("Error while get journal history, please try again!");
+                tcutils.writeLog(err);
+                callback(false, null);
+            });
+        } else {
+            tcutils.messageBox.hide();
+            tcutils.messageBox.info("This feature is only work for Online Mode!");
+        }
+    };
     
     function downloadDistricts(geoProvinceId, callback) {
         addressModel.isDistrictsDownloaded(geoProvinceId.toString(), function (isdownloaded) {
@@ -2289,16 +2316,16 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                     try {
                         var data = resp.data;
                         if (data.Status == -1) { // error
-                            utils.logging.error(data.ErrorMessage);
+                            tcutils.logging.error(data.ErrorMessage);
                         } else {
                             addressModel.insertDistricts(geoProvinceId.toString(), data.items, callback);
                         }
                     } catch (err) {
-                        utils.logging.error(err.message);
+                        tcutils.logging.error(err.message);
                         callback();
                     }
                 }, function (err) {
-                    utils.logging.error(err);
+                    tcutils.logging.error(err);
                     callback();
                 });
             }
@@ -2367,7 +2394,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             start();
         }
 
-        journals.initialize($scope.journal.submitJournal, $scope.journal.submitUnsyncedJournals, $scope.journal.queryJournals);
+        journals.initialize(submitJournal, submitUnsyncedJournals, queryJournals);
     } catch (err) {
         showError(err);
         log(err);

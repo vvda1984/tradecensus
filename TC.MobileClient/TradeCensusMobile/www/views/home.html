@@ -191,7 +191,7 @@
     </div>
 
     <div id="home-leftbottom" ng-show="config.enable_logview">
-        <span id="textLogMessage" class="float-left small-text">Log message</span>        
+        <span id="textLogMessage" class="float-left small-text"></span>        
     </div>     
 
     <div id="home-topright-offline">      
@@ -257,9 +257,9 @@
                         </md-input-container>
                     </div>-->
 
-                    <div layout-gt-sm="row" style="margin-top:-10px;">
+                    <div layout-gt-sm="row" style="margin-top:-10px;" ng-show="config.enable_devmode">
                         <md-input-container class="md-block" style="margin-top:-24px;margin-left:-4px">
-                            <div class="md-block-item" style="margin-bottom:0px;margin-top:-16px;margin-left:4px" ng-show="config.enable_devmode">
+                            <div class="md-block-item" style="margin-bottom:0px;margin-top:-16px;margin-left:4px" >
                                 <div class="md-block-item-title small-text">Mode (Online/Offline)</div>
                                 <md-switch class="md-primary" ng-model="config.mode_online">{{config.mode_online ? "Online" : "Offline"}}</md-switch>
                             </div>
@@ -332,6 +332,15 @@
                         <div class="md-block-item-title small-text">Date To</div>
                         <md-datepicker ng-model="journal.to" md-placeholder="Enter date"></md-datepicker>
                     </div>
+
+                    <md-input-container class="md-block" flex-gt-sm="" style="margin-bottom:0px; margin-left:-6px">
+                        <div class="md-block-item" style="margin-bottom:0px;margin-top:-16px;margin-left:4px">
+                            <div class="md-block-item-title small-text">Journal Color</div>
+                            <md-switch class="md-primary"
+                                       ng-model="config.journal_daily_mode">{{config.journal_daily_mode ? "Daily" : "Session"}}</md-switch>
+                        </div>
+                    </md-input-container>
+
 
                     <md-input-container class="md-block" flex-gt-sm="" style="margin-top:-4px;margin-bottom:0px;">
                         <div class="m-flat-button float-left margin-top-4" ng-click="journal.viewJournal()">

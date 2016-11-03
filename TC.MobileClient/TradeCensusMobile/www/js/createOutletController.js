@@ -10,7 +10,7 @@ function newOutletController($scope, $http, $mdDialog) {
     $scope.address = addressModel;
 
     $scope.autoSelectedDistrict = $scope.address.districtArr && $scope.address.districtArr.length > 0;
-    $scope.autoSelectedWard = $scope.autoSelectedDistrict; // utils.networks.isReady() && $scope.address.wardArr && $scope.address.wardArr.length > 0;
+    $scope.autoSelectedWard = $scope.autoSelectedDistrict; // tcutils.networks.isReady() && $scope.address.wardArr && $scope.address.wardArr.length > 0;
     
     $scope.outletTypes = outletTypes;
     $scope.allowCapture = true;
@@ -236,16 +236,20 @@ function newOutletController($scope, $http, $mdDialog) {
         if (!$scope.autoSelectedDistrict) return;
 
         $scope.outlet.District = '';
+		$scope.address.districtArr = [];
+		$scope.outlet.Ward = '';		
+		$scope.address.wardArr = [];
+		
         var selectedProvince = null;
-        for (var i = 0; i < $scope.address.length; i++) {
+        for (var i = 0; i < $scope.provinces.length; i++) {
             if ($scope.provinces[i].id === $scope.outlet.ProvinceID) {
                 selectedProvince = $scope.provinces[i];
                 break;
             }
         }
 
-        utils.messageBox.loading(R.loading, R.please_wait);
-        if (utils.networks.isReady()) {
+        tcutils.messageBox.loading(R.loading, R.please_wait);
+        if (tcutils.networks.isReady()) {
             //var url = baseURL + '/border/getsubbordersbyparentname/' + selectedProvince.name;
             var url = baseURL + '/border/getsubborders/' + selectedProvince.referenceGeoID;
             log('Call service api: ' + url);
@@ -253,26 +257,26 @@ function newOutletController($scope, $http, $mdDialog) {
                 method: config.http_method,
                 url: url
             }).then(function (resp) {
-                utils.messageBox.hide();
+                tcutils.messageBox.hide();
                 try {
                     var data = resp.data;
                     if (data.Status == -1) { // error
-                        utils.messageBox.error(data.ErrorMessage);
+                        tcutils.messageBox.error(data.ErrorMessage);
                     } else {
                         $scope.address.districtArr = data.Items;
                     }
                 } catch (err) {
-                    utils.messageBox.error(err.message);
+                    tcutils.messageBox.error(err.message);
                 }
             }, function (err) {
                 log(err);
-                utils.messageBox.hide();
-                //utils.messageBox.error(data.ErrorMessage);
+                tcutils.messageBox.hide();
+                //tcutils.messageBox.error(data.ErrorMessage);
             });
         } else {
             addressModel.getDistricts(selectedProvince.referenceGeoID, function (items) {
                 $scope.address.districtArr = data.Items;
-                utils.messageBox.hide();
+                tcutils.messageBox.hide();
             });
         }
     }
@@ -280,7 +284,9 @@ function newOutletController($scope, $http, $mdDialog) {
     $scope.districtChanged = function () {
         if (!$scope.autoSelectedWard) return;
 
-        $scope.outlet.Ward = '';
+        $scope.outlet.Ward = '';		
+		$scope.address.wardArr = [];
+		
         var selectedDistrict = null;
         for (var i = 0; i < $scope.address.districtArr.length; i++) {
             if ($scope.address.districtArr[i].Name === $scope.outlet.District) {
@@ -289,34 +295,34 @@ function newOutletController($scope, $http, $mdDialog) {
             }
         }
 
-        if (utils.networks.isReady()) {
+        if (tcutils.networks.isReady()) {
             var url = baseURL + '/border/getsubbordersbyparentname/' + $scope.outlet.District;
             log('Call service api: ' + url);
-            utils.messageBox.loading(R.loading, R.please_wait);
+            tcutils.messageBox.loading(R.loading, R.please_wait);
             $http({
                 method: config.http_method,
                 url: url
             }).then(function (resp) {
-                utils.messageBox.hide();
+                tcutils.messageBox.hide();
                 try {
                     var data = resp.data;
                     if (data.Status == -1) { // error
-                        utils.messageBox.error(data.ErrorMessage);
+                        tcutils.messageBox.error(data.ErrorMessage);
                     } else {
                         $scope.address.wardArr = data.Items;
                     }
                 } catch (err) {
-                    utils.messageBox.error(err.message);
+                    tcutils.messageBox.error(err.message);
                 }
             }, function (err) {
                 log(err);
-                utils.messageBox.hide();
-                //utils.messageBox.error(data.ErrorMessage);
+                tcutils.messageBox.hide();
+                //tcutils.messageBox.error(data.ErrorMessage);
             });
         } else {
             addressModel.getWards(selectedDistrict.ID, function (items) {
                 $scope.address.wardArr = items;
-                utils.messageBox.hide();
+                tcutils.messageBox.hide();
             });
         }
     }

@@ -1,8 +1,4 @@
-﻿var utils = {
-    tc: {
-        isRunningInBackgound: false,
-    },
-
+﻿var tcutils = {   
     nowDate: function () {
         var today = new Date();
         return this.formatDate(today);
@@ -27,11 +23,11 @@
     },
 
     nowTime: function () {
-        var today = new Date();        
+        var today = new Date();
         var h = today.getHours();
         var mm = today.getMinutes();
         var s = today.getSeconds();
-        
+
         if (h < 10) h = '0' + h;
         if (mm < 10) mm = '0' + mm;
         if (s < 10) s = '0' + s;
@@ -67,7 +63,7 @@
         return s4() + s4() + s4() + s4() + s4() + s4() + s4() + s4();
     },
 
-    randomColor: function(){
+    randomColor: function () {
         return '#' + Math.random().toString(16).slice(2, 8).toUpperCase();
     },
 
@@ -97,19 +93,19 @@
 
     logging: {
         error: function (msg) {
-            var formatedMsg = utils.nowTime() + ": " + msg;
-            $('#textLogMessage').html(formatedMsg);
+            var formatedMsg = tcutils.nowTime() + ": " + msg;
+            try { $('#textLogMessage').html(formatedMsg); } catch (err) { }
             log(msg);
         },
 
-        info : function(msg) {
-            var formatedMsg = utils.nowTime() + ": " + msg;
-            $('#textLogMessage').html(formatedMsg);
+        info: function (msg) {
+            var formatedMsg = tcutils.nowTime() + ": " + msg;
+            try { $('#textLogMessage').html(formatedMsg); } catch (err) { }
             log(msg);
         },
 
-        debug : function(msg) {
-            //var formatedMsg = utils.nowTime() + ": " + msg;
+        debug: function (msg) {
+            //var formatedMsg = tcutils.nowTime() + ": " + msg;
             //$('#textLogMessage').html(formatedMsg);
             log(msg);
         }
@@ -121,43 +117,37 @@
         },
     },
 
-    locations :{
-        calculateDistance(lat1, lng1, lat2, lng2) {
+    locations: {
+        calculateDistance: function (lat1, lng1, lat2, lng2) {
             return calcDistance({ Lat: lat1, Lng: lng1 }, { Lat: lat2, Lng: lng2 });
         },
     },
 
-    datetimes: {
-        calculateDiffInSecond: function (st, en) {
-            return (en - st) / 1000;
+    tcapp: {
+        lastUpdateLocationTS: null,
+
+        lastRefreshOutletsTS: null,
+        lastRefreshLat: 0,
+        lastRefreshLng: 0,
+
+        checkToRefreshOutlet: function (newLat, newLng) {
+            var now = new Date();
+            var dif = getDifTime(tcutils.tcapp.lastRefreshOutletsTS, now);
+            if (dif >= config.ping_time) {
+                var distance = tcutils.locations.calculateDistance(newLat, newLng, tcutils.tcapp.lastRefreshLat, tcutils.tcapp.lastRefreshLng);
+                if (distance >= config.liveGPS_distance) {
+                    tcutils.tcapp.lastRefreshOutletsTS = now;
+                    tcutils.tcapp.lastRefreshLat = newLat;
+                    tcutils.tcapp.lastRefreshLng = newLng;
+                    return true;
+                }
+            }
+            return false;
+        },
+
+        checkToCreateNewOutlet: function () {
+            var dif = getDifTime(tcutils.tcapp.lastUpdateLocationTS, new Date());
+            return (dif <= config.location_age);
         },
     },
-}
-
-var tcapp = {
-    lastUpdateLocationTS: null,
-
-    lastRefreshOutletsTS: null,
-    lastRefreshLat: 0,
-    lastRefreshLng: 0,
-
-    checkToRefreshOutlet: function (newLat, newLng) {
-        var now = new Date();
-        var dif = utils.datetimes.calculateDiffInSecond(tcapp.lastRefreshOutletsTS, now);
-        if (dif >= config.ping_time) {
-            var distance = utils.locations.calculateDistance(newLat, newLng, tcapp.lastRefreshLat, tcapp.lastRefreshLng);
-            if (distance >= config.liveGPS_distance) {
-                tcapp.lastRefreshOutletsTS = now;
-                tcapp.lastRefreshLat = newLat;
-                tcapp.lastRefreshLng = newLng;
-                return true;
-            }
-        }
-        return false;
-    },
-
-    checkToCreateNewOutlet: function () {
-        var dif = utils.datetimes.calculateDiffInSecond(tcapp.lastUpdateLocationTS, new Date());
-        return (dif <= config.location_age);
-    },
-}
+};

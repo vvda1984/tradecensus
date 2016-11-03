@@ -18,11 +18,11 @@
 
         return {
             journalId : '',
-            journalDate: utils.nowDate(),
+            journalDate: tcutils.nowDate(),
             id: 0,
             personId: user.id,
-            startTS: utils.nowDatetime(),
-            endTS: utils.nowDatetime(),
+            startTS: tcutils.nowDatetime(),
+            endTS: tcutils.nowDatetime(),
             data: curlng.toString() + ',' + curlat.toString(),
             line: [{ lat: curlat, lng: curlng }],
         };
@@ -77,7 +77,7 @@
     },
 
     _addJournal: function (tx, journal, status, callback) {
-        journal.journalId = utils.newGUID();
+        journal.journalId = tcutils.newGUID();
 
         var sql = 'INSERT INTO ' + journals.tableName + ' VALUES (';        
         sql = sql.concat('"', journal.journalId, '", ');
@@ -98,7 +98,7 @@
     },
 
     _canUpdate : function (now){
-        var difSecond = utils.getTimeSpanInSecond(journals._lastUpdateTS, now);
+        var difSecond = tcutils.getTimeSpanInSecond(journals._lastUpdateTS, now);
         if (difSecond < config.journal_refresh_time) {
             return false;
         }
@@ -112,12 +112,12 @@
                 var status = isSucceded ? journals.statusEnum.synced : journals.statusEnum.unsynced;
                 if (journals.current.journalId === '') {
                     journals.newJournal(journals.current, status, function (errMsg) {
-                        if(errMsg) utils.logging.error(errMsg);
+                        if(errMsg) tcutils.logging.error(errMsg);
                         callback();
                     });
                 } else {
                     journals.updateJournal(journals.current, status, function (errMsg) {
-                        if (errMsg) utils.logging.error(errMsg);
+                        if (errMsg) tcutils.logging.error(errMsg);
                         callback();
                     });
                 }
@@ -134,14 +134,14 @@
             return;//END
         }
 
-        utils.logging.info('Track journal (' + curlat.toString() + ', ' + curlng.toString() + ')');
+        tcutils.logging.info('Track journal (' + curlat.toString() + ', ' + curlng.toString() + ')');
 
         if (journals.isTracking) {
-            var curDate = utils.nowDate();
+            var curDate = tcutils.nowDate();
             if (journals.current.journalDate === curDate) {                
                 journals.current.data += ',' + curlng.toString() + ',' + curlat.toString();
                 journals.current.line.push({ lat: curlat, lng: curlng });
-                journals.current.endTS = utils.nowDatetime();
+                journals.current.endTS = tcutils.nowDatetime();
                 journals._appendPolyline();
                 journals._saveToServer(callback);
             } else {
@@ -173,6 +173,21 @@
             line.setMap(null);
         }
         journals._expiredLines = [];
+    },
+
+    _getColor: function (i) {
+        var color = '';
+        if (i < journals._colors.length) {
+            color = journals._colors[i];
+        } else {
+            color = tcutils.randomColor();
+            journals._colors.push(color);
+        }
+
+        while (color === config.journal_color) {
+            color = tcutils.randomColor();
+        }
+        return color
     },
 
     _submit: null,
@@ -228,9 +243,9 @@
 
     setMap : function(map){
         journals._map = map;
-        if (!journals._polyline) {
-            journals._newJournalPolyline(journals.current ? journals.current.line : null);
-        }
+        //if (!journals._polyline) {
+        //    journals._newJournalPolyline(journals.current ? journals.current.line : null);
+        //}
     },
     
     initialize: function (submit, sync, query) {        
@@ -241,13 +256,13 @@
     },
 
     start: function () {
-        utils.logging.info('Start tracking journal');
+        tcutils.logging.info('Start tracking journal');
         journals.isTracking = true;
         journals.current = journals._newJournal();
     },
 
     end: function () {
-        utils.logging.info('Stop tracking journal');
+        tcutils.logging.info('Stop tracking journal');
         journals._saveToServer(function () {
             journals.current = null;
             if (journals._polyline) {
@@ -260,7 +275,7 @@
     trackJournal: function (newLat, newLng, acc) {
         if (!journals.isTracking) return;
         if (journals.validateNewLocation(newLat, newLng, acc))
-            journals._track(function () { utils.logging.debug('Tracked current location to journal'); });
+            journals._track(function () { tcutils.logging.debug('Tracked current location to journal'); });
     },
 
     syncJournal: function () {
@@ -269,7 +284,7 @@
         }
 
         var now = new Date();
-        var difSecond = utils.getTimeSpanInSecond(journals._lastSyncedTS, now);
+        var difSecond = tcutils.getTimeSpanInSecond(journals._lastSyncedTS, now);
         if (difSecond < config.journal_refresh_time) {
             return; // END
         }
@@ -279,7 +294,7 @@
             var sql = 'SELECT * FROM ' + journals.tableName + ' WHERE status = ' + journals.statusEnum.unsynced.toString();
             logSqlCommand(sql);
             tx.executeSql(sql, [], function (tx, dbres) {
-                utils.logging.debug('Found unsynced journals: ' + dbres.rows.length.toString());
+                tcutils.logging.debug('Found unsynced journals: ' + dbres.rows.length.toString());
                 if (dbres.rows.length > 0) {
                     var unsyncedItems = [];
                     var index = 0;
@@ -291,7 +306,7 @@
 
                     if (unsyncedItems.length == 0) return; //END
 
-                    utils.logging.info("Syncing journals...");
+                    tcutils.logging.info("Syncing journals...");
                     journals._sync(unsyncedItems, function (isSucceeded, items) {
                         if (isSucceeded) {
                             for (var i = 0; i < items; i++) {
@@ -303,7 +318,7 @@
                                     'WHERE journalId = "' + item.journalId + '"';
                                 logSqlCommand(updateSql);
                                 tx.executeSql(updateSql, [], function () { }, function (dberr) {
-                                    utils.logging.debug(dberr.message);
+                                    tcutils.logging.debug(dberr.message);
                                 });
                             }
                         }
@@ -311,7 +326,7 @@
                 }
                 
             }, function (tx, dberr) {
-                utils.logging.error(dberr.message);
+                tcutils.logging.error(dberr.message);
             });
         });
     },
@@ -319,39 +334,36 @@
     viewJournalHistory: function (dateFrom, dateTo) {
         if (journals._query) {
             if (dateFrom > dateTo) {
-                utils.messageBox.error("Date range is invalid!");
+                tcutils.messageBox.error("Date range is invalid!");
                 return;
             }
 
-            journals._query(utils.formatDate(dateFrom), utils.formatDate(dateTo), function (isSucceeded, items) {
+            journals._query(tcutils.formatDate(dateFrom), tcutils.formatDate(dateTo), function (isSucceeded, items) {
                 if (isSucceeded) {
                     journals._clearPolyines();
+                    var colorIndex = 0;
                     if (items.length > 0) {
                         for (var i = 0; i < items.length; i++) {
                             var journalDate = items[i];
                             
-                            var color = '';
-                            if (i < journals._colors.length) {
-                                color = journals._colors[i];
-                            } else {
-                                color = utils.randomColor();
-                                journals._colors.push(color);
-                            }
-                                
-                            while (color === config.journal_color) {
-                                color = utils.randomColor();
-                            }
+                            var color = journals._getColor(colorIndex++);
 
                             for (var j = 0; j < journalDate.journals.length; j++) {
                                 var journal = journalDate.journals[j];
                                 var coorArr = JSON.parse(journal.data);
+
+                                var lineColor = color;
+                                if (!config.journal_daily_mode) {
+                                    lineColor = journals._getColor(colorIndex++);
+                                }
+
                                 var ggline = new google.maps.Polyline({
                                     path: coorArr,
                                     geodesic: true,
                                     fillOpacity: 0,
-                                    strokeColor: color,
-                                    strokeOpacity: 1,
-                                    strokeWeight: 4,
+                                    strokeColor: lineColor,                                  
+                                    strokeOpacity: config.journal_opacity,
+                                    strokeWeight: config.journal_weight,
                                 });
 
                                 ggline.setMap(journals._map);
@@ -364,7 +376,7 @@
                             }
                         }
                     } else
-                        utils.messageBox.info("No journals for selected date(s)!");
+                        tcutils.messageBox.info("No journals for selected date(s)!");
                 }
             });
         }
@@ -372,16 +384,16 @@
 
     clearJournalHistory: function () {
         journals._clearPolyines();
-        utils.messageBox.info('Clear journal histories');
+        tcutils.messageBox.info('Clear journal histories');
     },
 
     validateNewLocation: function (newLat, newLng, acc) {
         if (acc > config.journal_accuracy) {
-            utils.logging.info('Ingore new location > accuracy is too high.');
+            tcutils.logging.info('Ingore new location > accuracy is too high.');
             return false;
         }
 
-        var distance = utils.locations.calculateDistance(newLat, newLng, journals.lastTrackedLat, journals.lastTrackedLng);
+        var distance = tcutils.locations.calculateDistance(newLat, newLng, journals.lastTrackedLat, journals.lastTrackedLng);
         if (distance >= config.journal_distance) {
             journals.lastTrackedLat = newLat;
             journals.lastTrackedLng = newLng;
