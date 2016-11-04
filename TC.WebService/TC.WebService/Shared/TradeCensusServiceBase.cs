@@ -1,5 +1,6 @@
 ﻿using NLog;
 using System;
+using System.Configuration;
 using System.Linq;
 using TradeCensus.Data;
 
@@ -11,6 +12,7 @@ namespace TradeCensus.Shared
         protected ILogger _logger;
         protected bool _isDataChanged;
         protected string _name;
+        private AppSettingsReader _appSettingsReader;
 
         protected TradeCensusServiceBase(string name)
         {
@@ -18,7 +20,6 @@ namespace TradeCensus.Shared
             _name = name;
             _logger = DependencyResolver.Resolve<ILogFactory>().GetLogger(name);
         }
-
 
         public void Dispose()
         {
@@ -34,7 +35,6 @@ namespace TradeCensus.Shared
                 }
             }
         }
-
 
         protected void ValidatePerson(int personID, string password, bool mustAuditor = false)
         {
@@ -81,6 +81,26 @@ namespace TradeCensus.Shared
                 value = defaultValue;
             }
             return value;
+        }
+
+        protected string GetAppSetting(string key, string defaultValue = null)
+        {
+            if (_appSettingsReader == null)
+                _appSettingsReader = new AppSettingsReader();
+
+            try
+            {
+                return StringDefault((string)_appSettingsReader.GetValue(key, typeof(string)), defaultValue);
+            }
+            catch
+            {
+                return defaultValue;
+            }
+        }
+
+        private string StringDefault(string str, string defaultIfNullOrEmpty)
+        {
+            return string.IsNullOrEmpty(str) ? defaultIfNullOrEmpty : str;
         }
     }
 }

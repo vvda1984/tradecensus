@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -8,7 +9,7 @@ using TradeCensus.Shared;
 namespace TradeCensus
 {
     public class PersonService : TradeCensusServiceBase, IPersonService
-    {        
+    {
         public PersonService() : base("Person")
         {
         }
@@ -16,8 +17,6 @@ namespace TradeCensus
         private PersonModel GetPerson(string userName, string password)
         {
             Log("Request login: {0}", userName);
-            password = HashPassword(password);
-
             var user = DC.PersonRoles.FirstOrDefault(i => string.Compare(i.Username, userName, StringComparison.OrdinalIgnoreCase) == 0);
             if (user == null)
                 throw new Exception(string.Format("User {0} doesn't exist", userName));
@@ -60,7 +59,6 @@ namespace TradeCensus
             DC.SaveChanges();
 
             res.Token = GenerateToken(user);
-
             return res;      
         }
 
@@ -102,19 +100,7 @@ namespace TradeCensus
 
         private string HashPassword(string password)
         {
-            // This is used in case client doesn't hash password
-            bool hashPassword = false;
-            try
-            {
-                System.Configuration.AppSettingsReader sr = new System.Configuration.AppSettingsReader();
-                hashPassword = (bool)sr.GetValue("hashPassword", typeof(bool));
-            }
-            catch
-            {
-                hashPassword = false;
-            }
-            if (hashPassword)
-                password = HashUtil.ComputeHash(password);
+            
             return password;
         }
 
@@ -204,14 +190,31 @@ namespace TradeCensus
             return res;
         }
 
+        private List<Salesman> GetSalesmen(int personID)
+        {
+            List<Salesman> result = new List<Salesman>();
+
+            string queryString = GetAppSetting("SQL:getsaleman", "With cte(EmployeeID) as (select ID from Person where ReportTo = @p0 UNION ALL select ID from Person JOIN cte d ON Person.ReportTo = d.EmployeeID where Person.TerminateDate is null) select * from person join cte on cte.EmployeeID=person.ID where ltrim(Person.FirstName) not like 'TBA%'");
+            var personArr = DC.Database.SqlQuery<Person>(queryString, personID).ToArray();
+            if (personArr.Length > 0)
+                foreach (var person in personArr)
+                    result.Add(new Salesman { Id = person.ID, FirstName = person.FirstName, LastName = person.LastName });
+
+            return result;
+        }
+
         #region IPersonService Interfaces
 
         public LoginResponse Login(string username, string password)
         {
-            LoginResponse resp = new LoginResponse();
+            LoginResponse resp = new LoginResponse { Sales = new List<Salesman>() };
             try
             {
                 resp.People = GetPerson(username, password);
+                resp.Sales = new List<Salesman>();
+
+                if (resp.People.HasAuditRole)
+                    resp.Sales = GetSalesmen(resp.People.ID);
             }
             catch (Exception ex)
             {
@@ -280,21 +283,10 @@ namespace TradeCensus
 
         public GetSalesmanResponse GetSalesmansOfAuditor(string personid, string password)
         {
-            var response = new GetSalesmanResponse() { Items = new System.Collections.Generic.List<Salesman>() };
             int personID = int.Parse(personid);
             ValidatePerson(personID, password, true);
-            var personArr = DC.Database.SqlQuery<Person>(@"With cte(EmployeeID) as (
-                                                select ID from Person where ReportTo = @p0
-                                                UNION ALL 
-                                                select ID from Person JOIN cte d ON Person.ReportTo = d.EmployeeID
-                                                where Person.TerminateDate is null
-                                            )
-                                            select * from person join cte on cte.EmployeeID=person.ID
-                                            where ltrim(Person.FirstName) not like 'TBA%'", personID).ToArray();
-            if (personArr.Length > 0)
-                foreach (var person in personArr)
-                    response.Items.Add(new Salesman { Id = person.ID, FirstName = person.FirstName, LastName = person.LastName });
-
+            var response = new GetSalesmanResponse();
+            response.Items = GetSalesmen(personID);
             return response;
         }
 

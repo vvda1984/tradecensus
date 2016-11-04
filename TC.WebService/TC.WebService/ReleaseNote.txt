@@ -72,4 +72,5 @@ Fix bug:
 - Add ward
 - Add Journal
 
-
+[1.1.16306.14] 2016-11-03
+- Add api to query salemans of auditor

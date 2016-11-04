@@ -18,24 +18,6 @@ namespace TradeCensus
         
         const byte OActionDenyUpdate = 17;
 
-        private bool AuditorNewMode
-        {
-            get
-            {
-                bool v = false;
-                try
-                {
-                    System.Configuration.AppSettingsReader sr = new System.Configuration.AppSettingsReader();
-                    v = (bool)sr.GetValue("auditorNewMode", typeof(bool));
-                }
-                catch
-                {
-                    v = false;
-                }
-                return v;
-            }
-        }
-
         private string ImagesPath
         {
             get

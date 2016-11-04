@@ -7,6 +7,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TC.WebService", "TC.WebServ
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TC.WinApp", "TC.WinApp\TC.WinApp.csproj", "{7D7A871F-BBBF-4F3D-B922-6B97C02599CF}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solutions", "Solutions", "{C7270BB4-1BBE-465B-B3BB-A59CD8A5DEC2}"
+	ProjectSection(SolutionItems) = preProject
+		TC.WebService\DBScript.txt = TC.WebService\DBScript.txt
+		TC.WebService\ReleaseNote.txt = TC.WebService\ReleaseNote.txt
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TC.Console", "TC.Console\TC.Console.csproj", "{3E89ECB8-4D9B-4952-8790-6F6225DA23C0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +29,10 @@ Global
 		{7D7A871F-BBBF-4F3D-B922-6B97C02599CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7D7A871F-BBBF-4F3D-B922-6B97C02599CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7D7A871F-BBBF-4F3D-B922-6B97C02599CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3E89ECB8-4D9B-4952-8790-6F6225DA23C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3E89ECB8-4D9B-4952-8790-6F6225DA23C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3E89ECB8-4D9B-4952-8790-6F6225DA23C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3E89ECB8-4D9B-4952-8790-6F6225DA23C0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

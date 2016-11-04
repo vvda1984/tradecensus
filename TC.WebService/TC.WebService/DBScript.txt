@@ -1,0 +1,69 @@
+--Create table [ConnectionSession]
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[ConnectionSession](
+	[ID] [int] IDENTITY(1,1) NOT NULL,
+	[Uuid] [nvarchar](100) NOT NULL,
+	[Model] [nvarchar](100) NULL,
+	[Platform] [nvarchar](100) NULL,
+	[Version] [nvarchar](100) NULL,
+	[Manufacturer] [nvarchar](100) NULL,
+	[Token] [nvarchar](100) NULL,
+	[AppVersion] [nvarchar](32) NULL,
+	[AmendDate] [datetime] NOT NULL,
+	[AmendBy] [int] NOT NULL,
+ CONSTRAINT [PK_ConnectionSession] PRIMARY KEY CLUSTERED 
+(
+	[ID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+
+ALTER TABLE [dbo].[ConnectionSession] ADD  CONSTRAINT [DF_ConnectionSession_AmendBy]  DEFAULT ((0)) FOR [AmendBy]
+GO
+
+-- Update hashed password for 1
+update [dbo].[PersonRole]
+set Password = '6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b'
+where Password = '1'
+
+-- Delete Column PIsDeleted
+ALTER TABLE [dbo].[outlet]
+DROP COLUMN PIsDeleted
+
+-- 
+
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+SET ANSI_PADDING ON
+GO
+
+CREATE TABLE [Journal](
+	[ID] [int] IDENTITY(1,1) NOT NULL,
+	[PersonID] [int] NOT NULL,
+	[JournalDate] [date] NOT NULL,
+	[Data] [varchar](max) NOT NULL,
+	[StartTS] [datetime] NOT NULL,
+	[EndTS] [datetime] NOT NULL,
+ CONSTRAINT [PK_Journal] PRIMARY KEY CLUSTERED 
+(
+	[ID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+
+GO
+
+SET ANSI_PADDING OFF
+GO
+
+
+
