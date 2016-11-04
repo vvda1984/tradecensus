@@ -2144,12 +2144,13 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         showExpend: true,
         isStoped : true,
         isStarted: false,
+        selectedSaler :0,
 
         showPanel: function () {
             if (righPanelStatus === 1)
                 $scope.cfg.hidePanel();
 
-            $("#journal-panel").css('width', '280px');
+            $("#journal-panel").css('width', '360px');
             $scope.journal.viewPanel = true;
             $scope.journal.showCollapse = true;
             $scope.journal.showExpend = false;
@@ -2209,6 +2210,12 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             journals.end();
         },
     };
+    $scope.subSalers = salesmans;
+
+    $scope.querySearch = querySearch;
+    $scope.salemanSearchText = '';
+    $scope.selectedItemChange = selectedItemChange;
+    $scope.clearSalemanSearch = clearSalemanSearch;
 
     function submitJournal(journal, callback) {
         if (tcutils.networks.isReady()) {
@@ -2273,6 +2280,10 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         if (tcutils.networks.isReady()) {
             tcutils.messageBox.loading(R.get_journals, R.please_wait)
             var url = baseURL + '/journal/get/' + userID + '/' + pass + '/' + from + '/' + to;
+            if ($scope.journal.selectedSaler>0) {
+                var queryId = $scope.journal.selectedSaler;
+                url = baseURL + '/journal/getsales/' + userID + '/' + pass + '/' + queryId + '/' + from + '/' + to;
+            }
             tcutils.writeLog('Call service api: ' + url);
             $http({
                 method: config.http_method,
@@ -2301,7 +2312,36 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             tcutils.messageBox.info("This feature is only work for Online Mode!");
         }
     };
+   
+    function querySearch(query) {
+        var results = query ? $scope.subSalers.filter(createFilterFor(query)) : $scope.subSalers,
+            deferred;
+        if ($scope.simulateQuery) {
+            deferred = $q.defer();
+            $timeout(function () { deferred.resolve(results); }, Math.random() * 1000, false);
+            return deferred.promise;
+        } else {
+            return results;
+        }
+    }
+
+    function selectedItemChange(item) {
+        $scope.journal.selectedSaler = item ? item.personID : 0;
+    }
     
+    function createFilterFor(query) {
+        var lowercaseQuery = changeAlias(angular.lowercase(query));
+
+        return function filterFn(s) {
+            return s.searchKey.indexOf(lowercaseQuery) >= 0;
+        };
+
+    }
+
+    function clearSalemanSearch() {
+        $scope.salemanSearchText = '';
+    }
+
     function downloadDistricts(geoProvinceId, callback) {
         addressModel.isDistrictsDownloaded(geoProvinceId.toString(), function (isdownloaded) {
             if (isdownloaded) {

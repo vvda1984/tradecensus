@@ -23,10 +23,11 @@ function language_en() {
         btn_deny: 'DENY',
         btn_back: 'BACK',
         btn_view: 'VIEW',
-        btn_view_journals: 'View Journals',
+        btn_view_journals: 'View History',
+        btn_clear_journals: 'Clear History',
         btn_start_journal_tracking: 'Start Track Journal',
         btn_stop_journal_tracking: 'Stop Track Journal',
-        btn_clear_journals: 'Clear Journals',
+      
         btn_changePassword : 'CHANGE PASSWORD',
         label_select_zone: 'SELECT ZONE',
         label_select_area: 'Please select Area',
@@ -218,5 +219,6 @@ function language_en() {
 		load_images: 'Loading outlet images',
 		cannot_get_outlet_images: 'Cannot load outlet images!',
 		get_journals: 'Get journal history',
+		text_select_salesman: 'Select Salesman',
     }
 };

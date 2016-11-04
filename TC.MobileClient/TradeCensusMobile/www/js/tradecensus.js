@@ -51,8 +51,8 @@
         }
     }
 
-    $(document).ready(function () { onDeviceReady(); });
-    //document.addEventListener("deviceready", onDeviceReady, false);
+    //$(document).ready(function () { onDeviceReady(); });
+    document.addEventListener("deviceready", onDeviceReady, false);
 })(window);
 
 var resetDB = false;                // force reset database - testing only
@@ -69,6 +69,7 @@ var newImageFile;
 var userID = 0;
 var pass = '';
 var user = newUser();
+var salesmans = [];
 var config = newConfig();
 var deviceInfo = newDeviceInfo();
 var outletTypes = [];
@@ -156,7 +157,7 @@ function newConfig() {
     //var testBuild = false;
     var c = {
         debug_build: true,
-        enable_devmode: true,
+        enable_devmode: false,
         enable_logview : false,
         page_size: 20,
         cluster_size: 50,
@@ -165,8 +166,8 @@ function newConfig() {
         enable_rereverse_geo: 1,
         protocol: 'https',
         //ip: '27.0.15.234/trade-census',
-        //ip: '203.34.144.29/tc-test',
-        ip: '203.34.144.29/trade-census',
+        ip: '203.34.144.29/tc-test',
+        //ip: '203.34.144.29/trade-census',
         port: '443',
         service_name: 'TradeCensusService.svc', // absolute
         enable_liveGPS: true,       
@@ -213,8 +214,8 @@ function newConfig() {
         tbl_outlet: 'uo',
         tbl_downloadProvince: 'udp',
         tbl_journal: 'jr',
-        version: '1.2p.16232.9',
-        versionNum: 6,
+        version: '1.2p.16306.11',
+        versionNum: 7,
     };
     if (isHttp) {
         c.protocol = 'http';

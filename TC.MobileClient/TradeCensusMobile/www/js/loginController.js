@@ -101,6 +101,9 @@ function loginController($scope, $http) {
             showError(R.password_is_empty);
             return;
         }
+		
+		 // reset varibles
+        salesmans = [];
 
         showDlg(R.btn_login, R.please_wait);
         getCurPosition(false, function (lat, lng) {
@@ -129,46 +132,116 @@ function loginController($scope, $http) {
         pass = hashString($scope.password);
         var url = baseURL + '/login/' + $scope.userName + '/' + pass;
         log('Call service api: ' + url);
-        $http({
-            method: config.http_method,
+
+        $.ajax({
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
             url: url,
-            timeout: 200,
-        }).then(function (resp) {
-            hideDlg();            
-            try {
-                log('Login response: ');                
-                var data = resp.data;
-                if (data.Status == -1) { // error
-                    onError(data.ErrorMessage);
-                } else {                    
-                    insertUserDB(data.People, $scope.userName,  $scope.password,
-                        function (tx, row) {                                                  
-                            onSuccess(data.People);
-                        },
-                        function (dberr) {
-                            onError(dberr.message);
-                        });
-                }
-            }
-            catch (ex) {
-                log(ex);
-                onError(ex.message);
-            }
-        }, function (err) {                        
-            log(err);
-            if (retry < $scope.config.time_out) {
-                setTimeout(function () {
-                    loginOnline(retry+1, onSuccess, onError);
-                }, 1000);
-            } else {
+            data: '',
+            processData: false,
+            dataType: "json",
+            timeout: config.time_out * 1000,
+            success: function (data) {
+                hideDlg();
                 try {
-                    //var errormg = 'Cannot connect to: ' + baseURL + ' : ' + R.connection_timeout;
-                    onError(R.connection_timeout);
-                } catch (ex) {
+                    log('Login response: ');
+                    //var data = resp.data;
+                    if (data.Status == -1) { // error
+                        onError(data.ErrorMessage);
+                    } else {
+                        salesmans.push({ personID: 0, firstName: '', lastName: '', display: '', searchKey : '' });
+                        if (data.People.HasAuditRole && data.salesmans) {
+                            for (var i = 0; i < data.salesmans.length; i++) {
+                                var item = data.salesmans[i];
+                                item.display = item.firstName + ' ' + item.lastName + ' (' + item.personID.toString() + ')';
+                                item.searchKey = changeAlias(item.display);
+                                salesmans.push(item);
+                            }
+                        }
+
+                        salesmans.sort(function (a, b) {
+                            var keyA = a.display,
+                                keyB = b.display;
+                            if (keyA < keyB) return -1;
+                            if (keyA > keyB) return 1;
+                            return 0;
+                        });
+
+                        insertUserDB(data.People, $scope.userName, $scope.password,
+                            function (tx, row) {
+                                onSuccess(data.People);
+                            },
+                            function (dberr) {
+                                onError(dberr.message);
+                            });
+                    }
+                }
+                catch (ex) {
+                    log(ex);
                     onError(ex.message);
+                }
+            },
+            error: function (a, b, c) {
+                if (retry < $scope.config.time_out) {
+                    setTimeout(function () {
+                        loginOnline(retry + 1, onSuccess, onError);
+                    }, 1000);
+                } else {
+                    try {
+                        onError(R.connection_timeout);
+                    } catch (ex) {
+                        onError(ex.message);
+                    }
                 }
             }
         });
+
+        //$http({
+        //    method: config.http_method,
+        //    url: url,
+        //    timeout: 200,
+        //}).then(function (resp) {
+        //    hideDlg();            
+        //    try {
+        //        log('Login response: ');                
+        //        var data = resp.data;
+        //        if (data.Status == -1) { // error
+        //            onError(data.ErrorMessage);
+        //        } else {                    
+		//			salesmans.push({ personID: 0, firstName: '', lastName: '', });
+        //            if (data.People.HasAuditRole && data.salesmans) {
+        //                for (var i = 0; i < data.salesmans.length; i++) {
+        //                    salesmans.push(data.salesmans[i]);
+        //                }
+        //            }
+        //            insertUserDB(data.People, $scope.userName,  $scope.password,
+        //                function (tx, row) {                                                  
+        //                    onSuccess(data.People);
+        //                },
+        //                function (dberr) {
+        //                    onError(dberr.message);
+        //                });
+        //        }
+        //    }
+        //    catch (ex) {
+        //        log(ex);
+        //        onError(ex.message);
+        //    }
+        //}, function (err) {                        
+        //    log(err);
+        //    if (retry < $scope.config.time_out) {
+        //        setTimeout(function () {
+        //            loginOnline(retry+1, onSuccess, onError);
+        //        }, 1000);
+        //    } else {
+        //        try {
+        //            //var errormg = 'Cannot connect to: ' + baseURL + ' : ' + R.connection_timeout;
+        //            onError(R.connection_timeout);
+        //        } catch (ex) {
+        //            onError(ex.message);
+        //        }
+        //    }
+        //});
     }
   
     function loginOffline(onSuccess, onError) {

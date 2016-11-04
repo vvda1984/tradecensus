@@ -78,7 +78,8 @@
             System.out.println(error);
         });
     }
-    catch(ex){
+    catch (ex) {
+        log(ex);
         onError('Cannot access database, please restart app!');
     }
 }

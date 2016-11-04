@@ -1,0 +1,28 @@
+﻿<md-dialog aria-label="Download Province" ng-cloak>
+    <md-toolbar class="md-hue-2">
+        <div class="md-toolbar-tools">
+            <h2>
+                <span>{{R.title_select_date}}</span>
+            </h2>
+        </div>
+    </md-toolbar>
+    <md-content layout-padding="0" class="popup-content">
+        <form name="selectDate" style="margin-bottom:0px;">
+            <div layout-gt-xs="row">
+                <div flex-gt-xs="">
+                    <h4>{{R.title_date_from}}</h4>
+                    <md-datepicker ng-model="dateFrom" md-placeholder="Enter date from"></md-datepicker>
+                </div>
+
+                <div flex-gt-xs="">
+                    <h4>{{R.title_date_to}}</h4>
+                    <md-datepicker ng-model="dateTo" md-placeholder="Enter date to"></md-datepicker>
+                </div>
+            </div>
+            <div layout-gt-sm="row" layout-margin layout-align="center" style="margin-bottom:0px;">
+                <md-button class="md-raised md-primary" ng-click="ok()" ng-show="canPost">{{R.btn_view}}</md-button>
+                <md-button class="md-raised" ng-click="cancel()">{{R.btn_cancel}}</md-button>
+            </div>
+        </form>
+</md-content>
+</md-dialog>
