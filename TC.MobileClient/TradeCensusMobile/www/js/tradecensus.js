@@ -51,8 +51,8 @@
         }
     }
 
-    //(document).ready(function () { onDeviceReady(); });
-    document.addEventListener("deviceready", onDeviceReady, false);
+    $(document).ready(function () { onDeviceReady(); });
+    //document.addEventListener("deviceready", onDeviceReady, false);
 })(window);
 
 var resetDB = false;                // force reset database - testing only
@@ -156,7 +156,7 @@ function newConfig() {
     //var testBuild = false;
     var c = {
         debug_build: true,
-        enable_devmode: false,
+        enable_devmode: true,
         enable_logview : false,
         page_size: 20,
         cluster_size: 50,
