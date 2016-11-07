@@ -609,6 +609,9 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                 break;
             }
         }
+
+        addressModel.districtArr = [];
+        addressModel.wardArr = [];
     }
 
     //*************************************************************************    
