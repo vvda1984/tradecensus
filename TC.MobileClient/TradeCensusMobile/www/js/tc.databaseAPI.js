@@ -1,6 +1,6 @@
 ﻿function initalizeDB(onSuccess, onError) {
     try{
-        db = window.openDatabase('tc-v1-05.db', "2.0", 'tc-v1-05.db', 500 * 1024 * 1024); //~500MB
+        db = window.openDatabase('tc-v1-05.db', "2.0", 'tc-v1-05.db', 49 * 1024 * 1024); //~500MB
         db.transaction(function (tx) {
             if (resetDB) {
                 tx.executeSql('DROP TABLE IF EXISTS user1');
@@ -64,14 +64,11 @@
                     onError(dberr.message);
                 });
 
-            //log("ensure table [outletSync] exist");
-            //tx.executeSql('CREATE TABLE IF NOT EXISTS [outletSync] ( [ID] text PRIMARY KEY NOT NULL, [PersonID] integer NOT NULL, [LastSyncTS] text NOT NULL)');           
-
+        
             addressModel.initialize(db, tx);
             onSuccess(tx);
 
             log("initialized db successfully");
-            //initializeProvinces(tx, onSuccess);
         },
         function (error) {
             // error
@@ -80,78 +77,13 @@
     }
     catch (ex) {
         log(ex);
-        onError('Cannot access database, please restart app!');
+        onError(ex.message);
+        //onError('Cannot access database, please restart app!');
     }
 }
 
 function logSqlCommand(sql) {
     log("SQL: " + sql);
-}
-
-function resetLocalDB(tx, outlettable, outletdownloadtable){
-    //log('Reset local data');
-    //tx.executeSql('DROP TABLE IF EXISTS [config]');    
-    //tx.executeSql('DROP TABLE IF EXISTS [outletImage1]');
-    //tx.executeSql('DROP TABLE IF EXISTS ' + outlettable);
-    //tx.executeSql('DROP TABLE IF EXISTS ' + outletdownloadtable);          
-
-    //tx.executeSql('CREATE TABLE IF NOT EXISTS [config] ( [Name] text PRIMARY KEY NOT NULL COLLATE NOCASE, [Value] text)');                
-    //tx.executeSql('CREATE TABLE IF NOT EXISTS [outletImage1] ( [ID] text PRIMARY KEY NOT NULL, [OutletID] int NOT NULL, [ImageIndex] int NOT NULL, [ImagePath] text NOT NULL, [Uploaded] int NOT NULL, [CreatedDate] text NOT NULL, [CreatedBy] int NOT NULL )');
-    //tx.executeSql('CREATE TABLE IF NOT EXISTS [' + outletdownloadtable + '] ( [id] text PRIMARY KEY NOT NULL, [name] text COLLATE NOCASE NOT NULL, download int NOT NULL))');            
-    //sql = ('CREATE TABLE IF NOT EXISTS ' + outlettable + '(' +
-    //                '[ID] int NOT NULL,' +
-    //                '[AreaID] text NOT NULL,' +
-    //                '[TerritoryID] text NOT NULL,' +
-    //                '[OTypeID] text NOT NULL,' +
-    //                '[Name] text NOT NULL,' +
-    //                '[AddLine] text NULL,' +
-    //                '[AddLine2] text NULL,' +
-    //                '[District] text NULL,' +
-    //                '[ProvinceID] text NOT NULL,' +
-    //                '[Phone] text NULL,' +
-    //                '[CallRate] int NOT NULL,' +
-    //                '[CloseDate] text NULL,' +
-    //                '[CreateDate] text NOT NULL,' +
-    //                '[Tracking] int NOT NULL,' +
-    //                '[Class] text NULL,' +
-    //                '[Open1st] text NULL,' +
-    //                '[Close1st] text NULL,' +
-    //                '[Open2nd] text NULL,' +
-    //                '[Close2nd] text NULL,' +
-    //                '[SpShift] int NOT NULL,' +
-    //                '[LastContact] text NOT NULL,' +
-    //                '[LastVisit] text NULL,' +
-    //                '[PersonID] int NOT NULL,' +
-    //                '[PersonFirstName] text NULL,' +
-    //                '[PersonLastName] text NULL,' +
-    //                '[Note] text NULL,' +
-    //                '[Longitude] float NULL,' +
-    //                '[Latitude] float NULL,' +
-    //                '[TaxID] text NULL,' +
-    //                '[ModifiedStatus] int NULL,' +
-    //                '[InputBy] int NULL,' +
-    //                '[InputDate] text NULL,' +
-    //                '[AmendBy] int NOT NULL,' +
-    //                '[AmendDate] text NOT NULL,' +
-    //                '[OutletEmail] text NULL,' +
-    //                '[AuditStatus] int NOT NULL,' +
-    //                '[TotalVolume] int NOT NULL,' +
-    //                '[VBLVolume] int NOT NULL,' +                        
-    //                '[StringImage1] text,' +
-    //                '[StringImage2] text,' +
-    //                '[StringImage3] text,' +
-    //                '[OutletSource] int,' +
-    //                '[PRowID] text NULL,' +
-    //                '[PIsAdd] bit,' +
-    //                '[PIsMod] bit,' +
-    //                '[PIsAud] bit,' +
-    //                '[PSynced] bit,' +
-    //                '[PStatus] int,' +
-    //                '[PLastModTS] int,' +
-    //                '[PMarked] bit)');       
-    //tx.executeSql(sql);  
-    
-    return;
 }
 
 function insertUserDB(person, userName, password, onSuccess, onError) {
@@ -418,9 +350,7 @@ function selectOutletTypes(onSuccess, onError) {
 
 function ensureUserOutletDBExist(isReset, outletSyncTbl, outletTbl, provinceDownloadTbl, journalTbl, callback) {
     db.transaction(function (tx) {
-        if (isReset) {
-            //resetLocalDB(tx, outletTbl, provinceDownloadTbl);
-
+        if (isReset) {            
             tx.executeSql('DROP TABLE IF EXISTS ' + outletSyncTbl);
             tx.executeSql('DROP TABLE IF EXISTS ' + outletTbl);
             tx.executeSql('DROP TABLE IF EXISTS ' + provinceDownloadTbl);

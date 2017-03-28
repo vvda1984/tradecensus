@@ -10,6 +10,7 @@
 
         public const int RoleAudit = 1;
         public const int RoleAudit1 = 101;
+        public const int RoleAgency = 2;
 
         public const int StatusInitial = 0;
      

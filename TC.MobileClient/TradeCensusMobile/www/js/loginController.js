@@ -320,7 +320,7 @@ function loginController($scope, $http) {
         
         log($scope.user.hasAuditRole);
         enableSync = true;
-        resetLocal = loginUser.Role == 101 || loginUser.Role == 100;
+        resetLocal = loginUser.Role >= 100;
 
 		log('create outlet tables');
 

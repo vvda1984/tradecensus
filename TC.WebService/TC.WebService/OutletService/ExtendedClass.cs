@@ -27,9 +27,18 @@ namespace TradeCensus
         public byte[] ImageData2 { get; set; }
         [IgnoreDataMember]
         public byte[] ImageData3 { get; set; }
+        [IgnoreDataMember]
+        public byte[] ImageData4 { get; set; }
+        [IgnoreDataMember]
+        public byte[] ImageData5 { get; set; }
+        [IgnoreDataMember]
+        public byte[] ImageData6 { get; set; }
 
         public string StringImage1 { get; set; }
         public string StringImage2 { get; set; }
         public string StringImage3 { get; set; }
+        public string StringImage4 { get; set; }
+        public string StringImage5 { get; set; }
+        public string StringImage6 { get; set; }
     }
 }

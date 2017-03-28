@@ -389,8 +389,9 @@ hr {
 }
 
 .outlet-image {
-    height:80px;
-    width:107px;    
+    /*height:80px;
+    width:107px;*/ 
+    /*height:80px;*/   
     margin-right:12px;
     height: 100%;
     width: 100%;

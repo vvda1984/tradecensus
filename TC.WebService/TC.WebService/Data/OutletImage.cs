@@ -22,6 +22,12 @@ namespace TradeCensus.Data
         public byte[] ImageData1 { get; set; }
         public byte[] ImageData2 { get; set; }
         public byte[] ImageData3 { get; set; }
+        public string Image4 { get; set; }
+        public byte[] ImageData4 { get; set; }
+        public string Image5 { get; set; }
+        public byte[] ImageData5 { get; set; }
+        public string Image6 { get; set; }
+        public byte[] ImageData6 { get; set; }
     
         public virtual Outlet Outlet { get; set; }
     }

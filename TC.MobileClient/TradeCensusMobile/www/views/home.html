@@ -1,3 +1,23 @@
+<style>
+    @media screen and (min-height: 600px) {
+        #hotlines {
+            height: 110px;
+        }
+    }
+
+    @media screen and (min-height: 720px) {
+        #hotlines {
+            height: 230px;
+        }
+    }
+
+    @media screen and (min-height: 768px) {
+        #hotlines {
+            height: 270px;
+        }
+    }
+</style>
+
 <div id="view-home">
     <div id="home-topleft">
         <div class="square-button float-left white" ng-hide="viewOutletPanel" ng-click="showhideOutletPanel()">
@@ -50,7 +70,6 @@
                         </td>
                         <td>
                             <table class="outlet-detail-table">
-
                                 <tr>
                                     <td colspan="4">
                                         <span class="large-text blue-color span-fix" ng-hide="viewOutletFull" ng-click="openOutlet($index)">{{outlet.Name}} ({{outlet.ID}})</span>
@@ -184,10 +203,12 @@
     </div>
 
     <div id="home-topright-test" ng-show="config.enable_devmode">
-        <input placeholder="acc" ng-model="testacc" style="width:40px;height:28px;" type="number">
-        <input placeholder="lat" ng-model="testlat" style="width:80px;height:28px;" type="number">
-        <input placeholder="lng" ng-model="testlng" style="width:80px;height:28px;" type="number">
+        <input placeholder="acc" ng-model="testacc" style="width:50px;height:28px;" type="number">
+        <input placeholder="lat" ng-model="testlat" style="width:50px;height:28px;" type="number">
+        <input placeholder="lng" ng-model="testlng" style="width:50px;height:28px;" type="number">        
         <button ng-click="testChangeLocation()">Set</button>
+        <input placeholder="lng" type="checkbox" ng-model="config.mode_online">
+        <span>{{config.mode_online ? "Online" : "Offline"}}</span>
     </div>
 
     <div id="home-leftbottom" ng-show="config.enable_logview">
@@ -211,22 +232,22 @@
         <div id="slider-right-content">
             <md-content layout-padding="" class="md-content-white">
                 <form name="configForm">
-                    <md-input-container class="md-block" style="margin-bottom:4px;">
+                    <md-input-container class="md-block" style="margin-bottom:0px;">
                         <label>{{R.distance}}</label>
                         <input type="number" required="" name="distance" ng-model="config.distance" min="50">
                     </md-input-container>
 
-                    <md-input-container class="md-block" style="margin-bottom:4px;">
+                    <md-input-container class="md-block" style="margin-bottom:0px;">
                         <label>{{R.max_outlets}}</label>
                         <input type="number" required="" name="item_count" ng-model="config.item_count" min="1">
                     </md-input-container>
 
-                    <md-input-container class="md-block" style="margin-bottom:4px;">
+                    <md-input-container class="md-block" style="margin-bottom:0px;">
                         <label>{{R.page_size}}</label>
                         <input type="number" required="" name="page_size" ng-model="config.page_size" min="5">
                     </md-input-container>
 
-                    <md-input-container class="md-block" flex-gt-sm="" style="margin-bottom:20px;">
+                    <md-input-container class="md-block" flex-gt-sm="" style="margin-bottom:0px;">
                         <label>{{ R.working_province }}</label>
                         <md-select ng-model="config.province_id" ng-change="provinceChanged(0)">
                             <md-option ng-repeat="p in dprovinces" value="{{p.id}}">
@@ -257,7 +278,7 @@
                         </md-input-container>
                     </div>-->
 
-                    <div layout-gt-sm="row" style="margin-top:-10px;" ng-show="config.enable_devmode">
+                    <!--<div layout-gt-sm="row" style="margin-top:-10px;" ng-show="config.enable_devmode">
                         <md-input-container class="md-block" style="margin-top:-24px;margin-left:-4px">
                             <div class="md-block-item" style="margin-bottom:0px;margin-top:-16px;margin-left:4px">
                                 <div class="md-block-item-title small-text">Mode (Online/Offline)</div>
@@ -271,9 +292,87 @@
                                 <md-switch class="md-primary" ng-model="config.enable_logview">{{config.enable_logview ? "Enable" : "Disable"}}</md-switch>
                             </div>
                         </md-input-container>
-                    </div>
+                    </div>-->
                 </form>
             </md-content>
+
+            <div style="display: block; position: relative; margin:-35px 20px 10px 20px; width:100px;">
+                <span style="font-size:14pt;">HOTLINES</span>
+            </div>
+            <div id="hotlines" style="display: block; position: relative; overflow: auto; margin:0 0 80px 24px;">
+                <table style="border:none; font-size:11pt; width:310px;">
+                    <tr>                       
+                        <td style="">
+                            Vo Vu Duy An
+                        </td>
+                        <td style="width:10px;">
+                            :
+                        </td>
+                        <td style="color:#01541E; text-align:right;">
+                            0909123456
+                        </td>
+                        <td>
+                            <img src="assets/img/phone.svg" style="height:20px; height:20px;">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="">
+                            VBL Office
+                        </td>
+                        <td style="width:10px;">
+                            :
+                        </td>
+                        <td style="color:#01541E; text-align:right;">
+                            0909123456
+                        </td>
+                        <td>
+                            <img src="assets/img/phone.svg" style="height:20px; height:20px;">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="">
+                            VBL Agency 1
+                        </td>
+                        <td style="width:10px;">
+                            :
+                        </td>
+                        <td style="color:#01541E; text-align:right;">
+                            0909123456
+                        </td>
+                        <td>
+                            <img src="assets/img/phone.svg" style="height:20px; height:20px;">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="">
+                            VBL Agency 2
+                        </td>
+                        <td style="width:10px;">
+                            :
+                        </td>
+                        <td style="color:#01541E; text-align:right;">
+                            0909123456
+                        </td>
+                        <td>
+                            <img src="assets/img/phone.svg" style="height:20px; height:20px;">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="">
+                            Nguyen Van A
+                        </td>
+                        <td style="width:10px;">
+                            :
+                        </td>
+                        <td style="color:#01541E; text-align:right;">
+                            0909123456
+                        </td>
+                        <td>
+                            <img src="assets/img/phone.svg" style="height:20px; height:20px;">
+                        </td>
+                    </tr>
+                </table>
+            </div>
 
             <div style="position:absolute; bottom:4px; right:0px; height:80px; left:12px;z-index:3;">
                 <div class="text-button float-left" ng-click="displayChangePasswordDlg()">

@@ -51,8 +51,8 @@
         }
     }
 
-    //$(document).ready(function () { onDeviceReady(); });
-    document.addEventListener("deviceready", onDeviceReady, false);
+    $(document).ready(function () { onDeviceReady(); }); // web
+    //document.addEventListener("deviceready", onDeviceReady, false); // mobile
 })(window);
 
 var resetDB = false;                // force reset database - testing only
@@ -157,18 +157,19 @@ function newConfig() {
     //var testBuild = false;
     var c = {
         debug_build: true,
-        enable_devmode: false,
+        enable_devmode: true,
         enable_logview : false,
         page_size: 20,
         cluster_size: 50,
         cluster_max_zoom: 15.5,
         mode_online: true,
         enable_rereverse_geo: 1,
-        protocol: 'https',
+        protocol: 'http',
         //ip: '27.0.15.234/trade-census',
-        ip: '203.34.144.29/tc-test',
+        //ip: '203.34.144.29/tc-test',
         //ip: '203.34.144.29/trade-census',
-        port: '443',
+        ip: 'localhost/trade-census-test',        
+        port: '80',
         service_name: 'TradeCensusService.svc', // absolute
         enable_liveGPS: true,       
         liveGPS_distance: 10,

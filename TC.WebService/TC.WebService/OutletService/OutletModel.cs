@@ -81,6 +81,12 @@ namespace TradeCensus
         [DataMember]
         public string StringImage3 { get; set; }
         [DataMember]
+        public string StringImage4 { get; set; }
+        [DataMember]
+        public string StringImage5 { get; set; }
+        [DataMember]
+        public string StringImage6 { get; set; }
+        [DataMember]
         public int TotalVolume { get; set; }
         [DataMember]
         public int VBLVolume { get; set; }

@@ -7,7 +7,7 @@ namespace TradeCensus
     public class ConfigResponse : Response
     {
         [DataMember]
-        public Dictionary<string,string> Items
+        public Dictionary<string, string> Items
         {
             get; set;
         }

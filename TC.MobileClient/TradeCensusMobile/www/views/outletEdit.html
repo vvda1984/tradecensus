@@ -105,9 +105,52 @@
             </div>
            
             <div layout-gt-sm="row" style="margin-bottom:24px;margin-top:4px;">
-                <div flex-gt-sm="" style="margin-left:8px;" class="outlet-image-container">
+                <table class="image-table">
+                    <tr>
+                        <td>Selfie  <div class="image-sub-title">&nbsp;</div></td>
+                        <td>Outside <div class="image-sub-title">(toàn cảnh)</div></td>
+                        <td>Signage <div class="image-sub-title">(bảng hiệu nếu có)</div></td>
+                        <td>Product <div class="image-sub-title">(khu vực sản phẩm)</div></td>
+                        <td>Other   <div class="image-sub-title">(hình khác)</div></td>
+                        <td>Other   <div class="image-sub-title">(hình khác)</div></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="image-frame" ng-click="capture(4);">
+                                <img id="outletImg4" src="{{image4URL}}" />
+                            </div>
+                        </td>
+                        <td>
+                            <div class="image-frame" ng-click="capture(1);">
+                                <img id="outletImg1" src="{{image1URL}}" />
+                            </div>
+                        </td>
+                        <td>
+                            <div class="image-frame" ng-click="capture(2);">
+                                <img id="outletImg2" src="{{image2URL}}" />
+                            </div>
+                        </td>
+                        <td>
+                            <div class="image-frame" ng-click="capture(3);">
+                                <img id="outletImg3" src="{{image3URL}}" />
+                            </div>
+                        </td>
+                        <td>
+                            <div class="image-frame" ng-click="capture(5);">
+                                <img id="outletImg5" src="{{image5URL}}" />
+                            </div>
+                        </td>
+                        <td>
+                            <div class="image-frame" ng-click="capture(6);">
+                                <img id="outletImg6" src="{{image6URL}}" />
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+
+                <!--<div flex-gt-sm="" style="margin-left:8px;" class="outlet-image-container">
                     <img id="outletImg1" class="outlet-image" ng-click="capture(1);" src="{{image1URL}}" alt="Outlet Image"/>
-                    <!--<span id="outletImg1loading">Loading...</span>-->                    
+                    <span id="outletImg1loading">Loading...</span>                    
                 </div>
                 <div flex-gt-sm="" class="outlet-image-container">
                     <img id="outletImg2" class="outlet-image" ng-click="capture(2);" src="{{image2URL}}" alt="Outlet Image" />
@@ -117,7 +160,7 @@
                 </div>
                 <div flex-gt-sm="">
                     <img id="captureButton" ng-show="allowCapture" ng-click="capture(0)" src="assets/img/camera.svg" />
-                </div>     
+                </div>-->     
                 
                 <!--<div class="md-block-item" style="margin-left:24px;" flex-gt-sm="" ng-show="canRevise">
                     <div class="md-block-item-title" style="min-width:80px">Revise</div>

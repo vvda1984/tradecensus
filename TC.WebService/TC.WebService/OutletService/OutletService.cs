@@ -93,7 +93,7 @@ namespace TradeCensus
                 }
             }
             return res;
-        }
+        }        
 
         private string QueryOutletCommand(int status, double minLat, double maxLat, double minLng, double maxLng, int personID, bool auditor)
         {
@@ -499,6 +499,7 @@ namespace TradeCensus
                 if (!string.IsNullOrEmpty(outlet.PRowID))
                     dbOutlet.PRowID = new Guid(outlet.PRowID);
 
+                // ============= IMAGES =============
                 OutletImage outletImage = dbOutlet.OutletImages.FirstOrDefault();
                 if (outletImage == null)
                 {
@@ -507,6 +508,7 @@ namespace TradeCensus
                     dbOutlet.OutletImages.Add(outletImage);
                 }
 
+                // IMAGE1
                 if (string.IsNullOrEmpty(outlet.StringImage1))
                 {
                     outletImage.Image1 = "";
@@ -521,6 +523,7 @@ namespace TradeCensus
                     outletImage.ImageData1 = data;
                 }
 
+                // IMAGE2
                 if (string.IsNullOrEmpty(outlet.StringImage2))
                 {
                     outletImage.Image2 = "";
@@ -535,6 +538,7 @@ namespace TradeCensus
                     outletImage.ImageData2 = data;
                 }
 
+                // IMAGE3
                 if (string.IsNullOrEmpty(outlet.StringImage3))
                 {
                     outletImage.Image3 = "";
@@ -547,6 +551,36 @@ namespace TradeCensus
                     SaveToFile(dbOutlet.ID, 3, outlet.StringImage3, out relativePath, out data);
                     outletImage.Image3 = relativePath;
                     outletImage.ImageData3 = data;
+                }
+
+                // IMAGE4
+                if (string.IsNullOrEmpty(outlet.StringImage4))
+                {
+                    outletImage.Image4 = "";
+                    outletImage.ImageData4 = null;
+                }
+                else if (!outlet.StringImage4.ToUpper().StartsWith("/IMAGE"))
+                {
+                    byte[] data;
+                    string relativePath;
+                    SaveToFile(dbOutlet.ID, 4, outlet.StringImage4, out relativePath, out data);
+                    outletImage.Image4 = relativePath;
+                    outletImage.ImageData4 = data;
+                }
+
+                // IMAGE6
+                if (string.IsNullOrEmpty(outlet.StringImage6))
+                {
+                    outletImage.Image6 = "";
+                    outletImage.ImageData6 = null;
+                }
+                else if (!outlet.StringImage6.ToUpper().StartsWith("/IMAGE"))
+                {
+                    byte[] data;
+                    string relativePath;
+                    SaveToFile(dbOutlet.ID, 6, outlet.StringImage6, out relativePath, out data);
+                    outletImage.Image6 = relativePath;
+                    outletImage.ImageData6 = data;
                 }
 
                 AppendOutletHistory(outlet.AmendBy, outlet.ID, (byte)outlet.AuditStatus, ToActionMsg(outlet.AuditStatus));
@@ -584,55 +618,8 @@ namespace TradeCensus
             string parent = Path.GetDirectoryName(path);
             EnsureDirExist(parent);
             Directory.CreateDirectory(path);
-        }
-
-        private string GetOutletImage(string outletID, string index)
-        {           
-            var id = int.Parse(outletID);
-            Outlet outlet = DC.Outlets.FirstOrDefault(i => i.ID == id);
-            if (outlet != null)
-            {
-                OutletImage outletImage = outlet.OutletImages.FirstOrDefault();
-                if (outletImage != null)
-                {
-                    if (index == "0")
-                    {
-                        return outletImage.Image1;
-                    }
-                    else if (index == "1")
-                    {
-                        return outletImage.Image2;
-                    }
-                    else if (index == "2")
-                    {
-                        return outletImage.Image3;
-                    }
-                }
-            }
-            return "";
-        }
-
-        private void TrackOutletChanged(Guid rowID, int personID,  string note, byte status, byte action)
-        {
-            return;
-            //SyncHistory hist = new SyncHistory()
-            //{
-            //    TableName = "Outlet",
-            //    SyncDateTime = DateTime.Now,
-            //    SyncBy = personID,
-            //    Note = note,
-            //    Status = status,
-            //};
-            //_entities.SyncHistories.Add(hist);
-            //var detail = new SyncDetail()
-            //{
-            //    Action = action,
-            //    RowID = rowID,
-            //    SyncHistory = hist,
-            //};
-            //hist.SyncDetails.Add(detail);
-        }
-
+        }        
+      
         private void AppendOutletHistory(int personID, int outletID, int action, string note)
         {
             var hist = new OutletHistory {
@@ -686,7 +673,10 @@ namespace TradeCensus
                                    ot.Name as OutletTypeName,
                                    oi.ImageData1, 
                                    oi.ImageData2, 
-                                   oi.ImageData3
+                                   oi.ImageData3, 
+                                   oi.ImageData4,
+                                   oi.ImageData5, 
+                                   oi.ImageData6
                               from outlet
                               left join OutletType as ot on ot.ID = Outlet.OTypeID 
                               left join Person on Person.ID = Outlet.PersonID 
@@ -698,9 +688,10 @@ namespace TradeCensus
                 var query = DC.Database.SqlQuery<DownloadOutlet>(command);
                 results = query.ToArray();
 
-                var outletHasImages = results.Where(o => (o.ImageData1 != null || o.ImageData2 != null || o.ImageData3 != null));
-                //var test = results.FirstOrDefault(o => o.ID == 65000070);
-                if (outletHasImages.Count() > 0)
+                var outletHasImages = results.Where(o => 
+                    (o.ImageData1 != null || o.ImageData2 != null || o.ImageData3 != null ||
+                     o.ImageData4 != null || o.ImageData5 != null || o.ImageData6 != null));
+                 if (outletHasImages.Count() > 0)
                     foreach (var o in outletHasImages)
                     {
                         if (o.ImageData1 != null)
@@ -711,6 +702,15 @@ namespace TradeCensus
 
                         if (o.ImageData3 != null)
                             o.StringImage3 = FormatBase64(Convert.ToBase64String(o.ImageData3));
+
+                        if (o.ImageData4 != null)
+                            o.StringImage4 = FormatBase64(Convert.ToBase64String(o.ImageData4));
+
+                        if (o.ImageData5 != null)
+                            o.StringImage5 = FormatBase64(Convert.ToBase64String(o.ImageData5));
+
+                        if (o.ImageData6 != null)
+                            o.StringImage6 = FormatBase64(Convert.ToBase64String(o.ImageData6));
                     }
             }
             else
@@ -944,6 +944,9 @@ namespace TradeCensus
                 resp.Image1 = "";
                 resp.Image2 = "";
                 resp.Image3 = "";
+                resp.Image4 = "";
+                resp.Image5 = "";
+                resp.Image6 = "";
                 int id = int.Parse(outletID);
                 var o = DC.OutletImages.FirstOrDefault(i=>i.OutletID == id);
                 if(o != null)
@@ -956,6 +959,15 @@ namespace TradeCensus
 
                     if (o.ImageData3 != null)
                         resp.Image3 = FormatBase64(Convert.ToBase64String(o.ImageData3));
+
+                    if (o.ImageData4 != null)
+                        resp.Image4 = FormatBase64(Convert.ToBase64String(o.ImageData4));
+
+                    if (o.ImageData5 != null)
+                        resp.Image5 = FormatBase64(Convert.ToBase64String(o.ImageData5));
+
+                    if (o.ImageData6 != null)
+                        resp.Image6 = FormatBase64(Convert.ToBase64String(o.ImageData6));
                 }
             }
             catch (Exception ex)

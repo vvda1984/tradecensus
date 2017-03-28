@@ -19,7 +19,7 @@
           </Key>
           <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="Name" Type="nvarchar" MaxLength="100" Nullable="false" />
-          <Property Name="Value" Type="nvarchar" MaxLength="255" Nullable="false" />
+          <Property Name="Value" Type="nvarchar(max)" Nullable="false" />
         </EntityType>
         <EntityType Name="ConnectionSession">
           <Key>
@@ -124,11 +124,17 @@
           <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="OutletID" Type="int" Nullable="false" />
           <Property Name="Image1" Type="nvarchar(max)" />
-          <Property Name="Image2" Type="nvarchar(max)" />
-          <Property Name="Image3" Type="nvarchar(max)" />
           <Property Name="ImageData1" Type="image" />
+          <Property Name="Image2" Type="nvarchar(max)" />
           <Property Name="ImageData2" Type="image" />
+          <Property Name="Image3" Type="nvarchar(max)" />
           <Property Name="ImageData3" Type="image" />
+          <Property Name="Image4" Type="nvarchar(max)" />
+          <Property Name="ImageData4" Type="image" />
+          <Property Name="Image5" Type="nvarchar(max)" />
+          <Property Name="ImageData5" Type="image" />
+          <Property Name="Image6" Type="nvarchar(max)" />
+          <Property Name="ImageData6" Type="image" />
         </EntityType>
         <EntityType Name="OutletType">
           <Key>
@@ -291,7 +297,7 @@
           </Key>
           <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="Name" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
-          <Property Name="Value" Type="String" MaxLength="255" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="Value" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" Nullable="false" />
         </EntityType>
         <EntityType Name="OutletType">
           <Key>
@@ -503,6 +509,12 @@
           <Property Name="ImageData2" Type="Binary" MaxLength="Max" FixedLength="false" />
           <Property Name="ImageData3" Type="Binary" MaxLength="Max" FixedLength="false" />
           <NavigationProperty Name="Outlet" Relationship="tradecensusModel.FK_OutletImage_Outlet" FromRole="OutletImage" ToRole="Outlet" />
+          <Property Name="Image4" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="ImageData4" Type="Binary" MaxLength="Max" FixedLength="false" />
+          <Property Name="Image5" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="ImageData5" Type="Binary" MaxLength="Max" FixedLength="false" />
+          <Property Name="Image6" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="ImageData6" Type="Binary" MaxLength="Max" FixedLength="false" />
         </EntityType>
         <Association Name="FK_OutletImage_Outlet">
           <End Type="tradecensusModel.Outlet" Role="Outlet" Multiplicity="1" />
@@ -739,6 +751,12 @@
           <EntitySetMapping Name="OutletImages">
             <EntityTypeMapping TypeName="tradecensusModel.OutletImage">
               <MappingFragment StoreEntitySet="OutletImage">
+                <ScalarProperty Name="ImageData6" ColumnName="ImageData6" />
+                <ScalarProperty Name="Image6" ColumnName="Image6" />
+                <ScalarProperty Name="ImageData5" ColumnName="ImageData5" />
+                <ScalarProperty Name="Image5" ColumnName="Image5" />
+                <ScalarProperty Name="ImageData4" ColumnName="ImageData4" />
+                <ScalarProperty Name="Image4" ColumnName="Image4" />
                 <ScalarProperty Name="ImageData3" ColumnName="ImageData3" />
                 <ScalarProperty Name="ImageData2" ColumnName="ImageData2" />
                 <ScalarProperty Name="ImageData1" ColumnName="ImageData1" />

@@ -39,7 +39,7 @@ namespace TradeCensus
             try
             {
                 Log("Get all config");
-                var latestVersion = DC.Configs.FirstOrDefault(i=>string.Compare(i.Name, "Version", StringComparison.OrdinalIgnoreCase) == 0);
+                var latestVersion = DC.Configs.FirstOrDefault(i=>string.Compare(i.Name, "version", StringComparison.OrdinalIgnoreCase) == 0);
                 if (latestVersion != null)
                 {
                     int lastVersionNumber = int.Parse(latestVersion.Value);
@@ -47,9 +47,9 @@ namespace TradeCensus
 
                     if (lastVersionNumber > currVersionNumber)
                     {
-                        var msg = DC.Configs.FirstOrDefault(i => string.Compare(i.Name, "NewVersionMessage", StringComparison.OrdinalIgnoreCase) == 0);
-
-
+                        var msg = DC.Configs.FirstOrDefault(i =>
+                            string.Compare(i.Name, "NewVersionMessage", StringComparison.OrdinalIgnoreCase) == 0 ||
+                            string.Compare(i.Name, "new_version_message", StringComparison.OrdinalIgnoreCase) == 0);
                         resp.Version = lastVersionNumber;
                         resp.Message = msg != null ? msg.Value : "";
                     }

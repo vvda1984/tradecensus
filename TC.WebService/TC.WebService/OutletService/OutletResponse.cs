@@ -97,5 +97,14 @@ namespace TradeCensus
 
         [DataMember]
         public string Image3 { get; set; }
+
+        [DataMember]
+        public string Image4 { get; set; }
+
+        [DataMember]
+        public string Image5 { get; set; }
+
+        [DataMember]
+        public string Image6 { get; set; }
     }
 }
