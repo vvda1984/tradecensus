@@ -1,19 +1,19 @@
 <style>
     @media screen and (min-height: 600px) {
         #hotlines {
-            height: 110px;
+            height: 97px;
         }
     }
 
     @media screen and (min-height: 720px) {
         #hotlines {
-            height: 230px;
+            height: 193px;
         }
     }
 
     @media screen and (min-height: 768px) {
         #hotlines {
-            height: 270px;
+            height: 241px;
         }
     }
 </style>
@@ -205,7 +205,7 @@
     <div id="home-topright-test" ng-show="config.enable_devmode">
         <input placeholder="acc" ng-model="testacc" style="width:50px;height:28px;" type="number">
         <input placeholder="lat" ng-model="testlat" style="width:50px;height:28px;" type="number">
-        <input placeholder="lng" ng-model="testlng" style="width:50px;height:28px;" type="number">        
+        <input placeholder="lng" ng-model="testlng" style="width:50px;height:28px;" type="number">
         <button ng-click="testChangeLocation()">Set</button>
         <input placeholder="lng" type="checkbox" ng-model="config.mode_online">
         <span>{{config.mode_online ? "Online" : "Offline"}}</span>
@@ -277,7 +277,6 @@
                             </div>
                         </md-input-container>
                     </div>-->
-
                     <!--<div layout-gt-sm="row" style="margin-top:-10px;" ng-show="config.enable_devmode">
                         <md-input-container class="md-block" style="margin-top:-24px;margin-left:-4px">
                             <div class="md-block-item" style="margin-bottom:0px;margin-top:-16px;margin-left:4px">
@@ -297,78 +296,19 @@
             </md-content>
 
             <div style="display: block; position: relative; margin:-35px 20px 10px 20px; width:100px;">
-                <span style="font-size:14pt;">HOTLINES</span>
+                <span style="font-size:14pt; color:#01541E;">HOTLINES</span>
             </div>
             <div id="hotlines" style="display: block; position: relative; overflow: auto; margin:0 0 80px 24px;">
-                <table style="border:none; font-size:11pt; width:310px;">
-                    <tr>                       
-                        <td style="">
-                            Vo Vu Duy An
-                        </td>
-                        <td style="width:10px;">
-                            :
-                        </td>
-                        <td style="color:#01541E; text-align:right;">
-                            0909123456
-                        </td>
-                        <td>
-                            <img src="assets/img/phone.svg" style="height:20px; height:20px;">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="">
-                            VBL Office
-                        </td>
-                        <td style="width:10px;">
-                            :
-                        </td>
-                        <td style="color:#01541E; text-align:right;">
-                            0909123456
-                        </td>
-                        <td>
-                            <img src="assets/img/phone.svg" style="height:20px; height:20px;">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="">
-                            VBL Agency 1
-                        </td>
-                        <td style="width:10px;">
-                            :
-                        </td>
-                        <td style="color:#01541E; text-align:right;">
-                            0909123456
-                        </td>
-                        <td>
-                            <img src="assets/img/phone.svg" style="height:20px; height:20px;">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="">
-                            VBL Agency 2
-                        </td>
-                        <td style="width:10px;">
-                            :
-                        </td>
-                        <td style="color:#01541E; text-align:right;">
-                            0909123456
-                        </td>
-                        <td>
-                            <img src="assets/img/phone.svg" style="height:20px; height:20px;">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="">
-                            Nguyen Van A
-                        </td>
-                        <td style="width:10px;">
-                            :
-                        </td>
-                        <td style="color:#01541E; text-align:right;">
-                            0909123456
-                        </td>
-                        <td>
-                            <img src="assets/img/phone.svg" style="height:20px; height:20px;">
+                <table cellspacing="0" style="border:none; font-size:11pt; width:310px; border-top: 1px solid #E1E1E1 !important;">
+                    <tr style="height:48px;" ng-repeat="hotline in hotlines" >
+                       <td style="border-bottom: 1px solid #E1E1E1 !important;">
+                           <div style="vertical-align:middle;">
+                               <div style="font-size:11pt;">{{hotline.name}}</div>
+                               <div style="font-size:8pt;">{{hotline.phone}}</div>
+                           </div>
+                       </td>
+                        <td style="border-bottom: 1px solid #E1E1E1 !important;">
+                            <img ng-click="makePhoneCall(hotline)" src="assets/img/phone.svg" style="height:24px; height:24px;vertical-align:middle;">
                         </td>
                     </tr>
                 </table>

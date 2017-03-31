@@ -105,5 +105,23 @@
         },
         "is_top_level": true,
         "variables": {}
+    },
+    "cordova-plugin-root-detection": {
+        "source": {
+            "type": "git",
+            "url": "https://github.com/trykovyura/cordova-plugin-root-detection.git",
+            "subdir": "."
+        },
+        "is_top_level": true,
+        "variables": {}
+    },
+    "cordova-plugin-phonecaller": {
+        "source": {
+            "type": "git",
+            "url": "https://github.com/codebakery/cordova-plugin-phonecaller",
+            "subdir": "."
+        },
+        "is_top_level": true,
+        "variables": {}
     }
 }

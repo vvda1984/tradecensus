@@ -18,6 +18,8 @@ namespace TradeCensus.Data
 
         public string OutletTypeName { get; set; }
 
+        public int? AmendByRole { get; set; }
+
         public OutletModel ToOutletModel(OutletEntity outlet)
         {
             var foundOutlet = new OutletModel
@@ -62,6 +64,7 @@ namespace TradeCensus.Data
                 PersonFirstName = outlet.PersonFirstName,
                 PersonIsDSM = outlet.PersonIsDSM ?? false,
                 OutletSource = (outlet.PersonIsDSM != null && outlet.PersonIsDSM.Value) ? 1 : 0,
+                AmendByRole = outlet.AmendByRole ?? 0,
             };
 
             return foundOutlet;

@@ -19,7 +19,8 @@ namespace TradeCensus
         public long RowNo { get; set; }
         public string PersonFirstName { get; set; }
         public string PersonLastName { get; set; }
-        public bool? PersonIsDSM { get; set; }
+        public bool? PersonIsDSM { get; set; }        
+        public int? AmendByRole { get; set; }
 
         [IgnoreDataMember]
         public byte[] ImageData1 { get; set; }

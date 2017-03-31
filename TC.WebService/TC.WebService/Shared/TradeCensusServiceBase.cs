@@ -1,6 +1,7 @@
 ﻿using NLog;
 using System;
 using System.Configuration;
+using System.IO;
 using System.Linq;
 using TradeCensus.Data;
 
@@ -19,6 +20,17 @@ namespace TradeCensus.Shared
             DC = new tradecensusEntities(); // throw error
             _name = name;
             _logger = DependencyResolver.Resolve<ILogFactory>().GetLogger(name);
+        }
+
+        protected string ImagesPath
+        {
+            get
+            {
+                string path = AppDomain.CurrentDomain.BaseDirectory;
+                path = Path.GetDirectoryName(path) + "\\Images";
+                EnsureDirExist(path);
+                return path;
+            }
         }
 
         public void Dispose()
@@ -102,5 +114,15 @@ namespace TradeCensus.Shared
         {
             return string.IsNullOrEmpty(str) ? defaultIfNullOrEmpty : str;
         }
+
+        private void EnsureDirExist(string path)
+        {
+            if (Directory.Exists(path)) return;
+
+            string parent = Path.GetDirectoryName(path);
+            EnsureDirExist(parent);
+            Directory.CreateDirectory(path);
+        }
+
     }
 }

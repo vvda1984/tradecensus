@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using TradeCensus.Shared;
 
@@ -7,10 +9,40 @@ namespace TradeCensus
 {
     public class ConfigService : TradeCensusServiceBase, IConfigService
     {
-        public ConfigService():base("Config")
+        public ConfigService() : base("Config")
         {
         }
 
+        public DownloadMapIconsResponse DownloadMapIcons()
+        {
+            DownloadMapIconsResponse resp = new DownloadMapIconsResponse();
+
+            try
+            {
+                var setting = DC.Configs.FirstOrDefault(x => string.Compare(x.Name, "outlet_map_icons", StringComparison.OrdinalIgnoreCase) == 0);
+                var mapIcons = JsonConvert.DeserializeObject<OutletMapIcon>(setting.Value);
+                resp.Version = mapIcons.version;
+
+                var salesmanPath = Path.Combine(ImagesPath, mapIcons.salesman_new_outlet);                
+                if (File.Exists(salesmanPath))
+                    resp.SalesmanNewOutletMapIcon = Convert.ToBase64String(File.ReadAllBytes(salesmanPath));
+                
+                var agencyPath = Path.Combine(ImagesPath, mapIcons.agency_new_outlet);
+                if (File.Exists(agencyPath))
+                    resp.AgencyNewOutletMapIcon = Convert.ToBase64String(File.ReadAllBytes(agencyPath));
+
+                var auditorPath = Path.Combine(ImagesPath, mapIcons.auditor_new_outlet);
+                if (File.Exists(auditorPath))
+                    resp.AuditorNewOutletMapIcon = Convert.ToBase64String(File.ReadAllBytes(auditorPath));
+            }
+            catch (Exception ex)
+            {
+                resp.Status = Constants.ErrorCode;
+                resp.ErrorMessage = ex.Message;
+            }
+            return resp;
+        }
+    
         public ConfigResponse GetConfig()
         {
             ConfigResponse resp = new ConfigResponse();
@@ -62,5 +94,13 @@ namespace TradeCensus
             }
             return resp;
         }
+    }
+
+    public class OutletMapIcon
+    {
+        public int version { get; set; }
+        public string salesman_new_outlet { get; set; }
+        public string agency_new_outlet { get; set; }
+        public string auditor_new_outlet { get; set; }
     }
 }

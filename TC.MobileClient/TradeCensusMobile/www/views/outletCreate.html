@@ -141,7 +141,7 @@
             <div layout-gt-sm="row" style="margin-bottom:24px;">
                 <table class="image-table">
                     <tr>
-                        <td>Selfie  <div class="image-sub-title">&nbsp;</div></td>
+                        <td id="selfieImgTitle" ng-show="showImage4">Selfie  <div class="image-sub-title">&nbsp;</div></td>
                         <td>Outside <div class="image-sub-title">(toàn cảnh)</div></td>
                         <td>Signage <div class="image-sub-title">(bảng hiệu nếu có)</div></td>
                         <td>Product <div class="image-sub-title">(khu vực sản phẩm)</div></td>
@@ -149,7 +149,7 @@
                         <td>Other   <div class="image-sub-title">(hình khác)</div></td>
                     </tr>
                     <tr>
-                        <td>
+                        <td id="selfieImgContent" ng-show="showImage4">
                             <div class="image-frame" ng-click="capture(4);">
                                 <img id="outletImg4" src="{{image4URL}}"/>
                             </div>                            

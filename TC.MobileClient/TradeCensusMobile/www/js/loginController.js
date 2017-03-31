@@ -308,7 +308,7 @@ function loginController($scope, $http) {
         $scope.user.workAddress = loginUser.WorkAddress;
         $scope.user.phone = loginUser.Phone;
         $scope.user.isDSM = loginUser.isDSM;
-        $scope.user.role = loginUser.Role;
+        $scope.user.role = loginUser.Role % 10;
         $scope.user.token = loginUser.Token == undefined ? '' : loginUser.Token;
 
         user = $scope.user;
@@ -338,17 +338,17 @@ function loginController($scope, $http) {
                         showDlg(R.download_settings, R.please_wait);
                         downloadServerConfig(function () {
                             log('Navigate to home (online)');
-                            finailizeLoginView();
+                            finalizeLoginView();
                         }, function (dberr) {
                             log(dberr);
-                            finailizeLoginView();
+                            finalizeLoginView();
                             //hideDlg();
                             //showError(dberr.message);
                         });
                     }
                     else {
                         log('Navigate to home (offline)');
-                        finailizeLoginView();
+                        finalizeLoginView();
                     }
                 });                
             });
@@ -359,7 +359,7 @@ function loginController($scope, $http) {
         showError(err);
     }   
     
-    function finailizeLoginView(stat) {
+    function finalizeLoginView(stat) {
         log('Load downloaded provinces table');
         selectDownloadProvincesDB(config.tbl_downloadProvince, function (dbres) {
             dprovinces = [];
@@ -430,9 +430,10 @@ function loginController($scope, $http) {
                 onError(data.ErrorMessage);
             } else {
                 setDlgMsg(R.update_settings);
-
+                
                 var syncProvinces = true;
                 var syncOutletTypes = false;
+                var syncMapIcons = false;
                 for (var i = 0; i < data.Items.length;i++) {
                     p = data.Items[i];
                     var name = data.Items[i].Key;
@@ -509,63 +510,116 @@ function loginController($scope, $http) {
                         config.journal_weight = parseInt(value);
                     } else if (name == 'journal_nonstop') {
                         config.journal_nonstop = parseInt(value);
+                    } else if (name == 'enable_check_in') {
+                        config.enable_check_in = parseInt(value);
+                    } else if (name == 'hotlines') {
+                        config.hotlines = JSON.parse(value);
+                    } else if (name == 'outlet_map_icons') {
+                        var mapIcons = JSON.parse(value);
+                        syncMapIcons = mapIcons.version > config.map_icons_version;
+                        config.map_icons_version = mapIcons.version;
                     }
                 }
+                
+                var downloadOptions = {
+                    downloadProvinces: syncProvinces,
+                    downloadOutletTypes: syncOutletTypes,
+                    downloadMapIcons: syncMapIcons
+                };
 
-                insertSettingDB(config, function () {
-                    if (syncProvinces) {
-                        downloadProvinces(function () {
-                            if (syncOutletTypes) {
-                                downloadOutletTypes(onSuccess, onError);
-                            } else {
-                                onSuccess();
-                            }
-                        }, onError)
-                    }
-                    else {
-                        if (syncOutletTypes) {
-                            downloadOutletTypes(onSuccess, onError);
-                        } else {
-                            onSuccess();
-                        }
-                    }
+                downloadProvinces(downloadOptions, function () {
+                    downloadOutletTypes(downloadOptions, function () {
+                        downloadOutletMapIcons(downloadOptions, function () {
+                            insertSettingDB(config, onSuccess, onError);
+                        }, onError);
+                    }, onError);
                 }, onError);
+               
+                //insertSettingDB(config, function () {
+                //    if (syncProvinces) {
+                //        downloadProvinces(function () {
+                //            if (syncOutletTypes) {
+                //                downloadOutletTypes(onSuccess, onError);
+                //            } else {
+                //                onSuccess();
+                //            }
+                //        }, onError)
+                //    }
+                //    else {
+                //        if (syncOutletTypes) {
+                //            downloadOutletTypes(onSuccess, onError);
+                //        } else {
+                //            onSuccess();
+                //        }
+                //    }
+                //}, onError);
             }
         }, handleHttpError);
     }
    
-    function downloadProvinces(onSuccess, onError) {
-        setDlgMsg(R.download_provinces);
-        var url = baseURL + '/provinces/getall';
-        log('Call service api: ' + url);
-        $http({
-            method: config.http_method,
-            url: url
-        }).then(function (resp) {
-            var data = resp.data;
-            if (data.Status == -1) { // error
-                onError(data.ErrorMessage);
-            } else {
-                insertProvinces(data.Items, onSuccess, onError);
-            }
-        }, handleHttpError);
+    function downloadProvinces(downloadOptions, onSuccess, onError) {
+        if (downloadOptions.downloadProvinces) {
+            setDlgMsg(R.download_provinces);
+            var url = baseURL + '/provinces/getall';
+            log('Call service api: ' + url);
+            $http({
+                method: config.http_method,
+                url: url
+            }).then(function (resp) {
+                var data = resp.data;
+                if (data.Status == -1) { // error
+                    onError(data.ErrorMessage);
+                } else {
+                    insertProvinces(data.Items, onSuccess, onError);
+                }
+            }, handleHttpError);
+        } else {
+            onSuccess();
+        }
     }
    
-    function downloadOutletTypes(onSuccess, onError) {
-        setDlgMsg(R.download_outlet_types);
-        var url = baseURL + '/outlet/getoutlettypes';
-        log('Call service api: ' + url);
-        $http({
-            method: config.http_method,
-            url: url
-        }).then(function (resp) {
-            var data = resp.data;
-            if (data.Status == -1) { // error
-                onError(data.ErrorMessage);
-            } else {
-                insertOutletTypes(data.Items, onSuccess, onError);
-            }
-        }, handleHttpError);
+    function downloadOutletTypes(downloadOptions, onSuccess, onError) {
+        if (downloadOptions.downloadOutletTypes) {
+            setDlgMsg(R.download_outlet_types);
+            var url = baseURL + '/outlet/getoutlettypes';
+            log('Call service api: ' + url);
+            $http({
+                method: config.http_method,
+                url: url
+            }).then(function (resp) {
+                var data = resp.data;
+                if (data.Status == -1) { // error
+                    onError(data.ErrorMessage);
+                } else {
+                    insertOutletTypes(data.Items, onSuccess, onError);
+                }
+            }, handleHttpError);
+        } else {
+            onSuccess();
+        }
     }
 
+    function downloadOutletMapIcons(downloadOptions, onSuccess, onError) {
+        if (downloadOptions.downloadMapIcons) {
+            setDlgMsg(R.download_map_icons);
+            var url = baseURL + '/config/downloadmapicons';
+            log('Call service api: ' + url);
+            $http({
+                method: config.http_method,
+                url: url
+            }).then(function (resp) {
+                var data = resp.data;
+                if (data.Status == -1) { // error
+                    onError(data.ErrorMessage);
+                } else {
+                    config.map_salesman_new_outlet = data.salesmanNewOutletMapIcon;
+                    config.map_auditor_new_outlet = data.auditorNewOutletMapIcon;
+                    config.map_agency_new_outlet = data.agencyNewOutletMapIcon;
+                    onSuccess();
+                }
+            }, handleHttpError);
+        } else {
+            onSuccess();
+        }
+    }
 };

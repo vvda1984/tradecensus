@@ -53,7 +53,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     $scope.viewOutletPanel = false;
     $scope.currentPage = 0;
     $scope.pageSize = config.page_size;
-    
+    $scope.hotlines = config.hotlines;
 
     for (var i = 0; i < dprovinces.length; i++) {
         if (dprovinces[i].id == $scope.config.province_id) {
@@ -442,7 +442,9 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         showDlg(R.label_validating, R.please_wait);
         loadImagesIfNeed(outlet, function () {
             hideDlg();
-            if (isEmpty(outlet.StringImage1) && isEmpty(outlet.StringImage2) && isEmpty(outlet.StringImage3)) {
+            if (isEmpty(outlet.StringImage1) && isEmpty(outlet.StringImage2) && isEmpty(outlet.StringImage3) &&
+                //isEmpty(outlet.StringImage4) && // ignore selfie image
+                isEmpty(outlet.StringImage5) && isEmpty(outlet.StringImage6)) {
                 showValidationErr(R.need_to_capture);
             }
             else
@@ -824,71 +826,86 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 
     //*************************************************************************
     function addNewOutlet() {
-        var provinceId = 0;
-        if (addressModel.province) {
-            provinceId = addressModel.province.ID;
-        }
-        else {
-            var provId = $scope.config.province_id;
-            for (var i = 0; i < provinces.length; i++) {
-                if (provinces[i].id == $scope.config.province_id) {
-                    provinceId = provinces[i].referenceGeoID;
-                    break;
-                }
-            }
-        }
-
-        if (networkReady()) {
-            if (addressModel.districtArr.length == 0 && provinceId > 0) {
-                //var url = baseURL + '/border/getsubbordersbyparentname/' + addressModel.province;
-                var url = baseURL + '/border/getsubborders/' + provinceId.toString();
-                log('Call service api: ' + url);
-                //tcutils.messageBox.loading(R.loading, R.please_wait);
-                $http({
-                    method: config.http_method,
-                    url: url
-                }).then(function (resp) {
-                    //tcutils.messageBox.hide();
-                    try {
-                        var data = resp.data;
-                        if (data.Status == -1) { // error
-                            tcutils.messageBox.error(data.ErrorMessage);
-                        } else {
-                            addressModel.districtArr = data.Items;
-                            loadWardIfNot(function () {
-                                tryCreateNewOutlet(curlat, curlng,
-                                    '',
-                                    addressModel.ward ? addressModel.ward.Name : '',
-                                    addressModel.district ? addressModel.district.Name : '',
-                                    '');
-                            });
-                        }
-                        //tryCreateNewOutlet(curlat, curlng, '', '', '', '');
-                    } catch (err) {
-                        tcutils.messageBox.error(err.message);
-                        //tryCreateNewOutlet(curlat, curlng, '', '', '', '');
-                    }
-                }, function (err) {
-                    log(err);
-                    //tcutils.messageBox.hide();
-                    tryCreateNewOutlet(curlat, curlng, '', '', '', '');
-                    //tcutils.messageBox.error(data.ErrorMessage);
-                });
+        var selfieImage = null;
+        var addOutletFunc = function () {
+            var provinceId = 0;
+            if (addressModel.province) {
+                provinceId = addressModel.province.ID;
             }
             else {
-                loadWardIfNot(function () {
-                    tryCreateNewOutlet(curlat, curlng,
-                                    '',
-                                    addressModel.ward ? addressModel.ward.Name : '',
-                                    addressModel.district ? addressModel.district.Name : '',
-                                    '');
+                var provId = $scope.config.province_id;
+                for (var i = 0; i < provinces.length; i++) {
+                    if (provinces[i].id == $scope.config.province_id) {
+                        provinceId = provinces[i].referenceGeoID;
+                        break;
+                    }
+                }
+            }
+
+            if (networkReady()) {
+                if (addressModel.districtArr.length == 0 && provinceId > 0) {
+                    //var url = baseURL + '/border/getsubbordersbyparentname/' + addressModel.province;
+                    var url = baseURL + '/border/getsubborders/' + provinceId.toString();
+                    log('Call service api: ' + url);
+                    //tcutils.messageBox.loading(R.loading, R.please_wait);
+                    $http({
+                        method: config.http_method,
+                        url: url
+                    }).then(function (resp) {
+                        //tcutils.messageBox.hide();
+                        try {
+                            var data = resp.data;
+                            if (data.Status == -1) { // error
+                                tcutils.messageBox.error(data.ErrorMessage);
+                            } else {
+                                addressModel.districtArr = data.Items;
+                                loadWardIfNot(function () {
+                                    tryCreateNewOutlet(curlat, curlng,
+                                        '',
+                                        addressModel.ward ? addressModel.ward.Name : '',
+                                        addressModel.district ? addressModel.district.Name : '',
+                                        '', 
+                                        selfieImage);
+                                });
+                            }                           
+                        } catch (err) {
+                            tcutils.messageBox.error(err.message);                          
+                        }
+                    }, function (err) {
+                        log(err);
+                        tryCreateNewOutlet(curlat, curlng, '', '', '', '', selfieImage);                      
+                    });
+                }
+                else {
+                    loadWardIfNot(function () {
+                        tryCreateNewOutlet(curlat, curlng,
+                                        '',
+                                        addressModel.ward ? addressModel.ward.Name : '',
+                                        addressModel.district ? addressModel.district.Name : '',
+                                        '',
+                                        selfieImage);
+                    });
+                }
+            } else {
+                addressModel.getDistricts(provinceId, function (districts) {
+                    addressModel.districtArr = districts;
+                    tryCreateNewOutlet(curlat, curlng, '', '', '', '', selfieImage);
                 });
             }
+        };
+
+        if (!config.enable_check_in) {
+            addOutletFunc();
         } else {
-            addressModel.getDistricts(provinceId, function (districts) {
-                addressModel.districtArr = districts;
-                tryCreateNewOutlet(curlat, curlng, '', '', '', '');
-            });
+            captureImage(function (imageURI) {
+                getFileContentAsBase64(imageURI, function (content) {
+                    selfieImage = content.replace('data:image/jpeg;base64,', '');
+                    addOutletFunc();
+                })
+            }, function (err) {
+                log(err);
+                showError('Cannot create new outlet because without selfie image');
+            }, true); // front camera
         }
     }
 
@@ -920,7 +937,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     }
 
     //*************************************************************************
-    function tryCreateNewOutlet(lat, lng, address2, ward, district, province) {
+    function tryCreateNewOutlet(lat, lng, address2, ward, district, province, selfieImage) {
         tryOpenDialog(function () {
             log($scope.outletTypes);
             $scope.outlet = newOutlet(province);
@@ -928,6 +945,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             $scope.outlet.Ward = ward;
             $scope.outlet.District = district;
             $scope.isNewOutlet = true;
+            $scope.outlet.StringImage4 = selfieImage;
             hideDlg();
             $mdDialog.show({
                 scope: $scope.$new(),
@@ -1431,10 +1449,16 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                         var img1 = $scope.outlet.StringImage1;
                         var img2 = $scope.outlet.StringImage2;
                         var img3 = $scope.outlet.StringImage3;
+                        var img4 = $scope.outlet.StringImage4;
+                        var img5 = $scope.outlet.StringImage5;
+                        var img6 = $scope.outlet.StringImage6;
 
                         orgOutlet.StringImage1 = img1;
                         orgOutlet.StringImage2 = img2;
                         orgOutlet.StringImage3 = img3;
+                        orgOutlet.StringImage4 = img4;
+                        orgOutlet.StringImage5 = img5;
+                        orgOutlet.StringImage6 = img6;
 
                         orgOutlet.TotalVolume = $scope.outlet.TotalVolume;
                         orgOutlet.Tracking = $scope.outlet.Tracking;
@@ -1444,15 +1468,24 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                         orgOutlet.modifiedImage1 = $scope.outlet.modifiedImage1;
                         orgOutlet.modifiedImage2 = $scope.outlet.modifiedImage2;
                         orgOutlet.modifiedImage3 = $scope.outlet.modifiedImage3;
+                        orgOutlet.modifiedImage4 = $scope.outlet.modifiedImage4;
+                        orgOutlet.modifiedImage5 = $scope.outlet.modifiedImage5;
+                        orgOutlet.modifiedImage6 = $scope.outlet.modifiedImage6;
                     } else {
                         $scope.outlet.AuditStatus = StatusRevert;
                         orgOutlet.AuditStatus = $scope.outlet.AuditStatus;
                         orgOutlet.StringImage1 = '';
                         orgOutlet.StringImage2 = '';
                         orgOutlet.StringImage3 = '';
+                        orgOutlet.StringImage4 = '';
+                        orgOutlet.StringImage5 = '';
+                        orgOutlet.StringImage6 = '';
                         orgOutlet.modifiedImage1 = false;
                         orgOutlet.modifiedImage2 = false;
                         orgOutlet.modifiedImage3 = false;
+                        orgOutlet.modifiedImage4 = false;
+                        orgOutlet.modifiedImage5 = false;
+                        orgOutlet.modifiedImage6 = false;
                     }
                     showDlg(R.saving_outlet, R.please_wait);
                     if ($scope.outlet.isDeleted) {
@@ -1519,7 +1552,10 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 
     //*************************************************************************
     function loadImagesIfNeed(outlet, callback) {
-        if (isEmpty(outlet.StringImage1) && isEmpty(outlet.StringImage2) && isEmpty(outlet.StringImage3) && networkReady()) {
+        if (isEmpty(outlet.StringImage1) && isEmpty(outlet.StringImage2) && isEmpty(outlet.StringImage3) &&
+            isEmpty(outlet.StringImage4) && isEmpty(outlet.StringImage5) && isEmpty(outlet.StringImage6) &&
+            networkReady()) {
+
             showDlg(R.load_images, R.loading);
             try {
                 var url = baseURL + '/outlet/getimages/' + userID + '/' + pass + '/' + outlet.ID.toString();
@@ -1538,6 +1574,9 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                             outlet.StringImage1 = data.Image1;
                             outlet.StringImage2 = data.Image2;
                             outlet.StringImage3 = data.Image3;
+                            outlet.StringImage4 = data.Image4;
+                            outlet.StringImage5 = data.Image5;
+                            outlet.StringImage6 = data.Image6;
                             updateOutletImageDB($scope.config.tbl_outlet, outlet, callback);
                         }
                     } catch (err) {
@@ -2375,7 +2414,22 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         });
     }
 
-    //*************************************************************************           
+    //*************************************************************************       
+
+    //*************************************************************************       
+
+    $scope.makePhoneCall = function (hotline) {
+        log(hotline);
+        try {
+            window.PhoneCaller.call(hotline.phone, function () { }, function (error) { });
+        } catch (e) {
+            log(e);
+        }
+    };
+
+    //*************************************************************************       
+
+
     function start() {
         showDlg(R.loading, R.please_wait);
         loadMapApi();

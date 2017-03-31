@@ -49,10 +49,25 @@
         catch (err) {
             log(err);
         }
+
+        try{         
+            rootdetection.isDeviceRooted(function (result) {
+                console.log(result);
+                if (result === 1) {
+                    console.log('Device is rooted.');
+                    navigator.app.exitApp();
+                }                
+            }, function (error) {
+                console.error(error);
+            });
+        }
+        catch (err) {
+            console.log(err);
+        }
     }
 
-    $(document).ready(function () { onDeviceReady(); }); // web
-    //document.addEventListener("deviceready", onDeviceReady, false); // mobile
+    //$(document).ready(function () { onDeviceReady(); }); // web
+    document.addEventListener("deviceready", onDeviceReady, false); // mobile
 })(window);
 
 var resetDB = false;                // force reset database - testing only
@@ -156,9 +171,9 @@ function newConfig() {
     //port: '33334',//'3001',
     //var testBuild = false;
     var c = {
-        debug_build: true,
-        enable_devmode: true,
-        enable_logview : false,
+        debug_build: false,
+        enable_devmode: false,
+        enable_logview: false,       
         page_size: 20,
         cluster_size: 50,
         cluster_max_zoom: 15.5,
@@ -206,6 +221,12 @@ function newConfig() {
         journal_weight: 3,          //
         journal_nonstop: 1,         //
         journal_daily_mode: true,   // 
+        hotlines: [],               // hotline
+        enable_check_in: 1,         //
+        map_icons_version: 0,       //
+        map_salesman_new_outlet: '',
+        map_agency_new_outlet: '',
+        map_auditor_new_outlet: '',
 
         tbl_area_ver: '0',
         tbl_outlettype_ver: '0',
@@ -215,8 +236,8 @@ function newConfig() {
         tbl_outlet: 'uo',
         tbl_downloadProvince: 'udp',
         tbl_journal: 'jr',
-        version: '1.2p.16306.11',
-        versionNum: 7,
+        version: '1.2.17090.12',
+        versionNum: 8,
     };
     if (isHttp) {
         c.protocol = 'http';
@@ -460,6 +481,18 @@ function loadSettings(tx, callback) {
                         config.journal_weight = parseInt(value);
                     } else if (name == 'journal_nonstop') {
                         config.journal_nonstop = parseInt(value);
+                    } else if (name == 'enable_check_in') {
+                        config.enable_check_in = parseInt(value);
+                    } else if (name == 'hotlines') {
+                        config.hotlines = JSON.parse(value);
+                    } else if (name == 'map_icons_version') {
+                        config.map_icons_version = parseInt(value);
+                    } else if (name == 'map_salesman_new_outlet') {
+                        config.map_salesman_new_outlet = value;
+                    } else if (name == 'map_agency_new_outlet') {
+                        config.map_agency_new_outlet = value;
+                    } else if (name == 'map_auditor_new_outlet') {
+                        config.map_auditor_new_outlet = value;
                     }
                 }
             }

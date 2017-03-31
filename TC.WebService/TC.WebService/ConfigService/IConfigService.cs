@@ -9,6 +9,9 @@ namespace TradeCensus
         ConfigResponse GetConfig();
 
         [OperationContract]
+        DownloadMapIconsResponse DownloadMapIcons();
+
+        [OperationContract]
         CheckVersionResponse GetVersion(string version);
     }
 }

@@ -18,7 +18,7 @@
                     onError(dberr.message);
                 });
             }
-
+           
             log("ensure table [user] exist");
             tx.executeSql('CREATE TABLE IF NOT EXISTS [user1] ([ID] integer PRIMARY KEY NOT NULL, [UserName] text, [FirstName] text, [LastName] text, [IsTerminate] text NOT NULL,	[HasAuditRole] text NOT NULL COLLATE NOCASE, [PosID] text NOT NULL COLLATE NOCASE, [ZoneID] text NOT NULL COLLATE NOCASE, [AreaID] text NOT NULL COLLATE NOCASE, [ProvinceID] text NOT NULL COLLATE NOCASE, [Email] text, [EmailTo] text, [HouseNo] text, [Street] text, [District] text, [HomeAddress] text, [WorkAddress] text, [Phone] text, [IsDSM] text NOT NULL, [OfflinePassword] text NOT NULL)',
                 [],
@@ -63,8 +63,7 @@
                 function (tx1, dberr) {
                     onError(dberr.message);
                 });
-
-        
+           
             addressModel.initialize(db, tx);
             onSuccess(tx);
 
@@ -218,6 +217,12 @@ function insertSettingDB(config, onSuccess, onError) {
 		insertSetting(tx, "cluster_size", config.cluster_size);
 		insertSetting(tx, "cluster_max_zoom", config.cluster_max_zoom);
 		insertSetting(tx, "max_oulet_download", config.max_oulet_download.toString());
+		insertSetting(tx, "enable_check_in", config.enable_check_in.toString());
+		insertSetting(tx, "hotlines", JSON.stringify(config.hotlines));
+		insertSetting(tx, "map_icons_version", config.map_icons_version.toString());
+		insertSetting(tx, "map_salesman_new_outlet", config.map_salesman_new_outlet);
+		insertSetting(tx, "map_agency_new_outlet", config.map_agency_new_outlet);
+		insertSetting(tx, "map_auditor_new_outlet", config.map_auditor_new_outlet);      
         onSuccess();
     }, onError);
 }
@@ -227,7 +232,12 @@ function insertSetting(tx, name, value) {
     sql = sql.concat("'", name, "', ");
     sql = sql.concat("'", value, "')");
     logSqlCommand(sql);
-    tx.executeSql(sql, [], function () { }, function (err) { log(err);});
+    tx.executeSql(sql, [],
+        function (tx1) { log("Insert settings: " + name + "=" + value); },
+        function (tx1, err) {
+            console.error(err);
+            completed(err)
+        });
 }
 
 function initializeProvinces(tx1, onSuccess, onError) {
@@ -426,15 +436,23 @@ function ensureUserOutletDBExist(isReset, outletSyncTbl, outletTbl, provinceDown
                         '[PStatus] int,' +
 	                    '[PLastModTS] int,' +
                         '[PMarked] bit,' +
-	                    '[Ward] text NULL)');
+	                    '[Ward] text NULL,' +                        
+                        '[StringImage4] text,' +
+	                    '[StringImage5] text,' +
+	                    '[StringImage6] text,' + 
+                        '[AmendByRole] int NULL' + ')');
         logSqlCommand(sql);
         tx.executeSql(sql);
 
         if (config.versionNum <= 4) {
-           tx.executeSql('ALTER TABLE ' + outletTbl + ' ADD COLUMN [Ward] text NULL',
-           [],
-           function (tx1) { },
-           function (tx1, dberr) { });
+            tx.executeSql('ALTER TABLE ' + outletTbl + ' ADD COLUMN [Ward] text NULL', [], function (tx1) { }, function (tx1, dberr) { });
+        }
+
+        if (config.versionNum < 8) {
+            tx.executeSql('ALTER TABLE ' + outletTbl + ' ADD COLUMN [StringImage4] text NULL', [], function (tx1) { }, function (tx1, dberr) { });
+            tx.executeSql('ALTER TABLE ' + outletTbl + ' ADD COLUMN [StringImage5] text NULL', [], function (tx1) { }, function (tx1, dberr) { });
+            tx.executeSql('ALTER TABLE ' + outletTbl + ' ADD COLUMN [StringImage6] text NULL', [], function (tx1) { }, function (tx1, dberr) { });
+            tx.executeSql('ALTER TABLE ' + outletTbl + ' ADD COLUMN [AmendByRole] int NULL', [], function (tx1) { }, function (tx1, dberr) { });
         }
         
         journals.tableName = journalTbl;
@@ -717,9 +735,13 @@ function buildOutletInsertSql(outletTbl, outlet) {
     sql = sql.concat('0,');                                 //'[PIsMod] bit,' ,
     sql = sql.concat('0,');                                 //'[PIsAud] bit,' ,
     sql = sql.concat('1,');                                 //'[PSynced] bit,' ,
-    sql = sql.concat('1,');                                  //'[PStatus] int,' +
+    sql = sql.concat('1,');                                 //'[PStatus] int,' +
     sql = sql.concat(n.toString(), ', ');                   //'[PLastModTS] int,' ,
-    sql = sql.concat('0)');                                 //'[PMarked] bit)');
+    sql = sql.concat('0,', ', ');                           //'[PMarked] bit)');
+    sql = sql.concat("'", outlet.StringImage4, "', ");      //'[StringImage4] text,' ,
+    sql = sql.concat("'", outlet.StringImage5, "', ");      //'[StringImage5] text,' ,
+    sql = sql.concat("'", outlet.StringImage6, "',");       //'[StringImage6] text,' ,
+    sql = sql.concat(outlet.AmendByRole, ")");              //'[AmendByRole] text,' ,
     return sql;
 }
 
@@ -776,8 +798,13 @@ function addNewOutlet(tx, outletTbl, outlet, isAdd, isMod, isAud, synced, marked
     sql = sql.concat(synced ? '1' : '0', ', ');             //'[PSynced] bit,' ,
     sql = sql.concat(outlet.PStatus.toString(), ', ');      //'[PStatus] int,' +
     sql = sql.concat(n.toString(), ', ');                   //'[PLastModTS] int,' ,
-    sql = sql.concat(marked ? '1' : '0', ', ');                   //'[PMarked] bit,' ,
-    sql = sql.concat('"', quoteText(outlet.Ward), '")');              //'[Ward] text)');
+    sql = sql.concat(marked ? '1' : '0', ', ');             //'[PMarked] bit,' ,
+    sql = sql.concat('"', quoteText(outlet.Ward), '",');    //'[Ward] text)');
+    sql = sql.concat('"', outlet.StringImage4, '",');       //'[StringImage4] text,' ,
+    sql = sql.concat('"', outlet.StringImage5, '",');       //'[StringImage5] text,' ,
+    sql = sql.concat('"', outlet.StringImage6, '",');       //'[StringImage6] text,' ,
+    sql = sql.concat(outlet.AmendByRole, ')');              //'[AmendByRole] text,' ,
+    
     logSqlCommand(sql);
     tx.executeSql(sql, [],
         function (tx1) {
@@ -861,6 +888,30 @@ function updateOutlet(tx, outletTbl, outlet, state, synced, updateImage) {
             }
         } else
             sql = sql.concat('StringImage3="", ');
+
+        if (!isEmpty(outlet.StringImage4)) {
+            if (outlet.StringImage4.toUpperCase().indexOf('IMAGES') > -1) {
+            } else {
+                sql = sql.concat('StringImage4="', outlet.StringImage4, '", ');
+            }
+        } else
+            sql = sql.concat('StringImage4="",');
+
+        if (!isEmpty(outlet.StringImage5)) {
+            if (outlet.StringImage5.toUpperCase().indexOf('IMAGES') > -1) {
+            } else {
+                sql = sql.concat('StringImage5="', outlet.StringImage5, '", ');
+            }
+        } else
+            sql = sql.concat('StringImage5="",');
+
+        if (!isEmpty(outlet.StringImage6)) {
+            if (outlet.StringImage6.toUpperCase().indexOf('IMAGES') > -1) {
+            } else {
+                sql = sql.concat('StringImage6="', outlet.StringImage6, '", ');
+            }
+        } else
+            sql = sql.concat('StringImage6="", ');
     }
 
     sql = sql.concat('OutletSource=', outlet.OutletSource, ', ');
@@ -872,6 +923,7 @@ function updateOutlet(tx, outletTbl, outlet, state, synced, updateImage) {
     sql = sql.concat('PStatus=', outlet.PStatus.toString() + ', ');
     sql = sql.concat('PLastModTS=', n.toString(), ', ');
     sql = sql.concat('PMarked=', marked ? '1' : '0');
+
     sql = sql.concat(' WHERE PRowID like \'', outlet.PRowID, '\'');
     /*
     if (outlet.PRowID != null && outlet.PRowID.length > 0) {
@@ -898,6 +950,9 @@ function updateOutletImageDB(outletTbl, outlet, callback) {
         sql = sql.concat('StringImage1="', outlet.StringImage1, '", ');
         sql = sql.concat('StringImage2="', outlet.StringImage2, '", ');
         sql = sql.concat('StringImage3="', outlet.StringImage3, '" ');
+        sql = sql.concat('StringImage4="', outlet.StringImage4, '" ');
+        sql = sql.concat('StringImage5="', outlet.StringImage5, '" ');
+        sql = sql.concat('StringImage6="', outlet.StringImage6, '" ');
         sql = sql.concat(' WHERE ID =', outlet.ID.toString());
 
         logSqlCommand(sql);
@@ -1159,6 +1214,15 @@ function insertOutletImages(userID, outlet, onSuccess, onError) {
             }
             if (outlet.modifiedImage3 && !isEmpty(outlet.StringImage3)) {
                 uploadItems.push(insertImageUploadingInfo(tx, userID, outlet.ID, 3, outlet.StringImage3, now));                
+            }
+            if (outlet.modifiedImage4 && !isEmpty(outlet.StringImage4)) {
+                uploadItems.push(insertImageUploadingInfo(tx, userID, outlet.ID, 4, outlet.StringImage4, now));
+            }
+            if (outlet.modifiedImage5 && !isEmpty(outlet.StringImage5)) {
+                uploadItems.push(insertImageUploadingInfo(tx, userID, outlet.ID, 5, outlet.StringImage5, now));
+            }
+            if (outlet.modifiedImage6 && !isEmpty(outlet.StringImage6)) {
+                uploadItems.push(insertImageUploadingInfo(tx, userID, outlet.ID, 6, outlet.StringImage6, now));
             }
             onSuccess(uploadItems);
         }catch(err){

@@ -28,6 +28,26 @@ namespace TradeCensus
             }
         }
 
+        [WebInvoke(Method = "POST", UriTemplate = "config/downloadmapicons", ResponseFormat = WebMessageFormat.Json)]
+        public DownloadMapIconsResponse DownloadMapIcons()
+        {
+            _logger.Debug("Receive download map icons request");
+            try
+            {
+                IConfigService service = DependencyResolver.Resolve<IConfigService>();
+                return service.DownloadMapIcons();
+            }
+            catch (Exception ex)
+            {
+                _logger.Warn(ex, "Cannot download map icons request");
+                return new DownloadMapIconsResponse
+                {
+                    Status = Constants.ErrorCode,
+                    ErrorMessage = "Service internal error",
+                };
+            }
+        }
+
         [WebInvoke(Method = "POST", UriTemplate = "config/getverion/{version}", ResponseFormat = WebMessageFormat.Json)]
         public CheckVersionResponse GetVersion(string version)
         {

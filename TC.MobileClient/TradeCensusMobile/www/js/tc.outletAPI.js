@@ -83,6 +83,9 @@ function newOutlet(provinceName) {
         StringImage1: "",
         StringImage2: "",
         StringImage3: "",
+        StringImage4: "",
+        StringImage5: "",
+        StringImage6: "",
         TotalVolume: 0,
         Tracking: 0,
         VBLVolume: 0,
@@ -94,7 +97,8 @@ function newOutlet(provinceName) {
         auditResult: '',
         viewAuditStatus : false,
         marker: null,
-        PStatus : 0
+        PStatus: 0,
+        AmendByRole: user.role
     };
 }
 
@@ -349,6 +353,12 @@ function isModifed(orgOutlet, outlet) {
     if (orgOutlet.StringImage2 !== outlet.StringImage2) return true;
 
     if (orgOutlet.StringImage3 !== outlet.StringImage3) return true;
+
+    if (orgOutlet.StringImage4 !== outlet.StringImage4) return true;
+
+    if (orgOutlet.StringImage5 !== outlet.StringImage5) return true;
+
+    if (orgOutlet.StringImage6 !== outlet.StringImage6) return true;
 
     if (orgOutlet.IsTracked !== outlet.IsTracked) return true;
 

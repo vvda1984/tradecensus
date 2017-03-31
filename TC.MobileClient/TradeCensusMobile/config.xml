@@ -124,4 +124,6 @@
   <plugin name="cordova-plugin-locationservices" version="2.1.0" src="https://github.com/louisbl/cordova-plugin-locationservices" />
   <plugin name="cordova-plugin-background-mode" version="0.6.6-dev" src="https://github.com/katzer/cordova-plugin-background-mode" />
   <preference name="target-device" value="tablet" />
+  <plugin name="cordova-plugin-root-detection" version="0.1.1" src="https://github.com/trykovyura/cordova-plugin-root-detection.git" />
+  <plugin name="cordova-plugin-phonecaller" version="0.0.2" src="https://github.com/codebakery/cordova-plugin-phonecaller" />
 </widget>

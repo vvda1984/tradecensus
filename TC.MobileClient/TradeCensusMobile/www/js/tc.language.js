@@ -67,6 +67,7 @@ function language_en() {
         download_settings: 'Download Settings',        
         download_province: 'Download Provinces',
         download_outlet_types: 'DOWNLOAD OUTLET TYPES',
+        download_map_icons: 'DOWNLOAD MAP ICONS',
         check_update: 'Check updates',
         title_new_version: 'NEW VERSION',
         distance: 'Distance',

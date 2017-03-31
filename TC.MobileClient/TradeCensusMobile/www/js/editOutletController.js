@@ -12,6 +12,7 @@ function editOutletController($scope, $mdDialog) {
     $scope.isAuditor = user.hasAuditRole;
     $scope.isSaler = !user.hasAuditRole;
     $scope.outlet.isChanged = false;
+    $scope.showImage4 = config.enable_check_in > 0;
 
     var title = $scope.outlet.Name;
     if ($scope.outlet.ID != 60000000) {
@@ -123,117 +124,182 @@ function editOutletController($scope, $mdDialog) {
     $scope.outlet.modifiedImage1 = false;
     $scope.outlet.modifiedImage2 = false;
     $scope.outlet.modifiedImage3 = false;
+    $scope.outlet.modifiedImage4 = false;
+    $scope.outlet.modifiedImage5 = false;
+    $scope.outlet.modifiedImage6 = false;
+
     $scope.isDeleted = false;
 
     $scope.image1URL = getImageURL($scope.outlet.StringImage1);
     $scope.image2URL = getImageURL($scope.outlet.StringImage2);
     $scope.image3URL = getImageURL($scope.outlet.StringImage3);
+    $scope.image4URL = getImageURL($scope.outlet.StringImage4);
+    $scope.image5URL = getImageURL($scope.outlet.StringImage5);
+    $scope.image6URL = getImageURL($scope.outlet.StringImage6);
 
     var orgOutlet = cloneObj($scope.outlet);
 
     $scope.capture = function (i) {
+        $scope.outlet.isChanged = true;
         if (i == 1) {
-            //if (!allowCapture) return;
+            var saveImg1Func = function (imageURI) {
+                $scope.outlet.StringImage1 = imageURI;
+                $scope.outlet.modifiedImage1 = true;
+                getFileContentAsBase64(imageURI, function (content) {
+                    $scope.outlet.StringImage1 = content.replace('data:image/jpeg;base64,', '');
+                    $scope.image1URL = imageURI;
+                    var image = document.getElementById('outletImg1');
+                    image.setAttribute('src', imageURI);
+                    image.focus();
+                })
+            };
+
             if (!isEmpty($scope.outlet.StringImage1)) {
-                openImgViewer($scope.outlet.Name, !allowCapture, $scope.image1URL, function (imageURI) {
+                openImgViewer($scope.outlet.Name, false, $scope.image1URL, function (imageURI) {
                     log('Update imageURI 1: ' + imageURI);
                     if (imageURI != null) {
-                        $scope.outlet.StringImage1 = imageURI;
-                        $scope.outlet.modifiedImage1 = true;
-                        getFileContentAsBase64(imageURI, function (content) {
-                            $scope.outlet.StringImage1 = content.replace('data:image/jpeg;base64,', '');
-                            $scope.image1URL = imageURI;
-                            var image = document.getElementById('outletImg1');
-                            image.setAttribute('src', imageURI);
-                            image.focus();
-                        })
+                        saveImg1Func(imageURI);
                     }
+                });
+            } else {
+                if (!allowCapture) return;
+                captureImage(function (imageURI) {
+                    saveImg1Func(imageURI);
+                }, function (err) {
                 });
             }
         } else if (i == 2) {
-            //if (!allowCapture) return;
+            var saveImg2Func = function (imageURI) {
+                $scope.outlet.StringImage2 = imageURI;
+                $scope.outlet.modifiedImage2 = true;
+                getFileContentAsBase64(imageURI, function (content) {
+                    $scope.outlet.StringImage2 = content.replace('data:image/jpeg;base64,', '');
+                    $scope.image2URL = imageURI;
+                    var image = document.getElementById('outletImg2');
+                    image.setAttribute('src', imageURI);
+                    image.focus();
+                })
+            };
+
             if (!isEmpty($scope.outlet.StringImage2)) {
-                openImgViewer($scope.outlet.Name, !allowCapture, $scope.image2URL, function (imageURI) {
+                openImgViewer($scope.outlet.Name, false, $scope.image2URL, function (imageURI) {
                     log('Update imageURI 2: ' + imageURI);
                     if (imageURI != null) {
-                        $scope.outlet.StringImage2 = imageURI;
-                        $scope.outlet.modifiedImage2 = true;
-                        getFileContentAsBase64(imageURI, function (content) {
-                            $scope.outlet.StringImage2 = content.replace('data:image/jpeg;base64,', '');
-                            $scope.image2URL = imageURI;
-                            var image = document.getElementById('outletImg2');
-                            image.setAttribute('src', imageURI);
-                            image.focus();
-                        })
+                        saveImg2Func(imageURI);
                     }
                 });
-            }                        
+            } else {
+                if (!allowCapture) return;
+                captureImage(function (imageURI) {
+                    saveImg2Func(imageURI);
+                }, function (err) {
+                });
+            }
         } else if (i == 3) {
-            //if (!allowCapture) return;
+            var saveImg3Func = function (imageURI) {
+                $scope.outlet.StringImage3 = imageURI;
+                $scope.outlet.modifiedImage3 = true;
+                getFileContentAsBase64(imageURI, function (content) {
+                    $scope.outlet.StringImage3 = content.replace('data:image/jpeg;base64,', '');
+                    $scope.image3URL = imageURI;
+                    var image = document.getElementById('outletImg3');
+                    image.setAttribute('src', imageURI);
+                    image.focus();
+                })
+            };
+
             if (!isEmpty($scope.outlet.StringImage3)) {
-                openImgViewer($scope.outlet.Name, !allowCapture, $scope.image3URL, function (imageURI) {
+                openImgViewer($scope.outlet.Name, false, $scope.image3URL, function (imageURI) {
                     log('Update imageURI 3: ' + imageURI);
                     if (imageURI != null) {
-                        $scope.outlet.StringImage3 = imageURI;
-                        $scope.outlet.modifiedImage3 = true;
-                        getFileContentAsBase64(imageURI, function (content) {
-                            $scope.outlet.StringImage3 = content.replace('data:image/jpeg;base64,', '');
-                            $scope.image3URL = imageURI;
-                            var image = document.getElementById('outletImg3');
-                            image.setAttribute('src', imageURI);
-                            image.focus();
-                        })
+                        saveImg3Func(imageURI);
+                    }
+                });
+            } else {
+                if (!allowCapture) return;
+                captureImage(function (imageURI) {
+                    saveImg3Func(imageURI);
+                }, function (err) {
+                });
+            }
+        } else if (i == 4) {
+            var saveImg4Func = function (imageURI) {
+                $scope.outlet.StringImage4 = imageURI;
+                $scope.outlet.modifiedImage4 = true;
+                getFileContentAsBase64(imageURI, function (content) {
+                    $scope.outlet.StringImage4 = content.replace('data:image/jpeg;base64,', '');
+                    $scope.image4URL = imageURI;
+                    var image = document.getElementById('outletImg4');
+                    image.setAttribute('src', imageURI);
+                    image.focus();
+                })
+            };
+
+            if (!isEmpty($scope.outlet.StringImage4)) {
+                openImgViewer($scope.outlet.Name, true, $scope.image4URL, function (imageURI) {
+                    log('Update imageURI 4: ' + imageURI);
+                    if (imageURI != null) {
+                        saveImg4Func(imageURI);
                     }
                 });
             }
-        } else {
-            captureImage(function (imageURI) {
-                if (isEmpty($scope.outlet.StringImage1)) {
-                    $scope.outlet.StringImage1 = imageURI;
-                    $scope.outlet.modifiedImage1 = true;
-                    getFileContentAsBase64(imageURI, function (content) {
-                        $scope.outlet.StringImage1 = content.replace('data:image/jpeg;base64,', '');
-                        $scope.image1URL = imageURI;
-                        var image = document.getElementById('outletImg1');
-                        image.setAttribute('src', imageURI);
-                        image.focus();
-                    })
-                    //$("#img").attr('src', imageURI);
-                } else if (isEmpty($scope.outlet.StringImage2)) {
-                    $scope.outlet.StringImage2 = imageURI;
-                    $scope.outlet.modifiedImage2 = true;
-                    getFileContentAsBase64(imageURI, function (content) {
-                        $scope.outlet.StringImage2 = content.replace('data:image/jpeg;base64,', '');
-                        $scope.image2URL = imageURI;
-                        var image = document.getElementById('outletImg2');
-                        image.setAttribute('src', imageURI);
-                        image.focus();
-                    })
-                } else if (isEmpty($scope.outlet.StringImage3)) {
-                    $scope.outlet.StringImage3 = imageURI;
-                    $scope.outlet.modifiedImage3 = true;
-                    getFileContentAsBase64(imageURI, function (content) {
-                        $scope.outlet.StringImage3 = content.replace('data:image/jpeg;base64,', '');
-                        $scope.image3URL = imageURI;
-                        var image = document.getElementById('outletImg3');
-                        image.setAttribute('src', imageURI);
-                        image.focus();
-                    })
-                }
-                $scope.allowCapture = isEmpty($scope.outlet.StringImage1) ||
-                          isEmpty($scope.outlet.StringImage2) ||
-                          isEmpty($scope.outlet.StringImage3);
+        } else if (i == 5) {
+            var saveImg5Func = function (imageURI) {
+                $scope.outlet.StringImage5 = imageURI;
+                $scope.outlet.modifiedImage5 = true;
+                getFileContentAsBase64(imageURI, function (content) {
+                    $scope.outlet.StringImage5 = content.replace('data:image/jpeg;base64,', '');
+                    $scope.image5URL = imageURI;
+                    var image = document.getElementById('outletImg5');
+                    image.setAttribute('src', imageURI);
+                    image.focus();
+                })
+            };
 
-                //var image = document.getElementById('outletImg' + i.toString());
-                //image.src = imageURI;
-                //var image = document.getElementById('outletImg' + i);
-                //image.src = "data:image/jpeg;base64," + imageData;            
-            }, function (err) {
-                //showError(err);
-            });
+            if (!isEmpty($scope.outlet.StringImage5)) {
+                openImgViewer($scope.outlet.Name, false, $scope.image5URL, function (imageURI) {
+                    log('Update imageURI 5: ' + imageURI);
+                    if (imageURI != null) {
+                        saveImg5Func(imageURI);
+                    }
+                });
+            } else {
+                if (!allowCapture) return;
+                captureImage(function (imageURI) {
+                    saveImg5Func(imageURI);
+                }, function (err) {
+                });
+            }
+        } else if (i == 6) {
+            var saveImg6Func = function (imageURI) {
+                $scope.outlet.StringImage6 = imageURI;
+                $scope.outlet.modifiedImage6 = true;
+                getFileContentAsBase64(imageURI, function (content) {
+                    $scope.outlet.StringImage6 = content.replace('data:image/jpeg;base64,', '');
+                    $scope.image6URL = imageURI;
+                    var image = document.getElementById('outletImg6');
+                    image.setAttribute('src', imageURI);
+                    image.focus();
+                })
+            };
+
+            if (!isEmpty($scope.outlet.StringImage6)) {
+                openImgViewer($scope.outlet.Name, false, $scope.image6URL, function (imageURI) {
+                    log('Update imageURI 6: ' + imageURI);
+                    if (imageURI != null) {
+                        saveImg6Func(imageURI);
+                    }
+                });
+            } else {
+                if (!allowCapture) return;
+                captureImage(function (imageURI) {
+                    saveImg6Func(imageURI);
+                }, function (err) {
+                });
+            }
         }
 
-        $scope.outlet.isChanged = true;
+        
     }
 
     $scope.saveUpdate = function () {
@@ -321,28 +387,7 @@ function editOutletController($scope, $mdDialog) {
             $scope.outlet.isChanged = true;
 
             $mdDialog.hide(true);
-        });
-
-        //showDlg(R.get_current_location, R.please_wait);
-        //getCurPosition(false, function (lat, lng) {
-        //    hideDlg();
-        //    if (!validateRange(lat, lng)) return;
-
-        //    log('Change open/close status: ' + $scope.outlet.IsOpened);
-        //    setOpenCloseValue();
-        //    if ($scope.outlet.AuditStatus == StatusExitingPost)
-        //        $scope.outlet.AuditStatus = StatusExitingAccept;
-        //    else {
-        //        $scope.outlet.AuditStatus = StatusAuditAccept;
-        //    }
-        //    $scope.outlet.isChanged = true;
-
-        //    $mdDialog.hide(true);
-        //    try { $scope.$apply(); } catch (er) { }
-        //}, function () {
-        //    hideDlg();
-        //    showError(R.cannot_approve_or_deny);
-        //})
+        });       
     }
 
     $scope.deny = function () {
@@ -359,30 +404,7 @@ function editOutletController($scope, $mdDialog) {
 
             $scope.outlet.isChanged = true;
             $mdDialog.hide(true);
-        });
-
-        //showDlg(R.get_current_location, R.please_wait);
-        //getCurPosition(false, function (lat, lng) {
-        //    hideDlg();
-        //    if (!validateRange(lat, lng)) return;
-
-        //    log('Change open/close status: ' + $scope.outlet.IsOpened);
-        //    setOpenCloseValue();
-
-        //    if ($scope.outlet.AuditStatus == StatusExitingPost)
-        //        $scope.outlet.AuditStatus = StatusExitingDeny;
-        //    else {
-        //        $scope.outlet.AuditStatus = StatusAuditDeny;
-        //    }
-
-        //    $scope.outlet.isChanged = true;
-        //    $mdDialog.hide(true);
-        //    try { $scope.$apply(); } catch (er) { }
-
-        //}, function () {
-        //    hideDlg();
-        //    showError(R.cannot_approve_or_deny);
-        //})
+        });        
     }
 
     function validateRange(lat, lng) {
@@ -453,38 +475,11 @@ function editOutletController($scope, $mdDialog) {
 
         $scope.image3URL = getImageURL($scope.outlet.StringImage3);
 
-        //findOutlet(config.tbl_outlet, $scope.outlet.PRowID, function (localOut) {
-        //    if (localOut == null) {
-        //        if (!isEmpty($scope.outlet.StringImage1)) {
-        //            $scope.image1URL = getImageURL($scope.outlet.StringImage1);
-        //            log($scope.image1URL);
-        //        }
+        $scope.image4URL = getImageURL($scope.outlet.StringImage4);
 
-        //        if (!isEmpty($scope.outlet.StringImage2)) {
-        //            $scope.image2URL = getImageURL($scope.outlet.StringImage2);
-        //        }
+        $scope.image5URL = getImageURL($scope.outlet.StringImage5);
 
-        //        if (!isEmpty($scope.outlet.StringImage3)) {
-        //            $scope.image3URL = getImageURL($scope.outlet.StringImage3);
-        //        }
-        //    } else {
-        //        log('Found local outlet');
-        //        if (!isEmpty(localOut.StringImage1 !== '')) {
-        //            $scope.image1URL = getImageURL(localOut.StringImage1);
-        //            log($scope.image1URL);
-        //        }
-
-        //        if (!isEmpty(localOut.StringImage2 !== '')) {
-        //            $scope.image2URL = getImageURL(localOut.StringImage2);
-        //            log($scope.image2URL);
-        //        }
-
-        //        if (!isEmpty(localOut.StringImage3 !== '')) {
-        //            $scope.image3URL = getImageURL(localOut.StringImage3);
-        //            log($scope.image3URL);
-        //        }
-        //    }
-        //})
+        $scope.image6URL = getImageURL($scope.outlet.StringImage6);
     }
 
     function validate() {
@@ -501,7 +496,8 @@ function editOutletController($scope, $mdDialog) {
         if ($scope.outlet.IsOpened != orgIsOpen || $scope.outlet.IsTracked != orgTracked || $scope.outlet.Status == StatusEdit) {
             $scope.outlet.isChanged = true;
 
-            if (isEmpty($scope.outlet.StringImage1) && isEmpty($scope.outlet.StringImage2) && isEmpty($scope.outlet.StringImage3)) {
+            if (isEmpty($scope.outlet.StringImage1) && isEmpty($scope.outlet.StringImage2) && isEmpty($scope.outlet.StringImage3) &&
+                isEmpty($scope.outlet.StringImage5) && isEmpty($scope.outlet.StringImage6)) {
                 showValidationErr(R.need_to_capture);
                 return false;
             }

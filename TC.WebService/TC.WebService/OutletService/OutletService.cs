@@ -18,17 +18,6 @@ namespace TradeCensus
         
         const byte OActionDenyUpdate = 17;
 
-        private string ImagesPath
-        {
-            get
-            {
-                string path = AppDomain.CurrentDomain.BaseDirectory;
-                path = Path.GetDirectoryName(path) + "\\Images";
-                EnsureDirExist(path);
-                return path;
-            }
-        }
-
         public OutletService() : base("Outlet")
         {
         }
@@ -103,12 +92,14 @@ namespace TradeCensus
                     pr.Name as ProvinceName,
 		            p.FirstName as PersonFirstName,  
 		            p.LastName as PersonLastName,
-		            p.IsDSM as PersonIsDSM
+		            p.IsDSM as PersonIsDSM,
+                    r.Role as AmendByRole
 	            from 
 		            Outlet as o 
                     left join Province pr with(nolock) on o.ProvinceID = pr.ID
 		            left join OutletType ot with(nolock) on o.OTypeID = ot.ID
-		            left join Person p with(nolock) on p.ID = o.PersonID ";
+		            left join Person p with(nolock) on p.ID = o.PersonID 
+                    left join PersonRole r with(nolock) on p.ID = r.PersonID ";
 
             if (status == 0) // near-by
             {
@@ -228,7 +219,7 @@ namespace TradeCensus
             return sqlCommand;
         }
 
-        private OutletModel ToOutletModel(Outlet outlet)
+        private OutletModel ToOutletModel(OutletEntity outlet)
         {
             var foundOutlet = new OutletModel
             {
@@ -270,19 +261,8 @@ namespace TradeCensus
                 TotalVolume = outlet.TotalVolume,
                 VBLVolume = outlet.VBLVolume,
                 PStatus = outlet.PModifiedStatus,
+                AmendByRole = outlet.AmendByRole ?? 0
             };
-
-            //int pstatus = 0;
-            //if(outlet.PCloseDate != outlet.CloseDate)
-            //    pstatus |= 1;
-            //if (outlet.PTracking != outlet.PTracking)
-            //    pstatus |= 2;
-            //foundOutlet.PStatus = pstatus;
-
-            //if (outlet.DEDISID > 0)
-            //    foundOutlet.OutletSource = 1;
-            //else if (outlet.DISAlias != null)
-            //    foundOutlet.OutletSource = string.IsNullOrEmpty(outlet.DISAlias.Trim()) ? 0 : 1;
 
             foundOutlet.FullAddress = string.Format("{0} {1} {2} {3} {4}", outlet.AddLine, outlet.AddLine2, outlet.Ward, outlet.District, foundOutlet.ProvinceName);
             foundOutlet.FullAddress = foundOutlet.FullAddress.Trim().Replace("  ", " ");
@@ -293,18 +273,9 @@ namespace TradeCensus
                 foundOutlet.StringImage1 = ToBase64(outletImg.ImageData1);
                 foundOutlet.StringImage2 = ToBase64(outletImg.ImageData2);
                 foundOutlet.StringImage3 = ToBase64(outletImg.ImageData3);
-
-                //string path = AppDomain.CurrentDomain.BaseDirectory; //GetType().Assembly.Location; // ...\bin\...
-                //path = Path.GetDirectoryName(path) + "\\Images";
-                //EnsureDirExist(path);
-
-
-                //if (!string.IsNullOrEmpty(foundOutlet.StringImage1))
-                //{
-                //    string imagePath = Path.Combine(path, string.Format("{0}_{1}.jpg", outletID, index));
-
-                //    file.SaveAs(imagePath);
-                //}
+                foundOutlet.StringImage4 = ToBase64(outletImg.ImageData4);
+                foundOutlet.StringImage5 = ToBase64(outletImg.ImageData5);
+                foundOutlet.StringImage6 = ToBase64(outletImg.ImageData6);
             }
 
             var person = DC.People.FirstOrDefault(p=>p.ID == outlet.PersonID);
@@ -314,7 +285,7 @@ namespace TradeCensus
                 foundOutlet.PersonFirstName = person.FirstName;
                 foundOutlet.PersonIsDSM = person.IsDSM;
                 foundOutlet.OutletSource = person.IsDSM ? 1 : 0;
-            }
+            }            
 
             return foundOutlet;
         }
@@ -611,15 +582,6 @@ namespace TradeCensus
             return item == null ? "" : item.Name;
         }      
   
-        private void EnsureDirExist(string path)
-        {
-            if (Directory.Exists(path)) return;
-
-            string parent = Path.GetDirectoryName(path);
-            EnsureDirExist(parent);
-            Directory.CreateDirectory(path);
-        }        
-      
         private void AppendOutletHistory(int personID, int outletID, int action, string note)
         {
             var hist = new OutletHistory {
@@ -670,6 +632,7 @@ namespace TradeCensus
                                         Person.LastName as PersonLastName, 
                                         Person.IsDSM as PersonIsDSM, 
                                         Person.IsDSM as OutletSource, 
+                                        PersonRole.Role as AmendByRole,
                                    ot.Name as OutletTypeName,
                                    oi.ImageData1, 
                                    oi.ImageData2, 
@@ -680,6 +643,7 @@ namespace TradeCensus
                               from outlet
                               left join OutletType as ot on ot.ID = Outlet.OTypeID 
                               left join Person on Person.ID = Outlet.PersonID 
+                              left join PersonRole on Person.ID = PersonRole.PersonID 
                               left join OutletImage as oi on oi.OutletID = Outlet.ID
                               where outlet.ProvinceID = {2}
                         ) as tmp
@@ -722,6 +686,7 @@ namespace TradeCensus
                                         Person.LastName as PersonLastName, 
                                         Person.IsDSM as PersonIsDSM, 
                                         Person.IsDSM as OutletSource, 
+                                        PersonRole.Role as AmendByRole,
                                    ot.Name as OutletTypeName
                               from outlet
                               left join OutletType as ot on ot.ID = Outlet.OTypeID 

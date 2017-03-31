@@ -295,19 +295,30 @@ function deleteImage() {
     }, function () { });   
 }
 
-function captureImage(onSuccess, onError) {
+function captureImage(onSuccess, onError, useFrontCamera) {
     try {
         if (config.enable_devmode) {
             onSuccess('http://lorempixel.com/output/technics-q-c-800-600-3.jpg');
         } else {
-            navigator.camera.getPicture(onSuccess, onError,
-                {
-                    quality: 30,
-                    targetWidth: 800,
-                    targetHeight: 600,
-                    correctOrientation: true,
-                    destinationType: Camera.DestinationType.FILE_URI, // DATA_URL for base64 => not recommend due to memory issue
-                });
+            if (typeof useFrontCamera === 'undefined' || useFrontCamera === false) {
+                navigator.camera.getPicture(onSuccess, onError,
+                    {
+                        quality: 30,
+                        targetWidth: 800,
+                        targetHeight: 600,
+                        correctOrientation: true,
+                        destinationType: Camera.DestinationType.FILE_URI, // DATA_URL for base64 => not recommend due to memory issue
+                    });
+            } else {
+                navigator.camera.getPicture(onSuccess, onError,
+                    {
+                        quality: 30,
+                        targetWidth: 800,
+                        targetHeight: 600,
+                        correctOrientation: true,
+                        destinationType: Camera.DestinationType.FILE_URI, // DATA_URL for base64 => not recommend due to memory issue
+                    }, { cameraDirection: 1 });
+            }
         }
     } catch (err) {
         showError(err);

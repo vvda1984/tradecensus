@@ -267,7 +267,20 @@ function getMarkerIcon(outlet) {
             outlet.AuditStatus == StatusAuditAccept ||
             outlet.AuditStatus == StatusAuditorNew ||
             outlet.AuditStatus == StatusAuditorAccept) {
-            return 'assets/img/pin-new.png';
+
+            var imgName = null;
+            if (outlet.AmendByRole == 1) { // auditor
+                imgName = config.map_auditor_new_outlet;
+            } else if (outlet.AmendByrole == 2) { //agency
+                imgName = config.map_agency_new_outlet
+            } else {
+                imgName = config.map_salesman_new_outlet;
+            }
+            if (isEmpty(imgName)) {
+                return 'assets/img/pin-new.png';
+            } else {
+                return 'data:image/png;base64,' + imgName;
+            }
         } else if (outlet.AuditStatus == StatusAuditDeny) {
             return 'assets/img/pin-new-error.png';
         } else {
