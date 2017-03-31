@@ -181,9 +181,9 @@ function newConfig() {
         enable_rereverse_geo: 1,
         protocol: 'http',
         //ip: '27.0.15.234/trade-census',
-        //ip: '203.34.144.29/tc-test',
+        ip: '203.34.144.29/tc-test',
         //ip: '203.34.144.29/trade-census',
-        ip: 'localhost/trade-census-test',        
+        //ip: 'localhost/trade-census-test',        
         port: '80',
         service_name: 'TradeCensusService.svc', // absolute
         enable_liveGPS: true,       
