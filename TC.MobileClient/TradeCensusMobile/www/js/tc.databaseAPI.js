@@ -1,6 +1,6 @@
 ﻿function initalizeDB(onSuccess, onError) {
     try{
-        db = window.openDatabase('tc-v1-05.db', "2.0", 'tc-v1-05.db', 49 * 1024 * 1024); //~500MB
+        db = window.openDatabase('tc-v1-06.db', "2.0", 'tc-v1-06.db', 499 * 1024 * 1024); //~500MB
         db.transaction(function (tx) {
             if (resetDB) {
                 tx.executeSql('DROP TABLE IF EXISTS user1');

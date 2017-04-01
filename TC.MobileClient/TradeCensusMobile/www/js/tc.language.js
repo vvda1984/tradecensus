@@ -187,7 +187,7 @@ function language_en() {
 		vbl_is_invald: ' VBL volume must be whole number',
 		vbl_is_empty: 'VBL volume must greater than zero',
 		vbl_cannot_greater_than_total: 'VBL volume can\'t be greater than Total volume.',
-		need_to_capture: 'Please capture images before POST',
+		need_to_capture: 'Please capture outlet image before POST',
 		msg_validate_accuracy: 'The accuracy ({curacc}m) is over {distance}m. Please try again',
 		msg_validate_accuracy_1: 'Failed to locate outlet GPS. Please try with a clear view of sky<br/>(Tín hiệu GPS yếu, vui lòng di chuyển ra khu vực thông thoáng hơn)',
 		msg_cannot_get_location: 'Get current location timeout!',

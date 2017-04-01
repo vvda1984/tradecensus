@@ -2052,11 +2052,11 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     }
 
     $scope.drawBorder = function () {
+        if (!getNetworkState()) return;
+
         if ($scope.selectedBorder.GeoData != null && $scope.selectedBorder.GeoData != '')
             drawMapBorder($scope.selectedBorder.GeoData);
-        else {
-            //if (!getNetworkState()) return;
-
+        else {            
             showDlg(R.loading, R.please_wait);
             try {
                 var url = baseURL + '/border/get/' + $scope.selectedBorder.ID.toString();

@@ -66,8 +66,8 @@
         //}
     }
 
-    $(document).ready(function () { onDeviceReady(); }); // web
-    //document.addEventListener("deviceready", onDeviceReady, false); // mobile
+    //$(document).ready(function () { onDeviceReady(); }); // web
+    document.addEventListener("deviceready", onDeviceReady, false); // mobile
     
 })(window);
 
@@ -96,11 +96,6 @@ var R = useLanguage();
 var baseURL = '';
 var sessionID = guid();
 var lastActivedTS = null;
-var downloadOptions = {
-    downloadProvinces: false,
-    downloadOutletTypes: false,
-    downloadMapIcons: false
-};
 
 var isNetworkAvailable = true;      // Network monitoring status
 var onNetworkChangedCallback;       // Network monitoring callback
@@ -177,8 +172,8 @@ function newConfig() {
     //port: '33334',//'3001',
     //var testBuild = false;
     var c = {
-        debug_build: true,
-        enable_devmode: true,
+        debug_build: false,
+        enable_devmode: false,
         enable_logview: false,
         page_size: 20,
         cluster_size: 50,
@@ -243,7 +238,7 @@ function newConfig() {
         tbl_outlet: 'uo',
         tbl_downloadProvince: 'udp',
         tbl_journal: 'jr',
-        version: '1.2.17090.12',
+        version: '1.2.12',
         versionNum: 8,
     };
     if (isHttp) {
