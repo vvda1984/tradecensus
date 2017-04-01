@@ -50,24 +50,25 @@
             log(err);
         }
 
-        try{         
-            rootdetection.isDeviceRooted(function (result) {
-                console.log(result);
-                if (result === 1) {
-                    console.log('Device is rooted.');
-                    navigator.app.exitApp();
-                }                
-            }, function (error) {
-                console.error(error);
-            });
-        }
-        catch (err) {
-            console.log(err);
-        }
+        //try {
+        //    rootdetection.isDeviceRooted(function (result) {
+        //        console.log(result);
+        //        if (result === 1) {
+        //            console.log('Device is rooted.');
+        //            navigator.app.exitApp();
+        //        }                
+        //    }, function (error) {
+        //        console.error(error);
+        //    });
+        //}
+        //catch (err) {
+        //    console.log(err);
+        //}
     }
 
-    //$(document).ready(function () { onDeviceReady(); }); // web
-    document.addEventListener("deviceready", onDeviceReady, false); // mobile
+    $(document).ready(function () { onDeviceReady(); }); // web
+    //document.addEventListener("deviceready", onDeviceReady, false); // mobile
+    
 })(window);
 
 var resetDB = false;                // force reset database - testing only
@@ -95,6 +96,11 @@ var R = useLanguage();
 var baseURL = '';
 var sessionID = guid();
 var lastActivedTS = null;
+var downloadOptions = {
+    downloadProvinces: false,
+    downloadOutletTypes: false,
+    downloadMapIcons: false
+};
 
 var isNetworkAvailable = true;      // Network monitoring status
 var onNetworkChangedCallback;       // Network monitoring callback
@@ -171,9 +177,9 @@ function newConfig() {
     //port: '33334',//'3001',
     //var testBuild = false;
     var c = {
-        debug_build: false,
-        enable_devmode: false,
-        enable_logview: false,       
+        debug_build: true,
+        enable_devmode: true,
+        enable_logview: false,
         page_size: 20,
         cluster_size: 50,
         cluster_max_zoom: 15.5,
@@ -181,9 +187,9 @@ function newConfig() {
         enable_rereverse_geo: 1,
         protocol: 'http',
         //ip: '27.0.15.234/trade-census',
-        //ip: '203.34.144.29/tc-test',
+        ip: '203.34.144.29/tc-test',
         //ip: '203.34.144.29/trade-census',
-        ip: 'localhost/trade-census-test',        
+        //ip: 'localhost/trade-census-test',        
         port: '80',
         service_name: 'TradeCensusService.svc', // absolute
         enable_liveGPS: true,       
@@ -227,6 +233,7 @@ function newConfig() {
         map_salesman_new_outlet: '',
         map_agency_new_outlet: '',
         map_auditor_new_outlet: '',
+        check_rooted_device : 1,
 
         tbl_area_ver: '0',
         tbl_outlettype_ver: '0',
@@ -493,15 +500,17 @@ function loadSettings(tx, callback) {
                         config.map_agency_new_outlet = value;
                     } else if (name == 'map_auditor_new_outlet') {
                         config.map_auditor_new_outlet = value;
+                    } else if (name == 'check_rooted_device') {
+                        config.check_rooted_device = parseInt(value);
                     }
                 }
             }
         } catch (er) {
             showError('Load settings error:' + er.message);
         }
-        baseURL = buildURL(config.protocol, config.ip, config.port, config.service_name);       
+        baseURL = buildURL(config.protocol, config.ip, config.port, config.service_name);
         callback(tx1);
-    },  function (dberr) {      
+    }, function (dberr) {
         showError(dberr.message);
     });
 }

@@ -271,7 +271,7 @@ function getMarkerIcon(outlet) {
             var imgName = null;
             if (outlet.AmendByRole == 1) { // auditor
                 imgName = config.map_auditor_new_outlet;
-            } else if (outlet.AmendByrole == 2) { //agency
+            } else if (outlet.AmendByRole == 2) { //agency
                 imgName = config.map_agency_new_outlet
             } else {
                 imgName = config.map_salesman_new_outlet;

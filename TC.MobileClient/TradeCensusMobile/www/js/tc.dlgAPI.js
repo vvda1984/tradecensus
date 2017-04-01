@@ -152,7 +152,7 @@ function showErrorAdv(message, onClose) {
 function showInfo(message) {
     resetCallback();
     hideDlg();
-    showDlg("Info", message, function () { });;
+    showDlg("Info", message, function () { });
 }
 
 function showConfirm(title, message, onAccept, onDeny) {

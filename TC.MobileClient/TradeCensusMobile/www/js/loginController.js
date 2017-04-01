@@ -25,7 +25,6 @@ function loginController($scope, $http) {
     var timeo = $scope.config.time_out;
     var dist = $scope.config.liveGPS_distance;
 
-
     $scope.exit = function () {
         navigator.app.exitApp();
     };
@@ -419,6 +418,17 @@ function loginController($scope, $http) {
     }
 
     function downloadServerConfig(onSuccess, onError) {
+        downloadProvinces(downloadOptions, function () {
+            downloadOutletTypes(downloadOptions, function () {
+                downloadOutletMapIcons(downloadOptions, function () {
+                    insertSettingDB(config, onSuccess, onError);
+                }, onError);
+            }, onError);
+        }, onError);
+
+        return;
+
+        // Ignore this lines
         var url = baseURL + '/config/getall';
         log('Call service api: ' + url);
         $http({
@@ -534,25 +544,6 @@ function loginController($scope, $http) {
                         }, onError);
                     }, onError);
                 }, onError);
-               
-                //insertSettingDB(config, function () {
-                //    if (syncProvinces) {
-                //        downloadProvinces(function () {
-                //            if (syncOutletTypes) {
-                //                downloadOutletTypes(onSuccess, onError);
-                //            } else {
-                //                onSuccess();
-                //            }
-                //        }, onError)
-                //    }
-                //    else {
-                //        if (syncOutletTypes) {
-                //            downloadOutletTypes(onSuccess, onError);
-                //        } else {
-                //            onSuccess();
-                //        }
-                //    }
-                //}, onError);
             }
         }, handleHttpError);
     }
@@ -622,4 +613,134 @@ function loginController($scope, $http) {
             onSuccess();
         }
     }
+
+    //showLoading("Loading", "Please wait");
+    function downloadServerSetttings(complete) {
+        var url = baseURL + '/config/getall';
+        log('Call service api: ' + url);
+        $http({
+            method: config.http_method,
+            url: url
+        }).then(function (resp) {
+            var data = resp.data;
+            if (data.Status == -1) { // error
+                onError(data.ErrorMessage);
+            } else {
+                setDlgMsg(R.update_settings);
+
+                var syncProvinces = true;
+                var syncOutletTypes = false;
+                var syncMapIcons = false;
+                for (var i = 0; i < data.Items.length; i++) {
+                    p = data.Items[i];
+                    var name = data.Items[i].Key;
+                    var value = data.Items[i].Value;
+                    if (name == 'calc_distance_algorithm') {
+                        config.calc_distance_algorithm = value;
+                    } else if (name == 'tbl_area_ver') {
+                        // do nothing
+                    } else if (name == 'tbl_outlettype_ver') {
+                        syncOutletTypes = config.tbl_outlettype_ver != value;
+                        config.tbl_outlettype_ver = value;
+                    } else if (name == 'tbl_province_ver') {
+                        //syncProvinces = config.tbl_province_ver != value;
+                        //config.tbl_province_ver = value;
+                    } else if (name == 'tbl_zone_ver') {
+                        // do nothing
+                    } else if (name == 'map_api_key') {
+                        config.map_api_key = value;
+                    } else if (name == 'http_method') {
+                        config.http_method = value;
+                    } else if (name == 'sync_time') {
+                        config.sync_time = parseInt(value);
+                    } else if (name == 'protocol') {
+                        config.protocol = value;
+                    } else if (name == 'max_province_download') {
+                        config.max_oulet_download = value;
+                    } else if (name == 'map_zoom') {
+                        config.map_zoom = parseInt(value);
+                        if (config.map_zoom > 21) config.map_zoom = 21;
+                    } else if (name == 'cluster_size') {
+                        config.cluster_size = value;
+                    } else if (name == 'cluster_max_zoom') {
+                        config.cluster_max_zoom = value;
+                    } else if (name == 'audit_range') {
+                        config.audit_range = parseInt(value);
+                    } else if (name == 'audit_accuracy') {
+                        config.audit_accuracy = parseInt(value);
+                    } else if (name == 'download_batch_size') {
+                        config.download_batch_size = parseInt(value);
+                    } else if (name == 'auto_sync') {
+                        config.auto_sync = parseInt(value);
+                    } else if (name == 'sync_time') {
+                        config.sync_time = parseInt(value);
+                    } else if (name == 'sync_time_out') {
+                        config.sync_time_out = parseInt(value);
+                    } else if (name == 'sync_batch_size') {
+                        config.sync_batch_size = parseInt(value);
+                    } else if (name == 'ping_time') {
+                        config.ping_time = parseInt(value);
+                    } else if (name == 'refresh_time') {
+                        config.refresh_time = parseInt(value);
+                    } else if (name == 'refresh_time_out') {
+                        config.refresh_time_out = parseInt(value);
+                    } else if (name == 'session_time_out') {
+                        config.session_time_out = parseInt(value);
+                    } else if (name == 'border_fill_opacity') {
+                        config.border_fill_opacity = parseFloat(value);
+                    } else if (name == 'enable_rereverse_geo') {
+                        config.enable_rereverse_geo = parseInt(value);
+                    } else if (name == 'download_batch_size') {
+                        config.download_batch_size = parseInt(value);
+                    } else if (name == 'journal_update_time') {
+                        config.journal_update_time = parseInt(value);
+                    } else if (name == 'journal_distance') {
+                        config.journal_distance = parseInt(value);
+                    } else if (name == 'journal_accuracy') {
+                        config.journal_accuracy = parseInt(value);
+                    } else if (name == 'journal_color') {
+                        config.journal_color = value;
+                    } else if (name == 'journal_opacity') {
+                        try { config.journal_opacity = parseFloat(value); }
+                        catch (err) { }
+                    } else if (name == 'journal_weight') {
+                        config.journal_weight = parseInt(value);
+                    } else if (name == 'journal_nonstop') {
+                        config.journal_nonstop = parseInt(value);
+                    } else if (name == 'enable_check_in') {
+                        config.enable_check_in = parseInt(value);
+                    } else if (name == 'hotlines') {
+                        config.hotlines = JSON.parse(value);
+                    } else if (name == 'outlet_map_icons') {
+                        var mapIcons = JSON.parse(value);
+                        syncMapIcons = mapIcons.version > config.map_icons_version;
+                        config.map_icons_version = mapIcons.version;
+                    } else if (name == 'check_rooted_device') {
+                        config.check_rooted_device = parseInt(value);
+                    }
+                }
+
+                downloadOptions = {
+                    downloadProvinces: syncProvinces,
+                    downloadOutletTypes: syncOutletTypes,
+                    downloadMapIcons: syncMapIcons
+                };
+            }
+
+            complete();
+        }, function () { complete(); });
+    }
+
+    downloadServerSetttings(function () {
+        if (config.check_rooted_device) {
+            detectRootedDevice(function (result) {
+                hideDlg();
+                if (result === 1) {
+                    navigator.app.exitApp();
+                }
+            });
+        } else {
+            hideDlg();
+        }
+    })
 };

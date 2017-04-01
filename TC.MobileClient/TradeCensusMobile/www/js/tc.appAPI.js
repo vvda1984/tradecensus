@@ -372,3 +372,19 @@ function getFileContentAsBase64(path, callback) {
     }
 }
 
+function detectRootedDevice(complete) {
+
+    try {
+        rootdetection.isDeviceRooted(function (result) {
+            console.log(result);
+            complete((result === 1) ? 1 : 0);
+        }, function (error) {
+            console.error(error);
+            complete(-1);
+        });
+    }
+    catch (err) {
+        console.log(err);
+        complete(-1);//
+    }
+}

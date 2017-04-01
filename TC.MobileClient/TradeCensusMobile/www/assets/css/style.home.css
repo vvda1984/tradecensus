@@ -858,7 +858,7 @@ table.image-table {
     border: 0.5px solid #DDDDDD; 
     height:80px; 
     width:110px; 
-    background-image: url('/assets/img/no-image-bg.png');
+    background-image: url('../../assets/img/no-image-bg.png');
 }
 
 .image-frame img{

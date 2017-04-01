@@ -2055,6 +2055,8 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         if ($scope.selectedBorder.GeoData != null && $scope.selectedBorder.GeoData != '')
             drawMapBorder($scope.selectedBorder.GeoData);
         else {
+            //if (!getNetworkState()) return;
+
             showDlg(R.loading, R.please_wait);
             try {
                 var url = baseURL + '/border/get/' + $scope.selectedBorder.ID.toString();
@@ -2083,7 +2085,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                     showError(msg);
                 });
             } catch (ex) {
-                showError(ex.message);
+                showError(ex);
             }
         }
     }

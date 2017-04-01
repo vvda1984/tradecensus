@@ -1,19 +1,19 @@
 <style>
     @media screen and (min-height: 600px) {
         #hotlines {
-            height: 97px;
+            height: 75px;
         }
     }
 
     @media screen and (min-height: 720px) {
         #hotlines {
-            height: 193px;
+            height: 186px;
         }
     }
 
     @media screen and (min-height: 768px) {
         #hotlines {
-            height: 241px;
+            height: 223px;
         }
     }
 </style>
@@ -295,20 +295,33 @@
                 </form>
             </md-content>
 
-            <div style="display: block; position: relative; margin:-35px 20px 10px 20px; width:100px;">
+            <div style="display: block; position: relative; margin:4px 20px 10px 20px; width:100px;">
                 <span style="font-size:14pt; color:#01541E;">HOTLINES</span>
             </div>
             <div id="hotlines" style="display: block; position: relative; overflow: auto; margin:0 0 80px 24px;">
                 <table cellspacing="0" style="border:none; font-size:11pt; width:310px; border-top: 1px solid #E1E1E1 !important;">
-                    <tr style="height:48px;" ng-repeat="hotline in hotlines" >
+                    <tr style="height:32px;" ng-repeat="hotline in hotlines" >
                        <td style="border-bottom: 1px solid #E1E1E1 !important;">
                            <div style="vertical-align:middle;">
-                               <div style="font-size:11pt;">{{hotline.name}}</div>
-                               <div style="font-size:8pt;">{{hotline.phone}}</div>
+                               <div style="font-size:11pt; width:164px; text-overflow: ellipsis;" ng-click="makePhoneCall(hotline)">{{hotline.name}}</div>
+                               <!--<div style="font-size:8pt;">{{hotline.phone}}</div>-->
                            </div>
                        </td>
                         <td style="border-bottom: 1px solid #E1E1E1 !important;">
-                            <img ng-click="makePhoneCall(hotline)" src="assets/img/phone.svg" style="height:24px; height:24px;vertical-align:middle;">
+                            <div style="vertical-align:middle;">
+                                <table>
+                                    <tr>
+                                        <td>
+                                            <div ng-click="makePhoneCall(hotline)" style="font-size:11pt;">{{hotline.phone}}</div>
+                                        </td>
+                                        <td>
+                                            <img ng-click="makePhoneCall(hotline)"
+                                                 src="assets/img/phone.svg"
+                                                 style="height:24px; height:24px;">
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
                         </td>
                     </tr>
                 </table>

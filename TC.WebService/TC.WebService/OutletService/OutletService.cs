@@ -539,6 +539,21 @@ namespace TradeCensus
                     outletImage.ImageData4 = data;
                 }
 
+                // IMAGE5
+                if (string.IsNullOrEmpty(outlet.StringImage5))
+                {
+                    outletImage.Image5 = "";
+                    outletImage.ImageData5 = null;
+                }
+                else if (!outlet.StringImage5.ToUpper().StartsWith("/IMAGE"))
+                {
+                    byte[] data;
+                    string relativePath;
+                    SaveToFile(dbOutlet.ID, 5, outlet.StringImage5, out relativePath, out data);
+                    outletImage.Image5 = relativePath;
+                    outletImage.ImageData5 = data;
+                }
+
                 // IMAGE6
                 if (string.IsNullOrEmpty(outlet.StringImage6))
                 {
@@ -687,10 +702,11 @@ namespace TradeCensus
                                         Person.IsDSM as PersonIsDSM, 
                                         Person.IsDSM as OutletSource, 
                                         PersonRole.Role as AmendByRole,
-                                   ot.Name as OutletTypeName
+                                        ot.Name as OutletTypeName
                               from outlet
                               left join OutletType as ot on ot.ID = Outlet.OTypeID 
                               left join Person on Person.ID = Outlet.PersonID 
+                              left join PersonRole on Person.ID = PersonRole.PersonID 
                               where outlet.ProvinceID = {2}
                         ) as tmp
                         where RowNo between {0} and {1}", from + 1, to, provinceID);
