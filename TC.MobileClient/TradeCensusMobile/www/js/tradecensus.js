@@ -68,7 +68,6 @@
 
     //$(document).ready(function () { onDeviceReady(); }); // web
     document.addEventListener("deviceready", onDeviceReady, false); // mobile
-    
 })(window);
 
 var resetDB = false;                // force reset database - testing only
@@ -224,10 +223,28 @@ function newConfig() {
         journal_daily_mode: true,   // 
         hotlines: [],               // hotline
         enable_check_in: 1,         //
-        map_icons_version: 0,       //
-        map_salesman_new_outlet: '',
-        map_agency_new_outlet: '',
-        map_auditor_new_outlet: '',
+        
+        map_icons_version: 0,
+		map_tc_salesman_outlet: '',
+		map_tc_salesman_outlet_denied: '',
+		map_tc_auditor_outlet: '',
+		map_tc_auditor_outlet_denied: '',
+		map_tc_agency_new_outlet: '',
+		map_tc_agency_new_outlet_denied: '',
+		map_tc_agency_new_outlet_approved: '',
+		map_tc_agency_existing_outlet_edited: '',
+		map_tc_agency_existing_outlet_denied: '',
+		map_tc_agency_existing_outlet_approved: '',
+		map_sr_outlet_audit_denied: '',
+		map_sr_outlet_audit_approved: '',
+		map_sr_outlet_closed: '',
+		map_sr_outlet_non_track: '',
+		map_sr_outlet_opened: '',
+	    map_dis_outlet_audit_denied: '',
+		map_dis_outlet_audit_approved: '',
+		map_dis_outlet_closed: '',
+		map_dis_outlet_opened: '',	
+		
         check_rooted_device : 1,
 
         tbl_area_ver: '0',
@@ -238,8 +255,8 @@ function newConfig() {
         tbl_outlet: 'uo',
         tbl_downloadProvince: 'udp',
         tbl_journal: 'jr',
-        version: '1.2.12',
-        versionNum: 8,
+        version: '1.2.14',
+        versionNum: 10,
     };
     if (isHttp) {
         c.protocol = 'http';
@@ -487,16 +504,54 @@ function loadSettings(tx, callback) {
                         config.enable_check_in = parseInt(value);
                     } else if (name == 'hotlines') {
                         config.hotlines = JSON.parse(value);
-                    } else if (name == 'map_icons_version') {
-                        config.map_icons_version = parseInt(value);
-                    } else if (name == 'map_salesman_new_outlet') {
-                        config.map_salesman_new_outlet = value;
-                    } else if (name == 'map_agency_new_outlet') {
-                        config.map_agency_new_outlet = value;
-                    } else if (name == 'map_auditor_new_outlet') {
-                        config.map_auditor_new_outlet = value;
                     } else if (name == 'check_rooted_device') {
                         config.check_rooted_device = parseInt(value);
+                    }
+
+                    else if (name == 'map_icons_version') {
+                        config.map_icons_version = parseInt(value);
+                    } else if (name == 'map_tc_salesman_outlet') {
+                        config.map_tc_salesman_outlet = value;
+                    } else if (name == 'map_tc_salesman_outlet_denied') {
+                        config.map_tc_salesman_outlet_denied = value;
+                    } else if (name == 'map_tc_auditor_outlet') {
+                        config.map_tc_auditor_outlet = value;
+                    } else if (name == 'map_tc_auditor_outlet_denied') {
+                        config.map_tc_auditor_outlet_denied = value;
+                    }
+
+                    else if (name == 'map_tc_agency_new_outlet') {
+                        config.map_tc_agency_new_outlet = value;
+                    } else if (name == 'map_tc_agency_new_outlet_denied') {
+                        config.map_tc_agency_new_outlet_denied = value;
+                    } else if (name == 'map_tc_agency_new_outlet_approved') {
+                        config.map_tc_agency_new_outlet_approved = value;
+                    } else if (name == 'map_tc_agency_existing_outlet_edited') {
+                        config.map_tc_agency_existing_outlet_edited = value;
+                    } else if (name == 'map_tc_agency_existing_outlet_denied') {
+                        config.map_tc_agency_existing_outlet_denied = value;
+                    } else if (name == 'map_tc_agency_existing_outlet_approved') {
+                        config.map_tc_agency_existing_outlet_approved = value;
+                    }
+
+                    else if (name == 'map_sr_outlet_audit_denied') {
+                        config.map_sr_outlet_audit_denied = value;
+                    } else if (name == 'map_sr_outlet_audit_approved') {
+                        config.map_sr_outlet_audit_approved = value;
+                    } else if (name == 'map_sr_outlet_closed') {
+                        config.map_sr_outlet_closed = value;
+                    } else if (name == 'map_sr_outlet_non_track') {
+                        config.map_sr_outlet_non_track = value;
+                    } else if (name == 'map_sr_outlet_opened') {
+                        config.map_sr_outlet_opened = value;
+                    } else if (name == 'map_dis_outlet_audit_denied') {
+                        config.map_dis_outlet_audit_denied = value;
+                    } else if (name == 'map_dis_outlet_audit_approved') {
+                        config.map_dis_outlet_audit_approved = value;
+                    } else if (name == 'map_dis_outlet_closed') {
+                        config.map_dis_outlet_closed = value;
+                    } else if (name == 'map_dis_outlet_opened') {
+                        config.map_dis_outlet_opened = value;
                     }
                 }
             }

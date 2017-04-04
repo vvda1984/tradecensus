@@ -15,7 +15,7 @@ namespace TradeCensus
 
         public DownloadMapIconsResponse DownloadMapIcons()
         {
-            DownloadMapIconsResponse resp = new DownloadMapIconsResponse();
+            DownloadMapIconsResponse resp = new DownloadMapIconsResponse() { Icons = new Dictionary<string, string>() };
 
             try
             {
@@ -23,17 +23,29 @@ namespace TradeCensus
                 var mapIcons = JsonConvert.DeserializeObject<OutletMapIcon>(setting.Value);
                 resp.Version = mapIcons.version;
 
-                var salesmanPath = Path.Combine(ImagesPath, mapIcons.salesman_new_outlet);                
-                if (File.Exists(salesmanPath))
-                    resp.SalesmanNewOutletMapIcon = Convert.ToBase64String(File.ReadAllBytes(salesmanPath));
-                
-                var agencyPath = Path.Combine(ImagesPath, mapIcons.agency_new_outlet);
-                if (File.Exists(agencyPath))
-                    resp.AgencyNewOutletMapIcon = Convert.ToBase64String(File.ReadAllBytes(agencyPath));
+                FillMapIcon(resp, "tc_salesman_outlet", mapIcons.tc_salesman_outlet);
+                FillMapIcon(resp, "tc_salesman_outlet_denied", mapIcons.tc_salesman_outlet_denied);
+                FillMapIcon(resp, "tc_auditor_outlet", mapIcons.tc_auditor_outlet);
+                FillMapIcon(resp, "tc_auditor_outlet_denied", mapIcons.tc_auditor_outlet_denied);
 
-                var auditorPath = Path.Combine(ImagesPath, mapIcons.auditor_new_outlet);
-                if (File.Exists(auditorPath))
-                    resp.AuditorNewOutletMapIcon = Convert.ToBase64String(File.ReadAllBytes(auditorPath));
+                FillMapIcon(resp, "tc_agency_new_outlet", mapIcons.tc_agency_new_outlet);
+                FillMapIcon(resp, "tc_agency_new_outlet_denied", mapIcons.tc_agency_new_outlet_denied);
+                FillMapIcon(resp, "tc_agency_new_outlet_approved", mapIcons.tc_agency_new_outlet_approved);
+                FillMapIcon(resp, "tc_agency_existing_outlet_edited", mapIcons.tc_agency_existing_outlet_edited);
+                FillMapIcon(resp, "tc_agency_existing_outlet_denied", mapIcons.tc_agency_existing_outlet_denied);
+                FillMapIcon(resp, "tc_agency_existing_outlet_approved", mapIcons.tc_agency_existing_outlet_approved);
+
+                FillMapIcon(resp, "sr_outlet_audit_denied", mapIcons.sr_outlet_audit_denied);
+                FillMapIcon(resp, "sr_outlet_audit_approved", mapIcons.sr_outlet_audit_approved);
+                FillMapIcon(resp, "sr_outlet_non_track", mapIcons.sr_outlet_non_track);
+                FillMapIcon(resp, "sr_outlet_closed", mapIcons.sr_outlet_closed);
+                FillMapIcon(resp, "sr_outlet_opened", mapIcons.sr_outlet_opened);
+
+                FillMapIcon(resp, "dis_outlet_audit_denied", mapIcons.dis_outlet_audit_denied);
+                FillMapIcon(resp, "dis_outlet_audit_approved", mapIcons.dis_outlet_audit_approved);
+                FillMapIcon(resp, "dis_outlet_closed", mapIcons.dis_outlet_closed);
+                FillMapIcon(resp, "dis_outlet_opened", mapIcons.dis_outlet_opened);
+     
             }
             catch (Exception ex)
             {
@@ -43,6 +55,17 @@ namespace TradeCensus
             return resp;
         }
     
+        private void FillMapIcon(DownloadMapIconsResponse resp, string name, string relativedPath)
+        {
+            string content = null;
+            var imageFile = Path.Combine(ImagesPath, relativedPath);
+            if (File.Exists(imageFile))
+                content = Convert.ToBase64String(File.ReadAllBytes(imageFile));
+
+            if (content != null)
+                resp.Icons.Add(name, content);
+        }
+
         public ConfigResponse GetConfig()
         {
             ConfigResponse resp = new ConfigResponse();
@@ -99,8 +122,26 @@ namespace TradeCensus
     public class OutletMapIcon
     {
         public int version { get; set; }
-        public string salesman_new_outlet { get; set; }
-        public string agency_new_outlet { get; set; }
-        public string auditor_new_outlet { get; set; }
+        public string tc_salesman_outlet { get; set; }
+        public string tc_salesman_outlet_denied { get; set; }
+        public string tc_auditor_outlet { get; set; }
+        public string tc_auditor_outlet_denied { get; set; }
+
+        public string tc_agency_new_outlet { get; set; } // Sales of Agency creates new outlets
+        public string tc_agency_new_outlet_denied { get; set; } // Auditor of Agency denies new outlets
+        public string tc_agency_new_outlet_approved { get; set; } // Auditor of Agency approves new outlets
+        public string tc_agency_existing_outlet_edited { get; set; } // Sales of Agency edit existing outlets
+        public string tc_agency_existing_outlet_denied { get; set; } // Auditor of Agency denies editing of existing outlets
+        public string tc_agency_existing_outlet_approved { get; set; } // Auditor of Agency approves editing of existing outlets
+
+        public string sr_outlet_audit_denied { get; set; }
+        public string sr_outlet_audit_approved { get; set; }
+        public string sr_outlet_closed { get; set; }
+        public string sr_outlet_non_track { get; set; }
+        public string sr_outlet_opened { get; set; }
+        public string dis_outlet_audit_denied { get; set; }
+        public string dis_outlet_audit_approved { get; set; }
+        public string dis_outlet_closed { get; set; }
+        public string dis_outlet_opened { get; set; }
     }
 }

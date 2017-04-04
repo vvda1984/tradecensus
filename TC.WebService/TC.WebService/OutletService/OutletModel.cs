@@ -15,7 +15,7 @@ namespace TradeCensus
         [DataMember]
         public string OutletTypeName { get; set; }
         [DataMember]
-        public int OutletSource { get; set; }
+        public int OutletSource { get; set; } // SR/DIS
         [DataMember]
         public string Name { get; set; }
         [DataMember]
@@ -29,7 +29,7 @@ namespace TradeCensus
         [DataMember]
         public string ProvinceID { get; set; }
         [DataMember]
-        public string ProvinceName { get; set; }       
+        public string ProvinceName { get; set; }
         [DataMember]
         public string FullAddress { get; set; }
         [DataMember]
@@ -100,15 +100,8 @@ namespace TradeCensus
         public int PStatus { get; set; }
         [DataMember]
         public int AmendByRole { get; set; }
-    }
-
-    [DataContract]
-    public class OutletShort
-    {
         [DataMember]
-        public int ID { get; set; }
-        [DataMember]
-        public string Name { get; set; }
+        public int InputByRole { get; set; }
     }
 
     [DataContract]
@@ -120,5 +113,4 @@ namespace TradeCensus
         public string RowID { get; set; }
     }
 
-   
 }

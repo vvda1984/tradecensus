@@ -269,51 +269,126 @@ function getMarkerIcon(outlet) {
             outlet.AuditStatus == StatusAuditorAccept) {
 
             var imgName = null;
-            if (outlet.AmendByRole == 1) { // auditor
-                imgName = config.map_auditor_new_outlet;
-            } else if (outlet.AmendByRole == 2) { //agency
-                imgName = config.map_agency_new_outlet
-            } else {
-                imgName = config.map_salesman_new_outlet;
-            }
-            if (isEmpty(imgName)) {
-                return 'assets/img/pin-new.png';
-            } else {
-                return 'data:image/png;base64,' + imgName;
-            }
-        } else if (outlet.AuditStatus == StatusAuditDeny) {
-            return 'assets/img/pin-new-error.png';
-        } else {
-            switch (outlet.OutletSource) {
-                case 0: //SR
-                    if (outlet.AuditStatus == StatusAuditDeny || outlet.AuditStatus == StatusExitingDeny) {
-                        return 'assets/img/pin-sr-audit-wrong.png';
-                    }
-                    if (outlet.AuditStatus == StatusAuditAccept || outlet.AuditStatus == StatusExitingAccept) {
-                        return 'assets/img/pin-sr-audit-right.png';
-                    }
-                    if (!outlet.IsOpened) {
-                        return 'assets/img/pin-sr-close.png';
-                    }
-                    if (!outlet.IsTracked) {
-                        return 'assets/img/pin-sr-nontrack.png';
-                    }
-                    return 'assets/img/pin-sr-open.png';
+            if (outlet.InputByRole == 0) { // Sale
+                imgName = config.map_tc_salesman_outlet;
+            } else if (outlet.InputByRole == 1) { // Sale auditor
+                imgName = config.map_tc_auditor_outlet;
+            } else if (outlet.InputByRole == 2 || outlet.InputByRole == 3) { // Agency
 
-                case 1: // DIS
-                    if (outlet.AuditStatus == StatusAuditDeny || outlet.AuditStatus == StatusExitingDeny) {
+                if (outlet.AuditStatus !== StatusAuditAccept && outlet.AuditStatus !== StatusAuditorAccept) {
+                    imgName = config.map_tc_agency_new_outlet;
+                } else {
+                    imgName = config.map_tc_agency_new_outlet_approved;
+                }
+            }
+
+            return isEmpty(imgName) ? 'assets/img/pin-new.png' : 'data:image/png;base64,' + imgName;
+
+        } else if (outlet.AuditStatus == StatusAuditDeny) {
+
+            var imgName = null;
+            if (outlet.InputByRole == 0) { // Sale
+                imgName = config.map_tc_salesman_outlet_denied;
+            } else if (outlet.InputByRole == 1) { // Sale auditor
+                imgName = config.map_tc_auditor_outlet_denied;
+            } else if (outlet.InputByRole == 2 || outlet.InputByRole == 3) { // Agency
+                imgName = config.map_tc_agency_new_outlet_denied;
+            }
+
+            return isEmpty(imgName) ? 'assets/img/pin-new-error.png' : 'data:image/png;base64,' + imgName;
+
+        } else {
+            if (outlet.AmendByRole == 2 || outlet.AmendByRole == 3) {
+
+                if (outlet.AuditStatus == StatusAuditDeny || outlet.AuditStatus == StatusExitingDeny) {
+                    if (isEmpty(config.map_agency_outlet_audit_denied))
                         return 'assets/img/pin-dis-audit-error.png';
-                    }
-                    if (outlet.AuditStatus == StatusAuditAccept || outlet.AuditStatus == StatusExitingAccept) {
+                    else
+                        return 'data:image/png;base64,' + config.map_tc_agency_existing_outlet_denied;
+                }
+                if (outlet.AuditStatus == StatusAuditAccept || outlet.AuditStatus == StatusExitingAccept) {
+                    if (isEmpty(config.map_tc_agency_existing_outlet_approved))
                         return 'assets/img/pin-dis-audit-right.png';
-                    }
-                    //if (!outlet.IsTracked) {
-                    //    return 'assets/img/pin-sr-nontrack.png';
-                    //}
-                    if (!outlet.IsOpened) {
-                        return 'assets/img/pin-dis-close.png';
-                    }
+                    else
+                        return 'data:image/png;base64,' + config.map_tc_agency_existing_outlet_approved;
+                }
+                if (isEmpty(config.map_tc_agency_existing_outlet_edited)) {
                     return 'assets/img/pin-dis-open.png';
+                } else {
+                    return 'data:image/png;base64,' + config.map_tc_agency_existing_outlet_edited;
+                }
+
+            } else {
+                switch (outlet.OutletSource) {
+                    case 0: //SR
+                        if (outlet.AuditStatus == StatusAuditDeny || outlet.AuditStatus == StatusExitingDeny) {
+                            if (isEmpty(config.map_sr_outlet_audit_denied))
+                                return 'assets/img/pin-sr-audit-wrong.png';
+                            else
+                                return 'data:image/png;base64,' + config.map_sr_outlet_audit_denied;
+                        }
+
+                        if (outlet.AuditStatus == StatusAuditAccept || outlet.AuditStatus == StatusExitingAccept) {
+                            if (isEmpty(config.map_sr_outlet_audit_approved)) {
+                                return 'assets/img/pin-sr-audit-right.png';
+                            } else {
+                                return 'data:image/png;base64,' + config.map_sr_outlet_audit_approved;
+                            }
+                        }
+
+                        if (!outlet.IsOpened) {
+                            if (isEmpty(config.map_sr_outlet_closed)) {
+                                return 'assets/img/pin-sr-close.png';
+                            } else {
+                                return 'data:image/png;base64,' + config.map_sr_outlet_closed;
+                            }
+                        }
+
+                        if (!outlet.IsTracked) {
+                            if (isEmpty(config.map_sr_outlet_non_track)) {
+                                return 'assets/img/pin-sr-nontrack.png';
+                            } else {
+                                return 'data:image/png;base64,' + config.map_sr_outlet_non_track;
+                            }
+                        }
+
+                        if (isEmpty(config.map_sr_outlet_opened)) {
+                            return 'assets/img/pin-sr-open.png';
+                        } else {
+                            return 'data:image/png;base64,' + config.map_sr_outlet_opened;
+                        }
+
+                    case 1: // DIS
+                        if (outlet.AuditStatus == StatusAuditDeny || outlet.AuditStatus == StatusExitingDeny) {
+                            if (isEmpty(config.map_dis_outlet_audit_denied))
+                                return 'assets/img/pin-dis-audit-error.png';
+                            else
+                                return 'data:image/png;base64,' + config.map_dis_outlet_audit_denied;
+                        }
+
+                        if (outlet.AuditStatus == StatusAuditAccept || outlet.AuditStatus == StatusExitingAccept) {
+                            if (isEmpty(config.map_dis_outlet_audit_approved))
+                                return 'assets/img/pin-dis-audit-right.png';
+                            else
+                                return 'data:image/png;base64,' + config.map_dis_outlet_audit_approved;
+                        }
+
+                        //if (!outlet.IsTracked) {
+                        //    return 'assets/img/pin-sr-nontrack.png';
+                        //}
+                        if (!outlet.IsOpened) {
+                            if (isEmpty(config.map_dis_outlet_closed))
+                                return 'assets/img/pin-dis-close.png';
+                            else
+                                return 'data:image/png;base64,' + config.map_dis_outlet_closed;
+                        }
+
+                        if (isEmpty(config.map_dis_outlet_opened)) {
+                            return 'assets/img/pin-dis-open.png';
+                        } else {
+                            return 'data:image/png;base64,' + config.map_dis_outlet_opened;
+                        }
+                }
             }
         }
     }

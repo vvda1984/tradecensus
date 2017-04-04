@@ -98,7 +98,8 @@ function newOutlet(provinceName) {
         viewAuditStatus : false,
         marker: null,
         PStatus: 0,
-        AmendByRole: user.role
+        AmendByRole: user.role,
+        InputByRole: user.role
     };
 }
 

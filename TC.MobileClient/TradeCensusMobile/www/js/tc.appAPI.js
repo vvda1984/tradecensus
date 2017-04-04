@@ -312,12 +312,13 @@ function captureImage(onSuccess, onError, useFrontCamera) {
             } else {
                 navigator.camera.getPicture(onSuccess, onError,
                     {
+						cameraDirection: 1,
                         quality: 30,
                         targetWidth: 800,
                         targetHeight: 600,
                         correctOrientation: true,
                         destinationType: Camera.DestinationType.FILE_URI, // DATA_URL for base64 => not recommend due to memory issue
-                    }, { cameraDirection: 1 });
+                    });
             }
         }
     } catch (err) {

@@ -37,7 +37,7 @@ namespace TradeCensus
                 Email = person.Email,
                 EmailTo = person.EmailTo,
                 FirstName = person.FirstName,
-                HasAuditRole = user.Role % 10 == 1, // == Constants.RoleAudit || user.Role == Constants.RoleAudit1,
+                HasAuditRole = user.Role % 10 == 1 || user.Role % 10 == 3, // == Constants.RoleAudit || user.Role == Constants.RoleAudit1,
                 Role = user.Role,
                 HomeAddress = person.HomeAddress,
                 HouseNo = person.HouseNo,

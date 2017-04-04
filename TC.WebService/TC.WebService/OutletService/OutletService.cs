@@ -14,8 +14,8 @@ namespace TradeCensus
 {
     public class OutletService : TradeCensusServiceBase, IOutletService
     {
-        static object Locker = new object(); 
-        
+        static object Locker = new object();
+
         const byte OActionDenyUpdate = 17;
 
         public OutletService() : base("Outlet")
@@ -44,9 +44,9 @@ namespace TradeCensus
             Point br = DistanceUtil.CalcShiftedPoint(0 - meter, meter, curLocation);
 
             List<OutletModel> res = new List<OutletModel>();
-            var command = QueryOutletCommand(status, bl.Lat, tl.Lat, bl.Lng, br.Lng,  personID, auditor);
+            var command = QueryOutletCommand(status, bl.Lat, tl.Lat, bl.Lng, br.Lng, personID, auditor);
 
-            var query = DC.Database.SqlQuery<OutletEntity>(command); 
+            var query = DC.Database.SqlQuery<OutletEntity>(command);
             if (query.Any())
             {
                 var arr = query.ToArray();
@@ -82,7 +82,7 @@ namespace TradeCensus
                 }
             }
             return res;
-        }        
+        }
 
         private string QueryOutletCommand(int status, double minLat, double maxLat, double minLng, double maxLng, int personID, bool auditor)
         {
@@ -93,18 +93,21 @@ namespace TradeCensus
 		            p.FirstName as PersonFirstName,  
 		            p.LastName as PersonLastName,
 		            p.IsDSM as PersonIsDSM,
-                    r.Role as AmendByRole
+                    r1.Role as InputByRole,
+					r2.Role as AmendByRole
 	            from 
 		            Outlet as o 
                     left join Province pr with(nolock) on o.ProvinceID = pr.ID
 		            left join OutletType ot with(nolock) on o.OTypeID = ot.ID
 		            left join Person p with(nolock) on p.ID = o.PersonID 
-                    left join PersonRole r with(nolock) on p.ID = r.PersonID ";
+                    left join PersonRole r with(nolock) on p.ID = r.PersonID 
+					left join PersonRole r1 with(nolock) on r1.PersonID = o.InputBy
+                    left join PersonRole r2 with(nolock) on r2.PersonID = o.AmendBy";
 
             if (status == 0) // near-by
             {
                 sqlCommand += string.Format(
-                    @"where
+                    @" where
                         o.Latitude >= {0} AND o.Latitude <= {1} AND
                         o.Longitude >= {2} AND o.Longitude <= {3} AND
                         o.AuditStatus <> {4}", minLat, maxLat, minLng, maxLng, Constants.StatusDelete
@@ -114,7 +117,7 @@ namespace TradeCensus
             {
                 if (auditor)
                     sqlCommand += string.Format(
-                        @"where
+                        @" where
                             o.Latitude >= {0} AND o.Latitude <= {1} AND
                             o.Longitude >= {2} AND o.Longitude <= {3} AND
                             (
@@ -130,7 +133,7 @@ namespace TradeCensus
                         );
                 else
                     sqlCommand += string.Format(
-                       @"where
+                       @" where
                             o.Latitude >= {0} AND o.Latitude <= {1} AND
                             o.Longitude >= {2} AND o.Longitude <= {3} AND 
                             o.AuditStatus IN ({4}, {5}, {6}, {7}, {8})",
@@ -146,7 +149,7 @@ namespace TradeCensus
             {
                 if (auditor)
                     sqlCommand += string.Format(
-                       @"where
+                       @" where
                             o.Latitude >= {0} AND o.Latitude <= {1} AND
                             o.Longitude >= {2} AND o.Longitude <= {3} AND
                             o.AuditStatus = {4} AND
@@ -156,7 +159,7 @@ namespace TradeCensus
                             personID);
                 else
                     sqlCommand += string.Format(
-                     @"where
+                     @" where
                         o.Latitude >= {0} AND o.Latitude <= {1} AND
                         o.Longitude >= {2} AND o.Longitude <= {3} AND 
                         o.AmendBy = {4} AND
@@ -172,7 +175,7 @@ namespace TradeCensus
             else if (status == 3) // audit
             {
                 sqlCommand += string.Format(
-                     @"where
+                     @" where
                         o.Latitude >= {0} AND o.Latitude <= {1} AND
                         o.Longitude >= {2} AND o.Longitude <= {3} AND 
                         o.AmendBy = {4} AND
@@ -190,7 +193,7 @@ namespace TradeCensus
             {
                 if (auditor)
                     sqlCommand += string.Format(
-                    @"where
+                    @" where
                             o.Latitude >= {0} AND o.Latitude <= {1} AND
                             o.Longitude >= {2} AND o.Longitude <= {3} AND 
                             o.PersonID = {4} AND
@@ -202,7 +205,7 @@ namespace TradeCensus
                     );
                 else
                     sqlCommand += string.Format(
-                    @"where
+                    @" where
                             o.Latitude >= {0} AND o.Latitude <= {1} AND
                             o.Longitude >= {2} AND o.Longitude <= {3} AND 
                             o.PersonID = {4} AND
@@ -261,7 +264,8 @@ namespace TradeCensus
                 TotalVolume = outlet.TotalVolume,
                 VBLVolume = outlet.VBLVolume,
                 PStatus = outlet.PModifiedStatus,
-                AmendByRole = outlet.AmendByRole ?? 0
+                AmendByRole = outlet.AmendByRole ?? 0,
+                InputByRole = outlet.InputByRole ?? 0
             };
 
             foundOutlet.FullAddress = string.Format("{0} {1} {2} {3} {4}", outlet.AddLine, outlet.AddLine2, outlet.Ward, outlet.District, foundOutlet.ProvinceName);
@@ -278,16 +282,31 @@ namespace TradeCensus
                 foundOutlet.StringImage6 = ToBase64(outletImg.ImageData6);
             }
 
-            var person = DC.People.FirstOrDefault(p=>p.ID == outlet.PersonID);
-            if(person != null)
+            var person = DC.People.FirstOrDefault(p => p.ID == outlet.PersonID);
+            if (person != null)
             {
                 foundOutlet.PersonLastName = person.LastName;
                 foundOutlet.PersonFirstName = person.FirstName;
                 foundOutlet.PersonIsDSM = person.IsDSM;
-                foundOutlet.OutletSource = person.IsDSM ? 1 : 0;
-            }            
+                foundOutlet.OutletSource = GetOutletSource(outlet); // person.IsDSM ? 1 : 0;
+            }
 
             return foundOutlet;
+        }
+
+        private int GetOutletSource(OutletEntity outlet)
+        {
+            return (outlet.PersonIsDSM != null && outlet.PersonIsDSM.Value) ? 1 : 0;
+
+            //var amendRole = outlet.PersonRole ?? 0;
+            //if (amendRole == 0 || amendRole == 1) // salesman / auditor
+            //{
+            //    return (outlet.PersonIsDSM != null && outlet.PersonIsDSM.Value) ? 1 : 0;
+            //}
+            //else // agency / agency auditor
+            //{
+            //    return 2;
+            //}
         }
 
         private string ToActionMsg(int auditStatus)
@@ -420,7 +439,7 @@ namespace TradeCensus
                 DeleteOutlet(outlet.PersonID, outlet.ID);
                 return null;
             }
-            else if(outlet.AuditStatus == Constants.StatusRevert)
+            else if (outlet.AuditStatus == Constants.StatusRevert)
             {
                 throw new NotImplementedException("Revert was not implemented!");
             }
@@ -587,7 +606,7 @@ namespace TradeCensus
 
         private string GetOutletType(string id)
         {
-            var item =DC.OutletTypes.FirstOrDefault(i => i.ID == id);
+            var item = DC.OutletTypes.FirstOrDefault(i => i.ID == id);
             return item == null ? "" : item.Name;
         }
 
@@ -595,8 +614,8 @@ namespace TradeCensus
         {
             var item = DC.Provinces.FirstOrDefault(i => i.ID == id);
             return item == null ? "" : item.Name;
-        }      
-  
+        }
+
         private void AppendOutletHistory(int personID, int outletID, int action, string note)
         {
             var hist = new OutletHistory {
@@ -616,7 +635,7 @@ namespace TradeCensus
             if (existingOutlet != null)
             {
                 var imgs = existingOutlet.OutletImages.ToArray();
-                foreach(var img in imgs)
+                foreach (var img in imgs)
                 {
                     img.Outlet = null;
                     DC.OutletImages.Remove(img);
@@ -642,24 +661,26 @@ namespace TradeCensus
             {
                 var command = string.Format(@"select * from (
                             select Row_Number() over(order by Outlet.ID) as RowNo,
-                                   Outlet.*,
-                                   Person.FirstName as PersonFirstName, 
-                                        Person.LastName as PersonLastName, 
-                                        Person.IsDSM as PersonIsDSM, 
-                                        Person.IsDSM as OutletSource, 
-                                        PersonRole.Role as AmendByRole,
-                                   ot.Name as OutletTypeName,
-                                   oi.ImageData1, 
-                                   oi.ImageData2, 
-                                   oi.ImageData3, 
-                                   oi.ImageData4,
-                                   oi.ImageData5, 
-                                   oi.ImageData6
-                              from outlet
-                              left join OutletType as ot on ot.ID = Outlet.OTypeID 
-                              left join Person on Person.ID = Outlet.PersonID 
-                              left join PersonRole on Person.ID = PersonRole.PersonID 
-                              left join OutletImage as oi on oi.OutletID = Outlet.ID
+                                o.*,
+                                p.FirstName as PersonFirstName, 
+                                p.LastName as PersonLastName, 
+                                p.IsDSM as PersonIsDSM, 
+                                p.IsDSM as OutletSource, 
+                                r.Role as InputByRole,
+                                r1.Role as AmendByRole,
+                                ot.Name as OutletTypeName,
+                                oi.ImageData1, 
+                                oi.ImageData2, 
+                                oi.ImageData3, 
+                                oi.ImageData4,
+                                oi.ImageData5, 
+                                oi.ImageData6
+                            from outlet o
+                                left join OutletType ot on ot.ID = o.OTypeID 
+                                left join Person p on p.ID = o.PersonID 
+                                left join PersonRole r on r.PersonID = o.InputBy 
+			                    left join PersonRole r1 on r1.PersonID = o.AmendBy 
+                                left join OutletImage as oi on oi.OutletID = o.ID
                               where outlet.ProvinceID = {2}
                         ) as tmp
                         where RowNo between {0} and {1}", from + 1, to, provinceID);
@@ -667,10 +688,10 @@ namespace TradeCensus
                 var query = DC.Database.SqlQuery<DownloadOutlet>(command);
                 results = query.ToArray();
 
-                var outletHasImages = results.Where(o => 
+                var outletHasImages = results.Where(o =>
                     (o.ImageData1 != null || o.ImageData2 != null || o.ImageData3 != null ||
                      o.ImageData4 != null || o.ImageData5 != null || o.ImageData6 != null));
-                 if (outletHasImages.Count() > 0)
+                if (outletHasImages.Count() > 0)
                     foreach (var o in outletHasImages)
                     {
                         if (o.ImageData1 != null)
@@ -701,7 +722,7 @@ namespace TradeCensus
                                         Person.LastName as PersonLastName, 
                                         Person.IsDSM as PersonIsDSM, 
                                         Person.IsDSM as OutletSource, 
-                                        PersonRole.Role as AmendByRole,
+                                        PersonRole.Role as PersonRole,
                                         ot.Name as OutletTypeName
                               from outlet
                               left join OutletType as ot on ot.ID = Outlet.OTypeID 
@@ -824,7 +845,7 @@ namespace TradeCensus
         {
             var resp = new GetOutletListResponse();
             try
-            { 
+            {
                 ValidatePerson(int.Parse(personID), password);
 
                 resp.Items = GetOutletsByLocation(int.Parse(personID),
@@ -929,8 +950,8 @@ namespace TradeCensus
                 resp.Image5 = "";
                 resp.Image6 = "";
                 int id = int.Parse(outletID);
-                var o = DC.OutletImages.FirstOrDefault(i=>i.OutletID == id);
-                if(o != null)
+                var o = DC.OutletImages.FirstOrDefault(i => i.OutletID == id);
+                if (o != null)
                 {
                     if (o.ImageData1 != null)
                         resp.Image1 = FormatBase64(Convert.ToBase64String(o.ImageData1));
@@ -958,7 +979,7 @@ namespace TradeCensus
             }
             return resp;
         }
-        
+
         #endregion
-    }
+    }   
 }

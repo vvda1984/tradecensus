@@ -15,16 +15,6 @@ namespace TradeCensus
     }
 
     [DataContract]
-    public class GetOutletIDResponse : Response
-    {
-        [DataMember]
-        public List<OutletShort> Outlets
-        {
-            get; set;
-        }
-    }
-
-    [DataContract]
     public class GetOutletResponse : Response
     {
         [DataMember]

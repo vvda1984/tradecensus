@@ -287,7 +287,7 @@ function loginController($scope, $http) {
             showError(R.user_terminated);
             return;
         }
-      
+
         userID = loginUser.ID;
         $scope.user.id = loginUser.ID;
         $scope.user.firstName = loginUser.FirstName;
@@ -311,25 +311,25 @@ function loginController($scope, $http) {
         $scope.user.token = loginUser.Token == undefined ? '' : loginUser.Token;
 
         user = $scope.user;
-        
+
         config.tbl_outletSync = 'outletsync_' + $scope.user.id;
         config.tbl_outlet = 'outlet_' + $scope.user.id;
         config.tbl_downloadProvince = 'outlet_province_' + $scope.user.id;
         config.tbl_journal = 'journal_tracking_' + $scope.user.id;
-        
+
         log($scope.user.hasAuditRole);
         enableSync = true;
         resetLocal = loginUser.Role >= 100;
 
-		log('create outlet tables');
+        log('create outlet tables');
 
-		ensureUserOutletDBExist(resetLocal, 
-            config.tbl_outletSync, 
-            config.tbl_outlet, 
-            config.tbl_downloadProvince, 
+        ensureUserOutletDBExist(resetLocal,
+            config.tbl_outletSync,
+            config.tbl_outlet,
+            config.tbl_downloadProvince,
             config.tbl_journal,
             function () {
-                showDlg(R.loading, R.please_wait);             
+                showDlg(R.loading, R.please_wait);
                 ping(function (r) {
                     hideDlg();
                     serverConnected = r;
@@ -337,19 +337,16 @@ function loginController($scope, $http) {
                         showDlg(R.download_settings, R.please_wait);
                         downloadServerConfig(function () {
                             log('Navigate to home (online)');
-                            finalizeLoginView();
+                            checkRootDevice(function () { finalizeLoginView(); });
                         }, function (dberr) {
                             log(dberr);
-                            finalizeLoginView();
-                            //hideDlg();
-                            //showError(dberr.message);
+                            checkRootDevice(function () { finalizeLoginView(); });
                         });
-                    }
-                    else {
+                    } else {
                         log('Navigate to home (offline)');
-                        finalizeLoginView();
+                        checkRootDevice(function () { finalizeLoginView(); });
                     }
-                });                
+                });
             });
     }
 
@@ -358,7 +355,25 @@ function loginController($scope, $http) {
         showError(err);
     }   
     
-    function finalizeLoginView(stat) {
+    function checkRootDevice(onsucccess) {
+        if (config.check_rooted_device) {
+            detectRootedDevice(function (result) {
+                if (result === 1) {
+                    hideDlg();
+                    showDlg(R.error, "Your device is rooted!",
+                        function () {
+                            navigator.app.exitApp();
+                        });
+                } else {
+                    onsucccess();
+                }
+            });
+        } else {
+            onsucccess();
+        }
+    }
+
+    function finalizeLoginView() {
         log('Load downloaded provinces table');
         selectDownloadProvincesDB(config.tbl_downloadProvince, function (dbres) {
             dprovinces = [];
@@ -416,7 +431,7 @@ function loginController($scope, $http) {
             showError(dberr.message);
         });
     }
-
+   
     function downloadServerConfig(onSuccess, onError) {
         var url = baseURL + '/config/getall';
         log('Call service api: ' + url);
@@ -592,9 +607,56 @@ function loginController($scope, $http) {
                 if (data.Status == -1) { // error
                     onError(data.ErrorMessage);
                 } else {
-                    config.map_salesman_new_outlet = data.salesmanNewOutletMapIcon;
-                    config.map_auditor_new_outlet = data.auditorNewOutletMapIcon;
-                    config.map_agency_new_outlet = data.agencyNewOutletMapIcon;
+                    for (var i = 0; i < data.Icons.length; i++) {
+                        p = data.Icons[i];
+                        var name = data.Icons[i].Key;
+                        var value = data.Icons[i].Value;
+
+                        if (name == 'tc_salesman_outlet') {
+                            config.map_tc_salesman_outlet = value;
+                        } else if (name == 'tc_salesman_outlet_denied') {
+                            config.map_tc_salesman_outlet_denied = value;
+                        } else if (name == 'tc_auditor_outlet') {
+                            config.map_tc_auditor_outlet = value;
+                        } else if (name == 'tc_auditor_outlet_denied') {
+                            config.map_tc_auditor_outlet_denied = value;
+                        }
+
+                        else if (name == 'tc_agency_new_outlet') {
+                            config.map_tc_agency_new_outlet = value;
+                        } else if (name == 'tc_agency_new_outlet_denied') {
+                            config.map_tc_agency_new_outlet_denied = value;
+                        } else if (name == 'tc_agency_new_outlet_approved') {
+                            config.map_tc_agency_new_outlet_approved = value;
+                        } else if (name == 'tc_agency_existing_outlet_edited') {
+                            config.map_tc_agency_existing_outlet_edited = value;
+                        } else if (name == 'tc_agency_existing_outlet_denied') {
+                            config.map_tc_agency_existing_outlet_denied = value;
+                        } else if (name == 'tc_agency_existing_outlet_approved') {
+                            config.map_tc_agency_existing_outlet_approved = value;
+                        }
+
+                        else if (name == 'sr_outlet_audit_denied') {
+                            config.map_sr_outlet_audit_denied = value;
+                        } else if (name == 'sr_outlet_audit_approved') {
+                            config.map_sr_outlet_audit_approved = value;
+                        } else if (name == 'sr_outlet_closed') {
+                            config.map_sr_outlet_closed = value;
+                        } else if (name == 'sr_outlet_non_track') {
+                            config.map_sr_outlet_non_track = value;
+                        } else if (name == 'sr_outlet_opened') {
+                            config.map_sr_outlet_opened = value;
+                        } else if (name == 'dis_outlet_audit_denied') {
+                            config.map_dis_outlet_audit_denied = value;
+                        } else if (name == 'dis_outlet_audit_approved') {
+                            config.map_dis_outlet_audit_approved = value;
+                        } else if (name == 'dis_outlet_closed') {
+                            config.map_dis_outlet_closed = value;
+                        } else if (name == 'dis_outlet_opened') {
+                            config.map_dis_outlet_opened = value;
+                        }
+                    }
+
                     onSuccess();
                 }
             }, handleHttpError);
@@ -604,37 +666,36 @@ function loginController($scope, $http) {
     }
 
     //showLoading("Loading", "Please wait");
-    function downloadServerSetttings1(complete) {
-        var url = baseURL + '/config/getall';
-        log('Call service api: ' + url);
-        $http({
-            method: config.http_method,
-            url: url
-        }).then(function (resp) {
-            var data = resp.data;
-            if (data.Status == -1) { // error
-                onError(data.ErrorMessage);
-            } else {
-                setDlgMsg(R.update_settings);
-                for (var i = 0; i < data.Items.length; i++) {
-                    p = data.Items[i];
-                    if (name == 'check_rooted_device') {
-                        config.check_rooted_device = parseInt(value);
-                        break;
-                    }
-                }
-            }
-            complete();
-        }, function () { complete(); });
-    }
-
-    downloadServerSetttings1(function () {
-        if (config.check_rooted_device) {
-            detectRootedDevice(function (result) {
-                if (result === 1) {
-                    navigator.app.exitApp();
-                }
-            });
-        }
-    })
+    //function downloadServerSetttings1(complete) {
+    //    var url = baseURL + '/config/getall';
+    //    log('Call service api: ' + url);
+    //    $http({
+    //        method: config.http_method,
+    //        url: url
+    //    }).then(function (resp) {
+    //        var data = resp.data;
+    //        if (data.Status == -1) { // error
+    //            onError(data.ErrorMessage);
+    //        } else {
+    //            setDlgMsg(R.update_settings);
+    //            for (var i = 0; i < data.Items.length; i++) {
+    //                p = data.Items[i];
+    //                if (name == 'check_rooted_device') {
+    //                    config.check_rooted_device = parseInt(value);
+    //                    break;
+    //                }
+    //            }
+    //        }
+    //        complete();
+    //    }, function () { complete(); });
+    //}
+    //downloadServerSetttings1(function () {
+    //    if (config.check_rooted_device) {
+    //        detectRootedDevice(function (result) {
+    //            if (result === 1) {
+    //                navigator.app.exitApp();
+    //            }
+    //        });
+    //    }
+    //})
 };

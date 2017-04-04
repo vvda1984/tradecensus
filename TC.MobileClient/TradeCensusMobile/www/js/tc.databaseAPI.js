@@ -220,9 +220,25 @@ function insertSettingDB(config, onSuccess, onError) {
 		insertSetting(tx, "enable_check_in", config.enable_check_in.toString());
 		insertSetting(tx, "hotlines", JSON.stringify(config.hotlines));
 		insertSetting(tx, "map_icons_version", config.map_icons_version.toString());
-		insertSetting(tx, "map_salesman_new_outlet", config.map_salesman_new_outlet);
-		insertSetting(tx, "map_agency_new_outlet", config.map_agency_new_outlet);
-		insertSetting(tx, "map_auditor_new_outlet", config.map_auditor_new_outlet);      
+		insertSetting(tx, "map_tc_salesman_outlet", config.map_tc_salesman_outlet);
+		insertSetting(tx, "map_tc_salesman_outlet_denied", config.map_tc_salesman_outlet_denied);
+		insertSetting(tx, "map_tc_auditor_outlet", config.map_tc_auditor_outlet);
+		insertSetting(tx, "map_tc_auditor_outlet_denied", config.map_tc_auditor_outlet_denied);
+		insertSetting(tx, "map_tc_agency_new_outlet", config.map_tc_agency_new_outlet);
+		insertSetting(tx, "map_tc_agency_new_outlet_denied", config.map_tc_agency_new_outlet_denied);
+		insertSetting(tx, "map_tc_agency_new_outlet_approved", config.map_tc_agency_new_outlet_approved);
+		insertSetting(tx, "map_tc_agency_existing_outlet_edited", config.map_tc_agency_existing_outlet_edited);
+		insertSetting(tx, "map_tc_agency_existing_outlet_denied", config.map_tc_agency_existing_outlet_denied);
+		insertSetting(tx, "map_tc_agency_existing_outlet_approved", config.map_tc_agency_existing_outlet_approved);
+		insertSetting(tx, "map_sr_outlet_audit_denied", config.map_sr_outlet_audit_denied);
+		insertSetting(tx, "map_sr_outlet_audit_approved", config.map_sr_outlet_opened);
+		insertSetting(tx, "map_sr_outlet_closed", config.map_sr_outlet_closed);
+		insertSetting(tx, "map_sr_outlet_non_track", config.map_sr_outlet_non_track);
+		insertSetting(tx, "map_sr_outlet_opened", config.map_sr_outlet_opened);
+		insertSetting(tx, "map_dis_outlet_audit_denied", config.map_dis_outlet_audit_denied);
+		insertSetting(tx, "map_dis_outlet_audit_approved", config.map_dis_outlet_audit_approved);
+		insertSetting(tx, "map_dis_outlet_closed", config.map_dis_outlet_closed);
+		insertSetting(tx, "map_dis_outlet_opened", config.map_dis_outlet_opened);		
         onSuccess();
     }, onError);
 }
@@ -439,7 +455,8 @@ function ensureUserOutletDBExist(isReset, outletSyncTbl, outletTbl, provinceDown
 	                    '[Ward] text NULL,' +                        
                         '[StringImage4] text,' +
 	                    '[StringImage5] text,' +
-	                    '[StringImage6] text,' + 
+	                    '[StringImage6] text,' +
+                        '[InputByRole] int NULL,' +
                         '[AmendByRole] int NULL' + ')');
         logSqlCommand(sql);
         tx.executeSql(sql);
@@ -448,10 +465,11 @@ function ensureUserOutletDBExist(isReset, outletSyncTbl, outletTbl, provinceDown
             tx.executeSql('ALTER TABLE ' + outletTbl + ' ADD COLUMN [Ward] text NULL', [], function (tx1) { }, function (tx1, dberr) { });
         }
 
-        if (config.versionNum < 8) {
+        if (config.versionNum < 10) {
             tx.executeSql('ALTER TABLE ' + outletTbl + ' ADD COLUMN [StringImage4] text NULL', [], function (tx1) { }, function (tx1, dberr) { });
             tx.executeSql('ALTER TABLE ' + outletTbl + ' ADD COLUMN [StringImage5] text NULL', [], function (tx1) { }, function (tx1, dberr) { });
             tx.executeSql('ALTER TABLE ' + outletTbl + ' ADD COLUMN [StringImage6] text NULL', [], function (tx1) { }, function (tx1, dberr) { });
+            tx.executeSql('ALTER TABLE ' + outletTbl + ' ADD COLUMN [InputByRole] int NULL', [], function (tx1) { }, function (tx1, dberr) { });
             tx.executeSql('ALTER TABLE ' + outletTbl + ' ADD COLUMN [AmendByRole] int NULL', [], function (tx1) { }, function (tx1, dberr) { });
         }
         
@@ -741,6 +759,7 @@ function buildOutletInsertSql(outletTbl, outlet) {
     sql = sql.concat("'", outlet.StringImage4, "', ");      //'[StringImage4] text,' ,
     sql = sql.concat("'", outlet.StringImage5, "', ");      //'[StringImage5] text,' ,
     sql = sql.concat("'", outlet.StringImage6, "',");       //'[StringImage6] text,' ,
+    sql = sql.concat(outlet.InputByRole, ",");              //'[InputByRole]
     sql = sql.concat(outlet.AmendByRole, ")");              //'[AmendByRole] text,' ,
     return sql;
 }
@@ -803,6 +822,7 @@ function addNewOutlet(tx, outletTbl, outlet, isAdd, isMod, isAud, synced, marked
     sql = sql.concat('"', outlet.StringImage4, '",');       //'[StringImage4] text,' ,
     sql = sql.concat('"', outlet.StringImage5, '",');       //'[StringImage5] text,' ,
     sql = sql.concat('"', outlet.StringImage6, '",');       //'[StringImage6] text,' ,
+    sql = sql.concat(outlet.InputByRole, ',');              //'[InputByRole] text,' ,
     sql = sql.concat(outlet.AmendByRole, ')');              //'[AmendByRole] text,' ,
     
     logSqlCommand(sql);
