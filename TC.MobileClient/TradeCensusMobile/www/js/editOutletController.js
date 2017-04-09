@@ -118,7 +118,13 @@ function editOutletController($scope, $mdDialog) {
 
     var allowCapture = $scope.allowCapture;
     $scope.allowCapture = allowCapture &&
-        (isEmpty($scope.outlet.StringImage1) || isEmpty($scope.outlet.StringImage2) || isEmpty($scope.outlet.StringImage3));
+        (isEmpty($scope.outlet.StringImage1) || 
+         isEmpty($scope.outlet.StringImage2) || 
+         isEmpty($scope.outlet.StringImage3) ||
+         isEmpty($scope.outlet.StringImage5) || 
+         isEmpty($scope.outlet.StringImage6));
+
+    allowCapture = $scope.allowCapture;
 
     $scope.showDraft = $scope.outlet.IsDraft;
     $scope.outlet.modifiedImage1 = false;
@@ -155,7 +161,7 @@ function editOutletController($scope, $mdDialog) {
             };
 
             if (!isEmpty($scope.outlet.StringImage1)) {
-                openImgViewer($scope.outlet.Name, false, $scope.image1URL, function (imageURI) {
+                openImgViewer($scope.outlet.Name, !allowCapture, $scope.image1URL, function (imageURI) {
                     log('Update imageURI 1: ' + imageURI);
                     if (imageURI != null) {
                         saveImg1Func(imageURI);
@@ -182,7 +188,7 @@ function editOutletController($scope, $mdDialog) {
             };
 
             if (!isEmpty($scope.outlet.StringImage2)) {
-                openImgViewer($scope.outlet.Name, false, $scope.image2URL, function (imageURI) {
+                openImgViewer($scope.outlet.Name, !allowCapture, $scope.image2URL, function (imageURI) {
                     log('Update imageURI 2: ' + imageURI);
                     if (imageURI != null) {
                         saveImg2Func(imageURI);
@@ -209,7 +215,7 @@ function editOutletController($scope, $mdDialog) {
             };
 
             if (!isEmpty($scope.outlet.StringImage3)) {
-                openImgViewer($scope.outlet.Name, false, $scope.image3URL, function (imageURI) {
+                openImgViewer($scope.outlet.Name, !allowCapture, $scope.image3URL, function (imageURI) {
                     log('Update imageURI 3: ' + imageURI);
                     if (imageURI != null) {
                         saveImg3Func(imageURI);
@@ -257,7 +263,7 @@ function editOutletController($scope, $mdDialog) {
             };
 
             if (!isEmpty($scope.outlet.StringImage5)) {
-                openImgViewer($scope.outlet.Name, false, $scope.image5URL, function (imageURI) {
+                openImgViewer($scope.outlet.Name, !allowCapture, $scope.image5URL, function (imageURI) {
                     log('Update imageURI 5: ' + imageURI);
                     if (imageURI != null) {
                         saveImg5Func(imageURI);
@@ -284,7 +290,7 @@ function editOutletController($scope, $mdDialog) {
             };
 
             if (!isEmpty($scope.outlet.StringImage6)) {
-                openImgViewer($scope.outlet.Name, false, $scope.image6URL, function (imageURI) {
+                openImgViewer($scope.outlet.Name, !allowCapture, $scope.image6URL, function (imageURI) {
                     log('Update imageURI 6: ' + imageURI);
                     if (imageURI != null) {
                         saveImg6Func(imageURI);

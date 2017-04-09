@@ -137,6 +137,10 @@ function showValidationErrAdv(message, onClose) {
 }
 
 function showError(message) {
+    if (typeof message === 'undefined') {
+        return;
+    }
+
     resetCallback();
     hideDlg();
     hideLoadingDlg();
@@ -144,6 +148,10 @@ function showError(message) {
 }
 
 function showErrorAdv(message, onClose) {
+    if (typeof message === 'undefined') {
+        return;
+    }
+
     resetCallback();
     hideDlg();
     showDlg(R.error, message, function () { onClose();});;

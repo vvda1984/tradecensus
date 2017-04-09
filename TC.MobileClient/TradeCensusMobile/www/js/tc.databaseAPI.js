@@ -230,6 +230,9 @@ function insertSettingDB(config, onSuccess, onError) {
 		insertSetting(tx, "map_tc_agency_existing_outlet_edited", config.map_tc_agency_existing_outlet_edited);
 		insertSetting(tx, "map_tc_agency_existing_outlet_denied", config.map_tc_agency_existing_outlet_denied);
 		insertSetting(tx, "map_tc_agency_existing_outlet_approved", config.map_tc_agency_existing_outlet_approved);
+		insertSetting(tx, "map_tc_agency_auditor_new_outlet", config.map_tc_agency_auditor_new_outlet);
+		insertSetting(tx, "map_tc_agency_auditor_new_outlet_denied", config.map_tc_agency_auditor_new_outlet_denied);
+		insertSetting(tx, "map_tc_agency_auditor_new_outlet_approved", config.map_tc_agency_auditor_new_outlet_approved);
 		insertSetting(tx, "map_sr_outlet_audit_denied", config.map_sr_outlet_audit_denied);
 		insertSetting(tx, "map_sr_outlet_audit_approved", config.map_sr_outlet_opened);
 		insertSetting(tx, "map_sr_outlet_closed", config.map_sr_outlet_closed);

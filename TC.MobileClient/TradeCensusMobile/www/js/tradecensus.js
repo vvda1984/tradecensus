@@ -1,4 +1,6 @@
-﻿(function (global) {
+﻿var _WEB = true;
+
+(function (global) {
     "use strict";
     function onDeviceReady() {
         console.log('Device Ready!');
@@ -67,8 +69,12 @@
     }
 
     //$(document).ready(function () { onDeviceReady(); }); // web
-    document.addEventListener("deviceready", onDeviceReady, false); // mobile
+    if (_WEB)
+        $(document).ready(function () { onDeviceReady(); }); // web
+    else 
+        document.addEventListener("deviceready", onDeviceReady, false); // mobile
 })(window);
+
 
 var resetDB = false;                // force reset database - testing only
 var db;                             // database instance
@@ -171,8 +177,8 @@ function newConfig() {
     //port: '33334',//'3001',
     //var testBuild = false;
     var c = {
-        debug_build: false,
-        enable_devmode: false,
+        debug_build: _WEB,
+        enable_devmode: _WEB,
         enable_logview: false,
         page_size: 20,
         cluster_size: 50,
@@ -232,6 +238,9 @@ function newConfig() {
 		map_tc_agency_new_outlet: '',
 		map_tc_agency_new_outlet_denied: '',
 		map_tc_agency_new_outlet_approved: '',
+		map_tc_agency_auditor_new_outlet: '',
+		map_tc_agency_auditor_new_outlet_denied: '',
+		map_tc_agency_auditor_new_outlet_approved: '',
 		map_tc_agency_existing_outlet_edited: '',
 		map_tc_agency_existing_outlet_denied: '',
 		map_tc_agency_existing_outlet_approved: '',
@@ -532,6 +541,12 @@ function loadSettings(tx, callback) {
                         config.map_tc_agency_existing_outlet_denied = value;
                     } else if (name == 'map_tc_agency_existing_outlet_approved') {
                         config.map_tc_agency_existing_outlet_approved = value;
+                    } else if (name == 'map_tc_agency_auditor_new_outlet') {
+                        config.map_tc_agency_auditor_new_outlet = value;
+                    } else if (name == 'map_tc_agency_auditor_new_outlet_denied') {
+                        config.map_tc_agency_auditor_new_outlet_denied = value;
+                    } else if (name == 'map_tc_agency_auditor_new_outlet_approved') {
+                        config.map_tc_agency_auditor_new_outlet_approved = value;
                     }
 
                     else if (name == 'map_sr_outlet_audit_denied') {

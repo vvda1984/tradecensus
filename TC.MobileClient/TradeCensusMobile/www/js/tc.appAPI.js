@@ -312,7 +312,7 @@ function captureImage(onSuccess, onError, useFrontCamera) {
             } else {
                 navigator.camera.getPicture(onSuccess, onError,
                     {
-						cameraDirection: 1,
+                        cameraDirection: Camera.Direction.FRONT,
                         quality: 30,
                         targetWidth: 800,
                         targetHeight: 600,

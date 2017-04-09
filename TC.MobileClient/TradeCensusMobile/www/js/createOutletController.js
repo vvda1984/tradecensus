@@ -41,11 +41,6 @@ function newOutletController($scope, $http, $mdDialog) {
         $scope.outlet.canComment = false;
     }
 
-    //if ($scope.showImage4) {
-    //    $('#selfieImgTitle').css('display', 'table-cell');
-    //    $('#selfieImgContent').css('display', 'table-cell');
-    //}
-
     $scope.title = buildTitle();
     var downloadProvinces = [];
     if (networkReady()) {

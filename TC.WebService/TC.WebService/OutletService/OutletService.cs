@@ -33,7 +33,8 @@ namespace TradeCensus
             var user = DC.PersonRoles.FirstOrDefault(i => i.PersonID == personID);
             if (user == null)
                 throw new Exception(string.Format("User {0} doesn't exist", personID));
-            var auditor = user.Role == Constants.RoleAudit || user.Role == Constants.RoleAudit1;
+            var auditor = user.Role == Constants.RoleAudit || user.Role == Constants.RoleAudit1 ||
+                          user.Role == Constants.RoleAgencyAudit || user.Role == Constants.RoleAgencyAudit1;
 
             string method = GetSetting("calc_distance_algorithm", "circle");
             Log("Calculate distance method: {0}", method);

@@ -1,5 +1,5 @@
 <style>
-    @media screen and (min-height: 600px) {
+    /*@media screen and (min-height: 600px) {
         #hotlines {
             height: 75px;
         }
@@ -13,9 +13,9 @@
 
     @media screen and (min-height: 768px) {
         #hotlines {
-            height: 223px;
+            height: 186px;
         }
-    }
+    }*/
 </style>
 
 <div id="view-home">
@@ -227,9 +227,9 @@
         </div>
     </div>
 
-    <div id="configPanel" class="slider-right">
+    <div id="configPanel" class="slider-right" style="overflow-y:auto;">
         <!--<div class=hidden-overlay" ng-click="showRightPanel()"></div> -->
-        <div id="slider-right-content">
+        <div id="slider-right-content" style="min-height:91%;">
             <md-content layout-padding="" class="md-content-white">
                 <form name="configForm">
                     <md-input-container class="md-block" style="margin-bottom:0px;">
@@ -295,10 +295,11 @@
                 </form>
             </md-content>
 
-            <div style="display: block; position: relative; margin:4px 20px 10px 20px; width:100px;">
+            <div style="display: block; margin:4px 20px 10px 20px; width:100px;">
                 <span style="font-size:14pt; color:#01541E;">HOTLINES</span>
             </div>
-            <div id="hotlines" style="display: block; position: relative; overflow: auto; margin:0 0 80px 24px;">
+
+            <div id="hotlines" style="display: block; overflow: auto; margin:0 0 20px 24px;">
                 <table cellspacing="0" style="border:none; font-size:11pt; width:310px; border-top: 1px solid #E1E1E1 !important;">
                     <tr style="height:32px;" ng-repeat="hotline in hotlines" >
                        <td style="border-bottom: 1px solid #E1E1E1 !important;">
@@ -327,19 +328,29 @@
                 </table>
             </div>
 
-            <div style="position:absolute; bottom:4px; right:0px; height:80px; left:12px;z-index:3;">
-                <div class="text-button float-left" ng-click="displayChangePasswordDlg()">
-                    <div><img src="assets/img/change-password.svg"></div>
-                    <div class="title small-text">{{R.btn_changePassword}}</div>
-                </div>
-                <div class="text-button float-left" ng-click="syncOutlets()">
-                    <div><img src="assets/img/sync.svg"></div>
-                    <div class="title">{{R.btn_sync}}</div>
-                </div>
-                <div class="text-button float-left" ng-click="changeView('login')">
-                    <div><img src="assets/img/logout.svg"></div>
-                    <div class="title">{{R.btn_logout}}</div>
-                </div>
+            <div style="margin-bottom:4px; z-index:3;">
+                <table>
+                    <tr>
+                        <td>
+                            <div class="text-button" ng-click="displayChangePasswordDlg()">
+                                <div><img src="assets/img/change-password.svg"></div>
+                                <div class="title small-text">{{R.btn_changePassword}}</div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="text-button" ng-click="syncOutlets()">
+                                <div><img src="assets/img/sync.svg"></div>
+                                <div class="title">{{R.btn_sync}}</div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="text-button" ng-click="changeView('login')">
+                                <div><img src="assets/img/logout.svg"></div>
+                                <div class="title">{{R.btn_logout}}</div>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
             </div>
         </div>
     </div>

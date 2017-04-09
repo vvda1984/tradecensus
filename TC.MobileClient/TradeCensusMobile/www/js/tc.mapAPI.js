@@ -273,12 +273,20 @@ function getMarkerIcon(outlet) {
                 imgName = config.map_tc_salesman_outlet;
             } else if (outlet.InputByRole == 1) { // Sale auditor
                 imgName = config.map_tc_auditor_outlet;
-            } else if (outlet.InputByRole == 2 || outlet.InputByRole == 3) { // Agency
+            } else if (outlet.InputByRole == 2) { // Agency
 
                 if (outlet.AuditStatus !== StatusAuditAccept && outlet.AuditStatus !== StatusAuditorAccept) {
                     imgName = config.map_tc_agency_new_outlet;
                 } else {
                     imgName = config.map_tc_agency_new_outlet_approved;
+                }
+
+            } else if (outlet.InputByRole == 3) { // Agency auditor
+
+                if (outlet.AuditStatus !== StatusAuditAccept && outlet.AuditStatus !== StatusAuditorAccept) {
+                    imgName = config.map_tc_agency_auditor_new_outlet;
+                } else {
+                    imgName = config.map_tc_agency_auditor_new_outlet_approved;
                 }
             }
 
@@ -291,8 +299,10 @@ function getMarkerIcon(outlet) {
                 imgName = config.map_tc_salesman_outlet_denied;
             } else if (outlet.InputByRole == 1) { // Sale auditor
                 imgName = config.map_tc_auditor_outlet_denied;
-            } else if (outlet.InputByRole == 2 || outlet.InputByRole == 3) { // Agency
+            } else if (outlet.InputByRole == 2) { // Agency
                 imgName = config.map_tc_agency_new_outlet_denied;
+            } else if (outlet.InputByRole == 3) { // Agency
+                imgName = config.map_tc_agency_auditor_new_outlet_denied;
             }
 
             return isEmpty(imgName) ? 'assets/img/pin-new-error.png' : 'data:image/png;base64,' + imgName;
@@ -301,7 +311,7 @@ function getMarkerIcon(outlet) {
             if (outlet.AmendByRole == 2 || outlet.AmendByRole == 3) {
 
                 if (outlet.AuditStatus == StatusAuditDeny || outlet.AuditStatus == StatusExitingDeny) {
-                    if (isEmpty(config.map_agency_outlet_audit_denied))
+                    if (isEmpty(config.map_tc_agency_existing_outlet_denied))
                         return 'assets/img/pin-dis-audit-error.png';
                     else
                         return 'data:image/png;base64,' + config.map_tc_agency_existing_outlet_denied;

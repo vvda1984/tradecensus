@@ -634,6 +634,12 @@ function loginController($scope, $http) {
                             config.map_tc_agency_existing_outlet_denied = value;
                         } else if (name == 'tc_agency_existing_outlet_approved') {
                             config.map_tc_agency_existing_outlet_approved = value;
+                        } else if (name == 'tc_agency_auditor_new_outlet') {
+                            config.map_tc_agency_auditor_new_outlet = value;
+                        } else if (name == 'tc_agency_auditor_new_outlet_denied') {
+                            config.map_tc_agency_auditor_new_outlet_denied = value;
+                        } else if (name == 'tc_agency_auditor_new_outlet_approved') {
+                            config.map_tc_agency_auditor_new_outlet_approved = value;
                         }
 
                         else if (name == 'sr_outlet_audit_denied') {

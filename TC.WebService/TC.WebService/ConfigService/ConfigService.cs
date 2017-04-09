@@ -34,6 +34,9 @@ namespace TradeCensus
                 FillMapIcon(resp, "tc_agency_existing_outlet_edited", mapIcons.tc_agency_existing_outlet_edited);
                 FillMapIcon(resp, "tc_agency_existing_outlet_denied", mapIcons.tc_agency_existing_outlet_denied);
                 FillMapIcon(resp, "tc_agency_existing_outlet_approved", mapIcons.tc_agency_existing_outlet_approved);
+                FillMapIcon(resp, "tc_agency_auditor_new_outlet", mapIcons.tc_agency_auditor_new_outlet);
+                FillMapIcon(resp, "tc_agency_auditor_new_outlet_denied", mapIcons.tc_agency_auditor_new_outlet_denied);
+                FillMapIcon(resp, "tc_agency_auditor_new_outlet_approved", mapIcons.tc_agency_auditor_new_outlet_approved);
 
                 FillMapIcon(resp, "sr_outlet_audit_denied", mapIcons.sr_outlet_audit_denied);
                 FillMapIcon(resp, "sr_outlet_audit_approved", mapIcons.sr_outlet_audit_approved);
@@ -133,6 +136,9 @@ namespace TradeCensus
         public string tc_agency_existing_outlet_edited { get; set; } // Sales of Agency edit existing outlets
         public string tc_agency_existing_outlet_denied { get; set; } // Auditor of Agency denies editing of existing outlets
         public string tc_agency_existing_outlet_approved { get; set; } // Auditor of Agency approves editing of existing outlets
+        public string tc_agency_auditor_new_outlet { get; set; } // Sales of Agency creates new outlets
+        public string tc_agency_auditor_new_outlet_denied { get; set; } // Auditor of Agency denies new outlets
+        public string tc_agency_auditor_new_outlet_approved { get; set; } // Auditor of Agency denies new outlets
 
         public string sr_outlet_audit_denied { get; set; }
         public string sr_outlet_audit_approved { get; set; }
