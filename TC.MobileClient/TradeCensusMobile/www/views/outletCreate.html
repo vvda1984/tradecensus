@@ -22,7 +22,7 @@
                     <div ng-messages="createOutletForm.name.$error" role="alert">
                         <div ng-message="required">{{ resource.text_ValRequired }}</div>
                     </div>
-                </md-input-container>              
+                </md-input-container>
                 <md-input-container class="md-block" flex-gt-sm="">
                     <label>{{R.outlet_type}}</label>
                     <md-select id="inputOutletType" ng-model="outlet.OTypeID">
@@ -109,25 +109,43 @@
             </div>
 
             <div layout-gt-sm="row">
-                <div flex-gt-sm="" style="margin-left:12px;margin-top:-12px;">
+                <div style="margin-left:12px;margin-top:-12px; font-size:9pt;" flex-gt-sm="">
                     <p>
                         {{R.volumn}}<br />
                         {{R.create_cartoons_avg_month}}
                     </p>
-                </div>    
+                </div>
                 <md-input-container class="md-block" flex-gt-sm="">
                     <label style="color:#103B68">{{R.total}}</label>
                     <input ng-model="outlet.TotalVolume" name="total" type="number" min="0" max="2147483647" step="1" pattern="\d*" required="">
-                    <!--<div ng-messages="createOutletForm.total.$error" role="alert">
-                        <div ng-message="required">{{ resource.text_ValRequired }}</div>
-                    </div>-->
                 </md-input-container>
-                <md-input-container class="md-block" flex-gt-sm="">
+                <md-input-container class="md-block" style="width:80px;" flex-xs>
                     <label style="color:#103B68">{{R.vbl_product}}</label>
                     <input ng-model="outlet.VBLVolume" type="number" name="vblvolume" min="0" max="2147483647" step="1" pattern="\d*" required="">
-                    <!--<div ng-messages="createOutletForm.vblvolume.$error" role="alert">
-                        <div ng-message="required">{{ resource.text_ValRequired }}</div>
-                    </div>-->
+                </md-input-container>
+                <md-input-container class="md-block" flex-gt-sm="">
+                    <label>{{R.class_type}}</label>
+                    <md-select ng-model="outlet.Class">
+                        <md-option ng-repeat="o in classes" value="{{o}}">
+                            {{o}}
+                        </md-option>
+                    </md-select>
+                </md-input-container>
+                <md-input-container class="md-block" flex-gt-sm="">
+                    <label>{{R.spShit_type}}</label>
+                    <md-select ng-model="outlet.SpShift">
+                        <md-option ng-repeat="o in spShifts" value="{{o}}">
+                            {{o}}
+                        </md-option>
+                    </md-select>
+                </md-input-container>
+                <md-input-container class="md-block" flex-gt-sm="">
+                    <label>{{R.callRate}}</label>
+                    <md-select ng-model="outlet.CallRate">
+                        <md-option ng-repeat="o in callRates" value="{{o.ID}}">
+                            {{o.Name}}
+                        </md-option>
+                    </md-select>
                 </md-input-container>
             </div>
 
@@ -138,7 +156,7 @@
                 </md-input-container>
             </div>
 
-            <div layout-gt-sm="row" style="margin-bottom:24px;">
+            <div layout-gt-sm="row" style="margin-bottom:10px;">
                 <table class="image-table">
                     <tr>
                         <td id="selfieImgTitle" ng-show="showImage4">Selfie  <div class="image-sub-title">&nbsp;</div></td>
@@ -151,27 +169,27 @@
                     <tr>
                         <td id="selfieImgContent" ng-show="showImage4">
                             <div class="image-frame" ng-click="capture(4);">
-                                <img id="outletImg4" src="{{image4URL}}"/>
-                            </div>                            
+                                <img id="outletImg4" src="{{image4URL}}" />
+                            </div>
                         </td>
                         <td>
                             <div class="image-frame" ng-click="capture(1);">
-                                <img id="outletImg1" src="{{image1URL}}"/>
+                                <img id="outletImg1" src="{{image1URL}}" />
                             </div>
                         </td>
                         <td>
                             <div class="image-frame" ng-click="capture(2);">
-                                <img id="outletImg2" src="{{image2URL}}"/>
+                                <img id="outletImg2" src="{{image2URL}}" />
                             </div>
                         </td>
                         <td>
                             <div class="image-frame" ng-click="capture(3);">
-                                <img id="outletImg3" src="{{image3URL}}"/>
+                                <img id="outletImg3" src="{{image3URL}}" />
                             </div>
                         </td>
                         <td>
                             <div class="image-frame" ng-click="capture(5);">
-                                <img id="outletImg5" src="{{image5URL}}"/>
+                                <img id="outletImg5" src="{{image5URL}}" />
                             </div>
                         </td>
                         <td>
@@ -184,28 +202,32 @@
 
                 <!--<div flex-gt-sm="" style="margin-left:12px;" class="outlet-image-container">
                     <img id="outletImg1" class="outlet-image" ng-click="capture(1);" src="{{image1URL}}" alt="Outlet Image" />
-                </div>   
+                </div>
                 <div flex-gt-sm="" class="outlet-image-container">
                     <img id="outletImg2" class="outlet-image" ng-click="capture(2);" src="{{image2URL}}" alt="Outlet Image" />
-                </div>   
+                </div>
                 <div flex-gt-sm="" class="outlet-image-container">
                     <img id="outletImg3" class="outlet-image" ng-click="capture(3);" src="{{image3URL}}" alt="Outlet Image" />
-                </div>--> 
+                </div>-->
                 <!--<div flex-gt-sm="">
                     <img id="captureButton" ng-show="allowCapture" ng-click="capture(0)" src="assets/img/camera.svg" />
-                </div>-->              
+                </div>-->
                 <!--<div class="md-block-item" style="margin-left:24px;" flex-gt-sm="">
                     <div class="md-block-item-title" style="min-width:80px">{{R.draft}}</div>
                     <md-checkbox md-no-ink="" aria-label="Is IsDraft" ng-model="outlet.IsDraft" class="md-primary">
                     </md-checkbox>
                 </div>-->
             </div>
-            <div layout-gt-sm="row" layout-margin layout-align="center" style="margin-bottom:0px;">     
+            <div layout-gt-sm="row" layout-margin layout-align="center" style="margin-bottom:0px;">
+
+                <md-checkbox ng-show="allowSendRequest" ng-model="outlet.IsSent" aria-label="Is Setnt" ng-true-value="1" ng-false-value="0" class="md-primary">
+                    <span style="margin: 0px 16px 0 0; line-height: 36px;">Send Request</span>
+                </md-checkbox>
                 <md-button class="md-raised md-primary" ng-click="postOutlet()" ng-show="canPost">{{R.btn_post}}</md-button>
                 <md-button class="md-raised md-primary" ng-click="approveOutlet()" ng-show="canApprove">{{R.btn_approve}}</md-button>
                 <md-button class="md-raised md-primary" ng-click="deleteOutlet()" ng-show="canDelete">{{R.btn_delete}}</md-button>
                 <md-button class="md-raised md-primary" ng-click="saveUpdate()">{{R.btn_save}}</md-button>
-                <md-button class="md-raised" ng-click="cancelUpdate()">{{R.btn_cancel}}</md-button>                
+                <md-button class="md-raised" ng-click="cancelUpdate()">{{R.btn_cancel}}</md-button>
             </div>
         </form>
     </md-content>

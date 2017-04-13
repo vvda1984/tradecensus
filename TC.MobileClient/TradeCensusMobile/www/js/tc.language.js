@@ -89,6 +89,9 @@ function language_en() {
 
         address: 'Address',
         outlet_type: 'Outlet Type',
+        class_type: 'Class',
+        spShit_type: 'Mkt-Sq',
+        callRate: 'CallRate',
         phone: 'Phone',
         closed_date: 'Closed Date',
         last_visit: 'Last Visit',

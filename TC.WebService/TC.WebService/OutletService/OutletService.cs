@@ -266,7 +266,11 @@ namespace TradeCensus
                 VBLVolume = outlet.VBLVolume,
                 PStatus = outlet.PModifiedStatus,
                 AmendByRole = outlet.AmendByRole ?? 0,
-                InputByRole = outlet.InputByRole ?? 0
+                InputByRole = outlet.InputByRole ?? 0,
+                Class = outlet.Class,
+                CallRate = outlet.CallRate,
+                SpShift = outlet.SpShift ?? 0,
+                IsSent = outlet.IsSent ?? 0
             };
 
             foundOutlet.FullAddress = string.Format("{0} {1} {2} {3} {4}", outlet.AddLine, outlet.AddLine2, outlet.Ward, outlet.District, foundOutlet.ProvinceName);
@@ -486,6 +490,10 @@ namespace TradeCensus
                 dbOutlet.VBLVolume = outlet.VBLVolume;
                 dbOutlet.AuditStatus = (byte)outlet.AuditStatus;
                 dbOutlet.PModifiedStatus = outlet.PStatus;
+                dbOutlet.Class = outlet.Class;
+                dbOutlet.CallRate = outlet.CallRate;
+                dbOutlet.SpShift = (byte)outlet.SpShift;
+                dbOutlet.IsSent = outlet.IsSent;
 
                 if (!string.IsNullOrEmpty(outlet.PRowID))
                     dbOutlet.PRowID = new Guid(outlet.PRowID);

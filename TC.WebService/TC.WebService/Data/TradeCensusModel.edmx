@@ -104,6 +104,7 @@
           <Property Name="LegalName" Type="nvarchar" MaxLength="50" />
           <Property Name="PRowID" Type="uniqueidentifier" Nullable="false" />
           <Property Name="PModifiedStatus" Type="int" Nullable="false" />
+          <Property Name="IsSent" Type="int" />
         </EntityType>
         <EntityType Name="OutletHistory">
           <Key>
@@ -495,6 +496,7 @@
           <Property Name="PModifiedStatus" Type="Int32" Nullable="false" />
           <NavigationProperty Name="OutletImages" Relationship="tradecensusModel.FK_OutletImage_Outlet" FromRole="Outlet" ToRole="OutletImage" />
           <Property Name="Ward" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="IsSent" Type="Int32" />
         </EntityType>
         <EntityType Name="OutletImage">
           <Key>
@@ -703,6 +705,7 @@
           <EntitySetMapping Name="Outlets">
             <EntityTypeMapping TypeName="tradecensusModel.Outlet">
               <MappingFragment StoreEntitySet="Outlet">
+                <ScalarProperty Name="IsSent" ColumnName="IsSent" />
                 <ScalarProperty Name="Ward" ColumnName="Ward" />
                 <ScalarProperty Name="PModifiedStatus" ColumnName="PModifiedStatus" />
                 <ScalarProperty Name="PRowID" ColumnName="PRowID" />

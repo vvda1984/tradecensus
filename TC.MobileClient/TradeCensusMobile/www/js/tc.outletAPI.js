@@ -24,6 +24,7 @@ var curOutlets = [];
 var firstStart = true;
 var openOutletDlg = false;
 
+
 function newOutlet(provinceName) {
     //var provineName  = '';
 	//log('province id: ' + config.province_id);
@@ -73,7 +74,7 @@ function newOutlet(provinceName) {
         Note: '',
         OTypeID: outletTypes[0].ID,
         OutletEmail: null,
-        OutletSource: (user.isDSM) ? 1 :0,
+        OutletSource: (user.isDSM) ? 1 : 0,
         OutletTypeName: outletTypes[0].Name,
         PRowID: guid(),
         PersonID: user.id,
@@ -90,16 +91,20 @@ function newOutlet(provinceName) {
         Tracking: 0,
         VBLVolume: 0,
         IsDraft: true,
-        IsNew : true,
+        IsNew: true,
         ExtractName: '',
         PersonFirstName: user.firstName,
         PersonLastName: user.lastName,
         auditResult: '',
-        viewAuditStatus : false,
+        viewAuditStatus: false,
         marker: null,
         PStatus: 0,
         AmendByRole: user.role,
-        InputByRole: user.role
+        InputByRole: user.role,
+        Class: "M",
+        SpShift: 2,
+        CallRate: _callRates[0].ID,
+        IsSent: 0,
     };
 }
 
@@ -122,6 +127,16 @@ function initializeOutlet(outlet) {
                 break;
             }
         outlet.OutletTypeName = outletTypeName;
+    }
+
+    if (outlet.CallRateName == null || isEmpty(outlet.CallRateName)) {
+        var callRateName = '';
+        for (var c = 0; c < _callRates.length; c++)
+            if (_callRates[c].ID === outlet.CallRate) {
+                callRateName = _callRates[c].Name;
+                break;
+            }
+        outlet.CallRateName = callRateName;
     }
 
     if (outlet.Distance == null)

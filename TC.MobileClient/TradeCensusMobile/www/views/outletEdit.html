@@ -74,20 +74,32 @@
             </div>
 
             <div layout-gt-sm="row" style="margin-bottom:0px;">
-                <div flex-gt-sm="" style="margin-left:12px;margin-top:-8px;">
+                <div flex-gt-sm="" style="margin-left:12px;margin-top:-8px; font-size:9pt;">
                     <p>
                         {{R.volumn}}<br />
                         {{R.create_cartoons_avg_month}}
                     </p>
                 </div>
-                <div class="md-block-item">
+                <div class="md-block-item" flex-gt-sm="">
                      <div class="md-block-item-title">{{R.total}}</div>
                      <div class="md-block-item-value">{{outlet.TotalVolume}}</div>
                  </div>
-                 <div class="md-block-item">
+                 <div class="md-block-item" flex-gt-sm="">
                      <div class="md-block-item-title">{{R.vbl_product}}</div>
                      <div class="md-block-item-value">{{outlet.VBLVolume}}</div>
                  </div>
+                <div class="md-block-item" flex-gt-sm="">
+                    <div class="md-block-item-title">{{R.class_type}}</div>
+                    <div class="md-block-item-value">{{outlet.Class}}</div>
+                </div>
+                <div class="md-block-item" flex-gt-sm="">
+                    <div class="md-block-item-title">{{R.spShit_type}}</div>
+                    <div class="md-block-item-value">{{outlet.SpShift}}</div>
+                </div>
+                <div class="md-block-item" flex-gt-sm="">
+                    <div class="md-block-item-title">{{R.callRate}}</div>
+                    <div class="md-block-item-value">{{outlet.CallRateName}}</div>
+                </div>
             </div>
 
             <div layout-gt-sm="row" style="margin-bottom:0px;">
@@ -104,7 +116,7 @@
                 </md-input-container>                           
             </div>
            
-            <div layout-gt-sm="row" style="margin-bottom:24px;margin-top:4px;">
+            <div layout-gt-sm="row" style="margin-bottom:10px; margin-top:4px;">
                 <table class="image-table">
                     <tr>
                         <td id="selfieImgTitle" ng-show="showImage4">Selfie  <div class="image-sub-title">&nbsp;</div></td>

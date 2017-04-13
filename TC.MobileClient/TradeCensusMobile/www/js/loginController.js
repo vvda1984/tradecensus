@@ -532,6 +532,8 @@ function loginController($scope, $http) {
                         var mapIcons = JSON.parse(value);
                         syncMapIcons = mapIcons.version > config.map_icons_version;
                         config.map_icons_version = mapIcons.version;
+                    } else if (name == 'enable_send_request') {
+                        config.enable_send_request = parseInt(value);
                     }
                 }
                 
@@ -669,39 +671,5 @@ function loginController($scope, $http) {
         } else {
             onSuccess();
         }
-    }
-
-    //showLoading("Loading", "Please wait");
-    //function downloadServerSetttings1(complete) {
-    //    var url = baseURL + '/config/getall';
-    //    log('Call service api: ' + url);
-    //    $http({
-    //        method: config.http_method,
-    //        url: url
-    //    }).then(function (resp) {
-    //        var data = resp.data;
-    //        if (data.Status == -1) { // error
-    //            onError(data.ErrorMessage);
-    //        } else {
-    //            setDlgMsg(R.update_settings);
-    //            for (var i = 0; i < data.Items.length; i++) {
-    //                p = data.Items[i];
-    //                if (name == 'check_rooted_device') {
-    //                    config.check_rooted_device = parseInt(value);
-    //                    break;
-    //                }
-    //            }
-    //        }
-    //        complete();
-    //    }, function () { complete(); });
-    //}
-    //downloadServerSetttings1(function () {
-    //    if (config.check_rooted_device) {
-    //        detectRootedDevice(function (result) {
-    //            if (result === 1) {
-    //                navigator.app.exitApp();
-    //            }
-    //        });
-    //    }
-    //})
+    }  
 };

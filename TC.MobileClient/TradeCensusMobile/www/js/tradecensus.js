@@ -1,4 +1,6 @@
-﻿var _WEB = true;
+﻿var _WEB = false;
+var _PROD = true;
+var _VERSION = 11;
 
 (function (global) {
     "use strict";
@@ -96,7 +98,21 @@ var deviceInfo = newDeviceInfo();
 var outletTypes = [];
 var provinces = [];
 var dprovinces = [];
-var outletTypes = [];
+var _classes = ["A", "E", "G", "M"];
+var _spShifts = [2, 3, 4, 5, 6];
+var _callRates = [
+    { Name: "Weekly", ID: 1 },
+    { Name: "2 Weeks", ID: 2 },
+    { Name: "3 Weeks", ID: 3 },
+    { Name: "4 Weeks", ID: 4 },
+    { Name: "5 Weeks", ID: 5 },
+    { Name: "6 Weeks", ID: 6 },
+    { Name: "7 Weeks", ID: 7 },
+    { Name: "8 Weeks", ID: 8 },
+    { Name: "6 Months", ID: 24 },
+    { Name: "Other", ID: 99 },
+];
+
 var R = useLanguage();
 var baseURL = '';
 var sessionID = guid();
@@ -172,10 +188,7 @@ function newResource() {
 }
 
 function newConfig() {
-    var isHttp = true;
-    //ip: 'localhost', //'27.0.15.234',
-    //port: '33334',//'3001',
-    //var testBuild = false;
+    var isHttp = true;   
     var c = {
         debug_build: _WEB,
         enable_devmode: _WEB,
@@ -187,9 +200,9 @@ function newConfig() {
         enable_rereverse_geo: 1,
         protocol: 'http',
         //ip: '27.0.15.234/trade-census',
-        ip: '203.34.144.29/tc-test',
+        //ip: '203.34.144.29/tc-test',
         //ip: '203.34.144.29/trade-census',
-        //ip: 'localhost/trade-census-test',        
+        ip: 'localhost/trade-census-test',        
         port: '80',
         service_name: 'TradeCensusService.svc', // absolute
         enable_liveGPS: true,       
@@ -229,6 +242,7 @@ function newConfig() {
         journal_daily_mode: true,   // 
         hotlines: [],               // hotline
         enable_check_in: 1,         //
+        enable_send_request: 1,     //
         
         map_icons_version: 0,
 		map_tc_salesman_outlet: '',
@@ -264,8 +278,8 @@ function newConfig() {
         tbl_outlet: 'uo',
         tbl_downloadProvince: 'udp',
         tbl_journal: 'jr',
-        version: '1.2.14',
-        versionNum: 10,
+        version: '1.2.15',
+        versionNum: _VERSION,
     };
     if (isHttp) {
         c.protocol = 'http';
@@ -275,8 +289,10 @@ function newConfig() {
     if (c.enable_devmode)
         c.audit_range = 5000;
 
-    //tc.config = c;
-
+    if (_PROD) {
+        c.ip = '203.34.144.29/trade-census';       
+    }
+    
     return c;
 }
 
@@ -515,8 +531,10 @@ function loadSettings(tx, callback) {
                         config.hotlines = JSON.parse(value);
                     } else if (name == 'check_rooted_device') {
                         config.check_rooted_device = parseInt(value);
+                    } else if (name == 'enable_send_request') {
+                        config.enable_send_request = parseInt(value);
                     }
-
+                    
                     else if (name == 'map_icons_version') {
                         config.map_icons_version = parseInt(value);
                     } else if (name == 'map_tc_salesman_outlet') {

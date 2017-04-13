@@ -62,6 +62,7 @@ namespace TradeCensus.Data
         public System.Guid PRowID { get; set; }
         public int PModifiedStatus { get; set; }
         public string Ward { get; set; }
+        public Nullable<int> IsSent { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<OutletImage> OutletImages { get; set; }

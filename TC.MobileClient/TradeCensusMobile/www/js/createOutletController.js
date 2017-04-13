@@ -3,8 +3,9 @@
 /// <reference path="tc.appAPI.js" />
 
 
-function newOutletController($scope, $http, $mdDialog) {
+function newOutletController($scope, $http, $mdDialog, $timeout) {
     isOutletDlgOpen = true;
+    var isCreatedNew = isEmpty($scope.outlet.Name);
 
     $scope.R = R;
     $scope.address = addressModel;
@@ -55,6 +56,11 @@ function newOutletController($scope, $http, $mdDialog) {
         }
     }
     $scope.provinces = downloadProvinces;
+
+    $scope.callRates = _callRates;
+    $scope.classes = _classes;
+    $scope.spShifts = _spShifts;
+    $scope.allowSendRequest = config.enable_send_request === 1 && isCreatedNew && $scope.createNew && $scope.outlet.IsSent === 0;// && $scope.outlet.AuditStatus === 0;
     
     $scope.image1URL = getImageURL($scope.outlet.StringImage1);
     $scope.image2URL = getImageURL($scope.outlet.StringImage2);
@@ -64,6 +70,25 @@ function newOutletController($scope, $http, $mdDialog) {
     $scope.image6URL = getImageURL($scope.outlet.StringImage6);
 
     var orgOutlet = cloneObj($scope.outlet);
+
+    var ensureFormClose = function () {
+        //$timeout(function () {
+        //    try {
+        //        var mark = $('.md-scroll-mask');
+        //        console.log(mark);
+        //        if (typeof mark !== 'undefined') {
+        //            mark.remove();
+        //            var dlg = $('.md-dialog-container');
+        //            console.log(dlg);
+        //            if (typeof dlg !== 'undefined') {
+        //                dlg.remove();
+        //            }
+        //        }
+        //    } catch (er) {
+        //        console.error(er);
+        //    }
+        //}, 1500);
+    };
 
     $scope.capture = function (i) {
         $scope.outlet.isChanged = true;
@@ -290,7 +315,9 @@ function newOutletController($scope, $http, $mdDialog) {
     };
 
     $scope.cancelUpdate = function () {
-        $mdDialog.cancel();
+        $mdDialog.hide(false);
+
+        ensureFormClose();
     };
 
     $scope.codeChanged = function(){

@@ -31,7 +31,7 @@ public class RootDetection extends CordovaPlugin {
     }
 
     private boolean isDeviceRooted() {
-        return checkBuildTags() || checkSuperUserApk() || checkFilePath();
+        return checkBuildTags() || checkSuperUserApk();
     }
     private boolean checkBuildTags() {
         String buildTags = android.os.Build.TAGS;

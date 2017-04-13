@@ -488,7 +488,7 @@ hr {
 
 .md-block {
     margin: 12px 8px 4px 8px;
-    min-width: 160px;
+    min-width: 100px;
     /*max-width: 176px;*/
 }
 

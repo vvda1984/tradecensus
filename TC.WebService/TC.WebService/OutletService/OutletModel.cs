@@ -102,6 +102,15 @@ namespace TradeCensus
         public int AmendByRole { get; set; }
         [DataMember]
         public int InputByRole { get; set; }
+
+        [DataMember]
+        public string Class { get; set; }
+        [DataMember]
+        public int SpShift { get; set; }
+        [DataMember]
+        public int CallRate { get; set; }
+        [DataMember]
+        public int IsSent { get; set; }
     }
 
     [DataContract]

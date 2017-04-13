@@ -2,7 +2,7 @@
 /// <reference path="tc.databaseAPI.js" />
 /// <reference path="tc.outletAPI.js" />
 
-function editOutletController($scope, $mdDialog) {
+function editOutletController($scope, $mdDialog, $timeout) {
     isOutletDlgOpen = true;
 
     $scope.R = R;
@@ -144,6 +144,25 @@ function editOutletController($scope, $mdDialog) {
     $scope.image6URL = getImageURL($scope.outlet.StringImage6);
 
     var orgOutlet = cloneObj($scope.outlet);
+
+    var ensureFormClose = function(){        
+        //$timeout(function () {
+        //    try {
+        //        var mark = $('.md-scroll-mask');
+        //        console.log(mark);
+        //        if (typeof mark !== 'undefined') {
+        //            mark.remove();
+        //            var dlg = $('.md-dialog-container');
+        //            console.log(dlg);
+        //            if (typeof dlg !== 'undefined') {
+        //                dlg.remove();
+        //            }
+        //        }
+        //    } catch (er) {
+        //        console.error(er);
+        //    }    
+        //}, 1500);
+    };
 
     $scope.capture = function (i) {
         $scope.outlet.isChanged = true;
@@ -304,8 +323,6 @@ function editOutletController($scope, $mdDialog) {
                 });
             }
         }
-
-        
     }
 
     $scope.saveUpdate = function () {
@@ -323,13 +340,14 @@ function editOutletController($scope, $mdDialog) {
                 $scope.outlet.AuditStatus = StatusEdit;
             }
 
-            $mdDialog.hide(true);
+            $mdDialog.hide(true);         
         });
     };
 
     $scope.cancelUpdate = function () {
-        $mdDialog.cancel();
-        try { $scope.$apply(); } catch (er) { }
+        $mdDialog.hide(false);
+
+        ensureFormClose();
     };
 
     $scope.reviseOutlet = function () {
