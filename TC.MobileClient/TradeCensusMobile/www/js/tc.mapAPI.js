@@ -53,33 +53,40 @@ var selected_border_2; // ward
 //var selected_border_6;
 
 var isloadingGGapi = false;
-function loadMapApi() {
+function loadMapApi(hideMaskedDlg) {
     if (isloadingGGapi) return;
     isloadingGGapi = true;
 
     if (!getNetworkState()) {
         isloadingGGapi = false;
+        if (typeof hideLoadingDlg !== 'undefined') hideLoadingDlg();
+
         if (loadMapCallback) {
             loadMapCallback();
             loadMapCallback = null;
         }
-        return;
-    }
-	
-	if (loadedMapAPI) {
-	    initializeMap()
-	    isloadingGGapi = false;
-        return;
-    }
-    loadedMapAPI = true;
+    } else {
+        if (loadedMapAPI) {
+            initializeMap()
+            isloadingGGapi = false;
+            if (typeof hideLoadingDlg !== 'undefined') hideLoadingDlg();
 
-    showDlg(R.loading_map, R.please_wait);
-	
-	
-    var url = 'https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&key=' + config.map_api_key + '&callback=googleMapReadyCallback';
-    log('Load map API: ' + url);
-    $.getScript(url);
-    isloadingGGapi = false;
+        } else {
+            loadedMapAPI = true;            
+            var url = 'https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&key=' + config.map_api_key; // + '&callback=googleMapReadyCallback';
+            log('Load map API: ' + url);
+            $.getScript(url, function (data, textStatus, jqxhr) {
+                if (hideMaskedDlg)
+                    hideMaskedDlg();
+
+                if (jqxhr.status === 200) {
+                    initializeMap();
+                    isMapReady = true;
+                }
+            });
+            isMapReady = true;
+        }
+    }
 }
 
 function googleMapReadyCallback() {
@@ -130,15 +137,7 @@ function initializeMap() {
             if( mapViewChangedCallback){
                 mapViewChangedCallback(panorama.getVisible());
             }         
-        });
-
-		//$.getScript('assets/libs/geoxml3/ProjectedOverlay.js');
-		//$.getScript('assets/libs/geoxml3/kmz/geoxml3.js');
-		//$.getScript('assets/libs/geoxml3/kmz/geoxml3_gxParse_kmz.js');
-		//$.getScript('assets/libs/geoxml3/kmz/ZipFile.complete.js');
-	
-		//var myParser = new geoXML3.parser({map: map});
-		//myParser.parse('assets/content/hcm.kml');
+        });	
 		
         hideDlg();
         isMapReady = true;
@@ -590,30 +589,39 @@ function editSelectedOutlet(i) {
 }
 
 var isWaitingForLocation = false;
-function getCurPosition(moveToCur, onSuccess, onError) {
-    log('Get current location...');
+var __getLocationTimeout = null;
+function getCurPosition(moveToCur, onSuccess, onError) {    
     isWaitingForLocation = true;
-    var waitTimeout = setTimeout(function () {
-        if (!isWaitingForLocation) return;
-        isWaitingForLocation = false;
-        onError(R.msg_cannot_get_location);
-    }, config.time_out * 1000);
+    if (__getLocationTimeout != null) {
+        clearTimeout(__getLocationTimeout);
+        __getLocationTimeout = null;
+    }
 
-    try {       
+    __getLocationTimeout = setTimeout(function () {
+        if (!isWaitingForLocation) return;
+
+        isWaitingForLocation = false;
+        __getLocationTimeout = null;
+        onError(R.msg_cannot_get_location);        
+    }, config.get_location_time_out * 1000);
+
+    try {
         navigator.geolocation.getCurrentPosition(function (position) {
             if (!isWaitingForLocation) return;
+
             isWaitingForLocation = false;
+            if (__getLocationTimeout != null) {
+                clearTimeout(__getLocationTimeout);
+                __getLocationTimeout = null;
+            }
 
-            if (waitTimeout)
-                clearTimeout(waitTimeout);
-
-            isWaitingForLocation = 0;
+            isWaitingForLocation = false;
             var lat = position.coords.latitude;
-            var lng = position.coords.longitude;   
-            curacc = position.coords.accuracy;         
-            log('Accuracy:'+ curacc.toString());
+            var lng = position.coords.longitude;
+            curacc = position.coords.accuracy;
+            log('Accuracy:' + curacc.toString());
 
-            // AnVO: DEBUG
+            // AnVo: DEBUG
             if (config.enable_devmode) {
                 log('***set debug location...');
                 lat = devLat;
@@ -621,8 +629,7 @@ function getCurPosition(moveToCur, onSuccess, onError) {
             }
             curlat = lat;
             curlng = lng;
-            if(isMapReady && moveToCur)
-            {
+            if (isMapReady && moveToCur) {
                 log('Move to current location');
                 moveToCurrentLocation();
             }
@@ -631,32 +638,35 @@ function getCurPosition(moveToCur, onSuccess, onError) {
         },
         function (err) {
             if (!isWaitingForLocation) return;
-            isWaitingForLocation = false;
-
-            if (waitTimeout)
-                clearTimeout(waitTimeout);
-
-            if (config.enable_devmode) {
-                // AnVO: DEBUG
-                log('***set debug location...');
-                lat = devLat;
-                lng = devLng;
-
-                curlat = lat;
-                curlng = lng;
-                if (isMapReady && moveToCur) {
-                    log('Move to current location');
-                    moveToCurrentLocation();
+            try {
+                isWaitingForLocation = false;
+                if (__getLocationTimeout != null) {
+                    clearTimeout(__getLocationTimeout);
+                    __getLocationTimeout = null;
                 }
-                onSuccess(lat, lng);
+
+                if (config.enable_devmode) {
+                    // AnVO: DEBUG
+                    log('***set debug location...');
+                    lat = devLat;
+                    lng = devLng;
+                    curlat = lat;
+                    curlng = lng;
+                    if (isMapReady && moveToCur) {
+                        log('Move to current location');
+                        moveToCurrentLocation();
+                    }
+                    onSuccess(lat, lng);
+                    return;
+                }
+            } catch(e){
             }
-            else
-                onError(err);
+            onError(err);
         },
         { maximumAge: 3000, timeout: 5000, enableHighAccuracy: true });
     } catch (err) {
-        log(err);
-        onError(err.message);
+        console.error("ERROR");
+        console.error(err);
     }
 }
 
@@ -758,7 +768,7 @@ function getBorders(level) {
 }
 
 var isRunningInBackgound = false;
-function trackLocationWhenAppInBackground(callback) {
+function __trackLocationWhenAppInBackground(callback) {
     if (locationChangedCallback) {
         getCurPosition(false, function (lat, lng) {
             locationChangedCallback(lat, lng, curacc);
@@ -769,13 +779,49 @@ function trackLocationWhenAppInBackground(callback) {
         });
     }
 }
-
 function turnOntrackLocationWhenAppInBackground() {
     if (locationChangedCallback && isRunningInBackgound) {
         setTimeout(function () {
-            trackLocationWhenAppInBackground(function () {
+            __trackLocationWhenAppInBackground(function () {
                 turnOntrackLocationWhenAppInBackground();
             });
         }, 1000 * config.journal_update_time);
     }
+}
+
+function showCurPositionDlg(moveToCur, onSuccess, onError) {
+    var isCancelled = false;
+    var __getCurPosition = function (m, s, e) {
+        getCurPosition(
+            m,
+            function (lat, lng) {
+                if (isCancelled) return;
+                dialogUtils.hideProcessing();
+                s(lat, lng);
+            },
+            function () {
+                if (isCancelled) return;
+                dialogUtils.hideProcessing();
+
+                dialogUtils.showGetLocationError(
+                    function () {
+                        showCurPositionDlg(m, s, e);
+                    },
+                    function () {
+                        //do nothing
+                    });
+            });
+    };
+
+    dialogUtils.showProcessing(R.get_current_location, {
+        cancelCallback: function () {
+            isCancelled = true;
+            if (__getLocationTimeout != null) {
+                clearTimeout(__getLocationTimeout);
+                __getLocationTimeout = null;
+            }
+        },
+    });
+
+    __getCurPosition(moveToCur, onSuccess, onError);
 }

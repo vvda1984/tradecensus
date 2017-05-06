@@ -102,9 +102,12 @@ function newOutlet(provinceName) {
         AmendByRole: user.role,
         InputByRole: user.role,
         Class: "M",
-        SpShift: 2,
+        SpShift: 0,
         CallRate: _callRates[0].ID,
         IsSent: 0,
+        TerritoryID: "2",
+        TaxID: "",
+        LegalName: "",
     };
 }
 
@@ -241,7 +244,7 @@ function queryOutlets(isbackground, view, callback) {
                     }
                     queryOutlets.sort(function (a, b) { return a.Distance - b.Distance });
 
-                    for (i = 0; i < queryOutlets.length && i <= count; i++) {
+                    for (i = 0; i < queryOutlets.length && i < count; i++) {
                         var isMatched = true;
                         if (config.calc_distance_algorithm == "circle")
                             isMatched = queryOutlets[i].Distance <= meter;
@@ -343,7 +346,7 @@ function queryNearbyOutlets(callback) {
         });
 }
 
-function isModifed(orgOutlet, outlet) {
+function isModified(orgOutlet, outlet) {
     if (orgOutlet.Name !== outlet.Name) return true;
 
     if (orgOutlet.Phone !== outlet.Phone) return true;
@@ -380,3 +383,304 @@ function isModifed(orgOutlet, outlet) {
 
     return false;
 }
+
+function _submitOutletToServer(nghttp, outlet, callback) {
+    if (!networkReady()) {
+        callback(false);
+    }
+    else {
+        var url = baseURL + '/outlet/save/' + userID + '/' + pass;
+        console.log('CALL API: ' + url);
+        nghttp({
+            method: config.http_method,
+            data: outlet,
+            url: url,
+            headers: { 'Content-Type': 'application/json' }
+        }).then(function (resp) {
+            log(resp);
+            var data = resp.data;
+            if (data.Status == -1) { // error
+                handleError(data.ErrorMessage);
+            } else {
+                console.info('Submit outlet successfully: ' + data.ID + '(' + data.RowID + ')');
+                outlet.PRowID = data.RowID;
+                callback(true);
+            }
+        }, function (err) {
+            log('Submit error');
+            log(err);
+            callback(false);
+        });
+    }
+};
+
+
+//#region CREATE NEW OUTLET
+var __outletDialogContext = {
+    currentOutlet: {},
+    callback: null,
+};
+
+function __resetOutletDialogContext() {
+    
+};
+
+function __detroyOutletDialog() {
+    try {
+        var mark = $('.md-scroll-mask');
+        if (typeof mark !== 'undefined') {
+            mark.remove();           
+        }
+
+        var dlg = $('.md-dialog-container');        
+        if (typeof dlg !== 'undefined') {
+            dlg.remove();
+        }
+
+        var backdrop = $('._md-dialog-backdrop');
+        if (typeof backdrop !== 'undefined') {
+            backdrop.remove();
+        }
+
+        var backdrop1 = $('.md-dialog-backdrop');
+        if (typeof backdrop1 !== 'undefined') {
+            backdrop1.remove();
+        }
+    } catch (er) {
+        console.error(er);
+    }
+};
+
+var OUTLET_NEW = 0;
+var OUTLET_EDIT = 1;
+var OUTLET_DELETE = 2;
+
+var OUTLET = {
+    dialog: {
+        open: function (ngmdOpenDlg, outlet, callback) {
+            __outletDialogContext.callback = callback;
+            __outletDialogContext.currentOutlet = outlet;
+
+            ngmdOpenDlg();
+        },
+
+        close: function (anwser, outlet) {
+            if (typeof outlet !== 'undefined') {
+                __outletDialogContext.currentOutlet = outlet;
+            }
+            isOutletDlgOpen = false;
+            __detroyOutletDialog();
+
+            if (dialogClosedCallback) dialogClosedCallback();
+
+            if (anwser === true) {
+                __outletDialogContext.callback(anwser, __outletDialogContext.currentOutlet);
+            } else {
+                __outletDialogContext.callback = null;
+                __outletDialogContext.ngcontext = {};
+                __outletDialogContext.currentOutlet = {};
+            }
+        },
+
+        outlet: function () { return __outletDialogContext.currentOutlet; },
+
+        setCurrentOutlet: function (outlet) { __outletDialogContext.currentOutlet = outlet; },
+    },
+
+    lastSync: new Date(),
+  
+    saveOutletToServer: function (nghttp, outlet, action, state, callback) {
+        dialogUtils.showClosableDlg(R.save_outlet, R.please_wait, function (hideLoadingFunc, isCancelledFunc) {
+            try {
+                var onSuccess = function () {
+                    if (networkReady()) {
+                        OUTLET.lastSync = new Date();
+                        OUTLET.syncOutlets(nghttp, function (errMsg) {
+                            if (isCancelledFunc()) return;
+                            hideLoadingFunc();
+
+                            if (errMsg)
+                                showError(errMsg);
+                            else
+                                callback();
+                        });
+                    }
+                    else {
+                        if (isCancelledFunc()) return;
+                        hideLoadingFunc();
+                        callback();
+                    }
+                };
+                var onError = function () {
+                    if (isCancelledFunc()) return;
+                    hideLoadingFunc();
+                    showError('Cannot save outlet, please check network connection and retry! (#12001)');
+                };
+
+                if (action == OUTLET_NEW) {
+                    addOutletDB(config.tbl_outlet, outlet, false, onSuccess, onError);
+                } else if (action == OUTLET_EDIT) {
+                    saveOutletDB(config.tbl_outlet, outlet, state, false, onSuccess, onError);
+                } else {
+                    OUTLET.submitOutlet(nghttp, outlet, function (errMsg) {
+                        if (errMsg) {
+                            saveOutletDB(config.tbl_outlet, outlet, state, false,
+                                function () {
+                                    hideLoadingFunc();
+                                    callback();
+                                }, onError);
+                        } else {
+                            deleteOutletDB(config.tbl_outlet, outlet,
+                                function () {
+                                    hideLoadingFunc();
+                                    callback();
+                                }, onError);
+                        }
+                    });
+                }
+            } catch (err) {
+                if (isCancelledFunc()) return;
+                hideLoadingFunc();
+                showError('Cannot save outlet, please check network connection and retry! (#12001)');
+            }
+        });
+    },
+
+    saveOutlet: function (nghttp, outlet, action, state, callback) {
+        dialogUtils.showClosableDlg(R.save_outlet, R.please_wait, function (hideLoadingFunc, isCancelledFunc) {
+            try {
+                var onSuccess = function () {
+                    if (networkReady()) {
+                        var now = new Date();
+                        var dif = getDifTime(OUTLET.lastSync, now);
+                        if (dif > config.submit_outlet_time) {
+                            OUTLET.lastSync = now;
+
+                            dialogUtils.setClosableDlgContent(R.synchronize_outlets, R.please_wait);
+                            OUTLET.syncOutlets(nghttp, function (errMsg) {
+                                if (isCancelledFunc()) return;
+                                hideLoadingFunc();
+
+                                if (errMsg)
+                                    showError(errMsg);
+                                else
+                                    callback();
+                            });
+                        } else {
+                            hideLoadingFunc();
+                            callback();
+                        }
+                    }
+                    else
+                        callback();
+                };
+                var onError = function () {
+                    if (isCancelledFunc()) return;
+                    hideLoadingFunc();
+                    showError('Cannot save outlet, please check network connection and retry! (#12001)');
+                };
+
+                if (action == OUTLET_NEW) {
+                    addOutletDB(config.tbl_outlet, outlet, false, onSuccess, onError);
+                } else if (action == OUTLET_EDIT) {
+                    saveOutletDB(config.tbl_outlet, outlet, state, false, onSuccess, onError);
+                } else {
+                    OUTLET.submitOutlet(nghttp, outlet, function (errMsg) {
+                        if (errMsg) {
+                            saveOutletDB(config.tbl_outlet, outlet, state, false, function () { callback(); }, onError);
+                        } else {
+                            deleteOutletDB(config.tbl_outlet, outlet, function () { callback(); }, onError);
+                        }
+                    });
+                }
+            } catch (err) {
+                if (isCancelledFunc()) return;
+                hideLoadingFunc();
+                showError('Cannot save outlet, please check network connection and retry! (#12001)');
+            }
+        });
+    },
+
+    syncOutlets: function (nghttp, callback) {
+        selectAllUnsyncedOutlets(config.tbl_outlet,
+             function (dbres) {
+                 console.log('Found unsynced outlets: ' + dbres.rows.length.toString());
+                 if (dbres.rows.length == 0) {
+                     callback();
+                 } else {
+                     var syncOutletQueue = [];
+                     for (var i = 0; i < dbres.rows.length; i++) {
+                         syncOutletQueue[i] = dbres.rows.item(i);
+                     }
+                     OUTLET.submitUnsyncOutlets(nghttp, syncOutletQueue, callback, function (errMessage) { callback(errMessage); });
+                 }
+             }, function (dbError) {
+                 console.error(dbError);
+                 callback("Cannot get unsynced outlet!");
+             });
+    },
+
+    submitUnsyncOutlets: function (nghttp, outlets, onSuccess, onError) {
+        if (networkReady()) {
+            var url = baseURL + '/outlet/saveoutlets/' + userID + '/' + pass;
+            console.log('Call service api: ' + url);
+            nghttp({
+                method: config.http_method,
+                data: outlets,
+                url: url,
+                headers: { 'Content-Type': 'application/json' }
+            }).then(function (resp) {
+                console.debug(resp);
+                var data = resp.data;
+                if (data.Status == -1) { // error
+                    onError(data.ErrorMessage);
+                } else {
+                    if (data.Status == 1) { // warning
+                        onError(data.ErrorMessage);
+                    }
+                    setSyncStatusDB(config.tbl_outlet, data.Outlets, true,
+                        function () {
+                            onSuccess();
+                        },
+                        function (err) {
+                            console.error(err);
+                            onError("Error while connect to location database!");
+                        });
+                }
+            }, function (err) {
+                consloe.error(err);
+                onError('Cannot connect to server, please check your connection!');
+            });
+        } else {
+            onError('Cannot connect to server, please check your connection!');
+        }
+    },
+
+    submitOutlet(nghttp, outlet, callback) {
+        if (networkReady()) {
+            var url = baseURL + '/outlet/save/' + userID + '/' + pass;
+            log('Call service api: ' + url);
+            nghttp({
+                method: config.http_method,
+                data: outlet,
+                url: url,
+                headers: { 'Content-Type': 'application/json' }
+            }).then(function (resp) {
+                var data = resp.data;
+                if (data.Status == -1) { // error
+                    callback(data.ErrorMessage);
+                } else {
+                    consloe.log('Submit outlet successfully: ' + data.RowID + ', ' + data.ID);
+                    outlet.PRowID = data.RowID;
+                    outlet.ID = data.ID;
+                    callback();
+                }
+            }, function (err) {
+                callback(R.check_network_connection);
+            });
+        } else {
+            callback(R.check_network_connection);
+        }
+    },
+};
+//#endregion

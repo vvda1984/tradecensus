@@ -43,84 +43,84 @@
             <div class="outlet-list-panel" id="outlet-list">
                 <span id="span-outlet" style="margin-left:0px; color:red" ng-show="showNoOutletFound">{{R.no_outlet_found}}</span>
                 <span id="span-outlet-top" style="float:left;left:0px;top:0px;width:0px;height:0px;"></span>
-                <table class="outlet-table" ng-repeat="outlet in outlets |  startFrom:currentPage*pageSize | limitTo:pageSize " ng-click="hideDropdown()">
+                <table class="outlet-table" ng-repeat="o in outlets |  startFrom:currentPage*pageSize | limitTo:pageSize " ng-click="hideDropdown()">
                     <tr>
                         <td class="outlet-indicator">
-                            <div class="{{outlet.IsNew ? 'circle-yellow' : (outlet.IsDenied ? 'circle-gray' : 'circle-green')}}">{{$index + 1 + (currentPage) * pageSize}}</div>
+                            <div class="{{o.IsNew ? 'circle-yellow' : (o.IsDenied ? 'circle-gray' : 'circle-green')}}">{{$index + 1 + (currentPage) * pageSize}}</div>
                         </td>
                         <td>
                             <table class="outlet-detail-table">
                                 <tr>
                                     <td colspan="4">
-                                        <span class="large-text blue-color span-fix" ng-hide="viewOutletFull" ng-click="openOutlet($index)">{{outlet.Name}} ({{outlet.ID}})</span>
-                                        <span class="large-text blue-color" ng-show="viewOutletFull" ng-click="openOutlet($index)">{{outlet.Name}} {{outlet.IDalias}}</span>
+                                        <span class="large-text blue-color span-fix" ng-hide="viewOutletFull" ng-click="openOutlet($index)">{{o.Name}} ({{o.ID}})</span>
+                                        <span class="large-text blue-color" ng-show="viewOutletFull" ng-click="openOutlet($index)">{{o.Name}} {{o.IDalias}}</span>
                                         <span class="outlet-header-right small-text gray-color">
-                                            {{outlet.Distance}} m
+                                            {{o.Distance}} m
                                         </span>
                                     </td>
                                 </tr>
                                 <tr>
                                     <td colspan="2">
                                         <span class="small-text gray-color" ng-show="viewOutletFull">{{R.address}}: </span>
-                                        <span class="normal-text black-color">{{outlet.FullAddress}}</span>
+                                        <span class="normal-text black-color">{{o.FullAddress}}</span>
                                     </td>
 
                                     <td>
                                         <span class="small-text gray-color" ng-show="viewOutletFull">{{R.last_visit}}: </span>
-                                        <span class="normal-text black-color" ng-show="viewOutletFull">{{outlet.LastVisit}}</span>
+                                        <span class="normal-text black-color" ng-show="viewOutletFull">{{o.LastVisit}}</span>
                                     </td>
 
                                     <td>
                                         <span class="small-text gray-color" ng-show="viewOutletFull">{{R.closed_date}}: </span>
-                                        <span class="normal-text black-color" ng-show="viewOutletFull">{{outlet.CloseDate ? outlet.CloseDate : "-"}}</span>
+                                        <span class="normal-text black-color" ng-show="viewOutletFull">{{o.CloseDate ? o.CloseDate : "-"}}</span>
                                     <td>
                                 </tr>
                                 <tr>
                                     <td>
                                         <span class="small-text gray-color" ng-show="viewOutletFull">{{R.outlet_type}}: </span>
-                                        <span class="normal-text black-color">{{outlet.OutletTypeName}}</span>
+                                        <span class="normal-text black-color">{{o.OutletTypeName}}</span>
                                     </td>
                                     <td ng-show="viewOutletFull">
                                         <span class="small-text gray-color">{{R.phone}}: </span>
-                                        <span class="normal-text black-color">{{outlet.Phone}}</span>
+                                        <span class="normal-text black-color">{{o.Phone}}</span>
                                     </td>
                                     <td ng-show="viewOutletFull">
                                         <span class="small-text gray-color">{{R.last_contact}}: </span>
-                                        <span class="normal-text black-color">{{outlet.LastContact ? outlet.LastContact : "-"}}</span>
+                                        <span class="normal-text black-color">{{o.LastContact ? o.LastContact : "-"}}</span>
                                     </td>
                                     <td ng-show="viewOutletFull">
                                         <span class="small-text gray-color">{{R.tracking}}: </span>
-                                        <span class="normal-text black-color">{{outlet.IsTracked ? "Yes" : "No"}}</span>
+                                        <span class="normal-text black-color">{{o.IsTracked ? "Yes" : "No"}}</span>
                                     </td>
                                 </tr>
                                 <tr>
                                     <td colspan="2">
                                         <span class="small-text gray-color" ng-show="viewOutletFull">{{R.name}}: </span>
-                                        <span class="normal-text black-color">{{outlet.ExtractName}}</span>
+                                        <span class="normal-text black-color">{{o.ExtractName}}</span>
                                     </td>
                                     <td>
                                         <span class="small-text gray-color" ng-show="viewOutletFull">{{R.total}}: </span>
-                                        <span class="normal-text black-color" ng-show="viewOutletFull">{{outlet.TotalVolume}}</span>
+                                        <span class="normal-text black-color" ng-show="viewOutletFull">{{o.TotalVolume}}</span>
                                     </td>
                                     <td>
                                         <span class="small-text gray-color" ng-show="viewOutletFull">{{R.vbl_product}}: </span>
-                                        <span class="normal-text black-color" ng-show="viewOutletFull">{{outlet.VBLVolume}}</span>
+                                        <span class="normal-text black-color" ng-show="viewOutletFull">{{o.VBLVolume}}</span>
                                     </td>
                                 </tr>
                                 <tr>
                                     <td colspan="4">
                                         <span class="small-text gray-color" ng-show="viewOutletFull">{{R.last_change}}: </span>
-                                        <span class="small-text gray-color">{{outlet.AmendDate ? outlet.AmendDate : "-"}}</span>
+                                        <span class="small-text gray-color">{{o.AmendDate ? o.AmendDate : "-"}}</span>
 
                                         <!--<div class="m-flat-button-small float-right blue" ng-show="outlet.canApprove" ng-click="approveOutlet(outlet)"><span>Approve</span></div>-->
-                                        <div class="m-flat-button-small float-right blue" ng-show="outlet.canPost" ng-click="postOutlet(outlet)"><span>Post</span></div>
-                                        <div class="m-flat-button-small float-right blue" ng-show="outlet.canRevise" ng-click="reviseOutlet(outlet)"><span>Revise</span></div>
-                                        <div class="m-flat-button-small float-right red" ng-show="outlet.canDelete" ng-click="deleteOutlet(outlet)"><span>Delete</span></div>
+                                        <div class="m-flat-button-small float-right blue" ng-show="o.canPost" ng-click="postOutlet(o)"><span>Post</span></div>
+                                        <div class="m-flat-button-small float-right blue" ng-show="o.canRevise" ng-click="reviseOutlet(o)"><span>Revise</span></div>
+                                        <div class="m-flat-button-small float-right red" ng-show="o.canDelete" ng-click="deleteOutlet(o)"><span>Delete</span></div>
                                         <!--<div class="m-flat-button-small float-right blue" ng-show="outlet.canRevert" ng-click="revertOutlet(outlet)"><span>Reset</span></div>-->
 
-                                        <div class="float-right" ng-show="outlet.viewAuditStatus">
-                                            <span class="small-text green-color" ng-show="outlet.IsAudited">{{outlet.auditResult}}</span>
-                                            <span class="small-text gray-color" ng-hide="outlet.IsAudited">{{outlet.auditResult}}</span>
+                                        <div class="float-right" ng-show="o.viewAuditStatus">
+                                            <span class="small-text green-color" ng-show="o.IsAudited">{{o.auditResult}}</span>
+                                            <span class="small-text gray-color" ng-hide="o.IsAudited">{{o.auditResult}}</span>
                                         </div>
                                         <!--<img class="outlet-header-right small-text gray-color" style="height:24px; width:24px; margin-left:4px" ng-show="outlet.IsDraft" src="assets/img/clear.svg" ng-click="deleteOutlet($index)" />
                                         <img class="outlet-header-right small-text gray-color" style="height:24px; width:24px;" ng-show="outlet.canPost" src="assets/img/post.svg" ng-click="postOutlet($index)" />
@@ -232,9 +232,12 @@
                         <md-select ng-model="config.province_id" ng-change="provinceChanged(0)">
                             <md-option ng-repeat="p in dprovinces" value="{{p.id}}">
                                 {{p.name}}
-                                <img ng-show="p.download" src="assets/img/check.svg" style="width:24px;height:24px;margin:0px;position:absolute;right:16px;" />
+                                <img ng-show="p.download" src="assets/img/check.svg" 
+                                     style="width:18px;height:18px;margin:0px;position:absolute;right:16px;" />
                             </md-option>
-                        </md-select>
+                        </md-select>                       
+                    </md-input-container>
+                    <div>
                         <div id="buttonDownload" class="m-flat-button float-right margin-top-4" ng-click="downloadOutlets()">
                             <img src="assets/img/download.svg">
                             <span>{{R.btn_download}}</span>
@@ -247,31 +250,7 @@
                             <img src="assets/img/clear.svg">
                             <span>{{R.btn_deleteOffline}}</span>
                         </div>
-                    </md-input-container>
-
-                    <!--<div layout-gt-sm="row" style="margin-top:-10px;">
-                        <md-input-container class="md-block" flex-gt-sm="" style="margin-bottom:20px; margin-left:-4px">
-                            <div class="md-block-item" style="margin-bottom:0px;margin-top:-16px;margin-left:4px">
-                                <div class="md-block-item-title small-text">Track Journal (On/Off)</div>
-                                <md-switch class="md-primary" ng-model="config.enable_journal">{{config.enable_journal ? "On" : "Off"}}</md-switch>
-                            </div>
-                        </md-input-container>
-                    </div>-->
-                    <!--<div layout-gt-sm="row" style="margin-top:-10px;" ng-show="config.enable_devmode">
-                        <md-input-container class="md-block" style="margin-top:-24px;margin-left:-4px">
-                            <div class="md-block-item" style="margin-bottom:0px;margin-top:-16px;margin-left:4px">
-                                <div class="md-block-item-title small-text">Mode (Online/Offline)</div>
-                                <md-switch class="md-primary" ng-model="config.mode_online">{{config.mode_online ? "Online" : "Offline"}}</md-switch>
-                            </div>
-                        </md-input-container>
-
-                        <md-input-container class="md-block" style="margin-bottom:0px; margin-left:-4px">
-                            <div class="md-block-item" style="margin-bottom:0px;margin-top:-16px;margin-left:4px">
-                                <div class="md-block-item-title small-text">View Log</div>
-                                <md-switch class="md-primary" ng-model="config.enable_logview">{{config.enable_logview ? "Enable" : "Disable"}}</md-switch>
-                            </div>
-                        </md-input-container>
-                    </div>-->
+                    </div>                  
                 </form>
             </md-content>
 
@@ -339,24 +318,16 @@
         <!--<div class=hidden-overlay" ng-click="showRightPanel()"></div> -->
         <div id="slider-right-content">
             <md-content layout-padding="" class="md-content-white">
-                <form name="journalForm">
-                    <!--<md-input-container class="md-block" flex-gt-sm="" style="margin-bottom:0px; margin-left:-6px">
-                        <div class="md-block-item" style="margin-bottom:0px;margin-top:-16px;margin-left:4px">
-                            <div class="md-block-item-title small-text">Track Journal</div>
-                            <md-switch class="md-primary"
-                                       ng-model="config.enable_journal">{{config.enable_journal ? "Tracking" : "Off"}}</md-switch>
-                        </div>
-                    </md-input-container>-->
-
+                <form name="journalForm">                   
                     <md-input-container id="btnStartJournal" class="md-block" style="margin-left:-4px; margin-bottom:0px;">
-                        <div class="m-flat-button float-left margin-top-4 show-border" ng-click="journal.start()">
+                        <div class="m-flat-button float-left margin-top-4" ng-click="journal.start()">
                             <!--<img src="assets/img/journal-fill.svg">-->
                             <span>{{R.btn_start_journal_tracking}}</span>
                         </div>
                     </md-input-container>
 
                     <md-input-container id="btnStopJournal" class="md-block" style="margin-left:-4px; margin-bottom:0px; display:none">
-                        <div class="m-flat-button float-left margin-top-4 show-border-red" ng-click="journal.stop()">
+                        <div class="m-flat-button float-left margin-top-4" ng-click="journal.stop()">
                             <!--<img src="assets/img/journal-fill.svg">-->
                             <span style="color:#F44336">{{R.btn_stop_journal_tracking}}</span>
                         </div>
@@ -366,39 +337,15 @@
                         <div class="md-block-item-title large-text black-color">JOURNAL HISTORY</div>
                     </div>
 
-                    <div class="md-block-item" style="margin-bottom:0px;margin-top:-16px;">
+                    <div class="md-block-item" style="margin-bottom:0px;margin-top:0px;">
                         <span>From</span>
                         <md-datepicker ng-model="journal.from" md-placeholder="Enter date" style="margin-left:4px;"></md-datepicker>
                     </div>
 
-                    <div class="md-block-item" style="margin-bottom:0px;margin-top:-16px;">
+                    <div class="md-block-item" style="margin-bottom:0px;margin-top:0px;">
                         <span>To</span>
                         <md-datepicker ng-model="journal.to" md-placeholder="Enter date" style="margin-left:23px;"></md-datepicker>
                     </div>
-
-                    <!--<md-input-container class="md-block" flex-gt-sm="" style="margin-bottom:20px;" ng-show="hasAuditRole">
-                        <label>{{ R.text_select_salesman }}</label>
-                        <md-select ng-model="journal.selectedSaler">
-                            <md-option ng-repeat="p in subSalers" value="{{p.personID}}">
-                                {{p.firstName}} {{p.lastName}}
-                            </md-option>
-                        </md-select>
-                    </md-input-container>-->
-                    <!--<md-autocomplete md-no-cache="noCache"
-                                     md-selected-item="salemanItemSelected"
-                                     md-search-text="salemanSearchText"
-                                     md-selected-item-change="selectedItemChange(item)"
-                                     md-items="item in querySearch(salemanSearchText)"
-                                     md-item-text="item.display"
-                                     md-min-length="0"
-                                     placeholder="{{ R.text_select_salesman }}">
-                        <md-item-template>
-                            <span md-highlight-text="salemanSearchText" md-highlight-flags="^i">{{item.display}}</span>
-                        </md-item-template>
-                        <md-not-found>
-                            "{{salemanSearchText}}" was not found.
-                        </md-not-found>
-                    </md-autocomplete>-->
                     <div layout-gt-sm="row" style="margin-top:0px;" ng-show="hasAuditRole">
                         <md-autocomplete flex-gt-sm=""
                                          md-input-name="autocompleteField"
@@ -413,37 +360,29 @@
                             <md-item-template>
                                 <span md-highlight-text="salemanSearchText" md-highlight-flags="^i">{{item.display}}</span>
                             </md-item-template>
-                            <div ng-messages="journalForm.autocompleteField.$error" ng-if="journalForm.autocompleteField.$touched">
-                                <!--<div ng-message="required">You <b>must</b> have a favorite state.</div>
-                                <div ng-message="md-require-match">Please select an existing state.</div>
-                                <div ng-message="minlength">Your entry is not long enough.</div>
-                                <div ng-message="maxlength">Your entry is too long.</div>-->
+                            <div ng-messages="journalForm.autocompleteField.$error" ng-if="journalForm.autocompleteField.$touched">                           
                             </div>
                         </md-autocomplete>
                         <img src="assets/img/clear.svg" class="search-img" style="width:24px;height:24px; margin-top:24px;" ng-click='clearSalemanSearch()' />
                     </div>
 
-                    <md-input-container class="md-block" flex-gt-sm="" style="margin-top:-10px;margin-bottom:0px; margin-left:-6px">
-                        <div class="md-block-item" style="margin-bottom:0px;margin-top:-16px;margin-left:4px">
-                            <div class="md-block-item-title small-text">Journal Color</div>
+                    <md-input-container class="md-block" flex-gt-sm="" style="margin-top:4px;margin-bottom:0px; margin-left:-6px">
+                        <div class="md-block-item" style="margin-bottom:0px;margin-top:0px;margin-left:4px">
+                            <div class="md-block-item-title small-text">JOURNAL COLOR</div>
                             <md-switch class="md-primary"
                                        ng-model="config.journal_daily_mode">{{config.journal_daily_mode ? "Daily" : "Session"}}</md-switch>
                         </div>
                     </md-input-container>
 
-                    <div layout-gt-sm="row" style="margin-top:-10px;">
-                        <md-input-container class="md-block" flex-gt-sm="" style="margin:0px 0px 0px 0px;">
-                            <div class="m-flat-button float-left margin-top-4 show-border" ng-click="journal.viewJournal()">
-                                <img src="assets/img/journal-fill.svg">
-                                <span>{{R.btn_view_journals}}</span>
-                            </div>
-                        </md-input-container>
-                        <md-input-container class="md-block" flex-gt-sm="" style="margin:0px 0px 0px 0px;">
-                            <div class="m-flat-button float-left margin-top-4 show-border-red" ng-click="journal.clearJournal()">
-                                <img src="assets/img/clear.svg">
-                                <span>{{R.btn_clear_journals}}</span>
-                            </div>
-                        </md-input-container>
+                    <div layout-gt-sm="row" style="margin-top:10px;">
+                        <div class="m-flat-button float-left margin-top-4" ng-click="journal.viewJournal()">
+                            <img src="assets/img/journal-fill.svg">
+                            <span>{{R.btn_view_journals}}</span>
+                        </div>
+                        <div class="m-flat-button float-left margin-top-4" ng-click="journal.clearJournal()">
+                            <img src="assets/img/clear.svg">
+                            <span>{{R.btn_clear_journals}}</span>
+                        </div>
                     </div>
                 </form>
             </md-content>

@@ -2,9 +2,9 @@
 /// <reference path="tc.outletAPI.js" />
 /// <reference path="tc.appAPI.js" />
 
-
 function newOutletController($scope, $http, $mdDialog, $timeout) {
     isOutletDlgOpen = true;
+    $scope.outlet = OUTLET.dialog.outlet();
     var isCreatedNew = isEmpty($scope.outlet.Name);
 
     $scope.R = R;
@@ -59,9 +59,11 @@ function newOutletController($scope, $http, $mdDialog, $timeout) {
 
     $scope.callRates = _callRates;
     $scope.classes = _classes;
-    $scope.spShifts = _spShifts;
-    $scope.allowSendRequest = config.enable_send_request === 1 && isCreatedNew && $scope.createNew && $scope.outlet.IsSent === 0;// && $scope.outlet.AuditStatus === 0;
-    
+    $scope.territories = _territories;
+
+    //$scope.disableExtendedFields = !
+    $scope.enableExtraFields = config.enable_send_request === 1 && (user.role === 0 || user.role === 1);
+
     $scope.image1URL = getImageURL($scope.outlet.StringImage1);
     $scope.image2URL = getImageURL($scope.outlet.StringImage2);
     $scope.image3URL = getImageURL($scope.outlet.StringImage3);
@@ -70,24 +72,10 @@ function newOutletController($scope, $http, $mdDialog, $timeout) {
     $scope.image6URL = getImageURL($scope.outlet.StringImage6);
 
     var orgOutlet = cloneObj($scope.outlet);
-
-    var ensureFormClose = function () {
-        //$timeout(function () {
-        //    try {
-        //        var mark = $('.md-scroll-mask');
-        //        console.log(mark);
-        //        if (typeof mark !== 'undefined') {
-        //            mark.remove();
-        //            var dlg = $('.md-dialog-container');
-        //            console.log(dlg);
-        //            if (typeof dlg !== 'undefined') {
-        //                dlg.remove();
-        //            }
-        //        }
-        //    } catch (er) {
-        //        console.error(er);
-        //    }
-        //}, 1500);
+   
+    function hideDialog(answer) {
+        $mdDialog.hide(answer);
+        OUTLET.dialog.close(answer, $scope.outlet);
     };
 
     $scope.capture = function (i) {
@@ -251,6 +239,12 @@ function newOutletController($scope, $http, $mdDialog, $timeout) {
         }
     }
 
+    $scope.sendRequest = function () {
+        showInfo("The request has been sent.");
+        $scope.allowSendRequest = false;
+        $scope.outlet.IsSent = 1;
+    }
+
     $scope.deleteOutlet = function () {
         log("delete pressed");
         var confirmText = R.delete_outlet_confirm.replace("{outletname}", $scope.outlet.Name);
@@ -258,7 +252,9 @@ function newOutletController($scope, $http, $mdDialog, $timeout) {
             $scope.outlet.isDeleted = true;
             $scope.outlet.isChanged = true;
             $scope.outlet.AuditStatus = StatusDelete;
-            $mdDialog.hide(true);
+            //$mdDialog.hide(true);
+
+            hideDialog(true);
         }, function () { });                
     };
 
@@ -279,7 +275,9 @@ function newOutletController($scope, $http, $mdDialog, $timeout) {
                     $scope.outlet.AuditStatus = StatusPost;
                 }
                 $scope.outlet.isChanged = true;
-                $mdDialog.hide(true);
+
+                //$mdDialog.hide(true);
+                hideDialog(true);
             });
         }, function () { });
     }
@@ -289,16 +287,15 @@ function newOutletController($scope, $http, $mdDialog, $timeout) {
 
         checkDistance(function () {
             $scope.outlet.isChanged = true;
-            $mdDialog.hide(true);
+            //$mdDialog.hide(true);
+            hideDialog(true);
         });
     };
 
     $scope.approveOutlet = function () {
         if (!validate(true)) return;
 
-        showDlg(R.get_current_location, R.please_wait);
-        getCurPosition(false, function (lat, lng) {
-            hideDlg();
+        showCurPositionDlg(false, function (lat, lng) {
             if (!validateRange(lat, lng)) return;
             $scope.outlet.isChanged = true;
             $scope.outlet.isApproved = true;
@@ -307,17 +304,16 @@ function newOutletController($scope, $http, $mdDialog, $timeout) {
                 $scope.outlet.AuditStatus = StatusAuditorAccept;
             }
 
-            $mdDialog.hide(true);
+            //$mdDialog.hide(true);
+            hideDialog(true);
         }, function () {
-            hideDlg();
             showError(R.cannot_approve_or_deny);
         });
     };
 
     $scope.cancelUpdate = function () {
-        $mdDialog.hide(false);
-
-        ensureFormClose();
+        //$mdDialog.hide(false);
+        hideDialog(false);
     };
 
     $scope.codeChanged = function(){
@@ -424,17 +420,11 @@ function newOutletController($scope, $http, $mdDialog, $timeout) {
     }
 
     function checkDistance(callback) {
-        if (isModifed(orgOutlet, $scope.outlet)) {
-            showDlg(R.get_current_location, R.please_wait);
-            getCurPosition(false, function (lat, lng) {
-                hideDlg();
+        if (isModified(orgOutlet, $scope.outlet)) {
+            showCurPositionDlg(false, function (lat, lng) {
                 if (!validateRange(lat, lng)) return;
-
                 callback();
-            }, function () {
-                hideDlg();
-                showError(R.msg_validate_accuracy_1);
-            });
+            }, function () { });
         } else {
             callback();
         }

@@ -4,11 +4,14 @@
             <div ng-show="allowBack" class="m-flat-button-small" style="width:auto;margin-right:16px;" ng-click="backBorder()">
                 <img src="assets/img/arrow-left-white.svg" style="margin-top:2px;margin-left:-12px; margin-right:-4px; width:24px;height:24px;" />
                 <span>{{R.btn_back}}</span>
+                <img id="loading-border" src="assets/img/loader.gif" style="height:22px;width:22px;display:none; margin-left:30px;">
             </div>
             <h2 flex="">
                 <span></span>
             </h2>
-            <img id="loading-border" src="assets/img/loader.gif" style="height:22px;width:22px;display:none">
+            <div class="m-flat-button-small" style="width:auto; margin-right:8px;" ng-click="closeBorderForm()">
+                <span>{{R.btn_close}}</span>
+            </div>
         </div>
     </md-toolbar>
     <md-content layout-padding="0" class="popup-content">
@@ -17,7 +20,7 @@
                 <tr ng-repeat="border in borders">
                     <td ng-click="selectBorder(border)"> {{ border.Name }} </td>
                     <td ng-click="nextBorder(border)" class="td-image-right">
-                        <img ng-show="border.ChildrenCount" src="assets/img/arrow-right-green.svg"/>
+                        <img ng-show="border.ChildrenCount" src="assets/img/arrow-right-green.svg" />
                     </td>
                 </tr>
             </tbody>

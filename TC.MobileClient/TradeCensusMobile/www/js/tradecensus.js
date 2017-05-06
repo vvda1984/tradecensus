@@ -1,6 +1,7 @@
-﻿var _WEB = false;
-var _PROD = true;
-var _VERSION = 11;
+﻿var _WEB = true ;
+var _PROD = false;
+var _VERSION = 17;
+var _VERSION_DISPLAY = '1.17.20';
 
 (function (global) {
     "use strict";
@@ -8,14 +9,12 @@ var _VERSION = 11;
         console.log('Device Ready!');
         inactivityTime();
 
-        // disable back button
+        // Disable back button
         document.addEventListener("backbutton", function (e) { e.preventDefault(); }, false);
         document.addEventListener("resume", function () { }, false);
         //document.addEventListener("online", onNetworkConnected, false);
         //document.addEventListener("offline", onNetworkDisconnected, false);
         document.addEventListener("resume", function () { }, false);
-
-        //logger.initialize('tradecencus');
 
         initializeEnvironment(function () { initializeApp(); });
 
@@ -53,30 +52,12 @@ var _VERSION = 11;
         catch (err) {
             log(err);
         }
-
-        //try {
-        //    rootdetection.isDeviceRooted(function (result) {
-        //        console.log(result);
-        //        if (result === 1) {
-        //            console.log('Device is rooted.');
-        //            navigator.app.exitApp();
-        //        }                
-        //    }, function (error) {
-        //        console.error(error);
-        //    });
-        //}
-        //catch (err) {
-        //    console.log(err);
-        //}
-    }
-
-    //$(document).ready(function () { onDeviceReady(); }); // web
+    }    
     if (_WEB)
         $(document).ready(function () { onDeviceReady(); }); // web
     else 
         document.addEventListener("deviceready", onDeviceReady, false); // mobile
 })(window);
-
 
 var resetDB = false;                // force reset database - testing only
 var db;                             // database instance
@@ -84,9 +65,8 @@ var devLat = START_LAT;
 var devLng = START_LNG;
 
 var userOutletTable = 'outlet';     // outlet table name for current user
-var isDlgOpened = false;             
+           
 var isInitialize = false;
-var enableSync = false;
 var onImageViewerClose;
 var newImageFile;
 var userID = 0;
@@ -99,7 +79,7 @@ var outletTypes = [];
 var provinces = [];
 var dprovinces = [];
 var _classes = ["A", "E", "G", "M"];
-var _spShifts = [2, 3, 4, 5, 6];
+var _territories = ["2", "3", "4", "5", "6"];
 var _callRates = [
     { Name: "Weekly", ID: 1 },
     { Name: "2 Weeks", ID: 2 },
@@ -199,13 +179,13 @@ function newConfig() {
         mode_online: true,
         enable_rereverse_geo: 1,
         protocol: 'http',
-        //ip: '27.0.15.234/trade-census',
-        //ip: '203.34.144.29/tc-test',
-        //ip: '203.34.144.29/trade-census',
-        ip: 'localhost/trade-census-test',        
+        //ip: '27.0.15.234/trade-census',          // INTERNAL TEST
+        ip: '203.34.144.29/tc-test',               // TEST
+        //ip: '203.34.144.29/trade-census',        // PROD
+        //ip: 'localhost/trade-census-test',       // LOCAL 
         port: '80',
         service_name: 'TradeCensusService.svc', // absolute
-        enable_liveGPS: true,       
+        enable_liveGPS: true,
         liveGPS_distance: 10,
         map_zoom: 17,
         distance: 200,
@@ -213,15 +193,17 @@ function newConfig() {
         audit_accuracy: 50, //100
         audit_range: 100, //100
         item_count: 20,
-        province_id: 50, // HCM
+        item_count_max: 300,
+        province_id: 50, // HCM        
         http_method: 'POST',
         calc_distance_algorithm: 'circle',
         map_api_key: 'AIzaSyDpKidHSrPMfErXLJSts9R6pam7iUOr_W0',
         max_oulet_download: 1,
         download_batch_size: 5000,
+        get_location_time_out: 15,  // Connection timeout
         time_out: 30,               // Connection timeout
         auto_sync: 0,               // 
-        sync_time: 1 * 60 * 1000,   // Sync delay...
+        sync_time: 3 * 60 * 1000,   // Sync interval...
         sync_time_out: 5 * 60,      // Sync timeout
         sync_batch_size: 100,       // Number of uploaded outlets in sync request
         ping_time: 30,              // Time
@@ -229,10 +211,11 @@ function newConfig() {
         refresh_time_out: 3 * 60,   // Time to get outlet
         session_time_out: 0 * 60,
         location_age: 10,           // last avaliable location
+        submit_outlet_time: 30,     //
 
         enable_journal: false,      // False after login until user start
         journal_update_time: 1 * 10,//
-        journal_accuracy : 100,     //
+        journal_accuracy: 100,     //
         journal_distance: 10,       // meter
         journal_refresh_time: 3,    // second
         journal_color: '#00551E',   // 
@@ -243,32 +226,32 @@ function newConfig() {
         hotlines: [],               // hotline
         enable_check_in: 1,         //
         enable_send_request: 1,     //
-        
+
         map_icons_version: 0,
-		map_tc_salesman_outlet: '',
-		map_tc_salesman_outlet_denied: '',
-		map_tc_auditor_outlet: '',
-		map_tc_auditor_outlet_denied: '',
-		map_tc_agency_new_outlet: '',
-		map_tc_agency_new_outlet_denied: '',
-		map_tc_agency_new_outlet_approved: '',
-		map_tc_agency_auditor_new_outlet: '',
-		map_tc_agency_auditor_new_outlet_denied: '',
-		map_tc_agency_auditor_new_outlet_approved: '',
-		map_tc_agency_existing_outlet_edited: '',
-		map_tc_agency_existing_outlet_denied: '',
-		map_tc_agency_existing_outlet_approved: '',
-		map_sr_outlet_audit_denied: '',
-		map_sr_outlet_audit_approved: '',
-		map_sr_outlet_closed: '',
-		map_sr_outlet_non_track: '',
-		map_sr_outlet_opened: '',
-	    map_dis_outlet_audit_denied: '',
-		map_dis_outlet_audit_approved: '',
-		map_dis_outlet_closed: '',
-		map_dis_outlet_opened: '',	
-		
-        check_rooted_device : 1,
+        map_tc_salesman_outlet: '',
+        map_tc_salesman_outlet_denied: '',
+        map_tc_auditor_outlet: '',
+        map_tc_auditor_outlet_denied: '',
+        map_tc_agency_new_outlet: '',
+        map_tc_agency_new_outlet_denied: '',
+        map_tc_agency_new_outlet_approved: '',
+        map_tc_agency_auditor_new_outlet: '',
+        map_tc_agency_auditor_new_outlet_denied: '',
+        map_tc_agency_auditor_new_outlet_approved: '',
+        map_tc_agency_existing_outlet_edited: '',
+        map_tc_agency_existing_outlet_denied: '',
+        map_tc_agency_existing_outlet_approved: '',
+        map_sr_outlet_audit_denied: '',
+        map_sr_outlet_audit_approved: '',
+        map_sr_outlet_closed: '',
+        map_sr_outlet_non_track: '',
+        map_sr_outlet_opened: '',
+        map_dis_outlet_audit_denied: '',
+        map_dis_outlet_audit_approved: '',
+        map_dis_outlet_closed: '',
+        map_dis_outlet_opened: '',
+
+        check_rooted_device: 1,
 
         tbl_area_ver: '0',
         tbl_outlettype_ver: '0',
@@ -278,7 +261,7 @@ function newConfig() {
         tbl_outlet: 'uo',
         tbl_downloadProvince: 'udp',
         tbl_journal: 'jr',
-        version: '1.2.15',
+        version: _VERSION_DISPLAY,
         versionNum: _VERSION,
     };
     if (isHttp) {
@@ -400,35 +383,6 @@ function loadOutletTypes(tx, callback) {
 function loadProvinces(tx, callback) {
     provinces = [];
     callback(tx);
-
-    //log('Load provinces...');
-    //if (provinces != null && provinces.length > 0) {
-    //    log('Outlets have been loaded before.');
-    //    callback(tx);
-    //    return;
-    //} 
-    //log('Load provinces from db');
-    //provinces = [];
-    //selectProvincesDB(tx, function (tx1, dbrow) {
-    //    try {
-    //        var rowLen = dbrow.rows.length;
-    //        log('Provinces found: ' + rowLen.toString());
-    //        if (rowLen) {
-    //            for (i = 0; i < rowLen; i++) {
-    //                provinces[i] = {
-    //                    id: dbrow.rows.item(i).ID,
-    //                    name: dbrow.rows.item(i).Name,
-    //                }
-    //            }
-    //        }
-    //        addressModel.provinceArr = provinces;
-    //    } catch (ex) {
-    //        showError(ex.message);
-    //    }
-    //    callback(tx1);
-    //}, function (dberr) {  
-    //    showError(dberr.message);
-    //});
 }
 
 function loadSettings(tx, callback) {
@@ -444,19 +398,16 @@ function loadSettings(tx, callback) {
                     if (name == 'protocol') {
                         config.protocol = value;
                     } else if (name == 'ip') {
-                        log('set ip: ' + value);
                         config.ip = value;
                     } else if (name == 'port') {
-                        log('set port: ' + value);
                         config.port = value;
                     } else if (name == 'service_name') {
-                        log('service name: ' + value);
                         config.service_name = value;
                     } else if (name == 'item_count') {
-                        log('item_count: ' + value);
                         config.item_count = parseInt(value);
+                    } else if (name == 'item_count_max') {
+                        config.item_count_max = parseInt(value);
                     } else if (name == 'distance') {
-                        log('distance: ' + value);
                         config.distance = parseInt(value);
                     } else if (name == 'province_id') {
                         config.province_id = value;
@@ -534,7 +485,7 @@ function loadSettings(tx, callback) {
                     } else if (name == 'enable_send_request') {
                         config.enable_send_request = parseInt(value);
                     }
-                    
+
                     else if (name == 'map_icons_version') {
                         config.map_icons_version = parseInt(value);
                     } else if (name == 'map_tc_salesman_outlet') {
@@ -585,6 +536,10 @@ function loadSettings(tx, callback) {
                         config.map_dis_outlet_closed = value;
                     } else if (name == 'map_dis_outlet_opened') {
                         config.map_dis_outlet_opened = value;
+                    } else if (name == 'get_location_time_out') {
+                        config.get_location_time_out = parseInt(value);
+                    } else if (name == 'submit_outlet_time') {
+                        config.submit_outlet_time = parseInt(value);
                     }
                 }
             }
@@ -638,111 +593,82 @@ function initializeApp() {
     }
 };
 
-/****************************************************************/
-var syncOutletsCallback;
+//#region *** AUTO SYNC
 function startSyncProgress() {
-    setTimeout(function () {
-        runSync(function () { startSyncProgress(); });
-    }, config.sync_time);
+    __autoSyncTimeOut = setTimeout(function () { __runSync(); }, config.sync_time);
 }
 
-function runSync(callback) {
-    log('*** BEGIN SYNC');
-    if (syncOutletsCallback == null) {
-        log('*** SYNC Ignored: sycn exe was not set');
-        callback();
+var __pauseSync = true;
+var __autoSyncTimeOut;
+var __autoSyncOutletFunc;
+function __runSync() {   
+    if (__autoSyncOutletFunc == null) {
+        console.log('*** SYNC Ignored: __autoSyncOutletFunc was not set');
+        startSyncProgress(); // next circle
         return;
     }
 
-    if(!enableSync || !networkReady()) {
-        log('*** SYNC Ignored: sycn is disabled or no connection');
-        callback();
+    if (__pauseSync || !networkReady()) {        
+        startSyncProgress(); // next circle
         return;
     }
-    try{
-        syncOutletsCallback(function () {
-            log('*** SYNC COMPLETED');
-            if(user.id > 0)
-                journals.syncJournal();
-            callback();
-        }, function(err){
-            log('*** SYNC ERROR: ' + err);									
-            callback();
-        });
-    }catch(ex){
-        log('*** SYNC ERROR: ' + ex);									
-        callback();
-    }
-}
 
-/****************************************************************/
-var isPausePing = false;
-var connectionChangedCallback;
-var refreshOutletListCallback;
-var pingTimeout = 5;
-function startPingProgress () {
-    startPingTimer();
-}
+    try {
+        syncOutletsCallback(
+            function () {
+                if (user.id > 0)
+                    journals.syncJournal();
+                startSyncProgress(); // next circle
 
-function startPingTimer() {
-    setTimeout(function () {
-        if (isPausePing || isOutletDlgOpen)
-        {
-            startPingTimer();
-            return;
-        } else {
-            ping(function (b) {
-                try {
-                    log('ping...' + baseURL);
-                    if (b != serverConnected) {
-                        serverConnected = b;
-                        if (connectionChangedCallback != null)
-                            connectionChangedCallback(b);
-                    }
+            }, function (err) {
+                console.error('*** SYNC ERROR');
+                console.error(err);
 
-                    if (refreshOutletListCallback != null)
-                        refreshOutletListCallback();
-                }
-                catch(e){
-                }
-                startPingTimer();
+                startSyncProgress(); // next circle
             });
-        }
+    }catch(err){
+        console.error('*** SYNC ERROR');
+        console.error(err);
+        startSyncProgress(); // next circle
+    }
+}
+//#endregion
+
+//#region *** PING
+var isPausePing = false;
+var __connectionChangedCallback;
+var __refreshOutletListCallback;
+var pingTimeout = 5;
+
+function startPingProgress() {
+    setTimeout(function () {
+        __pingInterval();
     }, config.ping_time * 1000);
 }
 
+function __pingInterval() {
+    if (isPausePing || isOutletDlgOpen) {
+        startPingProgress();
+        return;
+    } else {
+        ping(function (b) {
+            try {             
+                if (b != serverConnected) {
+                    serverConnected = b;
+                    if (__connectionChangedCallback != null) __connectionChangedCallback(b);
+                }
+
+                if (__refreshOutletListCallback != null) __refreshOutletListCallback();
+            }
+            catch (e) {
+            }
+            startPingProgress();
+        });
+    }
+}
+
 function ping(callback) {
-    tryping(0, callback);
-
-    //if (!getNetworkState()) {
-    //    callback(false);
-    //    return;
-    //}
-    ////else {
-    ////    callback(true);
-    ////    return;
-    ////}
-    ////return;
-
-    // ignore
-    //var devideInfo = userID.toString();
-    //var url = baseURL + '/ping/' + devideInfo;
-    //$.ajax({
-    //    type: "POST",
-    //    contentType: "application/json; charset=utf-8",
-    //    url: url,
-    //    data: '',
-    //    processData: false,
-    //    dataType: "json",
-    //    timeout: config.time_out * 100, // sets timeout to 3 seconds
-    //    success: function (response) {
-    //        callback(true);
-    //    },
-    //    error: function (a, b, c) {
-    //        callback(false);
-    //        //alert(a.responseText);
-    //    }
-    //});
+    callback(getNetworkState());
 }
 
 function tryping(retry, callback) {
@@ -782,9 +708,9 @@ function tryping(retry, callback) {
         }
     });
 }
+//#endregion
 
-/****************************************************************/
-
+//#region *** CHECK UPDATE
 function checkUpdate() {
     try {
         showDlg(R.check_update, R.please_wait);
@@ -818,3 +744,4 @@ function checkUpdate() {
         log(err);
     }
 }
+//#endregion

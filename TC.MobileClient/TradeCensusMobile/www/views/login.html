@@ -14,7 +14,7 @@
                             </div>-->
                         </md-input-container>
                     
-                        <md-input-container class="md-block">
+                        <md-input-container class="md-block" style="margin-top:12px">
                             <label>{{ R.enter_password }}</label>
                             <input required="" name="password" type="password" ng-model="password">
                             <!--<div ng-messages="loginForm.user.id.$error" role="alert">
@@ -25,7 +25,7 @@
                 </md-content>
             </div>
 
-            <div class="action-buttons">                
+            <div class="action-buttons" style="margin-top:16px;">                
                 <div class="button raised blue" ng-click="login()">{{ R.btn_login }}</div>
                 <div class="button raised" ng-click="exit()">{{ R.btn_exit }}</div>                
             </div>
@@ -47,19 +47,15 @@
             <div id="config-form">
                 <md-content layout-padding="" class="md-content-white">
                     <form name="configForm">
-                        <md-input-container class="md-block" style="margin-bottom:32px;">
+                        <md-input-container class="md-block">
                             <label>{{ R.enter_protocol }}</label>
                             <md-select ng-model="config.protocol">
-                                <md-option value="http">
-                                    HTTP
-                                </md-option>
-                                <md-option value="https">
-                                    HTTPS
-                                </md-option>
+                                <md-option value="http">HTTP</md-option>
+                                <md-option value="https">HTTPS</md-option>
                             </md-select>
                         </md-input-container>
 
-                        <md-input-container class="md-block" style="margin-bottom:0px;">
+                        <md-input-container class="md-block" style="margin-top:32px;">
                             <label>{{ R.enter_ip_address }}</label>
                             <input required="" name="ipAddress" ng-model="config.ip">
                             <!--<div ng-messages="configForm.ipAddress.$error" role="alert">
@@ -92,7 +88,7 @@
                         </md-input-container>
 
 
-                        <div class="md-block-item" style="margin-bottom:0px;margin-top:-16px;margin-left:4px" ng-show="config.enable_devmode">
+                        <div class="md-block-item" style="margin-bottom:0px;margin-top:0;margin-left:0px" ng-show="config.enable_devmode">
                             <div class="md-block-item-title small-text">Mode (Online/Offline)</div>
                             <md-switch class="md-primary" ng-model="config.mode_online">{{config.mode_online ? "Online" : "Offline"}}</md-switch>
                         </div>

@@ -1,9 +1,12 @@
-﻿var isLoadingDlgOpened = false;
+﻿/// <reference path="tc.language.js" />
+
+var isDlgOpened = false;
+var isLoadingDlgOpened = false;
 var cancelLoadingDlg = false;
 var dlgCloseCallback;
 var dlgAcceptCallback;
 var dlgDenyCallback;
-var loadigConfirmMsg;
+var loadingConfirmMsg;
 var loadingCloseCallback;
 
 function dlgClose() {
@@ -29,13 +32,13 @@ function dlgConfirmClose(i) {
 function dlgLoadingClose() {    
     log('dlgLoadingClose: ' + i.toString());
     if (config.enable_devmode) {
-        alert(loadigConfirmMsg);
+        alert(loadingConfirmMsg);
         hideDlg();
         if (dlgCloseCallback)
             dlgCloseCallback();        
     } else {
         navigator.notification.confirm(
-            loadigConfirmMsg, // message
+            loadingConfirmMsg, // message
             function (i) {
                 if (i == 2) {
                     hideLoadingDlg();
@@ -200,7 +203,7 @@ function showLoading(title, message, closeMsg, callback) {
     } else {
         var cover = null;
         loadingCloseCallback = callback;
-        loadigConfirmMsg = closeMsg;
+        loadingConfirmMsg = closeMsg;
         cover =
             '<div id="loading-panel">' +
                 '<div class="loading-window">' +
@@ -247,5 +250,164 @@ function resetCallback() {
     var dlgCloseCallback = null;
     var dlgAcceptCallback = null;
     var dlgDenyCallback = null;
-    var loadigConfirmMsg = null;
+    var loadingConfirmMsg = null;
 }
+
+
+//#region Dialog
+
+var __processingSettings = {
+    cancelConfirmMessage: '',
+    cancelConfirmOKText: 'Yes',
+    cancelConfirmCancelText: 'No',
+    cancelCallback: null
+};
+
+var __getLocationErrorSettings = {
+    retryCallback: null,
+    closeCallback: null,
+};
+
+function __resetCallback() {
+
+}
+
+function __closeProcessingDlg() {
+    if (__processingSettings.cancelConfirmMessage !== null && __processingSettings.cancelConfirmMessage.length > 0) {
+        if (config.enable_devmode) {
+            alert(__processingSettings.cancelConfirmMessage);
+
+            dialogUtils.hideProcessing();
+            if (__processingSettings.cancelCallback)
+                __processingSettings.cancelCallback();
+        } else {
+            navigator.notification.confirm(
+                __processingSettings.cancelConfirmMessage, // message
+                function (i) {
+                    if (i == 2) {
+                        dialogUtils.hideProcessing();
+                        if (__processingSettings.cancelCallback)
+                            __processingSettings.cancelCallback();
+                    }
+                },              // callback to invoke with index of button pressed
+                'Confirm',      // title            
+                [__processingSettings.cancelConfirmCancelText, __processingSettings.cancelConfirmOKText]
+            );
+        }
+    } else {
+        dialogUtils.hideProcessing();
+        if (__processingSettings.cancelCallback)
+            __processingSettings.cancelCallback();
+    }
+}
+
+function __closeGetLocationErrorDlg(retry) {
+    if (retry) {
+        if (__getLocationErrorSettings.retryCallback) 
+            __getLocationErrorSettings.retryCallback();
+    } else {
+        if (__getLocationErrorSettings.closeCallback)
+            __getLocationErrorSettings.closeCallback();
+    }
+    try {
+        $('#dlg-panel').remove();
+    }
+    catch (e) {
+        console.error(e);
+    }
+}
+
+var dialogUtils = {
+    showProcessing: function (message, options) {
+        var settings = $.extend({
+            title: R.processing,            
+            cancelButtonText: R.btn_cancel,
+            cancelConfirmMessage: '',
+            cancelConfirmOKText: 'Yes',
+            cancelConfirmCancelText: 'No',
+            cancelCallback: null,
+        }, options);
+        console.log(settings);
+        __processingSettings.cancelConfirmMessage = settings.cancelConfirmMessage;
+        __processingSettings.cancelConfirmOKText = settings.cancelConfirmOKText;
+        __processingSettings.cancelConfirmCancelText = settings.cancelConfirmCancelText;
+        __processingSettings.cancelCallback = settings.cancelCallback;
+                
+        var div =
+            '<div id="processing-panel">' +
+                '<div class="loading-window">' +
+                    '<div class="dialog">' +
+                        '<div class="content">' +
+                            '<div id="loading-dlg-title" class="title">' + settings.title + '</div><br>' +
+                            '<div id="loading-dlg-message">' + message + '</div>' +
+                        '</div>' +
+                        '<div class="button label-blue" onclick="__closeProcessingDlg()">' +
+                            '<div class="center" fit>' + settings.cancelButtonText + '</div>' +
+                            '<paper-ripple fit></paper-ripple>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>' +
+            '</div>';        
+        $(div).appendTo('body');
+    },
+    
+    hideProcessing: function () {
+        try {
+            $('#processing-panel').remove();
+        }
+        catch (e) {
+            console.error(e);
+        }
+    },
+
+    showGetLocationError: function (retryCallback, closeCallback) {
+        __getLocationErrorSettings.closeCallback = closeCallback;
+        __getLocationErrorSettings.retryCallback = retryCallback;
+
+        var div =
+        '<div id="dlg-panel">' +
+            '<div class="loading-window">' +
+                '<div class="dialog">' +
+                    '<div class="content">' +
+                        '<div id="dlg-title" class="title">' + R.error + '</div><br>' +
+                        '<div id="dlg-message">' + R.msg_validate_accuracy_1 + '</div>' +
+                    '</div>' +
+                    '<div class="button" onclick="__closeGetLocationErrorDlg(false)">' +
+                        '<div class="center" fit>CLOSE</div>' +
+                        '<paper-ripple fit></paper-ripple>' +
+                    '</div>' +
+                    '<div class="button label-blue" onclick="__closeGetLocationErrorDlg(true)">' +
+                        '<div class="center" fit>RETRY</div>' +
+                        '<paper-ripple fit></paper-ripple>' +
+                    '</div>' +
+                '</div>' +
+                '</div>' +
+        '</div>';
+        $(div).appendTo('body');
+    },
+
+    showClosableDlg: function (title, message, action) {
+        var isCancelled = false;
+        dialogUtils.showProcessing(message, {
+            title: title,
+            cancelCallback: function () {
+                isCancelled = true;
+            },
+        });
+
+        var __hideLoading = function () { dialogUtils.hideProcessing(); };
+        var __isCancelled = function () { return isCancelled; };
+
+        action(__hideLoading, __isCancelled);
+    },
+
+    setClosableDlgContent: function (title, message) {
+        try{
+            $("#loading-dlg-title").html(title);
+            $("#loading-dlg-message").html(message);
+        }catch(e)
+        {};
+    },
+}
+
+//endregion

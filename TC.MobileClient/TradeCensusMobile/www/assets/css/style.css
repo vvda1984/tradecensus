@@ -4,14 +4,6 @@ html, body {
     padding: 0px;
 }
 
-.md-icon-button-primary {
-    color: #3A678D;
-}
-
-.md-content-white {
-    background: white;
-}
-
 .main-view {
     margin: 0px;
     padding: 0px;
@@ -66,7 +58,7 @@ html, body {
     background: white;
 }
 
-#dlg-panel, #loading-panel, #image-overlay, #dlg-change-password {
+#dlg-panel, #loading-panel, #image-overlay, #dlg-change-password, #processing-panel {
     position: fixed;
     top: 0;
     left: 0;
@@ -79,8 +71,16 @@ html, body {
 #dlg-panel {
     background-color: rgb(0,0,0);
     background-color: rgba(0,0,0, 0.1);
+    z-index: 106;
+}
+
+
+#processing-panel{
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0, 0.1);
     z-index: 105;
 }
+
 
 #loading-panel {
     background-color: rgb(0,0,0);
@@ -189,6 +189,7 @@ hr {
 .action-buttons {
     margin-top: 20px;
     margin-bottom: 12px;
+    text-align: center;
 }
 
 #login-logo {
@@ -477,6 +478,15 @@ hr {
 	
 /*************** ANGULAR MATERIAL CUSTOMIZE ******************/
 
+.md-icon-button-primary {
+    color: #3A678D;
+}
+
+.md-content-white {
+    background: white;
+}
+
+
 ._md {
     min-height: 32px;
 }
@@ -494,7 +504,7 @@ hr {
 
 .md-block-item {
     color: rgba(0,0,0,0.87);
-    padding: 8px 8px 20px 8px;
+    padding: 8px 8px 0px 12px;
     display: block;
     min-width: 120px;
 }
@@ -509,6 +519,28 @@ hr {
 .md-scroll-mask {
     position: initial;
 }
+
+md-select.md-default-theme[disabled] ._md-select-value, md-select[disabled] ._md-select-value {
+    color: rgba(0,0,0,0.87);
+}
+
+md-input-container.md-default-theme .md-input[disabled], md-input-container .md-input[disabled], [disabled] md-input-container.md-default-theme .md-input, [disabled] md-input-container .md-input
+{
+    color: rgba(0,0,0,0.87);
+}
+
+md-input-container.md-block{
+    padding-bottom:4px !important;
+}
+
+.md-input-messages-animation {
+    display: none !important;
+}
+
+.md-select-value *:first-child{
+    padding-bottom:2px !important;
+}
+
 /*********************************/
 
 /*************** MATERIAL THEME ******************/
@@ -524,6 +556,7 @@ hr {
     font-size: 0.9em;
     background-color: #fff;
     color: #646464;
+    text-align:center;
 }
 
     .button > paper-ripple {
@@ -546,6 +579,11 @@ hr {
 
     .button.green {
         background-color: #0f9d58;
+        color: #fff;
+    }
+
+    .button.orange {
+        background-color: #F57C00;
         color: #fff;
     }
 

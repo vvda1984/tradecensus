@@ -5,6 +5,11 @@
 
 var userSelectedBorder;
 function selectGeoBorderController($scope, $http, $mdDialog) {
+    function hideDialog(answer) {
+        $mdDialog.hide(answer);
+        OUTLET.dialog.close(answer, null);
+    };
+
     isOutletDlgOpen = true;
     var t_level = border_level;
     var t_borders_0 = borders_0;
@@ -98,7 +103,7 @@ function selectGeoBorderController($scope, $http, $mdDialog) {
         addressModel.update(selected_border_0, selected_border_1, selected_border_2, borders_1, borders_2);
 
         userSelectedBorder = b;
-        $mdDialog.hide(true);
+        hideDialog(true);
     }
 
     $scope.nextBorder = function (b) {
@@ -157,5 +162,9 @@ function selectGeoBorderController($scope, $http, $mdDialog) {
         } else if (t_level == 2) {
             t_selected_border_2 = null;
         }
+    }
+
+    $scope.closeBorderForm = function () {
+        hideDialog(false);
     }
 }

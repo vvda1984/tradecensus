@@ -5,7 +5,7 @@ function loginController($scope, $http) {
     mapClickedCallback = null;
     mapViewChangedCallback = null;
     locationChangedCallback = null;
-    connectionChangedCallback = null;
+    __connectionChangedCallback = null;
     $scope.R = R;
     $scope.config = config;
     $scope.user = user;
@@ -269,7 +269,7 @@ function loginController($scope, $http) {
                         HomeAddress: per.HomeAddress,
                         WorkAddress: per.WorkAddress,
                         Phone: per.Phone,
-                        Role: per.HasAuditRole == '1' ? 1 : 0,
+                        Role: per.Role,
                         Token: '',
                     });
                 } else {
@@ -317,12 +317,12 @@ function loginController($scope, $http) {
         config.tbl_downloadProvince = 'outlet_province_' + $scope.user.id;
         config.tbl_journal = 'journal_tracking_' + $scope.user.id;
 
-        log($scope.user.hasAuditRole);
-        enableSync = true;
+        log($scope.user.hasAuditRole);        
         resetLocal = loginUser.Role >= 100;
 
+        console.info($scope.user);
         log('create outlet tables');
-
+        
         ensureUserOutletDBExist(resetLocal,
             config.tbl_outletSync,
             config.tbl_outlet,
@@ -374,6 +374,8 @@ function loginController($scope, $http) {
     }
 
     function finalizeLoginView() {
+        enableBackgroundMode();
+
         log('Load downloaded provinces table');
         selectDownloadProvincesDB(config.tbl_downloadProvince, function (dbres) {
             dprovinces = [];
@@ -397,7 +399,7 @@ function loginController($scope, $http) {
                             return 0;
                         }
                     });
-
+                    
                     hideDlg();
                     $scope.changeView('home');
                 }, function (dberr) {
@@ -534,6 +536,12 @@ function loginController($scope, $http) {
                         config.map_icons_version = mapIcons.version;
                     } else if (name == 'enable_send_request') {
                         config.enable_send_request = parseInt(value);
+                    } else if (name == 'get_location_time_out') {
+                        config.get_location_time_out = parseInt(value);
+                    } else if (name == 'item_count_max') {
+                        config.item_count_max = parseInt(value);
+                    } else if (name == 'submit_outlet_time') {
+                        config.submit_outlet_time = parseInt(value);
                     }
                 }
                 
@@ -671,5 +679,40 @@ function loginController($scope, $http) {
         } else {
             onSuccess();
         }
-    }  
+    }
+
+    function enableBackgroundMode() {
+        return;
+
+        try {
+            // Android customization
+            cordova.plugins.backgroundMode.setDefaults({ text: 'Trade Census.' });
+            // Enable background mode
+            cordova.plugins.backgroundMode.enable();
+            // Called when background mode has been activated
+            cordova.plugins.backgroundMode.onactivate = function () {
+                try {
+                    isRunningInBackgound = true;
+                    turnOntrackLocationWhenAppInBackground();
+                }
+                catch (err) {
+                    log(err);
+                }
+
+                setTimeout(function () {
+                    // Modify the currently displayed notification
+                    cordova.plugins.backgroundMode.configure({
+                        text: 'Running in background.'
+                    });
+                }, 5000);
+            };
+
+            cordova.plugins.backgroundMode.ondeactivate = function () {
+                isRunningInBackgound = false;
+            };
+        }
+        catch (err) {
+            log(err);
+        }
+    }
 };

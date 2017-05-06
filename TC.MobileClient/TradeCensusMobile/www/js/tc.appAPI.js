@@ -215,7 +215,7 @@ function openImgViewer(title, viewOnly, url, callback) {
             '<div class="loading-window">' +
                 '<div class="dialog" style="margin-left:20%;margin-right:20%;">' +
                     '<div class="content">' +
-                        '<div class="title">' + title + '</div><br>' +
+                        '<div class="title">' + title + ' <div style="float:right; margin-right:8px;" onclick="closeImgViewer()">X</div> </div><br>' +
                         '<div><img id="curOutletImage" class="outlet-image-large" src="' + url + '"/></div>' +
                     '</div>' +
                     '<div class="button label-blue" onclick="closeImgViewer()">' +
@@ -240,7 +240,7 @@ function openImgViewer(title, viewOnly, url, callback) {
             '<div class="loading-window">' +
                 '<div class="dialog" style="margin-left:20%;margin-right:20%;">' +
                     '<div class="content">' +
-                        '<div class="title">' + title + '</div><br>' +
+                        '<div class="title">' + title + ' <div style="float:right; margin-right:8px;" onclick="closeImgViewer()">X</div> </div><br>' +
                         '<div><img id="curOutletImage" class="outlet-image-large" src="' + url + '"/></div>' +
                     '</div>' +
                     '<div class="button label-blue" onclick="closeImgViewer()">' +

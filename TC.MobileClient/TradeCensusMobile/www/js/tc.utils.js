@@ -129,11 +129,15 @@
         lastRefreshOutletsTS: null,
         lastRefreshLat: 0,
         lastRefreshLng: 0,
+        lastQueryItemCount: 20,
 
         checkToRefreshOutlet: function (newLat, newLng) {
+            if (config.item_count > config.item_count_max) return false; // disable auto reload
+
             var now = new Date();
             var dif = getDifTime(tcutils.tcapp.lastRefreshOutletsTS, now);
-            if (dif >= config.ping_time) {
+            var refreshInterval = config.ping_time + Math.floor((config.item_count - 20) / 10);
+            if (dif >= refreshInterval) {
                 var distance = tcutils.locations.calculateDistance(newLat, newLng, tcutils.tcapp.lastRefreshLat, tcutils.tcapp.lastRefreshLng);
                 if (distance >= config.liveGPS_distance) {
                     tcutils.tcapp.lastRefreshOutletsTS = now;
