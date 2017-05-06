@@ -64,7 +64,7 @@
                     onError(dberr.message);
                 });
            
-            tx.executeSql('ALTER TABLE [user1] ADD COLUMN [Role] text NULL', [], function (tx1) { }, function (tx1, dberr) { });
+            tx.executeSql('ALTER TABLE [user1] ADD COLUMN [Role] text NULL', [], function (tx1) { }, function (tx1, dberr) { });            
 
             addressModel.initialize(db, tx);
             onSuccess(tx);
@@ -1137,28 +1137,25 @@ function findOutlet(outletTbl, prowId, callback) {
 }
 
 function selectOutletsDB(outletTbl, latMin, latMax, lngMin, lngMax, view, onSuccess, onError) {
+    selectNearByOutlets(outletTbl, latMin, latMax, lngMin, lngMax, view, null, onSuccess, onError);
+}
+
+function selectNearByOutlets(outletTbl, latMin, latMax, lngMin, lngMax, view, synced, onSuccess, onError) {
     db.transaction(function (tx) {
         log('Select outlets by view: ' + view.toString());
         var sql = 'SELECT * FROM [' + outletTbl + '] WHERE ' // WHERE provinceID = "' + provinceID + '" AND  ';
 
-        if (view == 0) {            
+        if (view == 0) {
             sql = sql.concat('AuditStatus <> ' + StatusDelete.toString());
         } else if (view == 1) {
             if (user.hasAuditRole) {
-                //sql = sql.concat('AuditStatus in ( ', StatusPost.toString(),
-                //                    ', ', StatusAuditAccept.toString(),
-                //                    ', ', StatusAuditDeny.toString(),
-                //                    ', ', StatusAuditorNew.toString(),
-                //                    ', ', StatusAuditorAccept.toString(), ')');
-             
                 sql = sql.concat(' AuditStatus = ', StatusPost.toString());
                 sql = sql.concat(' OR AuditStatus = ', StatusAuditAccept.toString());
                 sql = sql.concat(' OR AuditStatus = ', StatusAuditDeny.toString());
                 sql = sql.concat(' OR AuditStatus = ', StatusAuditorAccept.toString());
                 sql = sql.concat(' OR (AuditStatus = ', StatusAuditorNew.toString(), ' AND PersonID = ', userID.toString(), ')');
             } else {
-                sql = sql.concat('AuditStatus in ( ',  StatusNew.toString(), ', ', StatusPost.toString(), ', ', StatusAuditAccept.toString(), ', ', StatusAuditDeny.toString(), ')');
-                //sql = sql.concat(' AND PersonID = ' + userID.toString());
+                sql = sql.concat('AuditStatus in ( ', StatusNew.toString(), ', ', StatusPost.toString(), ', ', StatusAuditAccept.toString(), ', ', StatusAuditDeny.toString(), ')');
             }
         } else if (view == 2) {
             if (user.hasAuditRole) {
@@ -1186,21 +1183,13 @@ function selectOutletsDB(outletTbl, latMin, latMax, lngMin, lngMax, view, onSucc
         }
         sql = sql.concat(' AND Latitude >= ', latMin.toString(), ' AND Latitude <= ', latMax.toString());
         sql = sql.concat(' AND Longitude >= ', lngMin.toString(), ' AND Longitude <= ', lngMax.toString());
+        
+        if (synced !== null) {
+            sql = sql.concat(' AND PSynced = ', synced ? '1' : '0');
+        }
+
         sql = sql.concat(' ORDER BY [ID]');
 
-        logSqlCommand(sql);
-        tx.executeSql(sql, [], function (tx1, dbres) {
-            onSuccess(dbres);
-        }, onError);
-    }, onError);
-}
-
-function selectOutletsInRangeDB(outletTbl, latMin, latMax, lngMin, lngMax, onSuccess, onError) {
-    db.transaction(function (tx) {
-        log('Select existing outlet');
-        var sql = 'SELECT * FROM ' + outletTbl + ' WHERE'
-        sql = sql.concat(' Latitude >= ', latMin.toString(), ' AND Latitude <= ', latMax.toString());
-        sql = sql.concat(' AND Longitude >= ', lngMin.toString(), ' AND Longitude <= ', lngMax.toString());
         logSqlCommand(sql);
         tx.executeSql(sql, [], function (tx1, dbres) {
             onSuccess(dbres);

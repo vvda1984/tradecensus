@@ -17,11 +17,11 @@ var isMapReady = false;
 var markers = [];
 var mapClicked = null;
 var markerClicked = null;
-var loadMapCallback = null;
+var __loadMapCallback = null;
 var editOutletCallback = null;
 var mapClickedCallback = null;
 var mapViewChangedCallback = null;
-var locationChangedCallback = null;
+var __locationChangedCallback = null;
 var homeMarker = null;
 var curInfoWin = null;
 var borders = [];
@@ -57,13 +57,13 @@ function loadMapApi(hideMaskedDlg) {
     if (isloadingGGapi) return;
     isloadingGGapi = true;
 
-    if (!getNetworkState()) {
+    if (!networkReady()) {
         isloadingGGapi = false;
         if (typeof hideLoadingDlg !== 'undefined') hideLoadingDlg();
 
-        if (loadMapCallback) {
-            loadMapCallback();
-            loadMapCallback = null;
+        if (__loadMapCallback) {
+            __loadMapCallback();
+            __loadMapCallback = null;
         }
     } else {
         if (loadedMapAPI) {
@@ -142,11 +142,9 @@ function initializeMap() {
         hideDlg();
         isMapReady = true;
        
-        if (loadMapCallback) {
-           
-            log('Map is ready');
-            loadMapCallback();
-            loadMapCallback = null;
+        if (__loadMapCallback) {           
+            __loadMapCallback();
+            __loadMapCallback = null;
         }			
     }
     catch (err) {
@@ -684,8 +682,8 @@ function startPositionWatching(){
                     foundLng = devLng;
                 }
 
-                if(locationChangedCallback)
-                    locationChangedCallback(foundLat, foundLng, foundAcc);
+                if (__locationChangedCallback)
+                    __locationChangedCallback(foundLat, foundLng, foundAcc);
             }, 
             function(error){
                 log('GPS watching error code: ' + error.code  + '\n message: ' + error.message + '\n');
@@ -769,9 +767,9 @@ function getBorders(level) {
 
 var isRunningInBackgound = false;
 function __trackLocationWhenAppInBackground(callback) {
-    if (locationChangedCallback) {
+    if (__locationChangedCallback) {
         getCurPosition(false, function (lat, lng) {
-            locationChangedCallback(lat, lng, curacc);
+            __locationChangedCallback(lat, lng, curacc);
             callback();
         }, function (err) {
             log(err);
@@ -780,7 +778,7 @@ function __trackLocationWhenAppInBackground(callback) {
     }
 }
 function turnOntrackLocationWhenAppInBackground() {
-    if (locationChangedCallback && isRunningInBackgound) {
+    if (__locationChangedCallback && isRunningInBackgound) {
         setTimeout(function () {
             __trackLocationWhenAppInBackground(function () {
                 turnOntrackLocationWhenAppInBackground();

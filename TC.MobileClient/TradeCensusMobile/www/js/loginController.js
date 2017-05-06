@@ -4,7 +4,7 @@ function loginController($scope, $http) {
     editOutletCallback = null;
     mapClickedCallback = null;
     mapViewChangedCallback = null;
-    locationChangedCallback = null;
+    __locationChangedCallback = null;
     __connectionChangedCallback = null;
     $scope.R = R;
     $scope.config = config;
@@ -107,7 +107,7 @@ function loginController($scope, $http) {
         showDlg(R.btn_login, R.please_wait);
         getCurPosition(false, function (lat, lng) {
             //hideDlg();
-            if (getNetworkState()) {
+            if (networkReady()) {
                 loginOnline(0, loginSuccess, function (msg) {
                     if (msg == R.connection_timeout) {
                         loginOffline(loginSuccess, function (err) {
@@ -328,25 +328,18 @@ function loginController($scope, $http) {
             config.tbl_outlet,
             config.tbl_downloadProvince,
             config.tbl_journal,
-            function () {
-                showDlg(R.loading, R.please_wait);
-                ping(function (r) {
-                    hideDlg();
-                    serverConnected = r;
-                    if (r) {
-                        showDlg(R.download_settings, R.please_wait);
-                        downloadServerConfig(function () {
-                            log('Navigate to home (online)');
-                            checkRootDevice(function () { finalizeLoginView(); });
-                        }, function (dberr) {
-                            log(dberr);
-                            checkRootDevice(function () { finalizeLoginView(); });
-                        });
-                    } else {
-                        log('Navigate to home (offline)');
+            function () {                
+                if (networkReady()) {
+                    showDlg(R.download_settings, R.please_wait);
+                    downloadServerConfig(function () {                        
                         checkRootDevice(function () { finalizeLoginView(); });
-                    }
-                });
+                    }, function (dberr) {
+                        console.error(dberr);
+                        checkRootDevice(function () { finalizeLoginView(); });
+                    });
+                } else {                    
+                    checkRootDevice(function () { finalizeLoginView(); });
+                }
             });
     }
 

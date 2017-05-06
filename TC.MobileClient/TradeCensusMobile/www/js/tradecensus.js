@@ -1,7 +1,7 @@
-﻿var _WEB = true ;
-var _PROD = false;
-var _VERSION = 17;
-var _VERSION_DISPLAY = '1.17.20';
+﻿var _WEB = false;
+var _PROD = true;
+var _VERSION = 18;
+var _VERSION_DISPLAY = '1.18.21';
 
 (function (global) {
     "use strict";
@@ -12,10 +12,9 @@ var _VERSION_DISPLAY = '1.17.20';
         // Disable back button
         document.addEventListener("backbutton", function (e) { e.preventDefault(); }, false);
         document.addEventListener("resume", function () { }, false);
-        //document.addEventListener("online", onNetworkConnected, false);
-        //document.addEventListener("offline", onNetworkDisconnected, false);
-        document.addEventListener("resume", function () { }, false);
-
+        document.addEventListener("online", onNetworkConnected, false);
+        document.addEventListener("offline", onNetworkDisconnected, false);
+        
         initializeEnvironment(function () { initializeApp(); });
 
         document.onmousedown = function () { inactivityTime(); };
@@ -211,7 +210,7 @@ function newConfig() {
         refresh_time_out: 3 * 60,   // Time to get outlet
         session_time_out: 0 * 60,
         location_age: 10,           // last avaliable location
-        submit_outlet_time: 30,     //
+        submit_outlet_time: 3 * 60,  //
 
         enable_journal: false,      // False after login until user start
         journal_update_time: 1 * 10,//
@@ -581,19 +580,17 @@ function getDeviceInfo() {
 
 function initializeApp() {
     hideDlg();
-    getDeviceInfo();
-    log('Initialize angular app.');
-    ping(function (r) {
-        serverConnected = r;
-        startPingProgress();
-        startSyncProgress();
-    });
-    if (getNetworkState()) {
-        checkUpdate();
-    }
+    getDeviceInfo();    
+    //ping(function (r) {
+    //    serverConnected = r;
+        //startPingProgress();
+        //startSyncProgress();
+    //});
+    if (networkReady()) checkUpdate();
 };
 
 //#region *** AUTO SYNC
+/*
 function startSyncProgress() {
     __autoSyncTimeOut = setTimeout(function () { __runSync(); }, config.sync_time);
 }
@@ -632,9 +629,11 @@ function __runSync() {
         startSyncProgress(); // next circle
     }
 }
+*/
 //#endregion
 
 //#region *** PING
+/*
 var isPausePing = false;
 var __connectionChangedCallback;
 var __refreshOutletListCallback;
@@ -708,6 +707,7 @@ function tryping(retry, callback) {
         }
     });
 }
+*/
 //#endregion
 
 //#region *** CHECK UPDATE

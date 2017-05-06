@@ -221,6 +221,7 @@ function language_en() {
 		download_network_warn: 'Please try again because network was not stable!',
 		cancel_download_confirm: 'Do you want to cancel the download?',
 		network_warn: 'Please try again because network was not stable!',
+		query_outlet_error: 'Error while getting outlets, please click refersh to retry!',
 
 		open_close: "Status",
 		tracking_status: 'Tracking',

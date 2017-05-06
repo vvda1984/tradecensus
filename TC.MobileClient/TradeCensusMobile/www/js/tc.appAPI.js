@@ -11,40 +11,6 @@ Date.prototype.timeNow = function () {
 }
 
 /** 
-* checkConnection
-*/
-var serverConnected = true;
-function networkReady() {
-    return serverConnected && getNetworkState();
-}
-
-/** 
-* checkConnection
-*/
-function getNetworkState() {
-    if (!config.mode_online) return false;
-    if (config.enable_devmode) return true;
-
-    try {
-        //states[Connection.UNKNOWN] = 'Unknown connection';
-        //states[Connection.ETHERNET] = 'Ethernet connection';
-        //states[Connection.WIFI] = 'WiFi connection';
-        //states[Connection.CELL_2G] = 'Cell 2G connection';
-        //states[Connection.CELL_3G] = 'Cell 3G connection';
-        //states[Connection.CELL_4G] = 'Cell 4G connection';
-        //states[Connection.CELL] = 'Cell generic connection';
-        //states[Connection.NONE] = 'No network connection';
-
-        var networkState = navigator.connection.type;
-        log('Network status: ' + networkState);
-        return (networkState !== Connection.NONE && networkState !== Connection.UNKNOWN)
-    }
-    catch (err) {
-        return true;
-    }
-}
-
-/** 
 * log
 */
 function logx(logname, message) {
@@ -389,3 +355,39 @@ function detectRootedDevice(complete) {
         complete(-1);//
     }
 }
+
+//#region Connection
+var __serverConnected;
+var __handleNetworkStateChanged;
+
+function __getNetworkState() {
+    if (!config.mode_online) return false;
+    if (config.enable_devmode) return true;
+    try {
+        var networkState = navigator.connection.type;
+        return (networkState !== Connection.NONE && networkState !== Connection.UNKNOWN)
+    }
+    catch (err) {
+        return true;
+    }
+}
+
+function networkReady() {
+    if (typeof __serverConnected === 'undefined')
+        __serverConnected = __getNetworkState();
+
+    return __serverConnected; // && getNetworkState();
+}
+
+function onNetworkConnected() {
+    __serverConnected = true;
+    if (__handleNetworkStateChanged)
+        __handleNetworkStateChanged(true);
+}
+
+function onNetworkDisconnected() {
+    __serverConnected = false;
+    if (__handleNetworkStateChanged)
+        __handleNetworkStateChanged(false);
+}
+//#endregion

@@ -287,8 +287,7 @@ function queryOutlets(isbackground, view, callback) {
                 } else {
                     callback(true, []);
                 }
-            }, function (dberr) {
-                rendringOutlets = false;
+            }, function (dberr) {                
                 showError(dberr.message);
                 callback(false, null);
             });
@@ -297,53 +296,6 @@ function queryOutlets(isbackground, view, callback) {
         showError(err.message);
         callback(false, null);
     }
-}
-
-function queryNearbyOutlets(callback) {  
-    meter = config.distance;
-    count = config.item_count;
-    log('item count:' + count.toString());
-    var saleLoc = { Lat: curlat, Lng: curlng };
-    var tl = calcRetangleBoundary(meter, 0 - meter, saleLoc);
-    var tr = calcRetangleBoundary(meter, meter, saleLoc);
-    var bl = calcRetangleBoundary(0 - meter, 0 - meter, saleLoc);
-    var br = calcRetangleBoundary(0 - meter, meter, saleLoc);
-    log('Select outlets in range ' + config.distance.toString());
-    selectOutletsInRangeDB(config.tbl_outlet, bl.Lat, tl.Lat, bl.Lng, br.Lng,
-        function (dbres) {
-            var rowLen = dbres.rows.length;
-            log('Found outlets: ' + rowLen.toString());
-            nearByOutlets = [];
-            if (rowLen) {
-                var found = 0;    
-                var foundOutlets = [];            
-                for (i = 0; i < rowLen; i++) {
-                    var outlet = dbres.rows.item(i);                    
-                    outlet.Distance = calcDistance(saleLoc, { Lat: outlet.Latitude, Lng: outlet.Longitude });
-                    log('Distance from outlet ' + outlet.ID.toString() + ": " + outlet.Distance.toString());
-                    foundOutlets[i] = outlet;
-                }
-                foundOutlets.sort(function (a, b) { return a.Distance - b.Distance });
-
-                for (i = 0; i < foundOutlets.length && i <= count; i++) {                    
-                    var isMatched = true; 
-                    if (config.calc_distance_algorithm == "circle")
-                        isMatched = foundOutlets[i].Distance <= meter;
-                    
-                    if(isMatched){                        
-                        log('Found outlet: ' + outlet.ID.toString());
-                        initializeOutlet(foundOutlets[i]);                        
-                        nearByOutlets[i] = foundOutlets[i];
-                    }                
-                }
-                
-                callback(nearByOutlets);
-            } else {
-                callback([]);
-            }            
-        }, function (dberr) {            
-            showError(dberr.message);
-        });
 }
 
 function isModified(orgOutlet, outlet) {
@@ -383,37 +335,6 @@ function isModified(orgOutlet, outlet) {
 
     return false;
 }
-
-function _submitOutletToServer(nghttp, outlet, callback) {
-    if (!networkReady()) {
-        callback(false);
-    }
-    else {
-        var url = baseURL + '/outlet/save/' + userID + '/' + pass;
-        console.log('CALL API: ' + url);
-        nghttp({
-            method: config.http_method,
-            data: outlet,
-            url: url,
-            headers: { 'Content-Type': 'application/json' }
-        }).then(function (resp) {
-            log(resp);
-            var data = resp.data;
-            if (data.Status == -1) { // error
-                handleError(data.ErrorMessage);
-            } else {
-                console.info('Submit outlet successfully: ' + data.ID + '(' + data.RowID + ')');
-                outlet.PRowID = data.RowID;
-                callback(true);
-            }
-        }, function (err) {
-            log('Submit error');
-            log(err);
-            callback(false);
-        });
-    }
-};
-
 
 //#region CREATE NEW OUTLET
 var __outletDialogContext = {
@@ -553,9 +474,7 @@ var OUTLET = {
                     if (networkReady()) {
                         var now = new Date();
                         var dif = getDifTime(OUTLET.lastSync, now);
-                        if (dif > config.submit_outlet_time) {
-                            OUTLET.lastSync = now;
-
+                        if (dif > config.submit_outlet_time) {                           
                             dialogUtils.setClosableDlgContent(R.synchronize_outlets, R.please_wait);
                             OUTLET.syncOutlets(nghttp, function (errMsg) {
                                 if (isCancelledFunc()) return;
@@ -563,8 +482,10 @@ var OUTLET = {
 
                                 if (errMsg)
                                     showError(errMsg);
-                                else
+                                else {
+                                    OUTLET.lastSync = now;
                                     callback();
+                                }
                             });
                         } else {
                             hideLoadingFunc();
@@ -682,5 +603,236 @@ var OUTLET = {
             callback(R.check_network_connection);
         }
     },
+  
+    queryOutletsOnline: function (nghttp, isbackground, view, onSuccess, onError) { // type: near-by, new, update...
+        try {
+            var distance = 200;
+            var itemCount = 20;
+            if (typeof config.distance !== undefined && config.distance !== null) {
+                distance = config.distance;
+            }
+            if (typeof config.item_count !== undefined && config.item_count !== null) {
+                itemCount = config.item_count;
+            }
+           
+            var url = baseURL + '/outlet/getoutlets/'
+                            + userID + '/'
+                            + pass + '/'
+                            + curlat.toString() + '/'
+                            + curlng.toString() + '/'
+                            + distance.toString() + '/'
+                            + itemCount.toString() + '/'
+                            + view.toString();
+            console.log('Call service api: ' + url);
+            nghttp({
+                method: config.http_method,
+                url: url
+            }).then(function (resp) {
+                try {
+                    var data = resp.data;
+                    if (data.Status == -1) { // error
+                        onError(data.ErrorMessage);                       
+                    } else {                       
+                        var foundOutlets = data.Items;
+                        foundOutlets.sort(function (a, b) { return a.Distance - b.Distance });
+                        if (!isbackground) {
+                            showDlg(R.get_near_by_outlets, R.found + foundOutlets.length.toString() + R.outlets_loading);
+                        }
+
+                        if (itemCount > config.item_count_max) {
+                            onSuccess(false, foundOutlets);
+                        } else {
+                            insertOutletsDB(user.id, config.tbl_outlet, foundOutlets,
+                                function () {
+                                    onSuccess(true, foundOutlets);
+                                }, function (dberr) {
+                                    console.log(dberr);
+                                    onSuccess(false, foundOutlets);
+                                });
+                        }
+                    }
+                } catch (err) {
+                    console.error(err);
+                    onError(err.message + ' (#12012)');
+                }
+            }, function (err) {
+                console.error(err);
+                onError(R.check_network_connection + ' (#12011)');
+            });
+        } catch (err) {
+            console.error(err);
+            onError(R.check_network_connection + ' (#12010)');
+        }
+    },
+
+    queryOutletsOffline: function (view, callback) {
+        try {
+            meter = config.distance;
+            count = config.item_count;
+            var saleLoc = { Lat: curlat, Lng: curlng };
+            var tl = calcRetangleBoundary(meter, 0 - meter, saleLoc);
+            var tr = calcRetangleBoundary(meter, meter, saleLoc);
+            var bl = calcRetangleBoundary(0 - meter, 0 - meter, saleLoc);
+            var br = calcRetangleBoundary(0 - meter, meter, saleLoc);
+
+            selectOutletsDB(config.tbl_outlet, bl.Lat, tl.Lat, bl.Lng, br.Lng, view, //config.province_id,
+                function (dbres) {
+                    var rowLen = dbres.rows.length;
+                    console.log('Found outlets from db: ' + rowLen.toString());
+                    if (rowLen) {
+                        var found = 0;                        
+                        var foundOutlets = [];
+                        
+                        var tempOutletList = []
+                        for (i = 0; i < rowLen; i++) {
+                            var outlet = dbres.rows.item(i);
+                            outlet.Distance = calcDistance(saleLoc, { Lat: outlet.Latitude, Lng: outlet.Longitude });
+                            tempOutletList[i] = outlet;
+                        }
+                        tempOutletList.sort(function (a, b) { return a.Distance - b.Distance });
+
+                        for (i = 0; i < tempOutletList.length && i < count; i++) {
+                            var isMatched = true;
+                            if (config.calc_distance_algorithm == "circle")
+                                isMatched = tempOutletList[i].Distance <= meter;
+
+                            if (isMatched) {
+                                var outlet = tempOutletList[i];                                
+                                initializeOutlet(outlet);
+                                outlet.positionIndex = found;
+                                foundOutlets[found] = outlet;
+                                found++;
+                            }
+                        }                    
+                        callback(true, foundOutlets);
+                    } else {
+                        callback(true, []);
+                    }
+                },
+                function (dberr) {
+                    console.error(dberr);                    
+                    callback(false, []);
+                });
+        } catch (err) {
+            console.error(err);            
+            callback(false, []);
+        }
+    },
+
+    queryUnsyncedOutlets: function (view, callback) {
+        try {
+            meter = config.distance;
+            count = config.item_count;
+            var saleLoc = { Lat: curlat, Lng: curlng };
+            var tl = calcRetangleBoundary(meter, 0 - meter, saleLoc);
+            var tr = calcRetangleBoundary(meter, meter, saleLoc);
+            var bl = calcRetangleBoundary(0 - meter, 0 - meter, saleLoc);
+            var br = calcRetangleBoundary(0 - meter, meter, saleLoc);
+
+            selectNearByOutlets(config.tbl_outlet, bl.Lat, tl.Lat, bl.Lng, br.Lng, view, false,
+                function (dbres) {
+                    var rowLen = dbres.rows.length;
+                    console.log('Found outlets from db: ' + rowLen.toString());
+                    if (rowLen) {
+                        var found = 0;
+                        var foundOutlets = [];
+
+                        var tempOutletList = []
+                        for (i = 0; i < rowLen; i++) {
+                            var outlet = dbres.rows.item(i);
+                            outlet.Distance = calcDistance(saleLoc, { Lat: outlet.Latitude, Lng: outlet.Longitude });
+                            tempOutletList[i] = outlet;
+                        }
+                        tempOutletList.sort(function (a, b) { return a.Distance - b.Distance });
+
+                        for (i = 0; i < tempOutletList.length && i < count; i++) {
+                            var isMatched = true;
+                            if (config.calc_distance_algorithm == "circle")
+                                isMatched = tempOutletList[i].Distance <= meter;
+
+                            if (isMatched) {
+                                var outlet = tempOutletList[i];
+                                initializeOutlet(outlet);
+                                outlet.positionIndex = found;
+                                foundOutlets[found] = outlet;
+                                found++;
+                            }
+                        }
+                        callback(true, foundOutlets);
+                    } else {
+                        callback(true, []);
+                    }
+                },
+                function (dberr) {
+                    console.error(dberr);
+                    callback(false, []);
+                });
+        } catch (err) {
+            console.error(err);
+            callback(false, []);
+        }
+    },
+
+    queryOutlets: function (nghttp, isbackground, view, callback) {
+        if (!isbackground) {
+            showDlg(R.get_near_by_outlets, R.please_wait);
+        }
+        if (!networkReady()) {
+            OUTLET.queryOutletsOffline(
+                view,
+                function (isError, outlets) {
+                    if (!isbackground) hideDlg();
+
+                    if (isError && !isbackground) {
+                        showError(R.query_outlet_error);
+                        callback(false, null);
+                    }
+                    else
+                        callback(true, outlets);                    
+                });
+        } else {
+            OUTLET.queryOutletsOnline(nghttp, isbackground, view,
+                function (synced, onlineOutlets) {
+                    if (!isbackground) hideDlg();
+
+                    OUTLET.queryUnsyncedOutlets(view, function (isSuccess, offlineOutlets) {                       
+                        var foundOutlets = onlineOutlets;
+                        if (!isSuccess || offlineOutlets.length == 0) {
+                            callback(true, onlineOutlets);
+                        } else {
+                            var outletDict = [];
+                            for (var i = 0 ; i < offlineOutlets.length; i++) {
+                                var o = offlineOutlets[i];
+                                outletDict[o.PRowID] = o;
+                            }
+
+                            for (var i = 0; i < onlineOutlets.length; i++) {
+                                var o = onlineOutlets[i];
+                                var key = o.PRowID;
+                                if (typeof outletDict[key] === 'undefined')
+                                    outletDict[key] = o;
+                            }
+                           
+                            var foundOutlets = [];
+                            var i = 0;
+                            for (var o in outletDict) {                                
+                                foundOutlets.push(outletDict[o]);
+                                i++;
+                                if (i === config.item_count) break;
+                            }
+                            foundOutlets.sort(function (a, b) { return a.Distance - b.Distance });
+                            callback(true, foundOutlets);
+                        }
+                    });
+                },
+                function (errMessage) {
+                    if (!isbackground) {
+                        hideDlg();
+                        showError(R.query_outlet_error);
+                    }
+                    callback(false, []);
+                });
+        }
+    }
 };
 //#endregion

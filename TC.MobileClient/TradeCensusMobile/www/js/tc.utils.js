@@ -113,7 +113,7 @@
 
     networks: {
         isReady: function () {
-            return serverConnected && getNetworkState();
+            return networkReady();
         },
     },
 
@@ -129,7 +129,7 @@
         lastRefreshOutletsTS: null,
         lastRefreshLat: 0,
         lastRefreshLng: 0,
-        lastQueryItemCount: 20,
+        //lastQueryItemCount: 20,
 
         checkToRefreshOutlet: function (newLat, newLng) {
             if (config.item_count > config.item_count_max) return false; // disable auto reload
