@@ -529,7 +529,7 @@ function ensureUserOutletDBExist(isReset, outletSyncTbl, outletTbl, provinceDown
 }
 
 //*****************************************************
-function syncWithStorageOutletDB(tx, userID, outletTbl, outlets, i, onSuccess, onError) {
+function _syncWithStorageOutletDB(tx, userID, outletTbl, outlets, i, onSuccess, onError) {
     if (i == outlets.length) {
         onSuccess();
         return;
@@ -550,39 +550,39 @@ function syncWithStorageOutletDB(tx, userID, outletTbl, outlets, i, onSuccess, o
     tx.executeSql(sql, [], 
         function (tx1, dbres) {
             var rowlen = dbres.rows.length;
-            if(rowlen > 0){
+            if (rowlen > 0) {
                 var existOutlet = dbres.rows.item(0); // first item only
-                if(outlet.AmendDate == existOutlet.AmendDate){                            
+                if (outlet.AmendDate == existOutlet.AmendDate) {
                     // outlet wasn't changed
                     log('Outlet was not changed');
-                }else{
+                } else {
                     log('Outlet was changed');
-                    if (existOutlet.PSynced) {                        
+                    if (existOutlet.PSynced) {
                         // synced already, just overwrite by server value...
                         log('Overwrite local because it was synced to server');
-                        updateOutlet(tx, outletTbl, outlet, 0, true, false);
+                        _updateOutlet(tx, outletTbl, outlet, 0, true, false);
                     } else {
                         // outlet wasn't synced, check amend date
                         // this logic can be failed if timezone in server and client are different
                         if (compareDate(outlet.AmendDate, existOutlet.AmendDate, 'yyyy-MM-dd HH:mm:ss') > 0) {
                             log('Overwrite local because server date > local date');
-                            updateOutlet(tx, outletTbl, outlet, 0, true, false);
-                        }                            
+                            _updateOutlet(tx, outletTbl, outlet, 0, true, false);
+                        }
                     }
                 }
-            } else{
+            } else {
                 log('Add outlet to db:' + outlet.Name);
-                if (outlet.PersonIsDSM != null && (outlet.PersonIsDSM == true ||outlet.PersonIsDSM == 1)){
+                if (outlet.PersonIsDSM != null && (outlet.PersonIsDSM == true || outlet.PersonIsDSM == 1)) {
                     outlet.OutletSource = 1;
-                } else{
+                } else {
                     outlet.OutletSource = 0;
                 }
-               
-                addNewOutlet(tx1, outletTbl, outlet, false, false, false, true, false);                
+
+                _addNewOutlet(tx1, outletTbl, outlet, false, false, false, true, false);
             }
 
             if ((i + 1) < outlets.length) {
-                syncWithStorageOutletDB(tx1, userID, outletTbl, outlets, i + 1, onSuccess, onError);
+                _syncWithStorageOutletDB(tx1, userID, outletTbl, outlets, i + 1, onSuccess, onError);
             } else{
                 onSuccess();
             }
@@ -600,52 +600,50 @@ function insertOutletsDB(userID, outletTbl, outlets, onSuccess, onError) {
         return;
     }
     db.transaction(function (tx) {
-        syncWithStorageOutletDB(tx, userID, outletTbl, outlets, 0, onSuccess, onError);
+        _syncWithStorageOutletDB(tx, userID, outletTbl, outlets, 0, onSuccess, onError);
     }, onError);
 }
 
-function insertDownloadedOutletsDB(outletTbl, outlets, onSuccess, onError) {
-    if (outlets.length == 0) {
-        onSuccess();
-        return;
-    }
-    db.transaction(function (tx) {
-        insertDownloadedOutletDB(tx, outletTbl, outlets, 0, onSuccess, onError);
-    }, onError);
-}
-
-function insertDownloadedOutletDB(tx, outletTbl, outlets, i, onSuccess, onError) {
-    if (i == outlets.length) {
-        onSuccess();
-        return;
-    }
-    var outlet = outlets[i];
-    outlet.PSynced = 1; // synced
-    outlet.positionIndex = i;
-    if (outlet.PStatus == null || outlet.PStatus == undefined)
-        outlet.PStatus = 0;
-    var sql = 'DELETE FROM ' + outletTbl + ' WHERE ID = ' + outlet.ID.toString();
-    logSqlCommand(sql);
-    tx.executeSql(sql, [],
-        function (tx1, dbres) {
-            if (outlet.PersonIsDSM != null && (outlet.PersonIsDSM == true || outlet.PersonIsDSM == 1)) {
-                outlet.OutletSource = 1;
-            } else {
-                outlet.OutletSource = 0;
-            }
-            addNewOutlet(tx1, outletTbl, outlet, false, false, false, true, false);
-
-            if ((i + 1) < outlets.length) {
-                insertDownloadedOutletDB(tx1, outletTbl, outlets, i + 1, onSuccess, onError);
-            } else {
-                onSuccess();
-            }
-        },
-        function (dberr) {
-            log('select outlet error: ' + dberr.message);
-            onError('Cannot sync outlet ' + outlet.Name + ': ' + dberr.message);
-        });
-}
+//function __insert-DownloadedOutletsDB(outletTbl, outlets, onSuccess, onError) {
+//    if (outlets.length == 0) {
+//        onSuccess();
+//        return;
+//    }
+//    db.transaction(function (tx) {
+//        _insertDownloadedOutletDB(tx, outletTbl, outlets, 0, onSuccess, onError);
+//    }, onError);
+//}
+//function _insert-DownloadedOutletDB(tx, outletTbl, outlets, i, onSuccess, onError) {
+//    if (i == outlets.length) {
+//        onSuccess();
+//        return;
+//    }
+//    var outlet = outlets[i];
+//    outlet.PSynced = 1; // synced
+//    outlet.positionIndex = i;
+//    if (outlet.PStatus == null || outlet.PStatus == undefined)
+//        outlet.PStatus = 0;
+//    var sql = 'DELETE FROM ' + outletTbl + ' WHERE ID = ' + outlet.ID.toString();
+//    logSqlCommand(sql);
+//    tx.executeSql(sql, [],
+//        function (tx1, dbres) {
+//            if (outlet.PersonIsDSM != null && (outlet.PersonIsDSM == true || outlet.PersonIsDSM == 1)) {
+//                outlet.OutletSource = 1;
+//            } else {
+//                outlet.OutletSource = 0;
+//            }
+//            _addNewOutlet(tx1, outletTbl, outlet, false, false, false, true, false);
+//            if ((i + 1) < outlets.length) {
+//                _insertDownloadedOutletDB(tx1, outletTbl, outlets, i + 1, onSuccess, onError);
+//            } else {
+//                onSuccess();
+//            }
+//        },
+//        function (dberr) {
+//            log('select outlet error: ' + dberr.message);
+//            onError('Cannot sync outlet ' + outlet.Name + ': ' + dberr.message);
+//        });
+//}
 
 function deleleOutletsDB(outletTbl, provinceId, onSuccess, onError) {
     db.transaction(function (tx) {
@@ -693,7 +691,7 @@ function addDownloadOutletsDB(outletTbl, outlets, onSuccess, onError) {
 
 }
 
-function addDownloadOutletForeachDB(tx, outletTbl, outlets, i, onSuccess, onError) {
+function _addDownloadOutletForeachDB(tx, outletTbl, outlets, i, onSuccess, onError) {
     if (i == outlets.length) {
         onSuccess();
         return;
@@ -707,7 +705,7 @@ function addDownloadOutletForeachDB(tx, outletTbl, outlets, i, onSuccess, onErro
 
     tx.executeSql(sql, [], function (tx1) {
         if ((i + 1) < outlets.length) {
-            addDownloadOutletForeachDB(tx1, outletTbl, outlets, i + 1, onSuccess, onError);
+           _addDownloadOutletForeachDB(tx1, outletTbl, outlets, i + 1, onSuccess, onError);
         } else {
             onSuccess();
         }
@@ -818,7 +816,7 @@ function buildOutletInsertSql(outletTbl, outlet) {
     return sql;
 }
 
-function addNewOutlet(tx, outletTbl, outlet, isAdd, isMod, isAud, synced, marked) {
+function _addNewOutlet(tx, outletTbl, outlet, isAdd, isMod, isAud, synced, marked) {
     log('add new outlet');
     var n = (new Date()).getTime();
     var sql = 'INSERT INTO ' + outletTbl + ' VALUES (';
@@ -892,10 +890,10 @@ function addNewOutlet(tx, outletTbl, outlet, isAdd, isMod, isAud, synced, marked
         });
 }
 
-function updateOutlet(tx, outletTbl, outlet, state, synced, updateImage) {
-    log('update outlet ' + outlet.ID.toString() + '(' + outlet.PLastModTS + ')');
+function _updateOutlet(tx, outletTbl, outlet, state, synced, updateImage) {
     var n = (new Date()).getTime();
     var marked = n < outlet.PLastModTS;
+
     log(outlet);
 
     var sql = 'UPDATE ' + outletTbl + ' SET ';
@@ -910,16 +908,16 @@ function updateOutlet(tx, outletTbl, outlet, state, synced, updateImage) {
     sql = sql.concat('District="', quoteText(outlet.District), '", ');
     sql = sql.concat('ProvinceID="', outlet.ProvinceID, '", ');
     sql = sql.concat('Phone="', quoteText(outlet.Phone), '", ');
-    sql = sql.concat('CallRate=', quoteInt(outlet.CallRate), ', ');    
+    sql = sql.concat('CallRate=', quoteInt(outlet.CallRate), ', ');
     sql = sql.concat('CloseDate="', outlet.CloseDate, '", ');
     sql = sql.concat('CreateDate="', outlet.CreateDate, '", ');
     sql = sql.concat('Tracking=', outlet.Tracking.toString(), ', ');
-    sql = sql.concat('Class="', quoteText(outlet.Class), '", ');    
+    sql = sql.concat('Class="', quoteText(outlet.Class), '", ');
     //[Open1st] text NULL
     //[Close1st] text NULL
     //[Open2nd] text NULL
     //[Close2nd] text NULL
-    sql = sql.concat('SpShift=', quoteInt(outlet.SpShift), ', ');    
+    sql = sql.concat('SpShift=', quoteInt(outlet.SpShift), ', ');
     //[LastContact]text NOT NULL
     //[LastVisit] text NULL
     sql = sql.concat('IsSent=', quoteInt(outlet.IsSent), ', ');
@@ -1000,6 +998,8 @@ function updateOutlet(tx, outletTbl, outlet, state, synced, updateImage) {
     sql = sql.concat('PStatus=', outlet.PStatus.toString() + ', ');
     sql = sql.concat('PLastModTS=', n.toString(), ', ');
     sql = sql.concat('PMarked=', marked ? '1' : '0', ', ');
+    sql = sql.concat('InputByRole=', quoteInt(outlet.InputByRole), ', ');
+    sql = sql.concat('AmendByRole=', quoteInt(outlet.AmendByRole), ', ');
     sql = sql.concat('LegalName="', quoteText(outlet.LegalName), '" ');
 
     sql = sql.concat(' WHERE PRowID like \'', outlet.PRowID, '\'');
@@ -1016,21 +1016,26 @@ function updateOutlet(tx, outletTbl, outlet, state, synced, updateImage) {
            log('Update outlet ' + outlet.ID.toString());
        },
        function (tx1, dberr) {
-           log('Update outlet error ' + outlet.ID.toString());
-           log(dberr.message);
+           console.error(dberr);
+           log('Error while update outlet');
        });
 }
 
 //*****************************************************
 function updateOutletImageDB(outletTbl, outlet, callback) {
     db.transaction(function (tx) {
+        var n = (new Date()).getTime();
+
         var sql = 'UPDATE ' + outletTbl + ' SET ';
+
+        sql = sql.concat('PLastModTS=', n.toString(), ', ');
         sql = sql.concat('StringImage1="', outlet.StringImage1, '", ');
         sql = sql.concat('StringImage2="', outlet.StringImage2, '", ');
         sql = sql.concat('StringImage3="', outlet.StringImage3, '", ');
         sql = sql.concat('StringImage4="', outlet.StringImage4, '", ');
         sql = sql.concat('StringImage5="', outlet.StringImage5, '", ');
         sql = sql.concat('StringImage6="', outlet.StringImage6, '" ');
+
         sql = sql.concat(' WHERE ID =', outlet.ID.toString());
 
         logSqlCommand(sql);
@@ -1048,12 +1053,11 @@ function updateOutletImageDB(outletTbl, outlet, callback) {
    
 }
 
-
 //*****************************************************
 function saveOutletDB(outletTbl, outlet, state, synced, onSuccess, onError) {
     db.transaction(function (tx) {
         try {            
-            updateOutlet(tx, outletTbl, outlet, state, synced, true);
+            _updateOutlet(tx, outletTbl, outlet, state, synced, true);
         } catch (err) {
             log(err);
         }
@@ -1067,25 +1071,17 @@ function setSyncStatusDB(outletTbl, syncOutlets, synced, onSuccess, onError) {
         var errMsg = '';
         try {
             var s = synced ? '1' : '0';
-            for (var i = 0; i < syncOutlets.length; i++) {
+            for (var i in syncOutlets) {
                 var outlet = syncOutlets[i];
-                var sql = 'UPDATE ' + outletTbl + ' SET ID = ' + outlet.ID.toString() + ', ' +
-                          'PSynced = ' + s +
+                var sql = 'UPDATE ' + outletTbl
+                        + ' SET ID = ' + outlet.ID.toString() + ','
+                        + ' PSynced = ' + s +
                           ' WHERE PRowID = "' + outlet.RowID + '"';
                 tx.executeSql(sql, [], function () { }, function (dberr) {
                     errMsg = dberr.message;
                     isErr = true;
                 });
             }
-
-            //for (var i = 0; i < outlets.length; i++) {
-            //    var outlet = outlets[i];
-            //    var sql = 'UPDATE ' + outletTbl + ' SET PSynced = ' + s + ' WHERE PRowID = "' + outlet.PRowID + '"';
-            //    tx.executeSql(sql, [], function () { }, function (dberr) {
-            //        errMsg = dberr.message;
-            //        isErr = true;
-            //    });
-            //}
         } catch (err) {
             errMsg = err.message;
             isErr = true;
@@ -1101,7 +1097,7 @@ function setSyncStatusDB(outletTbl, syncOutlets, synced, onSuccess, onError) {
 function addOutletDB(outletTbl, outlet, synced, onSuccess, onError) {
     db.transaction(function (tx) {
         try {
-            addNewOutlet(tx, outletTbl, outlet, true, false, false, synced, false);
+            _addNewOutlet(tx, outletTbl, outlet, true, false, false, synced, false);
         } catch (err) {
             log(err);
         }
@@ -1430,5 +1426,18 @@ function changeOutletStatusDB(outletTableName, outlet, status, synced, onSuccess
                  ' WHERE ID = ' + outlet.ID.toString();
         logSqlCommand(sql);
         tx.executeSql(sql, [], function () { onSuccess() }, onError);
+    }, onError);
+}
+
+function selectUserOutletsDB(outletTbl, start, end, onSuccess, onError) {
+    db.transaction(function (tx) {
+        var sql = 'SELECT * FROM [' + outletTbl + '] WHERE AmendBy=' + userID.toString()
+                + ' AND AuditStatus > 0 AND PLastModTS >= ' + start.toString() + ' AND PLastModTS <= ' + end.toString()
+                + ' ORDER BY PLastModTS';
+
+        logSqlCommand(sql);
+        tx.executeSql(sql, [], function (tx, dbres) {
+            onSuccess(dbres);
+        }, onError);
     }, onError);
 }

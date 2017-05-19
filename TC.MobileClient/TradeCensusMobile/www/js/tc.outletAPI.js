@@ -23,6 +23,7 @@ var nearByOutlets = [];
 var curOutlets = [];
 var firstStart = true;
 var openOutletDlg = false;
+var NewOutletDefaultID = 600000000;
 
 
 function newOutlet(provinceName) {
@@ -62,7 +63,7 @@ function newOutlet(provinceName) {
         Distance: 0,
         District: '',
         FullAddress: "",
-        ID: 600000000,
+        ID: NewOutletDefaultID,
         InputBy: user.id,
         IsOpened: true,
         IsTracked: false,
@@ -212,10 +213,16 @@ function initializeOutlet(outlet) {
         outlet.viewAuditStatus = true;
     }
 
-    if (outlet.ID == 60000000)
+    if (outlet.ID == NewOutletDefaultID)
         outlet.IDalias = '';
     else
         outlet.IDalias = '(' + outlet.ID.toString() + ')';
+
+    if (typeof outlet.PLastModTS != 'undefined') {
+        outlet.LastModifiedTS = new Date(outlet.PLastModTS);
+    } else {
+        outlet.LastModifiedTS = new Date('2010-01-01 00:00:00');
+    }
 }
 
 function queryOutlets(isbackground, view, callback) {
@@ -467,14 +474,16 @@ var OUTLET = {
         });
     },
 
+    // Main Save Outlet
     saveOutlet: function (nghttp, outlet, action, state, callback) {
         dialogUtils.showClosableDlg(R.save_outlet, R.please_wait, function (hideLoadingFunc, isCancelledFunc) {
             try {
-                var onSuccess = function () {
+                //#region Obsoluted
+                var onSuccessOld = function () {
                     if (networkReady()) {
                         var now = new Date();
                         var dif = getDifTime(OUTLET.lastSync, now);
-                        if (dif > config.submit_outlet_time) {                           
+                        if (dif > config.submit_outlet_time) {
                             dialogUtils.setClosableDlgContent(R.synchronize_outlets, R.please_wait);
                             OUTLET.syncOutlets(nghttp, function (errMsg) {
                                 if (isCancelledFunc()) return;
@@ -483,34 +492,69 @@ var OUTLET = {
                                 if (errMsg)
                                     showError(errMsg);
                                 else {
+                                    $("#home-topright-sync-hint").css('display', 'none');
                                     OUTLET.lastSync = now;
                                     callback();
+                                    //showDlg(R.save_outlet, "Save successfully!", function () { callback(); });
                                 }
                             });
                         } else {
+                            $("#home-topright-sync-hint").css('display', 'inline-block');
+                            if (isCancelledFunc()) return;
                             hideLoadingFunc();
                             callback();
+                            //showDlg(R.save_outlet, "Save successfully!", function () { callback(); });
                         }
                     }
-                    else
+                    else {
+                        if (isCancelledFunc()) return;
+                        hideLoadingFunc();
                         callback();
+                        //showDlg(R.save_outlet, "Save successfully!", function () { callback(); });
+                    }
                 };
-                var onError = function () {
+                //#endregion
+
+                var __onComplete = function () {
                     if (isCancelledFunc()) return;
                     hideLoadingFunc();
-                    showError('Cannot save outlet, please check network connection and retry! (#12001)');
+
+                    OUTLET.checkSyncedStatus();
+                    callback();
+                };
+
+                var __onSuccess = function () {
+                    if (networkReady()) {
+                        OUTLET.submitOutlet(nghttp, outlet, function (error, submittedOutlet) {
+                            if (error) {
+                                __onComplete();
+                            } else {
+                                saveOutletDB(config.tbl_outlet, submittedOutlet, state, true, function () { __onComplete(); }, __onError);
+                            }
+                        });
+                    }
+                    else {
+                        __onComplete();
+                    }
+                };
+
+                var __onError = function () {
+                    if (isCancelledFunc()) return;
+                    hideLoadingFunc();
+                    showError('Cannot submit outlet to server, please check network connection and retry! (#12002)');
+                    __onComplete();
                 };
 
                 if (action == OUTLET_NEW) {
-                    addOutletDB(config.tbl_outlet, outlet, false, onSuccess, onError);
+                    addOutletDB(config.tbl_outlet, outlet, false, __onSuccess, __onError);
                 } else if (action == OUTLET_EDIT) {
-                    saveOutletDB(config.tbl_outlet, outlet, state, false, onSuccess, onError);
-                } else {
-                    OUTLET.submitOutlet(nghttp, outlet, function (errMsg) {
+                    saveOutletDB(config.tbl_outlet, outlet, state, false, __onSuccess, __onError);
+                } else { // DELETE
+                    OUTLET.submitOutlet(nghttp, outlet, function (errMsg, submittedOutlet) {
                         if (errMsg) {
-                            saveOutletDB(config.tbl_outlet, outlet, state, false, function () { callback(); }, onError);
+                            saveOutletDB(config.tbl_outlet, outlet, state, false, function () { __onComplete(); }, __onError);
                         } else {
-                            deleteOutletDB(config.tbl_outlet, outlet, function () { callback(); }, onError);
+                            deleteOutletDB(config.tbl_outlet, outlet, function () { __onComplete(); }, __onError);
                         }
                     });
                 }
@@ -591,10 +635,9 @@ var OUTLET = {
                 if (data.Status == -1) { // error
                     callback(data.ErrorMessage);
                 } else {
-                    consloe.log('Submit outlet successfully: ' + data.RowID + ', ' + data.ID);
-                    outlet.PRowID = data.RowID;
+                    console.log('Submit outlet successfully: ' + data.RowID + ', ' + data.ID);
                     outlet.ID = data.ID;
-                    callback();
+                    callback(null, outlet);
                 }
             }, function (err) {
                 callback(R.check_network_connection);
@@ -604,6 +647,17 @@ var OUTLET = {
         }
     },
   
+    checkSyncedStatus: function () {
+        selectAllUnsyncedOutlets(config.tbl_outlet,
+            function (dbres) {
+                if (dbres.rows.length > 0) {
+                    $("#home-topright-sync-hint").css('display', 'inline-block');
+                } else {
+                    $("#home-topright-sync-hint").css('display', 'none');
+                }
+            }, function (dberr) { });
+    },
+
     queryOutletsOnline: function (nghttp, isbackground, view, onSuccess, onError) { // type: near-by, new, update...
         try {
             var distance = 200;
@@ -638,18 +692,35 @@ var OUTLET = {
                         if (!isbackground) {
                             showDlg(R.get_near_by_outlets, R.found + foundOutlets.length.toString() + R.outlets_loading);
                         }
-
-                        if (itemCount > config.item_count_max) {
-                            onSuccess(false, foundOutlets);
-                        } else {
-                            insertOutletsDB(user.id, config.tbl_outlet, foundOutlets,
-                                function () {
-                                    onSuccess(true, foundOutlets);
-                                }, function (dberr) {
-                                    console.log(dberr);
-                                    onSuccess(false, foundOutlets);
-                                });
+                        for (var i = 0; i < foundOutlets.length; i++) {
+                            var outlet = foundOutlets[i];
+                            outlet.positionIndex = i;
+                            outlet.isOnline = true;
+                            if (outlet.PStatus == null || outlet.PStatus == undefined)
+                                outlet.PStatus = 0;
+                            initializeOutlet(outlet);
                         }
+                        onSuccess(false, foundOutlets);
+
+                        //if (itemCount > config.item_count_max) {
+                        //    for (var i = 0; i < foundOutlets.length; i++) {
+                        //        var outlet =  foundOutlets[i];
+                        //        outlet.positionIndex = i;
+                        //        outlet.isOnline = true;
+                        //        if (outlet.PStatus == null || outlet.PStatus == undefined)
+                        //            outlet.PStatus = 0;
+                        //        initializeOutlet(outlet);
+                        //    }
+                        //    onSuccess(false, foundOutlets);
+                        //} else {
+                        //    insertOutletsDB(user.id, config.tbl_outlet, foundOutlets,
+                        //        function () {
+                        //            onSuccess(true, foundOutlets);
+                        //        }, function (dberr) {
+                        //            console.log(dberr);
+                        //            onSuccess(false, foundOutlets);
+                        //        });
+                        //}
                     }
                 } catch (err) {
                     console.error(err);
@@ -775,15 +846,15 @@ var OUTLET = {
 
     queryOutlets: function (nghttp, isbackground, view, callback) {
         if (!isbackground) {
-            showDlg(R.get_near_by_outlets, R.please_wait);
+            showDlg(R.get_near_by_outlets, R.please_wait, function () { });
         }
         if (!networkReady()) {
             OUTLET.queryOutletsOffline(
                 view,
-                function (isError, outlets) {
+                function (isSuccess, outlets) {
                     if (!isbackground) hideDlg();
 
-                    if (isError && !isbackground) {
+                    if (!isSuccess && !isbackground) {
                         showError(R.query_outlet_error);
                         callback(false, null);
                     }
@@ -794,8 +865,41 @@ var OUTLET = {
             OUTLET.queryOutletsOnline(nghttp, isbackground, view,
                 function (synced, onlineOutlets) {
                     if (!isbackground) hideDlg();
+                    callback(true, onlineOutlets);
+                },
+                function (errMessage) {
+                    if (!isbackground) {
+                        hideDlg();
+                        showError(R.query_outlet_error);
+                    }
+                    callback(false, []);
+                });
+        }
+    },
 
-                    OUTLET.queryUnsyncedOutlets(view, function (isSuccess, offlineOutlets) {                       
+    __queryOutletsOld: function (nghttp, isbackground, view, callback) {
+        if (!isbackground) {
+            showDlg(R.get_near_by_outlets, R.please_wait, function () { });
+        }
+        if (!networkReady()) {
+            OUTLET.queryOutletsOffline(
+                view,
+                function (isSuccess, outlets) {
+                    if (!isbackground) hideDlg();
+
+                    if (!isSuccess && !isbackground) {
+                        showError(R.query_outlet_error);
+                        callback(false, null);
+                    }
+                    else
+                        callback(true, outlets);
+                });
+        } else {
+            OUTLET.queryOutletsOnline(nghttp, isbackground, view,
+                function (synced, onlineOutlets) {
+                    if (!isbackground) hideDlg();
+
+                    OUTLET.queryUnsyncedOutlets(view, function (isSuccess, offlineOutlets) {
                         var foundOutlets = onlineOutlets;
                         if (!isSuccess || offlineOutlets.length == 0) {
                             callback(true, onlineOutlets);
@@ -812,15 +916,17 @@ var OUTLET = {
                                 if (typeof outletDict[key] === 'undefined')
                                     outletDict[key] = o;
                             }
-                           
+
                             var foundOutlets = [];
                             var i = 0;
-                            for (var o in outletDict) {                                
+                            for (var o in outletDict) {
+                                var outlet = outletDict[o];
+                                outlet.positionIndex = i;
                                 foundOutlets.push(outletDict[o]);
                                 i++;
                                 if (i === config.item_count) break;
                             }
-                            foundOutlets.sort(function (a, b) { return a.Distance - b.Distance });
+                            //foundOutlets.sort(function (a, b) { return a.Distance - b.Distance });
                             callback(true, foundOutlets);
                         }
                     });
@@ -833,6 +939,33 @@ var OUTLET = {
                     callback(false, []);
                 });
         }
+    },
+
+    queryUserOutlets: function (date, callback) {
+        var text = date.getFullYear() + "-" + (date.getMonth() + 1) + '-' + date.getDate();
+        var start = new Date(text + ' 00:00:00.0000');
+        var end = new Date(text + ' 23:59:59.9999');
+
+        selectUserOutletsDB(config.tbl_outlet, start.getTime(), end.getTime(),
+            function (dbres) {
+                var rowLen = dbres.rows.length;
+                if (rowLen <= 0) {
+                    callback(null, []);
+                } else {
+                    var foundOutlets = [];
+                    for (i = 0; i < rowLen; i++) {
+                        var outlet = dbres.rows.item(i);
+                        initializeOutlet(outlet);
+                        outlet.Distance = 0;
+                        outlet.positionIndex = i;
+                        foundOutlets.push(outlet);
+                    }
+                    callback(null, foundOutlets);
+                }
+            }, function (dberr) {
+                console.error(dberr);
+                callback("Error while access local database! (#3001)");
+            });
     }
 };
 //#endregion

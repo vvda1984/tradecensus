@@ -192,10 +192,10 @@ function openImgViewer(title, viewOnly, url, callback) {
                         '<div class="center" fit onclick="replaceImage()">CAPTURE</div>' +
                         '<paper-ripple fit></paper-ripple>' +
                     '</div>' +
-                     '<div class="button label-blue">' +
-                        '<div class="center" fit onclick="deleteImage()">DELETE</div>' +
-                        '<paper-ripple fit></paper-ripple>' +
-                    '</div>' +
+                    //'<div class="button label-blue">' +
+                    //    '<div class="center" fit onclick="deleteImage()">DELETE</div>' +
+                    //    '<paper-ripple fit></paper-ripple>' +
+                    //'</div>' +
                 '</div>' +
             '</div>' +
         '</div>';
@@ -357,15 +357,13 @@ function detectRootedDevice(complete) {
 }
 
 //#region Connection
-var __serverConnected;
+var __serverConnected = true;
 var __handleNetworkStateChanged;
 
 function __getNetworkState() {
-    if (!config.mode_online) return false;
-    if (config.enable_devmode) return true;
     try {
         var networkState = navigator.connection.type;
-        return (networkState !== Connection.NONE && networkState !== Connection.UNKNOWN)
+        return (networkState !== Connection.NONE && networkState !== Connection.UNKNOWN && networkState !== Connection.CELL_2G)
     }
     catch (err) {
         return true;
@@ -373,21 +371,29 @@ function __getNetworkState() {
 }
 
 function networkReady() {
+    if (!config.mode_online) return false;
+    if (config.enable_devmode) return true;
+
     if (typeof __serverConnected === 'undefined')
         __serverConnected = __getNetworkState();
-
     return __serverConnected; // && getNetworkState();
 }
 
 function onNetworkConnected() {
-    __serverConnected = true;
-    if (__handleNetworkStateChanged)
-        __handleNetworkStateChanged(true);
+    var newState = __getNetworkState;
+    if (newState !== __serverConnected) {
+        __getNetworkState = newState;
+        if (__handleNetworkStateChanged)
+            __handleNetworkStateChanged(__serverConnected);
+    }
 }
 
 function onNetworkDisconnected() {
-    __serverConnected = false;
-    if (__handleNetworkStateChanged)
-        __handleNetworkStateChanged(false);
+    var newState = __getNetworkState;
+    if (newState !== __serverConnected) {
+        __getNetworkState = newState;
+        if (__handleNetworkStateChanged)
+            __handleNetworkStateChanged(__serverConnected);
+    }
 }
 //#endregion

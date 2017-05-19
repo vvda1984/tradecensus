@@ -625,12 +625,20 @@
 
 #home-topright-offline, #home-topright-sync-hint {
     position: fixed;
-    top: 4px;
+    top: 8px;
     right: 142px;    
     z-index: 3;
     border: 0px;
     display: none;
-} 
+}
+
+#home-topright-offline, #home-topright-status {
+    position: fixed;
+    top: 4px;
+    right: 152px;
+    z-index: 3;
+    border: 0px;
+}
 
 /******************** BOTTOM-RIGHT ******************/
 #home-bottomright {

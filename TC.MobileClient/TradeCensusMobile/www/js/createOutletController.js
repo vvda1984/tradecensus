@@ -5,6 +5,9 @@
 function newOutletController($scope, $http, $mdDialog, $timeout) {
     isOutletDlgOpen = true;
     $scope.outlet = OUTLET.dialog.outlet();
+    if ($scope.outlet.TaxID === "null" || $scope.outlet.TaxID === null) $scope.outlet.TaxID = '';
+    if ($scope.outlet.LegalName === "null" || $scope.outlet.LegalName === null) $scope.outlet.LegalName = '';
+
     var isCreatedNew = isEmpty($scope.outlet.Name);
 
     $scope.R = R;

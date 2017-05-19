@@ -196,10 +196,20 @@
     </div>
 
     <div id="home-topright-offline">
-        <div class="square-box-red float-right normal-text">
+       <div class="square-box-red float-right normal-text">
             <span>{{R.you_are_in_offline_mode}}</span>
         </div>
     </div>
+
+    <!--<div id="home-topright-status">
+        <div style="display:inline-block;">
+            <img src="assets/img/network-connected.svg" style="width:32px;height:32px;" id="connectedIcon" />
+            <img src="assets/img/network-disconnected.svg" style="width:32px;height:32px;" id="disconnectedIcon"/>
+        </div>
+        <div id="unsyncText">
+            <span>Unsynced</span>
+        </div>
+    </div>-->
 
     <div id="home-topright-sync-hint">
         <div class="square-box-red float-right normal-text">
@@ -212,15 +222,14 @@
         <div id="slider-right-content" style="min-height:91%;">
             <md-content layout-padding="" class="md-content-white">
                 <form name="configForm">
-                    <md-input-container class="md-block" style="margin-bottom:0px;">
-                        <label>{{R.distance}}</label>
-                        <input type="number" required="" name="distance" ng-model="config.distance" min="50">
-                    </md-input-container>
-
-                    <md-input-container class="md-block" style="margin-bottom:0px;">
-                        <label>{{R.max_outlets}}</label>
-                        <input type="number" required="" name="item_count" ng-model="config.item_count" min="1">
-                    </md-input-container>
+                    <!--<md-input-container class="md-block" style="margin-bottom:0px;">
+            <label>{{R.distance}}</label>
+            <input type="number" required="" name="distance" ng-model="config.distance" min="50">
+        </md-input-container>
+        <md-input-container class="md-block" style="margin-bottom:0px;">
+            <label>{{R.max_outlets}}</label>
+            <input type="number" required="" name="item_count" ng-model="config.item_count" min="1">
+        </md-input-container>-->
 
                     <md-input-container class="md-block" style="margin-bottom:0px;">
                         <label>{{R.page_size}}</label>
@@ -232,11 +241,12 @@
                         <md-select ng-model="config.province_id" ng-change="provinceChanged(0)">
                             <md-option ng-repeat="p in dprovinces" value="{{p.id}}">
                                 {{p.name}}
-                                <img ng-show="p.download" src="assets/img/check.svg" 
+                                <img ng-show="p.download" src="assets/img/check.svg"
                                      style="width:18px;height:18px;margin:0px;position:absolute;right:16px;" />
                             </md-option>
-                        </md-select>                       
+                        </md-select>
                     </md-input-container>
+
                     <div>
                         <div id="buttonDownload" class="m-flat-button float-right margin-top-4" ng-click="downloadOutlets()">
                             <img src="assets/img/download.svg">
@@ -250,7 +260,7 @@
                             <img src="assets/img/clear.svg">
                             <span>{{R.btn_deleteOffline}}</span>
                         </div>
-                    </div>                  
+                    </div>
                 </form>
             </md-content>
 
@@ -287,6 +297,13 @@
                 </table>
             </div>
 
+            <div style="display: block; margin:4px 20px 10px 20px; width:100px;">
+                <div style="text-align:center; width:160px; background-color: #01541E; color: #FFFFFF; height:36px; float:left; padding-left: 6px; padding-right:6px; cursor: pointer; line-height:36px;"
+                     ng-click="openOutletStatusView()">
+                    Check Outlet Status
+                </div>
+            </div>
+
             <div style="margin-bottom:4px; z-index:3;">
                 <table>
                     <tr>
@@ -303,7 +320,7 @@
                             </div>
                         </td>
                         <td>
-                            <div class="text-button" ng-click="changeView('login')">
+                            <div class="text-button" ng-click="logoutFromHome()">
                                 <div><img src="assets/img/logout.svg"></div>
                                 <div class="title">{{R.btn_logout}}</div>
                             </div>

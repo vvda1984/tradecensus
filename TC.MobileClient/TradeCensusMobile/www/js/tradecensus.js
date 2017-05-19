@@ -1,7 +1,7 @@
-﻿var _WEB = false;
-var _PROD = true;
-var _VERSION = 18;
-var _VERSION_DISPLAY = '1.18.21';
+﻿var _WEB = true;
+var _PROD = false;
+var _VERSION = 20;
+var _VERSION_DISPLAY = '1.20.22';
 
 (function (global) {
     "use strict";

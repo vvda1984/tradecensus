@@ -102,8 +102,8 @@ function language_en() {
         last_change: 'Last Changed',
         search: 'Search',
 
-        you_are_in_offline_mode: 'You are in Offline mode',
-        hint_do_sync : 'Please do SYNC to apply changes',
+        you_are_in_offline_mode: 'OFFLINE',
+        hint_do_sync : 'Please do SYNC!',
         cannot_approve_or_deny: 'Cannot validate your location!',
         cannot_get_cur_location: 'Please turn on Location Services<br/>(Vui lòng mở tín hiệu vị trí)',
       

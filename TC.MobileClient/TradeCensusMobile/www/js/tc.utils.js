@@ -47,6 +47,16 @@
         return y + '-' + m + '-' + d;
     },
 
+    formatTime: function (date) {
+        var h = date.getHours();
+        var m = date.getMinutes();
+        var s = date.getSeconds();
+        if (h < 10) d = '0' + h;
+        if (m < 10) m = '0' + m;
+        if (s < 10) s = '0' + s;
+        return h + ':' + m + ':' + s;
+    },
+
     getTimeSpanInSecond: function (startTS, endTS) {
         return (endTS - startTS) / 1000;
     },

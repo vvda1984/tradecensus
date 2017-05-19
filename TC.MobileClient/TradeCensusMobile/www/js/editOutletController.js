@@ -6,6 +6,9 @@ function editOutletController($scope, $mdDialog, $timeout) {
     isOutletDlgOpen = true;
     isViewOnly = false;
     $scope.outlet = OUTLET.dialog.outlet();
+    if ($scope.outlet.TaxID === "null" || $scope.outlet.TaxID === null) $scope.outlet.TaxID = '';
+    if ($scope.outlet.LegalName === "null" || $scope.outlet.LegalName === null) $scope.outlet.LegalName = '';
+
     function hideDialog(answer) {
         //$mdDialog.hide(answer);
         OUTLET.dialog.close(answer, $scope.outlet);
@@ -19,7 +22,7 @@ function editOutletController($scope, $mdDialog, $timeout) {
     $scope.isSaler = !user.hasAuditRole;
     $scope.outlet.isChanged = false;
     $scope.showImage4 = config.enable_check_in > 0;
-
+    
     var title = $scope.outlet.Name;
     if ($scope.outlet.ID != 60000000) {
         title = title + ' (' + $scope.outlet.ID.toString() + ')';
@@ -33,6 +36,7 @@ function editOutletController($scope, $mdDialog, $timeout) {
     
     $scope.isDeleted = false;
     $scope.viewCancel = !$scope.isAuditor;
+    $scope.allowCapture = true;
     if ($scope.outlet.AuditStatus == StatusAuditAccept || $scope.outlet.AuditStatus == StatusAuditDeny || $scope.outlet.AuditStatus == StatusDone) {
         setViewOnly();  // Outlet is DONE => VIEW only
     } else {
@@ -85,12 +89,12 @@ function editOutletController($scope, $mdDialog, $timeout) {
                 $scope.canChangeTrackNonTrack = true;
                 $scope.disableComment = false;
                 $scope.allowCapture = true;
-                $scope.canRevise = $scope.outlet.canRevise;//$scope.outlet.AuditStatus == StatusPost && $scope.outlet.PersonID == user.id;
+                $scope.canRevise = $scope.outlet.canRevise; //$scope.outlet.AuditStatus == StatusPost && $scope.outlet.PersonID == user.id;
 
                 //$scope.disableOpenClose = false;
                 //$scope.disableTracking = false;
 
-                if ($scope.outlet.PStatus == 1) {
+                if ($scope.outlet.PStatus == 1 && $scope.outlet.AmendBy != user.id) {
                     setViewOnly();
                 } else if ($scope.outlet.PStatus == 2){
                     $scope.disableOpenClose = true;
@@ -99,20 +103,6 @@ function editOutletController($scope, $mdDialog, $timeout) {
                     $scope.disableOpenClose = false;
                     $scope.disableTracking = false;
                 }
-               
-                //if (($scope.outlet.PStatus & 4) > 0) {
-                //    $scope.disableOpenClose = false;
-                //    $scope.disableTracking = false;
-                //} else if (($scope.outlet.PStatus & 2) > 0) {
-                //    $scope.disableOpenClose = false;
-                //    $scope.disableTracking = false; //$scope.outlet.Tracking == 1;
-                //} else if (($scope.outlet.PStatus & 1) > 0) {
-                //    $scope.disableOpenClose = $scope.outlet.IsOpened;
-                //    $scope.disableTracking = false;
-                //} else {
-                //    $scope.disableOpenClose = $scope.outlet.IsOpened;
-                //    $scope.disableTracking = $scope.outlet.Tracking == 1;
-                //}
             } else if ($scope.outlet.AuditStatus == StatusExitingPost) {
                 setViewOnly();
                 $scope.canRevise = $scope.outlet.canRevise; //$scope.outlet.AuditStatus == StatusPost && $scope.outlet.PersonID == user.id;
@@ -144,15 +134,7 @@ function editOutletController($scope, $mdDialog, $timeout) {
     }
     
     var allowCapture = $scope.allowCapture;
-    $scope.allowCapture = allowCapture &&
-        (isEmpty($scope.outlet.StringImage1) || 
-         isEmpty($scope.outlet.StringImage2) || 
-         isEmpty($scope.outlet.StringImage3) ||
-         isEmpty($scope.outlet.StringImage5) || 
-         isEmpty($scope.outlet.StringImage6));
-
-    allowCapture = $scope.allowCapture;
-
+   
     $scope.showDraft = $scope.outlet.IsDraft;
     $scope.outlet.modifiedImage1 = false;
     $scope.outlet.modifiedImage2 = false;

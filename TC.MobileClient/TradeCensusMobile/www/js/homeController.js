@@ -79,6 +79,22 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     }
 
     //*************************************************************************
+    $scope.logoutFromHome = function () {
+        selectAllUnsyncedOutlets(config.tbl_outlet,
+             function (dbres) {
+                 if (dbres.rows.length > 0) {
+                     showConfirm('Logout', 'Your data is still not synced to server. Are you sure you want to logout?', function () {
+                         $scope.changeView('login');
+                     }, function () { });
+                 } else {
+                     $scope.changeView('login');
+                 }
+             }, function (dberr) {
+                 $scope.changeView('login');
+             });
+    }
+
+    //*************************************************************************
     $scope.testChangeLocation = function () {
         devLat = $scope.testlat;
         devLng = $scope.testlng;
@@ -365,6 +381,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                 }
 
                 submitUnsyncedOutlets(unsyncedOutlets, function () {
+                    OUTLET.lastSync = new Date();
                     showInfo(R.synchronize_completed);
                     $("#home-topright-sync-hint").css('display', 'none');
                 }, function (err) {
@@ -411,20 +428,21 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             }
             clonedOutlet.AmendBy = userID;
 
+            OUTLET.saveOutlet($http, clonedOutlet, OUTLET_EDIT, 0, function () { $scope.refresh(); });
+
             //log('Post outlet ' + outlet.ID.toString());
             //outlet.AuditStatus = StatusPost;
-
-            log('Save outlet to server')
-            saveOutlet(clonedOutlet, function (synced) {
-                log('Save outlet to local db')
-                changeOutletStatusDB($scope.config.tbl_outlet, clonedOutlet, clonedOutlet.AuditStatus, synced ? 1 : 0, function () {
-                    hideDlg();
-                    $scope.refresh();
-                }, function (dberr) {
-                    hideDlg();
-                    showError(dberr.message);
-                });
-            });
+            //log('Save outlet to server')
+            //saveOutlet(clonedOutlet, function (synced) {
+            //    log('Save outlet to local db')
+            //    changeOutletStatusDB($scope.config.tbl_outlet, clonedOutlet, clonedOutlet.AuditStatus, synced ? 1 : 0, function () {
+            //        hideDlg();
+            //        $scope.refresh();
+            //    }, function (dberr) {
+            //        hideDlg();
+            //        showError(dberr.message);
+            //    });
+            //});
 
         }, function () { });
     }
@@ -453,15 +471,18 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 
             clonedOutlet.IsDraft = true;
             clonedOutlet.IsExistingDraft = true;
-            clonedOutlet.AmendBy = userID;           
-            saveOutlet(clonedOutlet, function (synced) {
-                log('Save outlet to local db')
-                changeOutletStatusDB($scope.config.tbl_outlet, clonedOutlet, clonedOutlet.AuditStatus, synced ? 1 : 0, function () {                    
-                    $scope.refresh();
-                }, function (dberr) {                
-                    showError(dberr.message);
-                });
-            });
+            clonedOutlet.AmendBy = userID;
+
+            OUTLET.saveOutlet($http, clonedOutlet, OUTLET_EDIT, 0, function () { $scope.refresh(); });
+
+            //saveOutlet(clonedOutlet, function (synced) {
+            //    log('Save outlet to local db')
+            //    changeOutletStatusDB($scope.config.tbl_outlet, clonedOutlet, clonedOutlet.AuditStatus, synced ? 1 : 0, function () {                    
+            //        $scope.refresh();
+            //    }, function (dberr) {                
+            //        showError(dberr.message);
+            //    });
+            //});
 
         }, function () { });
     }
@@ -1028,31 +1049,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             }
             __isLoadingOutlet = false;
         });
-
-
-        //if (!isbackground)
-        //    showDlg('Get ' + $scope.outletHeader, 'Please wait...');
-        //tcutils.tcapp.lastQueryItemCount = config.item_count;
-        //if (networkReady()) {
-        //    queryOutletsOnline(isbackground, function (r, foundOutlets) {
-        //        if (r) {
-        //            loadOutlets(foundOutlets);
-        //        } else {
-        //            isLoadingOutlet = false;
-        //            startGetOutletTS = new Date();
-        //        }
-        //    });
-        //} else {
-        //    queryOutlets(false, curOutletView, function (r, foundOutlets) {
-        //        if (r) {
-        //            loadOutlets(foundOutlets);
-        //        } else {
-        //            isLoadingOutlet = false;
-        //            startGetOutletTS = new Date();
-        //        }
-        //    });
-        //}
-    }   
+    }
     function queryOutletsOnline(isbackground, callback) {
         try {
             if (!config.distance) {
@@ -1134,6 +1131,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                     setOutletsToList(outlets);
                 });
         } else {
+            clearMarkers();
             setOutletsToList(outlets);
         }
     }  
@@ -1328,12 +1326,13 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                               }
 
                               outlet.AmendBy = userID;
+                              outlet.AmendByRole = user.role;
 
                               var isPost = outlet.IsDraft != orgOutlet.IsDraft;
                               var isAuditChanged = outlet.AuditStatus != orgOutlet.AuditStatus;
 
                               orgOutlet.AuditStatus = outlet.AuditStatus;
-                              orgOutlet.AmendBy = outlet.AmendBy;
+                              orgOutlet.AmendBy = outlet.AmendBy;                              
                               orgOutlet.AddLine = outlet.AddLine;
                               orgOutlet.AddLine2 = outlet.AddLine2;
                               orgOutlet.AuditStatus = outlet.AuditStatus;
@@ -1384,6 +1383,8 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                               orgOutlet.modifiedImage4 = outlet.modifiedImage4;
                               orgOutlet.modifiedImage5 = outlet.modifiedImage5;
                               orgOutlet.modifiedImage6 = outlet.modifiedImage6;
+
+                              orgOutlet.AmendByRole = user.role;
                           } else {
                               outlet.AuditStatus = StatusRevert;
                               orgOutlet.AuditStatus = outlet.AuditStatus;
@@ -1407,7 +1408,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                           OUTLET.saveOutlet($http, orgOutlet, OUTLET_DELETE, curOutletView, function () { $scope.refresh(); });                      
                       } else {
                           if (curOutletView != 1) { // new outlet
-                              var iconUrl = getMarkerIcon(outlet);
+                              var iconUrl = getMarkerIcon(orgOutlet);
                               log('change marker ' + i.toString() + ' icon: ' + iconUrl);
                               for (var m = 0; m < markers.length; m++) {
                                   var mk = markers[m];
@@ -1653,7 +1654,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                 moveToCurrentLocation();
                 $scope.mapReady = true;
             }
-           
+            initializeBorders(true);
             if (!isOutletDlgOpen) {
                 if (tcutils.tcapp.lastRefreshOutletsTS == null)
                     tcutils.tcapp.lastRefreshOutletsTS = new Date();
@@ -1732,7 +1733,64 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         */
     };
 
-    //*************************************************************************
+    $scope.changeMapType = function (i) {
+        changeMapTypeView(i);
+        $scope.isSatellite = i == 1;
+    }
+   
+    //#region SETTINGS
+
+    $scope.cfg = {
+        showPanel: function () {
+            log('show right panel');
+            $("#configPanel").css('width', '360px');
+            $scope.showSettingCollapse = true;
+            $scope.showSettingExpand = false;
+            righPanelStatus = 1;
+            tempPageSize = $scope.config.page_size;
+        },
+
+        hidePanel: function () {
+            log('hide right panel');
+            $("#configPanel").css('width', '0');
+            righPanelStatus = 0;
+            $scope.showSettingCollapse = false;
+            $scope.showSettingExpand = true;
+            insertSettingDB($scope.config, function () { log('Updated config') }, function (err) { log(err); });
+            if (networkReady() && !isMapReady) {
+                loadMapApi();
+                getCurPosition(true, function (lat, lng) {
+                }, function (err) { });
+            }
+            var hasNetwork = networkReady();
+            log('update view when base on network: ' + hasNetwork);
+            enableOffline(hasNetwork);
+            if (hasNetwork) {
+                if (appReady) changeGPSTrackingStatus();
+            }
+
+            if (tempPageSize != $scope.config.page_size) {
+                $scope.pageSize = $scope.config.page_size;
+                tempPageSize = $scope.pageSize;
+                log('Update paging');
+                if (curOutlets.length == 0) return;
+                $scope.outlets.length = 0;
+                for (var i = 0; i < curOutlets.length; i++) {
+                    $scope.outlets[i] = curOutlets[i];
+                }
+            }
+        }
+    }
+
+    $scope.displayChangePasswordDlg = function () {
+        if (!networkReady()) {
+            showError(R.cannot_change_password_in_offline);
+            return;
+        }
+
+        $('#dlg-change-password').css('display', 'table');
+    }
+
     $scope.changePassword = function (isCancel) {
         if (isCancel) {
             $('#dlg-change-password').css('display', 'none');
@@ -1805,22 +1863,8 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         }
     };
 
-    //*************************************************************************
-    $scope.displayChangePasswordDlg = function () {
-        if (!networkReady()) {
-            showError(R.cannot_change_password_in_offline);
-            return;
-        }
+    //#endregion
 
-        $('#dlg-change-password').css('display', 'table');
-    }
-
-    //*************************************************************************
-    $scope.changeMapType = function (i) {
-        changeMapTypeView(i);
-        $scope.isSatellite = i == 1;
-    }
-    
     //#region BORDER
     var isInitializeBorders = false;
     var borderAutoProvinceName = null;
@@ -1833,7 +1877,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     function initializeBorders(hasLocation) {
         if (isInitializeBorders) return;
 
-        showDlg(R.loading_borders, R.please_wait);
+        //showDlg(R.loading_borders, R.please_wait);
         isInitializeBorders = true;
 
         if (networkReady() && hasLocation && config.enable_rereverse_geo) {
@@ -1923,7 +1967,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     }
 
     $scope.showSelectedBorderDlg = function () {
-        if (!isInitializeBorders) return;
+        if (!isInitializeBorders || !networkReady()) return;
         tryOpenDialog(function () {
 
             OUTLET.dialog.open(
@@ -2012,50 +2056,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     }
     //#endregion
 
-    //*************************************************************************
-    $scope.cfg = {
-        showPanel: function () {
-            log('show right panel');
-            $("#configPanel").css('width', '360px');
-            $scope.showSettingCollapse = true;
-            $scope.showSettingExpand = false;
-            righPanelStatus = 1;
-            tempPageSize = $scope.config.page_size;
-        },
-
-        hidePanel: function () {
-            log('hide right panel');
-            $("#configPanel").css('width', '0');
-            righPanelStatus = 0;
-            $scope.showSettingCollapse = false;
-            $scope.showSettingExpand = true;
-            insertSettingDB($scope.config, function () { log('Updated config') }, function (err) { log(err); });
-            if (networkReady() && !isMapReady) {
-                loadMapApi();
-                getCurPosition(true, function (lat, lng) {
-                }, function (err) { });
-            }
-            var hasNetwork = networkReady();
-            log('update view when base on network: ' + hasNetwork);
-            enableOffline(hasNetwork);
-            if (hasNetwork) {
-                if (appReady) changeGPSTrackingStatus();
-            }
-
-            if (tempPageSize != $scope.config.page_size) {
-                $scope.pageSize = $scope.config.page_size;
-                tempPageSize = $scope.pageSize;
-                log('Update paging');
-                if (curOutlets.length == 0) return;
-                $scope.outlets.length = 0;
-                for (var i = 0; i < curOutlets.length; i++) {
-                    $scope.outlets[i] = curOutlets[i];
-                }
-            }
-        }
-    }
-    
-    //*************************************************************************
+    //#region JOURNAL
     $scope.journal = {
         from: new Date(),
         to: new Date(),
@@ -2292,10 +2293,9 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         });
     }
 
-    //*************************************************************************       
-
-    //*************************************************************************       
-
+    //#endregion
+  
+    //#region HOTLINE
     $scope.makePhoneCall = function (hotline) {
         log(hotline);
         try {
@@ -2304,9 +2304,30 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             log(e);
         }
     };
+    //#endregion
 
-    //*************************************************************************       
-  
+    //#region OUTLET STATUS
+    $scope.openOutletStatusView = function () {
+        tryOpenDialog(function () {
+            OUTLET.dialog.open(
+                  function () {
+                      $mdDialog.show({
+                          scope: $scope.$new(),
+                          controller: outletStatusControlle,
+                          templateUrl: 'views/outletStatusView.html',
+                          parent: angular.element(document.body),
+                          clickOutsideToClose: false,
+                          fullscreen: false,
+                      });
+                  },
+                  null,
+                  function (answer, outlet) {
+
+                  });
+        });
+    }
+    //#endregion
+   
     try {
         enableOffline(networkReady());
 
