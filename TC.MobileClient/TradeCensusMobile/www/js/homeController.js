@@ -1050,79 +1050,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             __isLoadingOutlet = false;
         });
     }
-    function queryOutletsOnline(isbackground, callback) {
-        try {
-            if (!config.distance) {
-                if (!isbackground) showError(R.distance_is_invalid);
-                callback(false, null);
-                return;
-            }
-            if (!config.item_count) {
-                if (!isbackground) showError(R.max_outlet_is_invalid);
-                callback(false, null);
-                return;
-            }
 
-            var url = baseURL + '/outlet/getoutlets/' + userID + '/'
-                            + pass + '/'
-                            + curlat.toString() + '/'
-                            + curlng.toString() + '/'
-                            + config.distance.toString() + '/'
-                            + config.item_count.toString() + '/'
-                            + curOutletView.toString();
-
-            log('Call service api: ' + url);
-            $http({
-                method: config.http_method,
-                url: url
-            }).then(function (resp) {
-                try {
-                    var data = resp.data;
-                    if (data.Status == -1) { // error
-                        showError(data.ErrorMessage);
-                        callback(false, null);
-                    } else {
-                        setDlgMsg(R.msg_found + data.Items.length.toString() + R.msg_outlets);
-                        nearByOutlets = data.Items;
-                        nearByOutlets.sort(function (a, b) { return a.Distance - b.Distance });
-                        if (!isbackground)
-                            showDlg(R.get_near_by_outlets, R.found + nearByOutlets.length.toString() + R.outlets_loading);
-
-                        insertOutletsDB(user.id, config.tbl_outlet, nearByOutlets,
-                            function () {
-                                callback(true, nearByOutlets);
-                                hideDlg();
-                            }, function (dberr) {
-                                hideDlg();
-                                if (!isbackground)
-                                    showError(dberr.message);
-                                else
-                                    log(dberr.message);
-                                callback(false, null);
-                            });
-                    }
-                } catch (err) {
-                    if (!isbackground)
-                        showError(err.message);
-                    else
-                        log(err.message);
-                    callback(false, null);
-                }
-            }, function (err) {
-                log('HTTP error...');
-                log(err);
-                hideDlg();
-                if (!isbackground) {
-                    var msg = err.statusText == '' ? $scope.R.text_ConnectionTimeout : err.statusText;
-                    showError(msg);
-                }
-                callback(false, null);
-            });
-        } catch (ex) {
-            showError(ex.message);
-            callback(false, null);
-        }
-    }    
     function loadOutlets(outlets) {
         $scope.outlets.length = 0;        
         if (isMapReady && networkReady()) {
@@ -1134,7 +1062,8 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             clearMarkers();
             setOutletsToList(outlets);
         }
-    }  
+    }
+
     function setOutletsToList(outlets) {
         $timeout(function () {
             $scope.showNaviBar = leftPanelStatus > 0 && outlets.length > $scope.config.page_size;
@@ -1304,7 +1233,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                       if (!outlet.isChanged) return;
 
                       var isSendNewOutletRequest = isSent !== outlet.IsSent;
-
+                      orgOutlet.IsSent = outlet.IsSent;
                       if (!isSendNewOutletRequest) {
                           if (!outlet.isRevert) {
 
@@ -1332,7 +1261,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                               var isAuditChanged = outlet.AuditStatus != orgOutlet.AuditStatus;
 
                               orgOutlet.AuditStatus = outlet.AuditStatus;
-                              orgOutlet.AmendBy = outlet.AmendBy;                              
+                              orgOutlet.AmendBy = outlet.AmendBy;
                               orgOutlet.AddLine = outlet.AddLine;
                               orgOutlet.AddLine2 = outlet.AddLine2;
                               orgOutlet.AuditStatus = outlet.AuditStatus;
@@ -1401,6 +1330,9 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                               orgOutlet.modifiedImage5 = false;
                               orgOutlet.modifiedImage6 = false;
                           }
+                      }
+                      else {
+                          orgOutlet.AuditStatus = outlet.AuditStatus;
                       }
 
                       //showDlg(R.saving_outlet, R.please_wait);
@@ -1681,56 +1613,6 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         });
 
         __loadMapCallback = null;
-
-        /* Removed later
-        showCurPositionDlg(true, function (lat, lng) {        
-            if (isMapReady) {
-                log('Move to current location');
-                //$('#current-location-button').css('display', 'block');
-                moveToCurrentLocation();
-                $scope.mapReady = true;
-            }
-            showDlg(R.get_near_by_outlets, R.please_wait);
-            if (networkReady()) {
-                if (appReady)
-                    changeGPSTrackingStatus();
-
-                if (!isOutletDlgOpen) {
-                    log('Get outlets');
-                    queryOutletsOnline(false, function (r, foundOutlets) {
-                        if (r) loadOutlets(foundOutlets);
-                    });
-                } else {
-                    log('Dialog is opened, refresh later');
-                    dialogClosedCallback = function () {
-                        queryOutletsOnline(false, function (r, foundOutlets) {
-                            if (r) loadOutlets(foundOutlets);
-                        });
-                        dialogClosedCallback = null;
-                    }
-                }
-                initializeBorders(true);
-            } else {
-                if (!isOutletDlgOpen) {
-                    queryOutlets(false, curOutletView, function (r, foundOutlets) {
-                        if (r) loadOutlets(foundOutlets);
-                    });
-                } else {
-                    dialogClosedCallback = function () {
-                        queryOutlets(false, curOutletView, function (r, foundOutlets) {
-                            if (r) loadOutlets(foundOutlets);
-                        });
-                        dialogClosedCallback = null;
-                    }
-                }
-            }
-        }, function (err) {
-            hideDlg();
-            initializeBorders(false);
-        });
-
-        __loadMapCallback = null;
-        */
     };
 
     $scope.changeMapType = function (i) {

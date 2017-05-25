@@ -374,8 +374,8 @@ function networkReady() {
     if (!config.mode_online) return false;
     if (config.enable_devmode) return true;
 
-    if (typeof __serverConnected === 'undefined')
-        __serverConnected = __getNetworkState();
+    //if (typeof __serverConnected === 'undefined')
+    __serverConnected = __getNetworkState();
     return __serverConnected; // && getNetworkState();
 }
 

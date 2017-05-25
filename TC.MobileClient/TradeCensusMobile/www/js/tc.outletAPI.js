@@ -15,6 +15,7 @@ const StatusExitingAccept = 32;
 const StatusExitingDeny = 33;
 
 const StatusDone = 40;
+const StatusExternalSystem = 50;
 
 const StatusDelete = 100;
 const StatusRevert = 102;
@@ -953,12 +954,25 @@ var OUTLET = {
                     callback(null, []);
                 } else {
                     var foundOutlets = [];
+                    var outletIDString = '';
+                    var position = 0;
                     for (i = 0; i < rowLen; i++) {
                         var outlet = dbres.rows.item(i);
-                        initializeOutlet(outlet);
-                        outlet.Distance = 0;
-                        outlet.positionIndex = i;
-                        foundOutlets.push(outlet);
+                        var id = outlet.ID;
+                        var isAdd = true;
+                        if (id != NewOutletDefaultID) {
+                            if (outletIDString.indexOf(id.toString()) == -1) {
+                                outletIDString += id.toString() + '|';
+                            } else {
+                                isAdd = false;
+                            }
+                        }
+                        if (isAdd) {
+                            initializeOutlet(outlet);
+                            outlet.Distance = 0;
+                            outlet.positionIndex = position++;
+                            foundOutlets.push(outlet);
+                        }
                     }
                     callback(null, foundOutlets);
                 }

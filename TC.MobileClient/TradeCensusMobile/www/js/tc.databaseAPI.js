@@ -1056,13 +1056,22 @@ function updateOutletImageDB(outletTbl, outlet, callback) {
 //*****************************************************
 function saveOutletDB(outletTbl, outlet, state, synced, onSuccess, onError) {
     db.transaction(function (tx) {
-        try {            
-            _updateOutlet(tx, outletTbl, outlet, state, synced, true);
-        } catch (err) {
-            log(err);
-        }
-        onSuccess();
-    }, onError);
+        var sql = 'SELECT * FROM ' + outletTbl + ' WHERE PRowID like \'' + outlet.PRowID.toString() + '\'';
+        tx.executeSql(sql, [],
+            function (tx, dbres) {
+                var rowlen = dbres.rows.length;
+                if (dbres.rows.length == 0) {
+                    _addNewOutlet(tx, outletTbl, outlet, true, false, false, synced, false);
+                } else {
+                    _updateOutlet(tx, outletTbl, outlet, state, synced, true);
+                }
+                onSuccess();
+            },
+            function (dberr) {
+                console.error(dberr);
+                onError('Error while save outet to local database!');
+            });
+    });
 }
 
 function setSyncStatusDB(outletTbl, syncOutlets, synced, onSuccess, onError) {

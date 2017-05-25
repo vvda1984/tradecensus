@@ -114,10 +114,15 @@ function editOutletController($scope, $mdDialog, $timeout) {
 
     $scope.callRates = _callRates;
     $scope.classes = _classes;
-    $scope.territories = _territories;    
-    $scope.enableExtraFields = config.enable_send_request === 1 && (user.role === 0 || user.role === 1);
-    $scope.enableSendRequest = $scope.enableExtraFields && $scope.outlet.AuditStatus !== StatusInitial && $scope.outlet.IsSent === 0;
+    $scope.territories = _territories;
 
+    $scope.enableExtraFields = config.enable_send_request === 1 && (user.role === 0 || user.role === 1);
+    $scope.enableSendRequest =
+        $scope.enableExtraFields && 
+        $scope.outlet.IsSent === 0 &&       // Not send 
+        ($scope.outlet.AuditStatus == StatusExternalSystem || 
+         ($scope.outlet.InputByRole != 2 && $scope.outlet.InputByRole != 3 && ($scope.outlet.AuditStatus == StatusNew || $scope.outlet.AuditStatus == StatusPost || $scope.outlet.AuditStatus == StatusAuditAccept)));
+    
     if ($scope.enableSendRequest) {
         $scope.disableClass = false;      // !$scope.enableExtraFields;
         $scope.disableTerritory = false;  // !$scope.enableExtraFields;
@@ -319,7 +324,8 @@ function editOutletController($scope, $mdDialog, $timeout) {
         showDlg('Info', 'The request has been sent.', function () {
             $scope.enableExtraFields = false;
             $scope.outlet.IsSent = 1;
-            $scope.outlet.isChanged = true;            
+            $scope.outlet.isChanged = true;
+            $scope.outlet.AuditStatus = StatusDone;
             hideDialog(true);
         });
     }

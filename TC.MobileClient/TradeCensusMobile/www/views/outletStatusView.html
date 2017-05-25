@@ -1,0 +1,66 @@
+﻿<md-dialog aria-label="Download Province" ng-cloak>
+    <md-toolbar class="md-hue-2">
+        <div class="md-toolbar-tools">
+            <h2 flex="">
+                <span>CHECK OUTLET STATUS</span>
+            </h2>
+            <h2 id="syncingText" style="display:none;">
+                <span>Synchronizing...</span>
+                <span id="syncingStatusText"></span>
+            </h2>
+        </div>
+    </md-toolbar>
+
+    <div class="md-block-item" style="margin-bottom:0px;margin-top:0px;">
+        <table class="province-table" style="width:640px; width:640px; margin: -8px 0 0 0 !important;">
+            <thead>
+                <tr>
+                    <th style="width:100px;">Outlet ID</th>
+                    <th style="width:320px;">Outlet Name</th>
+                    <th style="width:120px;">Last Modified</th>
+                    <th style="width:120px; text-align:right">Outlet Status</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+    <md-content layout-padding="0" class="popup-content" style="min-height:200px;">
+        <div id="noOutletText" style="text-align:center; padding:32px 0 32px 0">
+            <span style="font-size: 18px;" id="statusText">
+                Query outlet...
+            </span>
+        </div>
+        <table id="outletTable" class="province-table" style="display:none; width:640px; margin: -8px 0 0 3px !important;">
+            <tbody id="outletTableBody">
+                <!--<tr>
+                    <td style="width:100px;">000000001</td>
+                    <td style="width:320px; text-overflow: ellipsis;">This is a test outlet name</td>
+                    <td style="width:100px;">00:00:00</td>
+                    <td style="width:100px; text-align:right">Pending</td>
+                </tr>-->
+            </tbody>
+        </table>
+    </md-content>
+    <div class="md-block-item" style="margin-bottom:0px;margin-top:0px; min-width:640px;">
+        <span>Date</span>
+        <md-datepicker id="ovdatePicker" ng-model="currentOutletDate" md-placeholder="Enter date"></md-datepicker>
+        <md-button id="ovqueryButton" class="md-raised md-primary" ng-click="queryOutlet()" style="margin-left:16px;">View</md-button>
+        <md-button class="md-raised" ng-click="closeOutletStatusForm()" style="float:right;">Close</md-button>
+        <md-button id="ovsyncButton" class="md-raised md-primary" ng-disabled="disableAccess" ng-click="syncAllPending()" ng-show="canSync" style="float:right;">Sync all Pending</md-button>
+    </div>
+    <!--<div id="syncOverlay" style="position:fixed; width:100%; height: 100%; background-color: rgba(0,0,0, 0.5)">
+        <div style="display:table; width:100%; height: 100%;">
+            <div style="display: table-cell; vertical-align: middle">
+                <div style="width:300px; margin-left: 120px; min-height: 100px;">
+                    <div id="syncStatus">Synchronizing...</div>
+                </div>
+                <div style="width:300px; margin-left: 120px; margin-top:24px;">
+                    <div style="text-align:center; width:80px; background-color: #01541E; color: #FFFFFF; height:36px; float:left; padding-left: 6px; padding-right:6px; cursor: pointer; line-height:36px;"
+                         ng-click="cancelSync()">
+                        <span>Close</span>
+                    </div>
+                    <img id="loadingSync" src="assets/img/loader.gif" style="height:26px;width:26px;display:none; margin-left:8px;margin-top:5px; float:right;">
+                </div>
+            </div>
+        </div>
+    </div>-->
+</md-dialog>
