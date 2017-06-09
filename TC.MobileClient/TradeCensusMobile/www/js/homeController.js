@@ -1270,6 +1270,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                               orgOutlet.CloseDate = outlet.CloseDate;
                               orgOutlet.Distance = outlet.Distance;
                               orgOutlet.District = outlet.District;
+                              orgOutlet.Ward = outlet.Ward;
                               orgOutlet.FullAddress = outlet.FullAddress;
                               orgOutlet.IsOpened = outlet.IsOpened;
                               orgOutlet.IsTracked = outlet.IsTracked;

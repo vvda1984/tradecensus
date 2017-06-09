@@ -4,20 +4,17 @@
 
 function newOutletController($scope, $http, $mdDialog, $timeout) {
     isOutletDlgOpen = true;
-    $scope.outlet = OUTLET.dialog.outlet();
-    if ($scope.outlet.TaxID === "null" || $scope.outlet.TaxID === null) $scope.outlet.TaxID = '';
-    if ($scope.outlet.LegalName === "null" || $scope.outlet.LegalName === null) $scope.outlet.LegalName = '';
+    var isLoaded = false;
+    var outlet = OUTLET.dialog.outlet();
+    var orgOutlet = null;
+    var isCreatedNew = isEmpty(outlet.Name);
 
-    var isCreatedNew = isEmpty($scope.outlet.Name);
+    //addressModel.wardArr = [];
 
-    addressModel.wardArr = [];
-   
     $scope.R = R;
     $scope.address = addressModel;
-
     //$scope.autoSelectedDistrict = $scope.address.districtArr && $scope.address.districtArr.length > 0;
     //$scope.autoSelectedWard = $scope.autoSelectedDistrict; // tcutils.networks.isReady() && $scope.address.wardArr && $scope.address.wardArr.length > 0;
-    
     $scope.autoSelectedDistrict = true;
     $scope.autoSelectedWard = true;
 
@@ -29,27 +26,8 @@ function newOutletController($scope, $http, $mdDialog, $timeout) {
     $scope.showImage4 = config.enable_check_in > 0;
     $scope.showImage5 = true;
     $scope.showImage6 = true;
-    $scope.outlet.modifiedImage1 = false;
-    $scope.outlet.modifiedImage2 = false;
-    $scope.outlet.modifiedImage3 = false;
-    $scope.outlet.modifiedImage4 = false; // selfie image
-    $scope.outlet.modifiedImage5 = false;
-    $scope.outlet.modifiedImage6 = false;
-    $scope.createNew = $scope.outlet.AuditStatus == StatusNew;
-    $scope.showDraft = $scope.outlet.IsDraft && !$scope.isNewOutlet;
-    $scope.canDelete = $scope.outlet.canDelete;
+
     $scope.isDeleted = false;
-    $scope.outlet.isChanged = false;
-    $scope.canComment = user.hasAuditRole && $scope.outlet.AuditStatus == StatusAuditorNew;
-    $scope.canPost = $scope.outlet.canPost;
-    $scope.canApprove = $scope.outlet.canApprove;
-
-    if (user.hasAuditRole) {
-        $scope.outlet.canComment = $scope.outlet.AuditStatus == StatusAuditorNew;
-    } else {
-        $scope.outlet.canComment = false;
-    }
-
     $scope.title = buildTitle();
     var downloadProvinces = [];
     if (networkReady()) {
@@ -62,23 +40,9 @@ function newOutletController($scope, $http, $mdDialog, $timeout) {
                 c++;
             }
         }
-
-        //for (var i = 0; i < provinces.length; i++) {
-        //    var isDownloaded = false;
-        //    for (var j = 0; j < dprovinces.length; j++) {
-        //        if (dprovinces[j].download) {
-        //            isDownloaded = true;
-        //            break;
-        //        }
-        //    
-        //    if (isDownloaded) {
-        //        downloadProvinces[c] = provinces[i];
-        //        c++;
-        //    }
-        //}
     }
     $scope.provinces = downloadProvinces;
-   
+
     $scope.callRates = _callRates;
     $scope.classes = _classes;
     $scope.territories = _territories;
@@ -86,15 +50,6 @@ function newOutletController($scope, $http, $mdDialog, $timeout) {
     //$scope.disableExtendedFields = !
     $scope.enableExtraFields = config.enable_send_request === 1 && (user.role === 0 || user.role === 1);
 
-    $scope.image1URL = getImageURL($scope.outlet.StringImage1);
-    $scope.image2URL = getImageURL($scope.outlet.StringImage2);
-    $scope.image3URL = getImageURL($scope.outlet.StringImage3);
-    $scope.image4URL = getImageURL($scope.outlet.StringImage4);
-    $scope.image5URL = getImageURL($scope.outlet.StringImage5);
-    $scope.image6URL = getImageURL($scope.outlet.StringImage6);
-
-    var orgOutlet = cloneObj($scope.outlet);
-   
     function hideDialog(answer) {
         $mdDialog.hide(answer);
         OUTLET.dialog.close(answer, $scope.outlet);
@@ -277,18 +232,18 @@ function newOutletController($scope, $http, $mdDialog, $timeout) {
             //$mdDialog.hide(true);
 
             hideDialog(true);
-        }, function () { });                
+        }, function () { });
     };
 
     $scope.postOutlet = function () {
         if (!validate()) return;
-     
+
         if (isEmpty($scope.outlet.StringImage1) && isEmpty($scope.outlet.StringImage2) && isEmpty($scope.outlet.StringImage3) &&
             isEmpty($scope.outlet.StringImage5) && isEmpty($scope.outlet.StringImage6)) {
             showValidationErr(R.need_to_capture);
             return;
         }
-        
+
         var confirmText = R.post_outlet_confirm.replace("{outletname}", $scope.outlet.Name);
         showConfirm(R.post_outlet, confirmText, function () {
             checkDistance(function () {
@@ -338,27 +293,37 @@ function newOutletController($scope, $http, $mdDialog, $timeout) {
         hideDialog(false);
     };
 
-    $scope.codeChanged = function(){
+    $scope.codeChanged = function () {
         $scope.title = buildTitle();
     }
 
-    $scope.nameChanged = function(){
+    $scope.nameChanged = function () {
         $scope.title = buildTitle();
     }
 
-    $scope.provinceChanged = function () {
+    $scope.provinceChanged = function () { changeProvince(); }
+
+    $scope.districtChanged = function () { changeDistrict(); }
+
+    function changeProvince(selectedProvince) {
         if (!$scope.autoSelectedDistrict) return;
 
-        $scope.outlet.District = '';
-		$scope.address.districtArr = [];
-		$scope.outlet.Ward = '';		
-		$scope.address.wardArr = [];
-		
-        var selectedProvince = null;
-        for (var i = 0; i < $scope.provinces.length; i++) {
-            if ($scope.provinces[i].id === $scope.outlet.ProvinceID) {
-                selectedProvince = $scope.provinces[i];
-                break;
+        $scope.address.districtArr = [];
+        $scope.address.wardArr = [];
+
+        if (isLoaded) {
+            $scope.outlet.District = '';
+            $scope.outlet.Ward = '';
+        }
+
+        if (selectedProvince == undefined) {
+            selectedProvince = null;
+            var outlet1 = isLoaded ? $scope.outlet : outlet;
+            for (var i = 0; i < $scope.provinces.length; i++) {
+                if ($scope.provinces[i].id === outlet1.ProvinceID) {
+                    selectedProvince = $scope.provinces[i];
+                    break;
+                }
             }
         }
 
@@ -375,6 +340,7 @@ function newOutletController($scope, $http, $mdDialog, $timeout) {
                         getDistrictFromLocal(selectedProvince);
                     } else {
                         $scope.address.districtArr = data.Items;
+                        if (!isLoaded) changeDistrict();
                     }
                 } catch (err) {
                     console.error(err);
@@ -389,22 +355,27 @@ function newOutletController($scope, $http, $mdDialog, $timeout) {
         }
     }
 
-    $scope.districtChanged = function () {
+    function changeDistrict(selectedDistrict) {
         if (!$scope.autoSelectedWard) return;
+        var outlet1 = isLoaded ? $scope.outlet : outlet;
 
-        $scope.outlet.Ward = '';		
-		$scope.address.wardArr = [];
-		
-        var selectedDistrict = null;
-        for (var i = 0; i < $scope.address.districtArr.length; i++) {
-            if ($scope.address.districtArr[i].Name === $scope.outlet.District) {
-                selectedDistrict = $scope.address.districtArr[i];
-                break;
+        $scope.address.wardArr = [];
+        if (isLoaded) {
+            $scope.outlet.Ward = '';
+        }
+
+        if (selectedDistrict == undefined) {
+            selectedDistrict = null;
+            for (var i = 0; i < $scope.address.districtArr.length; i++) {
+                if ($scope.address.districtArr[i].Name === outlet1.District) {
+                    selectedDistrict = $scope.address.districtArr[i];
+                    break;
+                }
             }
         }
 
         if (tcutils.networks.isReady()) {
-            var url = baseURL + '/border/getsubbordersbyparentname/' + $scope.outlet.District;
+            var url = baseURL + '/border/getsubbordersbyparentname/' + outlet1.District;
             log('Call service api: ' + url);
             $http({
                 method: config.http_method,
@@ -416,6 +387,7 @@ function newOutletController($scope, $http, $mdDialog, $timeout) {
                         getWardFromLocal(selectedDistrict);
                     } else {
                         $scope.address.wardArr = data.Items;
+                        if (!isLoaded) setOutlet();
                     }
                 } catch (err) {
                     getWardFromLocal(selectedDistrict);
@@ -432,14 +404,24 @@ function newOutletController($scope, $http, $mdDialog, $timeout) {
     function getDistrictFromLocal(selectedProvince) {
         addressModel.getDistricts(selectedProvince.referenceGeoID, function (items) {
             $scope.address.districtArr = items;
-            //tcutils.messageBox.hide();
+            if (!isLoaded) changeDistrict();
         });
     }
 
     function getWardFromLocal(selectedDistrict) {
+        if (selectedDistrict == undefined) {
+            if (!isLoaded) setOutlet();
+            return;
+        }
         addressModel.getWards(selectedDistrict.ID, function (items) {
             $scope.address.wardArr = items;
+            if (!isLoaded) setOutlet();
         });
+    }
+
+    function setSelectedDistrict() {
+        if (isLoaded) return;
+
     }
 
     function checkDistance(callback) {
@@ -460,8 +442,8 @@ function newOutletController($scope, $http, $mdDialog, $timeout) {
             if (!isEmpty(stringImage)) {
                 if (stringImage.toUpperCase().indexOf('/IMAGES') > -1) {
                     imageUrl = imageURL($scope.config.protocol, $scope.config.ip, $scope.config.port, imageUrl);
-                }  else { //if (stringImage.indexOf('base64') > -1) {
-                   imageUrl = 'data:image/jpeg;base64,' + imageUrl;
+                } else { //if (stringImage.indexOf('base64') > -1) {
+                    imageUrl = 'data:image/jpeg;base64,' + imageUrl;
                 }
             }
             return imageUrl;
@@ -554,41 +536,73 @@ function newOutletController($scope, $http, $mdDialog, $timeout) {
     }
 
     function buildTitle() {
-        var t = $scope.outlet.Name;
+        var t = outlet.Name;
         if (isEmpty(t)) {
-            if ($scope.outlet.AuditStatus == StatusNew || $scope.outlet.AuditStatus == StatusPost) {
+            if (outlet.AuditStatus == StatusNew || outlet.AuditStatus == StatusPost) {
                 t = R.create_new_outlet;
             } else {
                 t = R.edit_outlet;
             }
         }
-
-        //if (!isEmpty($scope.outlet.ID)) {
-        //    t = t.concat(' (', $scope.outlet.ID, ')');
-        //} else {
-        //    t = t.concat(' (', $scope.outlet.ID, ')');
-        //}
-        
         return t;
     }
 
     function loadImages() {
-        $scope.image1URL = getImageURL($scope.outlet.StringImage1);
+        $scope.image1URL = getImageURL(outlet.StringImage1);
 
-        $scope.image2URL = getImageURL($scope.outlet.StringImage2);
+        $scope.image2URL = getImageURL(outlet.StringImage2);
 
-        $scope.image3URL = getImageURL($scope.outlet.StringImage3);
+        $scope.image3URL = getImageURL(outlet.StringImage3);
 
-        $scope.image4URL = getImageURL($scope.outlet.StringImage4);
+        $scope.image4URL = getImageURL(outlet.StringImage4);
 
-        $scope.image5URL = getImageURL($scope.outlet.StringImage5);
+        $scope.image5URL = getImageURL(outlet.StringImage5);
 
-        $scope.image6URL = getImageURL($scope.outlet.StringImage6);
+        $scope.image6URL = getImageURL(outlet.StringImage6);
     }
-    
+
+    function setOutlet() {
+        $scope.outlet = outlet;
+        if ($scope.outlet.TaxID === "null" || $scope.outlet.TaxID === null) $scope.outlet.TaxID = '';
+        if ($scope.outlet.LegalName === "null" || $scope.outlet.LegalName === null) $scope.outlet.LegalName = '';
+
+        $scope.outlet.modifiedImage1 = false;
+        $scope.outlet.modifiedImage2 = false;
+        $scope.outlet.modifiedImage3 = false;
+        $scope.outlet.modifiedImage4 = false; // selfie image
+        $scope.outlet.modifiedImage5 = false;
+        $scope.outlet.modifiedImage6 = false;
+
+        $scope.outlet.isChanged = false;
+        $scope.canComment = user.hasAuditRole && $scope.outlet.AuditStatus == StatusAuditorNew;
+        $scope.canPost = $scope.outlet.canPost;
+        $scope.canApprove = $scope.outlet.canApprove;
+        $scope.createNew = $scope.outlet.AuditStatus == StatusNew;
+        $scope.showDraft = $scope.outlet.IsDraft && !$scope.isNewOutlet;
+        $scope.canDelete = $scope.outlet.canDelete;
+
+        if (user.hasAuditRole) {
+            $scope.outlet.canComment = $scope.outlet.AuditStatus == StatusAuditorNew;
+        } else {
+            $scope.outlet.canComment = false;
+        }
+
+        $scope.image1URL = getImageURL($scope.outlet.StringImage1);
+        $scope.image2URL = getImageURL($scope.outlet.StringImage2);
+        $scope.image3URL = getImageURL($scope.outlet.StringImage3);
+        $scope.image4URL = getImageURL($scope.outlet.StringImage4);
+        $scope.image5URL = getImageURL($scope.outlet.StringImage5);
+        $scope.image6URL = getImageURL($scope.outlet.StringImage6);
+
+        orgOutlet = cloneObj($scope.outlet);
+
+        isLoaded = true;
+    }
+
     loadImages();
 
-    if (addressModel.wardArr.length == 0) {
-        $scope.provinceChanged();
-    }
+    if (isCreatedNew)
+        setOutlet();
+    else
+        changeProvince();
 }
