@@ -627,7 +627,7 @@ function getCurPosition(moveToCur, onSuccess, onError) {
             }
             curlat = lat;
             curlng = lng;
-            if (isMapReady && moveToCur) {
+            if (isMapReady && moveToCur == true) {
                 log('Move to current location');
                 moveToCurrentLocation();
             }
@@ -822,4 +822,16 @@ function showCurPositionDlg(moveToCur, onSuccess, onError) {
     });
 
     __getCurPosition(moveToCur, onSuccess, onError);
+}
+
+function isGPSAvailable(callback) {
+    if (_WEB) {
+        callback(true);
+    } else {
+        cordova.plugins.diagnostic.isGpsLocationEnabled(function (enabled) {
+            callback(enabled);
+        }, function (error) {
+            callback(false);
+        });
+    }
 }

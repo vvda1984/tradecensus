@@ -169,12 +169,12 @@ function insertProvinces(items, onSuccess, onError) {
         for (i = 0 ; i < len; i++) {
             var p = items[i];
             provinces[i] = p;
-            var sql = "INSERT OR REPLACE INTO [province] VALUES (";           
+            var sql = "INSERT OR REPLACE INTO [province] VALUES (";
             sql = sql.concat("'", p.id, "', ");
             sql = sql.concat("'", quoteText(p.name), "', ");
             sql = sql.concat(p.referenceGeoID, ")");
             logSqlCommand(sql);
-            tx.executeSql(sql, [], function(tx){}, onError);
+            tx.executeSql(sql, [], function (tx) { }, onError);
         };
         onSuccess();        
     });
@@ -223,8 +223,8 @@ function insertSettingDB(config, onSuccess, onError) {
         insertSetting(tx, "ip", config.ip, onError);
         insertSetting(tx, "port", config.port);
         insertSetting(tx, "service_name", config.service_name);
-        insertSetting(tx, "item_count", config.item_count.toString());
-        insertSetting(tx, "distance", config.distance);
+        insertSetting(tx, "item_count", config.item_count == undefined ? 20 : config.item_count.toString());
+        insertSetting(tx, "distance", config.distance == undefined ? 200 : config.distance.toString());
         insertSetting(tx, "province_id", config.province_id);
         insertSetting(tx, "calc_distance_algorithm", config.calc_distance_algorithm);
         insertSetting(tx, "tbl_area_ver", config.tbl_area_ver);
@@ -279,96 +279,6 @@ function insertSetting(tx, name, value) {
             console.error(err);
             completed(err)
         });
-}
-
-function initializeProvinces(tx1, onSuccess, onError) {
-    log('initialize provinces');
-    tx1.executeSql("SELECT * FROM province", [], function (tx, dbres) {
-        if (dbres.rows.length == 0) {
-            initializeProvinceRow(tx, "11", "Cao Bằng");
-            initializeProvinceRow(tx, "12", "Lạng Sơn");
-            initializeProvinceRow(tx, "14", "Quảng Ninh");
-            initializeProvinceRow(tx, "15", "Hải Phòng");
-            initializeProvinceRow(tx, "17", "Thái Bình");
-            initializeProvinceRow(tx, "18", "Nam Định");
-            initializeProvinceRow(tx, "19", "Phú Thọ");
-            initializeProvinceRow(tx, "20", "Thái Nguyên");
-            initializeProvinceRow(tx, "21", "Yên Bái");
-            initializeProvinceRow(tx, "22", "Tuyên Quang");
-            initializeProvinceRow(tx, "23", "Hà Giang");
-            initializeProvinceRow(tx, "24", "Lào Cai");
-            initializeProvinceRow(tx, "25", "Lai Châu");
-            initializeProvinceRow(tx, "26", "Sơn La");
-            initializeProvinceRow(tx, "28", "Hòa Bình");
-            initializeProvinceRow(tx, "29", "Hà Tây");
-            initializeProvinceRow(tx, "32", "Hà Nội");
-            initializeProvinceRow(tx, "34", "Hải Dương");
-            initializeProvinceRow(tx, "35", "Ninh Bình");
-            initializeProvinceRow(tx, "36", "Thanh Hóa");
-            initializeProvinceRow(tx, "37", "Nghệ An");
-            initializeProvinceRow(tx, "38", "Hà Tĩnh");
-            initializeProvinceRow(tx, "43", "Đà Nẵng");
-            initializeProvinceRow(tx, "47", "Đắc Lắc");
-            initializeProvinceRow(tx, "48", "Đắc Nông");
-            initializeProvinceRow(tx, "49", "Lâm Đồng");
-            initializeProvinceRow(tx, "50", "Hồ Chí Minh");
-            initializeProvinceRow(tx, "60", "Đồng Nai");
-            initializeProvinceRow(tx, "61", "Bình Dương");
-            initializeProvinceRow(tx, "62", "Long An");
-            initializeProvinceRow(tx, "63", "Tiền Giang");
-            initializeProvinceRow(tx, "64", "Vĩnh Long");
-            initializeProvinceRow(tx, "65", "Cần Thơ");
-            initializeProvinceRow(tx, "66", "Đồng Tháp");
-            initializeProvinceRow(tx, "67", "An Giang");
-            initializeProvinceRow(tx, "68", "Kiên Giang");
-            initializeProvinceRow(tx, "69", "Cà Mau");
-            initializeProvinceRow(tx, "70", "Tây Ninh");
-            initializeProvinceRow(tx, "71", "Bến Tre");
-            initializeProvinceRow(tx, "72", "Bà Rịa-VũngTàu");
-            initializeProvinceRow(tx, "73", "Quảng Bình");
-            initializeProvinceRow(tx, "74", "Quảng Trị");
-            initializeProvinceRow(tx, "75", "Thừa Thiên-Huế");
-            initializeProvinceRow(tx, "76", "Quảng Ngãi");
-            initializeProvinceRow(tx, "77", "Bình Định");
-            initializeProvinceRow(tx, "78", "Phú Yên");
-            initializeProvinceRow(tx, "79", "Khánh Hòa");
-            initializeProvinceRow(tx, "81", "Gia Lai");
-            initializeProvinceRow(tx, "82", "Kon Tum");
-            initializeProvinceRow(tx, "83", "Sóc Trăng");
-            initializeProvinceRow(tx, "84", "Trà Vinh");
-            initializeProvinceRow(tx, "85", "Ninh Thuận");
-            initializeProvinceRow(tx, "86", "Bình Thuận")
-            initializeProvinceRow(tx, "88", "Vĩnh Phúc");
-            initializeProvinceRow(tx, "89", "Hưng Yên");
-            initializeProvinceRow(tx, "90", "Hà Nam");
-            initializeProvinceRow(tx, "92", "Quảng Nam");
-            initializeProvinceRow(tx, "93", "Bình Phước");
-            initializeProvinceRow(tx, "94", "Bạc Liêu");
-            initializeProvinceRow(tx, "95", "Hậu Giang");
-            initializeProvinceRow(tx, "97", "Bắc Kạn");
-            initializeProvinceRow(tx, "98", "Bắc Giang");
-            initializeProvinceRow(tx, "99", "Bắc Ninh");
-
-            log('initialize provinces completed...');
-            onSuccess(tx);
-        }
-        else {
-            log('provinces was ready...');
-            onSuccess(tx);
-        }
-    }, function (dberr) {
-        onSuccess(tx1);
-    });
-}
-
-function initializeProvinceRow(tx, name, value) {
-    var sql = "INSERT INTO [province] VALUES (";
-    sql = sql.concat("'", name, "', ");
-    sql = sql.concat("'", value, "')");
-    logSqlCommand(sql);
-    tx.executeSql(sql, [], function (tx1) { }, function (tx1, dberr) {
-        log(dberr.message);
-    });
 }
 
 function selectProvincesDB(tx, onSuccess, onError) {
@@ -499,6 +409,7 @@ function ensureUserOutletDBExist(isReset, outletSyncTbl, outletTbl, provinceDown
         tx.executeSql('ALTER TABLE ' + outletTbl + ' ADD COLUMN [AmendByRole] int NULL', [], function (tx1) { }, function (tx1, dberr) { console.error(dberr); });
         tx.executeSql('ALTER TABLE ' + outletTbl + ' ADD COLUMN [IsSent] int NULL', [], function (tx1) { }, function (tx1, dberr) { console.error(dberr); });
         tx.executeSql('ALTER TABLE ' + outletTbl + ' ADD COLUMN [LegalName] text NULL', [], function (tx1) { }, function (tx1, dberr) { console.error(dberr); });
+        tx.executeSql('ALTER TABLE ' + provinceDownloadTbl + ' ADD COLUMN [referenceGeoID]', [], function (tx1) { }, function (tx1, dberr) { });
 
         //if (config.versionNum <= 4) {
         //    tx.executeSql('ALTER TABLE ' + outletTbl + ' ADD COLUMN [Ward] text NULL', [], function (tx1) { }, function (tx1, dberr) { });
@@ -664,12 +575,17 @@ function addDownloadOutletsDB(outletTbl, outlets, onSuccess, onError) {
 
         var err;
         for (var i = 0; i < outlets.length; i++) {
-            var sql = buildOutletInsertSql(outletTbl, outlets[i]);
-            log(sql);
-
-            if (outlets[i].Name == 'Aaaa') {
-                log('');
+            var outlet = outlets[i];
+            var date = new Date(outlet.AmendDate);
+            try {
+                var d1 = new Date(date);
+                d1.setHours(date.getHours() - 7);
+                date = d1;
             }
+            catch (e) {
+                console.error(e);
+            }
+            var sql = buildOutletInsertSql(outletTbl, outlets[i], date);
             tx.executeSql(sql, [], function (tx1) { }, function (tx1, dberr) {
                 err = dberr;
             });
@@ -677,12 +593,11 @@ function addDownloadOutletsDB(outletTbl, outlets, onSuccess, onError) {
         if (err == null) {
             tx.executeSql('select * from ' + outletTbl + ' where Name = "Aaaa"', [],
                 function (tx1, dbres) {
-                    if(dbres.rows.length > 0)
-                        log(dbres);
+                    if (dbres.rows.length > 0) log(dbres);
                     onSuccess();
                 }, function (e) {
+
                 });
-            //onSuccess();
         }
         else {
             onError(err);
@@ -746,8 +661,14 @@ function quoteInt(v) {
     return (typeof v === 'undefined' || v == null) ? 0 : v.toString();
 }
 
-function buildOutletInsertSql(outletTbl, outlet) {
-    var n = (new Date()).getTime();
+function buildOutletInsertSql(outletTbl, outlet, modifiedDate) {
+    var n;
+    if (typeof modifiedDate == 'undefined') {
+        n = (new Date()).getTime();
+    } else {
+        n = modifiedDate.getTime();
+    }
+
     if (outlet.PersonIsDSM != null && (outlet.PersonIsDSM == true || outlet.PersonIsDSM == 1)) {
         outlet.OutletSource = 1;
     } else {
@@ -798,11 +719,11 @@ function buildOutletInsertSql(outletTbl, outlet) {
     sql = sql.concat("'", outlet.StringImage3, "', ");          //[StringImage3] text
     sql = sql.concat(outlet.OutletSource.toString(), ', ');     //[OutletSource] int
     sql = sql.concat("'", outlet.PRowID, "', ");                //[PRowID] text NULL
-    sql = sql.concat("0, ");                                     //[PIsAdd] bit
-    sql = sql.concat("0, ");                                     //[PIsMod] bit
-    sql = sql.concat("0, ");                                     //[PIsAud] bit
-    sql = sql.concat("1, ");                                     //[PSynced] bit
-    sql = sql.concat("1, ");                                     //[PStatus] int
+    sql = sql.concat("0, ");                                    //[PIsAdd] bit
+    sql = sql.concat("0, ");                                    //[PIsMod] bit
+    sql = sql.concat("0, ");                                    //[PIsAud] bit
+    sql = sql.concat("1, ");                                    //[PSynced] bit
+    sql = sql.concat("1, ");                                    //[PStatus] int
     sql = sql.concat(n.toString(), ', ');                       //[PLastModTS] int
     sql = sql.concat("0, ");                                    //[PMarked] bit
     sql = sql.concat("'", quoteText(outlet.Ward), "',");        //[Ward] text
@@ -1382,6 +1303,16 @@ function selectDownloadProvincesDB(tablename, onSuccess, onError) {
     }, onError);
 }
 
+function deleteDownloadProvincesDB(tablename, onSuccess, onError) {
+    db.transaction(function (tx) {
+        var sql = 'DELETE * FROM ' + tablename;
+        logSqlCommand(sql);
+        tx.executeSql(sql, [], function (tx1, dbres) {
+            onSuccess(dbres);
+        }, onError);
+    }, onError);
+}
+
 function saveDownloadProvincesDB(tablename, downloadProvinces, onSuccess, onError) {
     db.transaction(function (tx) {        
         log('Update download provinces');
@@ -1392,7 +1323,8 @@ function saveDownloadProvincesDB(tablename, downloadProvinces, onSuccess, onErro
             sql = 'INSERT OR REPLACE INTO ' + tablename + ' VALUES (' +
             '"' + p.id + '", ' +
             '"' + p.name + '", ' +
-            + p.download.toString() + ')';
+            p.download.toString() + ', ' +
+            p.referenceGeoID.toString() + ')';
             logSqlCommand(sql);
             tx.executeSql(sql, [], function () { }, onError);
         }

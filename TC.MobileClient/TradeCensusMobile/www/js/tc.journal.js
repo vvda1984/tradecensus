@@ -1,6 +1,7 @@
 ﻿var journals = {
     _lastUpdateTS: null,
     _lastSyncedTS: null,
+    _lastSubmittedTS: null,
     _expiredLines: [],
     _colors: [],
 
@@ -106,13 +107,37 @@
         return true;
     },
 
+    _canSubmit: function (now) {
+        var difSecond = tcutils.getTimeSpanInSecond(journals._lastSubmittedTS, now);
+        if (difSecond < config.journal_submit_time) {
+            return false;
+        }
+        journals._lastSubmittedTS = now;
+        return true;
+    },
+
     _saveToServer : function(callback){
         if (journals._submit) {
-            journals._submit(journals.current, function (isSucceded) {
-                var status = isSucceded ? journals.statusEnum.synced : journals.statusEnum.unsynced;
+            if (journals._canSubmit(new Date())) {
+                journals._submit(journals.current, function (isSucceded) {
+                    var status = isSucceded ? journals.statusEnum.synced : journals.statusEnum.unsynced;
+                    if (journals.current.journalId === '') {
+                        journals.newJournal(journals.current, status, function (errMsg) {
+                            if (errMsg) tcutils.logging.error(errMsg);
+                            callback();
+                        });
+                    } else {
+                        journals.updateJournal(journals.current, status, function (errMsg) {
+                            if (errMsg) tcutils.logging.error(errMsg);
+                            callback();
+                        });
+                    }
+                });
+            } else {
+                var status = journals.statusEnum.unsynced;
                 if (journals.current.journalId === '') {
                     journals.newJournal(journals.current, status, function (errMsg) {
-                        if(errMsg) tcutils.logging.error(errMsg);
+                        if (errMsg) tcutils.logging.error(errMsg);
                         callback();
                     });
                 } else {
@@ -121,7 +146,7 @@
                         callback();
                     });
                 }
-            });
+            }
         } else
             callback();
     },

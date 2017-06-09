@@ -12,8 +12,19 @@
         </div>
     </md-toolbar>
     <md-content layout-padding="" class="popup-content" style="margin-bottom:-8px;">
-        <form name="createOutletForm" style="margin-bottom:0px;">
-            <div layout-gt-sm="row" style="margin-top:5px;">
+        <form name="createOutletForm" style="margin-top:5px;">
+            <div layout-gt-sm="row" style="margin-top:0px;" ng-show="enableExtraFields">
+                <md-input-container class="md-block" flex-gt-sm="">
+                    <label>{{R.legal_name}}</label>
+                    <input ng-model="outlet.LegalName" name="LegalName" maxlength="50">
+                </md-input-container>
+                <md-input-container class="md-block" flex-gt-sm="">
+                    <label>{{R.vat}}</label>
+                    <input ng-model="outlet.TaxID" name="vat" maxlength="40">
+                </md-input-container>
+            </div>
+
+            <div layout-gt-sm="row"  style="margin-bottom:0px;">
                 <!--<md-input-container class="md-block" flex-gt-sm="">
                     <label>{{R.code}}</label>
                     <input id="inputID" ng-model="outlet.ID" name="name" required="" ng-change="codeChanged()" ng-disabled="true">
@@ -45,27 +56,16 @@
                 </md-input-container>
             </div>
 
-            <div layout-gt-sm="row" style="margin-top:0px;" ng-show="enableExtraFields">
-                <md-input-container class="md-block" flex-gt-sm="">
-                    <label>{{R.legal_name}}</label>
-                    <input ng-model="outlet.LegalName" name="LegalName" maxlength="50">
-                </md-input-container>
-                <md-input-container class="md-block" flex-gt-sm="">
-                    <label>{{R.vat}}</label>
-                    <input ng-model="outlet.TaxID" name="vat" maxlength="40">
-                </md-input-container>
-            </div>
-
             <div layout-gt-sm="row" style="margin-top:4px;">
                 <md-input-container class="md-block" flex-gt-sm="">
                     <label>{{R.street}}</label>
                     <input ng-model="outlet.AddLine2" name="street" required="" maxlength="40">
                 </md-input-container>
 
-                <md-input-container class="md-block" flex-gt-sm="" ng-hide="autoSelectedWard">
+                <!--<md-input-container class="md-block" flex-gt-sm="" ng-hide="autoSelectedWard">
                     <label>{{R.ward}}</label>
-                    <input ng-model="outlet.Ward" name="ward" required="" maxlength="40">
-                </md-input-container>
+                    <input id="inputWard" ng-model="outlet.Ward" name="ward" required="" maxlength="40">
+                </md-input-container>-->
                 <md-input-container class="md-block" flex-gt-sm="" ng-show="autoSelectedWard">
                     <label>{{R.ward}}</label>
                     <!--<input ng-model="outlet.Ward" disabled="">-->
@@ -76,11 +76,10 @@
                     </md-select>
                 </md-input-container>
 
-                <md-input-container class="md-block" flex-gt-sm="" ng-hide="autoSelectedDistrict">
+                <!--<md-input-container class="md-block" flex-gt-sm="" ng-hide="autoSelectedDistrict">
                     <label>{{R.district}}</label>
                     <input id="inputDistrict" ng-model="outlet.District" name="district" required="" maxlength="40">
-                </md-input-container>
-
+                </md-input-container>-->
                 <md-input-container class="md-block" flex-gt-sm="" ng-show="autoSelectedDistrict">
                     <label>{{R.district}}</label>
                     <md-select id="inputDistrict" ng-model="outlet.District" ng-change="districtChanged()">

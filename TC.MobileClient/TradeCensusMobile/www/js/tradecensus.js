@@ -1,7 +1,7 @@
 ﻿var _WEB = false;
-var _PROD = false;
-var _VERSION = 22;
-var _VERSION_DISPLAY = '1.22.24';
+var _PROD = true;
+var _VERSION = 23;
+var _VERSION_DISPLAY = '1.23.26';
 
 (function (global) {
     "use strict";
@@ -214,9 +214,10 @@ function newConfig() {
 
         enable_journal: false,      // False after login until user start
         journal_update_time: 1 * 10,//
-        journal_accuracy: 100,     //
+        journal_accuracy: 100,      //
         journal_distance: 10,       // meter
-        journal_refresh_time: 3,    // second
+        journal_refresh_time: 10,   // second
+        journal_submit_time: 30,    // second
         journal_color: '#00551E',   // 
         journal_opacity: 1.0,       // 
         journal_weight: 3,          //
@@ -403,11 +404,17 @@ function loadSettings(tx, callback) {
                     } else if (name == 'service_name') {
                         config.service_name = value;
                     } else if (name == 'item_count') {
-                        config.item_count = parseInt(value);
+                        if (value == undefined)
+                            config.item_count = 20;
+                        else
+                            config.item_count = parseInt(value);
                     } else if (name == 'item_count_max') {
                         config.item_count_max = parseInt(value);
                     } else if (name == 'distance') {
-                        config.distance = parseInt(value);
+                        if (value == undefined)
+                            config.distance = 200;
+                        else
+                            config.distance = parseInt(value);
                     } else if (name == 'province_id') {
                         config.province_id = value;
                     } else if (name == 'calc_distance_algorithm') {

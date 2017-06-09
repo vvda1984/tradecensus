@@ -100,29 +100,31 @@ function loginController($scope, $http) {
             showError(R.password_is_empty);
             return;
         }
-		
-		 // reset varibles
+
+        // reset varibles
         salesmans = [];
 
         showDlg(R.btn_login, R.please_wait);
-        getCurPosition(false, function (lat, lng) {
-            //hideDlg();
-            if (networkReady()) {
-                loginOnline(0, loginSuccess, function (msg) {
-                    if (msg == R.connection_timeout) {
-                        loginOffline(loginSuccess, function (err) {
-                            loginError(msg);
-                        });
-                    } else {
-                        loginError(msg);
-                    }
-                });
+
+        isGPSAvailable(function (isEnable) {
+            if (!isEnable) {
+                hideDlg();
+                showError(R.cannot_get_cur_location);
             } else {
-                loginOffline(loginSuccess, loginError);
+                if (networkReady()) {
+                    loginOnline(0, loginSuccess, function (msg) {
+                        if (msg == R.connection_timeout) {
+                            loginOffline(loginSuccess, function (err) {
+                                loginError(msg);
+                            });
+                        } else {
+                            loginError(msg);
+                        }
+                    });
+                } else {
+                    loginOffline(loginSuccess, loginError);
+                }
             }
-        }, function () {
-            hideDlg();
-            showError(R.cannot_get_cur_location);
         });
     }
     
@@ -373,11 +375,12 @@ function loginController($scope, $http) {
         selectDownloadProvincesDB(config.tbl_downloadProvince, function (dbres) {
             dprovinces = [];
             log('Found downloaded provinces: ' + dbres.rows.length.toString());
-            if (dbres.rows.length == 0) {
+            if (dbres.rows.length == 0 || dbres.rows.item(i).referenceGeoID == undefined) {
                 for (var i = 0; i < provinces.length; i++) {
                     dprovinces[i] = {
                         id: provinces[i].id,
                         name: provinces[i].name,
+                        referenceGeoID: provinces[i].referenceGeoID,
                         download: 0,
                     };
                 }
@@ -401,10 +404,12 @@ function loginController($scope, $http) {
                 });
             } else {
                 for (var i = 0; i < dbres.rows.length; i++) {
+                    var item = dbres.rows.item(i);
                     dprovinces[i] = {
                         id: dbres.rows.item(i).id,
                         name: dbres.rows.item(i).name,
                         download: dbres.rows.item(i).download,
+                        referenceGeoID: dbres.rows.item(i).referenceGeoID,
                     };
                 }
 
@@ -577,7 +582,7 @@ function loginController($scope, $http) {
     }
    
     function downloadOutletTypes(downloadOptions, onSuccess, onError) {
-        if (downloadOptions.downloadOutletTypes) {
+        if (downloadOptions.downloadOutletTypes) { // force download
             setDlgMsg(R.download_outlet_types);
             var url = baseURL + '/outlet/getoutlettypes';
             log('Call service api: ' + url);

@@ -222,15 +222,6 @@
         <div id="slider-right-content" style="min-height:91%;">
             <md-content layout-padding="" class="md-content-white">
                 <form name="configForm">
-                    <!--<md-input-container class="md-block" style="margin-bottom:0px;">
-            <label>{{R.distance}}</label>
-            <input type="number" required="" name="distance" ng-model="config.distance" min="50">
-        </md-input-container>
-        <md-input-container class="md-block" style="margin-bottom:0px;">
-            <label>{{R.max_outlets}}</label>
-            <input type="number" required="" name="item_count" ng-model="config.item_count" min="1">
-        </md-input-container>-->
-
                     <md-input-container class="md-block" style="margin-bottom:0px;">
                         <label>{{R.page_size}}</label>
                         <input type="number" required="" name="page_size" ng-model="config.page_size" min="5">
@@ -239,7 +230,7 @@
                     <md-input-container class="md-block" flex-gt-sm="" style="margin-bottom:0px;">
                         <label>{{ R.working_province }}</label>
                         <md-select ng-model="config.province_id" ng-change="provinceChanged(0)">
-                            <md-option ng-repeat="p in dprovinces" value="{{p.id}}">
+                            <md-option ng-repeat="p in dprovinces" value="{{p.id}}" onclick="javascript: provinceItemClicked();">
                                 {{p.name}}
                                 <img ng-show="p.download" src="assets/img/check.svg"
                                      style="width:18px;height:18px;margin:0px;position:absolute;right:16px;" />

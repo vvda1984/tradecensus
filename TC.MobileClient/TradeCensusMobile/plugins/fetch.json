@@ -47,14 +47,6 @@
         "is_top_level": true,
         "variables": {}
     },
-    "cordova-plugin-geolocation": {
-        "source": {
-            "type": "registry",
-            "id": "cordova-plugin-geolocation"
-        },
-        "is_top_level": true,
-        "variables": {}
-    },
     "cordova-plugin-dialogs": {
         "source": {
             "type": "registry",
@@ -88,15 +80,6 @@
         "is_top_level": true,
         "variables": {}
     },
-    "cordova-plugin-locationservices": {
-        "source": {
-            "type": "git",
-            "url": "https://github.com/louisbl/cordova-plugin-locationservices",
-            "subdir": "."
-        },
-        "is_top_level": true,
-        "variables": {}
-    },
     "cordova-plugin-background-mode": {
         "source": {
             "type": "git",
@@ -119,6 +102,40 @@
         "source": {
             "type": "git",
             "url": "https://github.com/codebakery/cordova-plugin-phonecaller",
+            "subdir": "."
+        },
+        "is_top_level": true,
+        "variables": {}
+    },
+    "cordova-plugin-geolocation": {
+        "source": {
+            "type": "registry",
+            "id": "cordova-plugin-geolocation"
+        },
+        "is_top_level": true,
+        "variables": {}
+    },
+    "cordova-plugin-locationservices": {
+        "source": {
+            "type": "git",
+            "url": "https://github.com/louisbl/cordova-plugin-locationservices",
+            "subdir": "."
+        },
+        "is_top_level": true,
+        "variables": {}
+    },
+    "cordova-plugin-crosswalk-webview": {
+        "source": {
+            "type": "registry",
+            "id": "cordova-plugin-crosswalk-webview@2.1.0"
+        },
+        "is_top_level": true,
+        "variables": {}
+    },
+    "cordova.plugins.diagnostic": {
+        "source": {
+            "type": "git",
+            "url": "https://github.com/dpa99c/cordova-diagnostic-plugin",
             "subdir": "."
         },
         "is_top_level": true,

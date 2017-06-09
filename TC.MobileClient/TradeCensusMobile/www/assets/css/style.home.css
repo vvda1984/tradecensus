@@ -625,8 +625,8 @@
 
 #home-topright-offline, #home-topright-sync-hint {
     position: fixed;
-    top: 8px;
-    right: 142px;    
+    top: 16px;
+    right: 152px;    
     z-index: 3;
     border: 0px;
     display: none;
@@ -634,7 +634,7 @@
 
 #home-topright-offline, #home-topright-status {
     position: fixed;
-    top: 4px;
+    top: 0px;
     right: 152px;
     z-index: 3;
     border: 0px;

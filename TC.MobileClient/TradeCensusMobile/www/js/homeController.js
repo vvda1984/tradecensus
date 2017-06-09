@@ -542,6 +542,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 
     //*************************************************************************    
     $scope.provinceChanged = function () {
+
         var provId = $scope.config.province_id;
         log('Change to province: ' + provId.toString());
 
@@ -1133,6 +1134,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         }
     }
     function tryOpenDialog(callback) {
+
         callback();
 
         //dialogUtils.showClosableDlg('Initializing Dialog', R.please_wait, function (hideDlgFunc, isCancelledFunc) {
@@ -1333,6 +1335,12 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                       }
                       else {
                           orgOutlet.AuditStatus = outlet.AuditStatus;
+                          orgOutlet.TaxID = outlet.TaxID;
+                          orgOutlet.LegalName = outlet.LegalName;
+                          orgOutlet.Class = outlet.Class;
+                          orgOutlet.SpShift = outlet.SpShift;
+                          orgOutlet.CallRate = outlet.CallRate;
+                          orgOutlet.TerritoryID = outlet.TerritoryID;
                       }
 
                       //showDlg(R.saving_outlet, R.please_wait);
@@ -1378,7 +1386,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                         try {
                             var data = resp.data;
                             if (data.Status == -1) { // error
-                                showError(data.ErrorMessage);                                
+                                showError(data.ErrorMessage);
                             } else {
                                 outlet.StringImage1 = data.Image1;
                                 outlet.StringImage2 = data.Image2;
@@ -1386,7 +1394,10 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                                 outlet.StringImage4 = data.Image4;
                                 outlet.StringImage5 = data.Image5;
                                 outlet.StringImage6 = data.Image6;
-                                updateOutletImageDB($scope.config.tbl_outlet, outlet, callback);
+
+                                callback();
+
+                                //updateOutletImageDB($scope.config.tbl_outlet, outlet, callback);
                             }
                         } catch (err) {
                             console.error(err);
@@ -1561,7 +1572,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 
         } else {
             $("#home-topright-offline").css('display', 'inline-block');
-            $("#home-topright-sync-hint").css('display', 'none');
+            //$("#home-topright-sync-hint").css('display', 'none');
         }
     }
 
@@ -2214,7 +2225,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         enableOffline(networkReady());
 
         __locationChangedCallback = handleLocationChange;
-        __connectionChangedCallback = handleConnectionChanged;        
+        __handleNetworkStateChanged = handleConnectionChanged;        
         __autoSyncOutletFunc = autoSyncOutlets;
         __loadMapCallback = handleMapLoaded;
 
@@ -2263,4 +2274,13 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         showError(err);
         log(err);
     }
+
 };
+
+function provinceItemClicked() {
+    try {
+        $('.md-select-menu-container').addClass('md-leave');
+        console.log('hide dropdown');
+    } catch (e) {
+    }
+}

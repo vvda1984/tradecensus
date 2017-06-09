@@ -10,12 +10,17 @@ function newOutletController($scope, $http, $mdDialog, $timeout) {
 
     var isCreatedNew = isEmpty($scope.outlet.Name);
 
+    addressModel.wardArr = [];
+   
     $scope.R = R;
     $scope.address = addressModel;
 
-    $scope.autoSelectedDistrict = $scope.address.districtArr && $scope.address.districtArr.length > 0;
-    $scope.autoSelectedWard = $scope.autoSelectedDistrict; // tcutils.networks.isReady() && $scope.address.wardArr && $scope.address.wardArr.length > 0;
+    //$scope.autoSelectedDistrict = $scope.address.districtArr && $scope.address.districtArr.length > 0;
+    //$scope.autoSelectedWard = $scope.autoSelectedDistrict; // tcutils.networks.isReady() && $scope.address.wardArr && $scope.address.wardArr.length > 0;
     
+    $scope.autoSelectedDistrict = true;
+    $scope.autoSelectedWard = true;
+
     $scope.outletTypes = outletTypes;
     $scope.allowCapture = true;
     $scope.showImage1 = true;
@@ -51,15 +56,29 @@ function newOutletController($scope, $http, $mdDialog, $timeout) {
         downloadProvinces = provinces;
     } else {
         var c = 0;
-        for (var i = 0; i < dprovinces.length; i++) {
-            if (dprovinces[i].download) {
-                downloadProvinces[c] = dprovinces[i];
+        for (var j = 0; j < dprovinces.length; j++) {
+            if (dprovinces[j].download) {
+                downloadProvinces[c] = dprovinces[j];
                 c++;
             }
         }
+
+        //for (var i = 0; i < provinces.length; i++) {
+        //    var isDownloaded = false;
+        //    for (var j = 0; j < dprovinces.length; j++) {
+        //        if (dprovinces[j].download) {
+        //            isDownloaded = true;
+        //            break;
+        //        }
+        //    
+        //    if (isDownloaded) {
+        //        downloadProvinces[c] = provinces[i];
+        //        c++;
+        //    }
+        //}
     }
     $scope.provinces = downloadProvinces;
-
+   
     $scope.callRates = _callRates;
     $scope.classes = _classes;
     $scope.territories = _territories;
@@ -343,36 +362,30 @@ function newOutletController($scope, $http, $mdDialog, $timeout) {
             }
         }
 
-        tcutils.messageBox.loading(R.loading, R.please_wait);
         if (tcutils.networks.isReady()) {
-            //var url = baseURL + '/border/getsubbordersbyparentname/' + selectedProvince.name;
             var url = baseURL + '/border/getsubborders/' + selectedProvince.referenceGeoID;
             log('Call service api: ' + url);
             $http({
                 method: config.http_method,
                 url: url
             }).then(function (resp) {
-                tcutils.messageBox.hide();
                 try {
                     var data = resp.data;
                     if (data.Status == -1) { // error
-                        tcutils.messageBox.error(data.ErrorMessage);
+                        getDistrictFromLocal(selectedProvince);
                     } else {
                         $scope.address.districtArr = data.Items;
                     }
                 } catch (err) {
-                    tcutils.messageBox.error(err.message);
+                    console.error(err);
+                    getDistrictFromLocal(selectedProvince);
                 }
             }, function (err) {
-                log(err);
-                tcutils.messageBox.hide();
-                //tcutils.messageBox.error(data.ErrorMessage);
+                console.error(err);
+                getDistrictFromLocal(selectedProvince);
             });
         } else {
-            addressModel.getDistricts(selectedProvince.referenceGeoID, function (items) {
-                $scope.address.districtArr = data.Items;
-                tcutils.messageBox.hide();
-            });
+            getDistrictFromLocal(selectedProvince);
         }
     }
 
@@ -393,33 +406,40 @@ function newOutletController($scope, $http, $mdDialog, $timeout) {
         if (tcutils.networks.isReady()) {
             var url = baseURL + '/border/getsubbordersbyparentname/' + $scope.outlet.District;
             log('Call service api: ' + url);
-            tcutils.messageBox.loading(R.loading, R.please_wait);
             $http({
                 method: config.http_method,
                 url: url
             }).then(function (resp) {
-                tcutils.messageBox.hide();
                 try {
                     var data = resp.data;
                     if (data.Status == -1) { // error
-                        tcutils.messageBox.error(data.ErrorMessage);
+                        getWardFromLocal(selectedDistrict);
                     } else {
                         $scope.address.wardArr = data.Items;
                     }
                 } catch (err) {
-                    tcutils.messageBox.error(err.message);
+                    getWardFromLocal(selectedDistrict);
                 }
             }, function (err) {
                 log(err);
-                tcutils.messageBox.hide();
-                //tcutils.messageBox.error(data.ErrorMessage);
+                getWardFromLocal(selectedDistrict);
             });
         } else {
-            addressModel.getWards(selectedDistrict.ID, function (items) {
-                $scope.address.wardArr = items;
-                tcutils.messageBox.hide();
-            });
+            getWardFromLocal(selectedDistrict);
         }
+    }
+
+    function getDistrictFromLocal(selectedProvince) {
+        addressModel.getDistricts(selectedProvince.referenceGeoID, function (items) {
+            $scope.address.districtArr = items;
+            //tcutils.messageBox.hide();
+        });
+    }
+
+    function getWardFromLocal(selectedDistrict) {
+        addressModel.getWards(selectedDistrict.ID, function (items) {
+            $scope.address.wardArr = items;
+        });
     }
 
     function checkDistance(callback) {
@@ -476,6 +496,11 @@ function newOutletController($scope, $http, $mdDialog, $timeout) {
         }
         if (isEmpty($scope.outlet.District)) {
             showErrorAdv(R.district_is_empty, function () { $("#inputDistrict").focus(); });
+            return false;
+        }
+
+        if (isEmpty($scope.outlet.Ward)) {
+            showErrorAdv(R.ward_is_empty, function () { $("#inputWard").focus(); });
             return false;
         }
 
@@ -562,4 +587,8 @@ function newOutletController($scope, $http, $mdDialog, $timeout) {
     }
     
     loadImages();
+
+    if (addressModel.wardArr.length == 0) {
+        $scope.provinceChanged();
+    }
 }
