@@ -164,4 +164,12 @@
             return (dif <= config.location_age);
         },
     },
+
+    compress(val) {
+        return LZString.compress(val);
+    },
+
+    decompress(val) {
+        return LZString.compress(val);
+    },
 };

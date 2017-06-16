@@ -49,10 +49,11 @@ function editOutletController($scope, $mdDialog, $timeout) {
             isSameSystem = true;
     }
 
+    if (!user.hasAuditRole) isSameSystem = true;
+
     if (!isSameSystem) {
         setViewOnly();
     } else {
-
         if ($scope.outlet.AuditStatus == StatusAuditAccept ||
             $scope.outlet.AuditStatus == StatusAuditDeny ||
             $scope.outlet.AuditStatus == StatusDone) {
@@ -352,7 +353,7 @@ function editOutletController($scope, $mdDialog, $timeout) {
             $scope.enableExtraFields = false;
             $scope.outlet.IsSent = 1;
             $scope.outlet.isChanged = true;
-            $scope.outlet.AuditStatus = StatusDone;
+            //$scope.outlet.AuditStatus = StatusDone;
             hideDialog(true);
         });
     }

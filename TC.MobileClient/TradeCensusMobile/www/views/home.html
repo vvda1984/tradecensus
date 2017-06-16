@@ -10,18 +10,23 @@
             <span>{{outletHeader}}</span>
             <img src="assets/img/arrow-down.svg" />
         </div>
-        <div class="square-bar float-left white">
+        <div ng-show="enableNearby" class="square-bar float-left white">
             <span>{{R.distance}} (m):</span>
             <input placeholder="meter" name="distance" ng-model="config.distance" type="number" min="50" required="">
             <span>{{R.max_outlets}}:</span>
             <input type="number" required="" placeholder="number" ng-model="config.item_count" min="1">
             <span> </span>
         </div>
-        <div class="square-button float-left blue" ng-show="allowRefresh" ng-click="refresh()">
+        <div ng-show="enableNearby" class="square-button float-left blue" ng-click="refresh()">
             <img src="assets/img/refresh.svg" />
         </div>
-        <div ng-show="showSyncButton" class="square-button float-left blue" ng-click="syncOutlets()">
-            <img src="assets/img/sync.svg" />
+        <div ng-show="enableSearch" id="seachOutletContainer" class="square-bar float-left white">
+            <span>Code:</span>
+            <input placeholder="e.g.65000001" name="searchOutletCode" style="width:120px;">
+            <span> </span>
+        </div>
+        <div ng-show="enableSearch" class="square-button float-left blue" ng-click="searchOutlets()">
+            <img src="assets/img/search-white.svg" />
         </div>
         <div id="outlet-dropdown" class="dropdown">
             <div class="dropdown-item" ng-click="changeOutletView(0)"><img src="assets/img/outlet-near.svg" /><span>{{R.near_by_outlets}}</span></div>
@@ -29,6 +34,7 @@
             <div class="dropdown-item" ng-click="changeOutletView(4)"><img src="assets/img/outlet-new-own.svg" /><span>{{R.my_new_outlets}}</span></div>
             <div class="dropdown-item" ng-click="changeOutletView(2)"><img src="assets/img/outlet-edit.svg" /><span>{{R.updated_outlets}}</span></div>
             <div class="dropdown-item" ng-show="hasAuditRole" ng-click="changeOutletView(3)"><img src="assets/img/outlet-audit.svg" /><span>{{R.auditted_outlets}}</span></div>
+            <!--<div class="dropdown-item" ng-click="changeOutletView(5)"><img src="assets/img/search.svg" /><span>{{R.search_outlets}}</span></div>-->
         </div>
     </div>
 
@@ -196,7 +202,7 @@
     </div>
 
     <div id="home-topright-offline">
-       <div class="square-box-red float-right normal-text">
+        <div class="square-box-red float-right normal-text">
             <span>{{R.you_are_in_offline_mode}}</span>
         </div>
     </div>
@@ -261,13 +267,13 @@
 
             <div id="hotlines" style="display: block; overflow: auto; margin:0 0 20px 24px;">
                 <table cellspacing="0" style="border:none; font-size:11pt; width:310px; border-top: 1px solid #E1E1E1 !important;">
-                    <tr style="height:32px;" ng-repeat="hotline in hotlines" >
-                       <td style="border-bottom: 1px solid #E1E1E1 !important;">
-                           <div style="vertical-align:middle;">
-                               <div style="font-size:11pt; width:164px; text-overflow: ellipsis;" ng-click="makePhoneCall(hotline)">{{hotline.name}}</div>
-                               <!--<div style="font-size:8pt;">{{hotline.phone}}</div>-->
-                           </div>
-                       </td>
+                    <tr style="height:32px;" ng-repeat="hotline in hotlines">
+                        <td style="border-bottom: 1px solid #E1E1E1 !important;">
+                            <div style="vertical-align:middle;">
+                                <div style="font-size:11pt; width:164px; text-overflow: ellipsis;" ng-click="makePhoneCall(hotline)">{{hotline.name}}</div>
+                                <!--<div style="font-size:8pt;">{{hotline.phone}}</div>-->
+                            </div>
+                        </td>
                         <td style="border-bottom: 1px solid #E1E1E1 !important;">
                             <div style="vertical-align:middle;">
                                 <table>
@@ -326,7 +332,7 @@
         <!--<div class=hidden-overlay" ng-click="showRightPanel()"></div> -->
         <div id="slider-right-content">
             <md-content layout-padding="" class="md-content-white">
-                <form name="journalForm">                   
+                <form name="journalForm">
                     <md-input-container id="btnStartJournal" class="md-block" style="margin-left:-4px; margin-bottom:0px;">
                         <div class="m-flat-button float-left margin-top-4" ng-click="journal.start()">
                             <!--<img src="assets/img/journal-fill.svg">-->
@@ -368,7 +374,7 @@
                             <md-item-template>
                                 <span md-highlight-text="salemanSearchText" md-highlight-flags="^i">{{item.display}}</span>
                             </md-item-template>
-                            <div ng-messages="journalForm.autocompleteField.$error" ng-if="journalForm.autocompleteField.$touched">                           
+                            <div ng-messages="journalForm.autocompleteField.$error" ng-if="journalForm.autocompleteField.$touched">
                             </div>
                         </md-autocomplete>
                         <img src="assets/img/clear.svg" class="search-img" style="width:24px;height:24px; margin-top:24px;" ng-click='clearSalemanSearch()' />

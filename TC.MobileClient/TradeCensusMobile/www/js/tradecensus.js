@@ -1,7 +1,7 @@
-﻿var _WEB = false;
-var _PROD = true;
-var _VERSION = 23;
-var _VERSION_DISPLAY = '1.23.27';
+﻿var _WEB = true;
+var _PROD = false;
+var _VERSION = 24;
+var _VERSION_DISPLAY = '1.24.27';
 
 (function (global) {
     "use strict";
@@ -595,127 +595,6 @@ function initializeApp() {
     //});
     if (networkReady()) checkUpdate();
 };
-
-//#region *** AUTO SYNC
-/*
-function startSyncProgress() {
-    __autoSyncTimeOut = setTimeout(function () { __runSync(); }, config.sync_time);
-}
-
-var __pauseSync = true;
-var __autoSyncTimeOut;
-var __autoSyncOutletFunc;
-function __runSync() {   
-    if (__autoSyncOutletFunc == null) {
-        console.log('*** SYNC Ignored: __autoSyncOutletFunc was not set');
-        startSyncProgress(); // next circle
-        return;
-    }
-
-    if (__pauseSync || !networkReady()) {        
-        startSyncProgress(); // next circle
-        return;
-    }
-
-    try {
-        syncOutletsCallback(
-            function () {
-                if (user.id > 0)
-                    journals.syncJournal();
-                startSyncProgress(); // next circle
-
-            }, function (err) {
-                console.error('*** SYNC ERROR');
-                console.error(err);
-
-                startSyncProgress(); // next circle
-            });
-    }catch(err){
-        console.error('*** SYNC ERROR');
-        console.error(err);
-        startSyncProgress(); // next circle
-    }
-}
-*/
-//#endregion
-
-//#region *** PING
-/*
-var isPausePing = false;
-var __connectionChangedCallback;
-var __refreshOutletListCallback;
-var pingTimeout = 5;
-
-function startPingProgress() {
-    setTimeout(function () {
-        __pingInterval();
-    }, config.ping_time * 1000);
-}
-
-function __pingInterval() {
-    if (isPausePing || isOutletDlgOpen) {
-        startPingProgress();
-        return;
-    } else {
-        ping(function (b) {
-            try {             
-                if (b != serverConnected) {
-                    serverConnected = b;
-                    if (__connectionChangedCallback != null) __connectionChangedCallback(b);
-                }
-
-                if (__refreshOutletListCallback != null) __refreshOutletListCallback();
-            }
-            catch (e) {
-            }
-            startPingProgress();
-        });
-    }
-}
-
-function ping(callback) {
-    callback(getNetworkState());
-}
-
-function tryping(retry, callback) {
-    if (!getNetworkState()) {
-        callback(false);
-        return;
-    }
-
-    var text = '';
-    text = text.concat('user_id~', user.id);
-    text = text.concat('||token~', user.token);
-    text = text.concat('||app_version~', config.version);
-    text = text.concat('||model~', deviceInfo.model);
-    text = text.concat('||platform~', deviceInfo.platform);
-    text = text.concat('||uuid~', deviceInfo.uuid);
-    text = text.concat('||version~', deviceInfo.version);
-    text = text.concat('||manufacturer~', deviceInfo.manufacturer);
-    var url = baseURL + '/ping/' + text;
-    log(url);
-    $.ajax({
-        type: "POST",
-        contentType: "application/json; charset=utf-8",
-        url: url,
-        data: '',
-        processData: false,
-        dataType: "json",
-        timeout: config.time_out * 1000,
-        success: function (response) {
-            callback(true);
-        },
-        error: function (a, b, c) {
-            if (retry >= 1)
-                callback(false);
-            else {
-                setTimeout(function () { tryping(retry + 1, callback);}, 300);
-            }
-        }
-    });
-}
-*/
-//#endregion
 
 //#region *** CHECK UPDATE
 function checkUpdate() {

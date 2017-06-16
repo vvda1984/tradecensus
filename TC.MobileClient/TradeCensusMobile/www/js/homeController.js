@@ -38,7 +38,6 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     $scope.dprovinces = dprovinces;
     $scope.config = config;
     $scope.editOutletFull = false;
-    $scope.allowRefresh = true;
     $scope.hasAuditRole = user.hasAuditRole;
     $scope.outletHeader = R.near_by_outlets;
     $scope.showNoOutletFound = true;
@@ -54,6 +53,8 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     $scope.currentPage = 0;
     $scope.pageSize = config.page_size;
     $scope.hotlines = config.hotlines;
+    $scope.enableNearby = true;
+    $scope.enableSearch = false;
 
     for (var i = 0; i < dprovinces.length; i++) {
         if (dprovinces[i].id == $scope.config.province_id) {
@@ -309,27 +310,46 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         $scope.hideDropdown();
         if (curOutletView === v) return;
         $scope.closeLeftPanel();
-        log('change view to ' + v.toString());
-        curOutletView = v;
 
+        var previousView = curOutletView;
+        curOutletView = v;
+        $scope.currentPage = 0;
+        switchView(previousView, curOutletView);
         switch (curOutletView) {
             case 0:
                 $scope.outletHeader = R.near_by_outlets;
+                getOutletsByView(false);
                 break;
             case 1:
                 $scope.outletHeader = R.new_outlets;
+                getOutletsByView(false);
                 break;
             case 2:
                 $scope.outletHeader = R.updated_outlets;
+                getOutletsByView(false);
                 break;
             case 3:
                 $scope.outletHeader = R.auditted_outlets;
+                getOutletsByView(false);
                 break;
             case 4:
                 $scope.outletHeader = R.my_new_outlets;
+                getOutletsByView(false);
+                break;
+            case 5:
+                $scope.outletHeader = R.search_outlets;
+                break;
         }
-        $scope.currentPage = 0;
-        getOutletsByView(false);
+    }
+
+    function switchView(previousView, curOutletView) {
+        if (previousView <= 4 && curOutletView == 5) {
+            $scope.enableNearby = false;
+            $scope.enableSearch = true;
+        } else if (previousView == 5 && curOutletView <= 4) {
+            $scope.enableNearby = true;
+            $scope.enableSearch = false;
+        }
     }
 
     //*************************************************************************
