@@ -1,56 +1,41 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using TradeCensus.Shared;
 
 namespace TradeCensus
 {
     public class JournalService : TradeCensusServiceBase, IJournalService
     {
+        static object SyncJournalSave = new object();
         public JournalService() : base("Journal")
         {
         }
 
-        private Data.Journal AddNewJournal(Journal journal)
+        private int AddNewJournal(JournalModel journal)
         {
             var startTS = DateTime.ParseExact(journal.StartTS, Constants.DatetimeFormat, null);
             var endTS = DateTime.ParseExact(journal.EndTS, Constants.DatetimeFormat, null);
             var journalDate = DateTime.ParseExact(journal.JournalDate, Constants.ShortDateFormat, null);
 
-            var existing = DC.Journals.FirstOrDefault(x=> x.JournalDate == journalDate && x.Data == journal.Data );
-            if (existing != null) return existing;
-            
-            var newJournal = new Data.Journal()
-            {
-                StartTS = DateTime.ParseExact(journal.StartTS, Constants.DatetimeFormat, null),
-                EndTS = DateTime.ParseExact(journal.EndTS, Constants.DatetimeFormat, null),
-                Data = journal.Data,
-                PersonID = journal.PersonId,
-                JournalDate = DateTime.ParseExact(journal.JournalDate, Constants.ShortDateFormat, null)
-            };
-            DC.Journals.Add(newJournal);
+            var existing = DC.GetJournal(journalDate, journal.Data);
+            if (existing != null) return existing.ID;
+
+            var newJournal = DC.InsertJournal(journal);
             DC.SaveChanges();
-            return newJournal;
+            return newJournal.ID;
         }
 
-        private Data.Journal AddOrUpdateJournal(Journal journal)
+        private int AddOrUpdateJournal(JournalModel journal)
         {
-            if (journal.Id == 0)
-                return AddNewJournal(journal);
-            else
+            lock (SyncJournalSave)
             {
-                var item = DC.Journals.FirstOrDefault(x => x.ID == journal.Id);
-                if (item == null)
+                if (journal.Id <= 0)
                     return AddNewJournal(journal);
                 else
                 {
-                    item.StartTS = DateTime.ParseExact(journal.StartTS, Constants.DatetimeFormat, null);
-                    item.EndTS = DateTime.ParseExact(journal.EndTS, Constants.DatetimeFormat, null);
-                    item.JournalDate = DateTime.ParseExact(journal.JournalDate, Constants.ShortDateFormat, null);
-                    item.Data = journal.Data;
+                    DC.UpdateJournal(journal);
                     DC.SaveChanges();
-                    return item;
+                    return journal.Id;
                 }
             }
         }
@@ -59,14 +44,13 @@ namespace TradeCensus
         {
             List<JournalHistory> journals = new List<JournalHistory>();
             Dictionary<string, JournalHistory> dict = new Dictionary<string, JournalHistory>(StringComparer.InvariantCultureIgnoreCase);
-            IQueryable<Data.Journal> query;
-
+            
             DateTime fromTS = DateTime.ParseExact(dateFrom, Constants.ShortDateFormat, null);
             DateTime toTSTemp = DateTime.ParseExact(dateTo, Constants.ShortDateFormat, null);
             DateTime toTS = new DateTime(toTSTemp.Year, toTSTemp.Month, toTSTemp.Day, 23, 59, 59);
-            query = DC.Journals.Where(x => x.PersonID == person && x.JournalDate >= fromTS && x.JournalDate <= toTS);
-            GetJournalResponse response = new GetJournalResponse();
 
+            var query = DC.GetJournalsOrPerson(person, fromTS, toTS);
+           
             foreach (var item in query)
             {
                 var polyineJson = GeoCoordinate.ParseJournal(item.Data);
@@ -74,14 +58,14 @@ namespace TradeCensus
                 JournalHistory journal;
                 if (!dict.ContainsKey(key))
                 {
-                    journal = new JournalHistory { date = key, Journals = new List<Journal>() };
+                    journal = new JournalHistory { date = key, Journals = new List<JournalModel>() };
                     journals.Add(journal);
                     dict.Add(key, journal);
                 }
                 else
                     journal = dict[key];
 
-                journal.Journals.Add(new Journal
+                journal.Journals.Add(new JournalModel
                 {
                     Id = item.ID,
                     Data = polyineJson,
@@ -94,12 +78,12 @@ namespace TradeCensus
             return journals.ToArray();
         }
 
-        public JournalResponse AddJournal(string personID, string password, Journal journal)
-        {
-            var person = int.Parse(personID);
-            ValidatePerson(person, password);
 
-            return new JournalResponse { JournalID = AddOrUpdateJournal(journal).ID };
+        public JournalResponse AddJournal(string personID, string password, JournalModel journal)
+        {
+            //var person = int.Parse(personID);
+            //ValidatePerson(person, password);
+            return new JournalResponse { JournalID = AddOrUpdateJournal(journal) };
         }
 
         public GetJournalResponse GetJournals(string personID, string password, string dateFrom, string dateTo)
@@ -110,13 +94,13 @@ namespace TradeCensus
             return response;
         }
 
-        public SyncJournalResponse SyncJournals(string personID, string password, Journal[] entries)
+        public SyncJournalResponse SyncJournals(string personID, string password, JournalModel[] entries)
         {
             SyncJournalResponse res = new SyncJournalResponse { JournalIDs = new List<JournalSync>() };
             foreach (var entry in entries)
             {
                 if (entry.PersonId == 0) entry.PersonId = int.Parse(personID);
-                res.JournalIDs.Add(new JournalSync { Id = AddOrUpdateJournal(entry).ID, JournalID = entry.JournalID });
+                res.JournalIDs.Add(new JournalSync { Id = AddOrUpdateJournal(entry), JournalID = entry.JournalID });
             }
             return res;
         }
@@ -125,7 +109,10 @@ namespace TradeCensus
         {
             var person = int.Parse(personID);
             ValidatePerson(person, password);
-            GetJournalResponse response = new GetJournalResponse { Items = GetJournalHistory(int.Parse(salemanID), dateFrom, dateTo) };
+            GetJournalResponse response = new GetJournalResponse
+            {
+                Items = GetJournalHistory(int.Parse(salemanID), dateFrom, dateTo)
+            };
             return response;
         }
     }

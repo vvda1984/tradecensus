@@ -15,32 +15,47 @@ namespace TradeCensus
         {
         }
 
+        private void AddSubBorders(int id, List<BorderModel> items)
+        {
+            var query = DC.GetBordersByParent(id);
+            if (query.Any())
+                foreach (var i in query)
+                {
+                    items.Add(new BorderModel()
+                    {
+                        Name = i.Name,
+                        ID = i.ID.ToString(),
+                        ParentID = i.ParentID.ToString(),
+                        GeoData = i.Formateddata,
+                        ChildrenCount = i.ChildrenCount,
+                        HasGeoData = !string.IsNullOrWhiteSpace(i.GeoData) ? 1 : 0,
+                    });
+                    AddSubBorders(i.ID, items);
+                }
+        }
+
         public GetBorderArrayResponse GetBorderByParent(string parentID)
         {
             GetBorderArrayResponse resp = new GetBorderArrayResponse();
             try
             {
                 resp.Items = new List<BorderModel>();
-                int id = int.Parse(parentID);
-                //var query = _entities.GeoBorders.Where(i => i.ParentID == id).OrderBy(i => i.Name);
-                var command = string.Format(@"SELECT gb.*, (select COUNT(Id) from GeoBorder as tmp where tmp.ParentID = gb.ID) as 'ChildrenCount'
-                    FROM GeoBorder as gb
-                    WHERE gb.ParentID = {0} order by gb.Name", parentID);
-                var query = DC.Database.SqlQuery<GeoBorderEx>(command);
-                if (query.Any())
-                    foreach (var i in query)
-                        resp.Items.Add(new BorderModel()
-                        {
-                            Name = i.Name,
-                            ID = i.ID.ToString(),
-                            ParentID = i.ParentID.ToString(),
-                            GeoData = "", //i.Formateddata,
-                            ChildrenCount = i.ChildrenCount,
-                            HasGeoData = !string.IsNullOrWhiteSpace(i.GeoData) ? 1 : 0,
-                        });
+                var query = DC.GetBordersByParent(int.Parse(parentID));
+                foreach (var i in query)
+                    resp.Items.Add(new BorderModel()
+                    {
+                        Name = i.Name,
+                        ID = i.ID.ToString(),
+                        ParentID = i.ParentID.ToString(),
+                        GeoData = "",
+                        ChildrenCount = i.ChildrenCount,
+                        HasGeoData = !string.IsNullOrWhiteSpace(i.GeoData) ? 1 : 0,
+                    });
             }
             catch (Exception ex)
             {
+                _logger.Warn(ex, $"Cannot get sub borders of {parentID}");
+
                 resp.Status = Constants.ErrorCode;
                 resp.ErrorMessage = ex.Message;
             }
@@ -52,15 +67,9 @@ namespace TradeCensus
             GetBorderResponse resp = new GetBorderResponse();
             try
             {
-                //int geoID = int.Parse(id);
-                //var border = _entities.GeoBorders.FirstOrDefault(i => i.ID == geoID);
-                var query = DC.Database.SqlQuery<GeoBorderEx>(
-                      string.Format(@"SELECT TOP 1 gb.*, (select COUNT(Id) from GeoBorder as tmp where tmp.ParentID = gb.ID) as 'ChildrenCount'
-                        FROM GeoBorder as gb
-                        WHERE gb.ID = {0}", id));
-                if (query.Any())
+                var border = DC.GetBorder(int.Parse(id));
+                if (border != null)
                 {
-                    var border = query.FirstOrDefault();
                     resp.Item = new BorderModel
                     {
                         Name = border.Name,
@@ -74,6 +83,8 @@ namespace TradeCensus
             }
             catch (Exception ex)
             {
+                _logger.Warn(ex, $"Cannot get border {id}");
+
                 resp.Status = Constants.ErrorCode;
                 resp.ErrorMessage = ex.Message;
             }
@@ -85,13 +96,23 @@ namespace TradeCensus
             GetBorderArrayResponse resp = new GetBorderArrayResponse();
             try
             {
-                string name = parentName;//.ToUpper().Replace("THÀNH PHỐ", "").Replace("TỈNH", "").Trim();
-                var border = DC.GeoBorders.FirstOrDefault(i => string.Compare(i.Name, name, StringComparison.OrdinalIgnoreCase) == 0);
-                if (border != null)
-                    return GetBorderByParent(border.ID.ToString());
+                resp.Items = new List<BorderModel>();
+                var query = DC.GetBordersByParentName(parentName);
+                foreach (var i in query)
+                    resp.Items.Add(new BorderModel()
+                    {
+                        Name = i.Name,
+                        ID = i.ID.ToString(),
+                        ParentID = i.ParentID.ToString(),
+                        GeoData = "",
+                        ChildrenCount = i.ChildrenCount,
+                        HasGeoData = !string.IsNullOrWhiteSpace(i.GeoData) ? 1 : 0,
+                    });
             }
             catch (Exception ex)
             {
+                _logger.Warn(ex, $"Cannot get sub borders of {parentName}");
+
                 resp.Status = Constants.ErrorCode;
                 resp.ErrorMessage = ex.Message;
             }
@@ -104,30 +125,20 @@ namespace TradeCensus
             try
             {
                 resp.Items = new List<BorderModel>();
-                int id = int.Parse(provinceID);
-                //var border = _entities.GeoBorders.FirstOrDefault(i => i.ID == id || string.Compare(i.Name, provinceName, StringComparison.OrdinalIgnoreCase) == 0);
 
-                var query = DC.Database.SqlQuery<GeoBorderEx>(
-                    string.Format(@"SELECT TOP 1 gb.*, (select COUNT(Id) from GeoBorder as tmp where tmp.ParentID = gb.ID) as 'ChildrenCount'
-                                    FROM GeoBorder as gb
-                                    WHERE gb.ID = {0} OR gb.Name LIKE '%{1}%'", id, provinceName));
-                if (query.Any())
+                var border = DC.GetProvinceBorder(provinceID, provinceName);
+                if (border != null)
                 {
-                    var border = query.FirstOrDefault();
-                    if (border != null)
+                    resp.Items.Add(new BorderModel()
                     {
-                        resp.Items.Add(new BorderModel()
-                        {
-                            Name = border.Name,
-                            ID = border.ID.ToString(),
-                            ParentID = border.ParentID.ToString(),
-                            GeoData = border.Formateddata,
-                            ChildrenCount = border.ChildrenCount,
-                            HasGeoData = !string.IsNullOrWhiteSpace(border.GeoData) ? 1 : 0,
-                        });
-
-                        AppendChildren(id, resp.Items);
-                    }
+                        Name = border.Name,
+                        ID = border.ID.ToString(),
+                        ParentID = border.ParentID.ToString(),
+                        GeoData = border.Formateddata,
+                        ChildrenCount = border.ChildrenCount,
+                        HasGeoData = !string.IsNullOrWhiteSpace(border.GeoData) ? 1 : 0,
+                    });
+                    AddSubBorders(int.Parse(provinceID), resp.Items);
                 }
             }
             catch (Exception ex)
@@ -138,29 +149,92 @@ namespace TradeCensus
             return resp;
         }
 
-        private void AppendChildren(int id, List<BorderModel> items)
+        public GetBorderArrayResponse GetDistrictBorders(string provinceID)
         {
-            //var query = _entities.GeoBorders.Where(i => i.ParentID == id).OrderBy(i => i.Name);
-            var query = DC.Database.SqlQuery<GeoBorderEx>(
-                   string.Format(@"SELECT gb.*, (select COUNT(Id) from GeoBorder as tmp where tmp.ParentID = gb.ID) as 'ChildrenCount'
-                                    FROM GeoBorder as gb
-                                    WHERE gb.ParentID = {0}
-                                    order by gb.Name", id));
-            if (query.Any())
+            return GetBorderByParent(provinceID);
+        }
+
+        public GetBorderArrayResponse GetWardBorders(string districtName, string provinceID)
+        {
+            GetBorderArrayResponse resp = new GetBorderArrayResponse();
+            try
+            {
+                resp.Items = new List<BorderModel>();
+                var query = DC.GettWards(districtName, int.Parse(provinceID));
                 foreach (var i in query)
-                {
-                    items.Add(new BorderModel()
+                    resp.Items.Add(new BorderModel
                     {
                         Name = i.Name,
                         ID = i.ID.ToString(),
                         ParentID = i.ParentID.ToString(),
-                        GeoData = i.Formateddata,
+                        GeoData = "",
                         ChildrenCount = i.ChildrenCount,
                         HasGeoData = !string.IsNullOrWhiteSpace(i.GeoData) ? 1 : 0,
                     });
-                    AppendChildren(i.ID, items);
-                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Warn(ex, $"Cannot get sub borders of {districtName}");
+
+                resp.Status = Constants.ErrorCode;
+                resp.ErrorMessage = ex.Message;
+            }
+            return resp;
         }
+
+        //public GetProvinceDataResponse GetProvinceData(string provinceName)
+        //{
+        //    GetProvinceDataResponse resp = new GetProvinceDataResponse();
+        //    try
+        //    {
+        //        var province = DC.GeoBorders.FirstOrDefault(i => string.Compare(i.Name, provinceName, StringComparison.OrdinalIgnoreCase) == 0);
+        //        if (province != null)
+        //        {
+        //            resp.Item = new ProvinceModel
+        //            {
+        //                Id = province.ID.ToString(),
+        //                Name = province.Name,
+        //                ParentID = "0",
+        //                Districts = new List<DistrictModel>()
+        //            };
+        //            var dists = DC.GeoBorders.Where(x => x.ParentID == province.ID).ToArray();
+        //            if (dists.Length > 0)
+        //            {
+        //                foreach (var dist in dists)
+        //                {
+        //                    var distModel = new DistrictModel
+        //                    {
+        //                        Id = dist.ID.ToString(),
+        //                        Name = dist.Name,
+        //                        ParentID = dist.ParentID.ToString(),
+        //                    };
+        //                    resp.Item.Districts.Add(distModel);
+
+        //                    var wards = DC.GeoBorders.Where(x => x.ParentID == dist.ID).ToArray();
+        //                    if (wards.Length > 0)
+        //                    {
+        //                        foreach (var ward in wards)
+        //                        {
+        //                            var wardModel = new WardModel
+        //                            {
+        //                                Id = ward.ID.ToString(),
+        //                                Name = ward.Name,
+        //                                ParentID = ward.ParentID.ToString(),
+        //                            };
+        //                            distModel.Wards.Add(wardModel);
+        //                        }
+        //                    }
+        //                }
+        //            }
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        resp.Status = Constants.ErrorCode;
+        //        resp.ErrorMessage = ex.Message;
+        //    }
+        //    return resp;
+        //}
     }
 
     public class GeoBorderEx : GeoBorder

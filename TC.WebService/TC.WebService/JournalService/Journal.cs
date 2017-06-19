@@ -7,7 +7,7 @@ using System.Web;
 namespace TradeCensus
 {
     [DataContract]
-    public class Journal
+    public class JournalModel
     {
         [DataMember(Name = "id")]
         public int Id { get; set; }
@@ -38,7 +38,7 @@ namespace TradeCensus
         public string date { get; set; }
 
         [DataMember(Name = "journals")]
-        public List<Journal> Journals { get; set; }
+        public List<JournalModel> Journals { get; set; }
     }
 
     [DataContract]

@@ -9,7 +9,7 @@ namespace TradeCensus
     public partial class TradeCensusService
     {
         [WebInvoke(Method = "POST", UriTemplate = "journal/add/{personID}/{password}", ResponseFormat = WebMessageFormat.Json)]
-        public JournalResponse AddJournal(string personID, string password, Journal journal)
+        public JournalResponse AddJournal(string personID, string password, JournalModel journal)
         {
             _logger.Debug("Receive add/append journal request");
             try
@@ -19,7 +19,7 @@ namespace TradeCensus
             }
             catch (Exception ex)
             {
-                _logger.Warn(ex, "Cannot add or append journal data");
+                _logger.Warn($"Cannot add/append journal: {ex.ToString()}");
                 return new JournalResponse
                 {
                     Status = Constants.ErrorCode,
@@ -39,7 +39,7 @@ namespace TradeCensus
             }
             catch (Exception ex)
             {
-                _logger.Warn(ex, "Cannot add or append journal data");
+                _logger.Warn($"Cannot get journal: {ex.ToString()}");
                 return new GetJournalResponse
                 {
                     Status = Constants.ErrorCode,
@@ -49,7 +49,7 @@ namespace TradeCensus
         }
 
         [WebInvoke(Method = "POST", UriTemplate = "journal/sync/{personID}/{password}", ResponseFormat = WebMessageFormat.Json)]
-        public SyncJournalResponse SyncJournals(string personID, string password, Journal[] entries)
+        public SyncJournalResponse SyncJournals(string personID, string password, JournalModel[] entries)
         {
             _logger.Debug("Receive sync outlets request");
             try
@@ -59,7 +59,7 @@ namespace TradeCensus
             }
             catch (Exception ex)
             {
-                _logger.Warn(ex, "Process request error");
+                _logger.Warn($"Cannot sync journal: {ex.ToString()}");
                 return new SyncJournalResponse
                 {
                     Status = Constants.ErrorCode,
@@ -79,7 +79,7 @@ namespace TradeCensus
             }
             catch (Exception ex)
             {
-                _logger.Warn(ex, "Process request error");
+                _logger.Warn($"Cannot get salesman journal: {ex.ToString()}");
                 return new GetJournalResponse
                 {
                     Status = Constants.ErrorCode,

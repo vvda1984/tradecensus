@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using System;
+using System.Runtime.Serialization;
 
 namespace TradeCensus
 {
@@ -17,7 +18,7 @@ namespace TradeCensus
         public bool IsTerminate { get; set; }
         [DataMember]
         public bool HasAuditRole { get; set; }
-        [DataMember]     
+        [DataMember]
         public int PosID { get; set; }
         [DataMember]
         public string ZoneID { get; set; }
@@ -40,6 +41,10 @@ namespace TradeCensus
         [DataMember]
         public string WorkAddress { get; set; }
         [DataMember]
+        public string DOB { get; set; }
+        [DataMember]
+        public string HireDate { get; set; }
+        [DataMember]
         public string Phone { get; set; }
         [DataMember]
         public int Role { get; set; }
@@ -48,4 +53,5 @@ namespace TradeCensus
         [DataMember]
         public string Token { get; set; }
     }
+
 }

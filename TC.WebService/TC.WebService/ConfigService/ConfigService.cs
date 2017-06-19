@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using TradeCensus.Shared;
 
 namespace TradeCensus
@@ -13,51 +12,6 @@ namespace TradeCensus
         {
         }
 
-        public DownloadMapIconsResponse DownloadMapIcons()
-        {
-            DownloadMapIconsResponse resp = new DownloadMapIconsResponse() { Icons = new Dictionary<string, string>() };
-
-            try
-            {
-                var setting = DC.Configs.FirstOrDefault(x => string.Compare(x.Name, "outlet_map_icons", StringComparison.OrdinalIgnoreCase) == 0);
-                var mapIcons = JsonConvert.DeserializeObject<OutletMapIcon>(setting.Value);
-                resp.Version = mapIcons.version;
-
-                FillMapIcon(resp, "tc_salesman_outlet", mapIcons.tc_salesman_outlet);
-                FillMapIcon(resp, "tc_salesman_outlet_denied", mapIcons.tc_salesman_outlet_denied);
-                FillMapIcon(resp, "tc_auditor_outlet", mapIcons.tc_auditor_outlet);
-                FillMapIcon(resp, "tc_auditor_outlet_denied", mapIcons.tc_auditor_outlet_denied);
-
-                FillMapIcon(resp, "tc_agency_new_outlet", mapIcons.tc_agency_new_outlet);
-                FillMapIcon(resp, "tc_agency_new_outlet_denied", mapIcons.tc_agency_new_outlet_denied);
-                FillMapIcon(resp, "tc_agency_new_outlet_approved", mapIcons.tc_agency_new_outlet_approved);
-                FillMapIcon(resp, "tc_agency_existing_outlet_edited", mapIcons.tc_agency_existing_outlet_edited);
-                FillMapIcon(resp, "tc_agency_existing_outlet_denied", mapIcons.tc_agency_existing_outlet_denied);
-                FillMapIcon(resp, "tc_agency_existing_outlet_approved", mapIcons.tc_agency_existing_outlet_approved);
-                FillMapIcon(resp, "tc_agency_auditor_new_outlet", mapIcons.tc_agency_auditor_new_outlet);
-                FillMapIcon(resp, "tc_agency_auditor_new_outlet_denied", mapIcons.tc_agency_auditor_new_outlet_denied);
-                FillMapIcon(resp, "tc_agency_auditor_new_outlet_approved", mapIcons.tc_agency_auditor_new_outlet_approved);
-
-                FillMapIcon(resp, "sr_outlet_audit_denied", mapIcons.sr_outlet_audit_denied);
-                FillMapIcon(resp, "sr_outlet_audit_approved", mapIcons.sr_outlet_audit_approved);
-                FillMapIcon(resp, "sr_outlet_non_track", mapIcons.sr_outlet_non_track);
-                FillMapIcon(resp, "sr_outlet_closed", mapIcons.sr_outlet_closed);
-                FillMapIcon(resp, "sr_outlet_opened", mapIcons.sr_outlet_opened);
-
-                FillMapIcon(resp, "dis_outlet_audit_denied", mapIcons.dis_outlet_audit_denied);
-                FillMapIcon(resp, "dis_outlet_audit_approved", mapIcons.dis_outlet_audit_approved);
-                FillMapIcon(resp, "dis_outlet_closed", mapIcons.dis_outlet_closed);
-                FillMapIcon(resp, "dis_outlet_opened", mapIcons.dis_outlet_opened);
-     
-            }
-            catch (Exception ex)
-            {
-                resp.Status = Constants.ErrorCode;
-                resp.ErrorMessage = ex.Message;
-            }
-            return resp;
-        }
-    
         private void FillMapIcon(DownloadMapIconsResponse resp, string name, string relativedPath)
         {
             string content = null;
@@ -69,22 +23,68 @@ namespace TradeCensus
                 resp.Icons.Add(name, content);
         }
 
+
+        public DownloadMapIconsResponse DownloadMapIcons()
+        {
+            DownloadMapIconsResponse resp = new DownloadMapIconsResponse() { Icons = new Dictionary<string, string>() };
+
+            try
+            {
+                var value = DC.GetMapIconsSetting();
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    var mapIcons = JsonConvert.DeserializeObject<OutletMapIcon>(value);
+                    resp.Version = mapIcons.version;
+
+                    FillMapIcon(resp, "tc_salesman_outlet", mapIcons.tc_salesman_outlet);
+                    FillMapIcon(resp, "tc_salesman_outlet_denied", mapIcons.tc_salesman_outlet_denied);
+                    FillMapIcon(resp, "tc_auditor_outlet", mapIcons.tc_auditor_outlet);
+                    FillMapIcon(resp, "tc_auditor_outlet_denied", mapIcons.tc_auditor_outlet_denied);
+
+                    FillMapIcon(resp, "tc_agency_new_outlet", mapIcons.tc_agency_new_outlet);
+                    FillMapIcon(resp, "tc_agency_new_outlet_denied", mapIcons.tc_agency_new_outlet_denied);
+                    FillMapIcon(resp, "tc_agency_new_outlet_approved", mapIcons.tc_agency_new_outlet_approved);
+                    FillMapIcon(resp, "tc_agency_existing_outlet_edited", mapIcons.tc_agency_existing_outlet_edited);
+                    FillMapIcon(resp, "tc_agency_existing_outlet_denied", mapIcons.tc_agency_existing_outlet_denied);
+                    FillMapIcon(resp, "tc_agency_existing_outlet_approved", mapIcons.tc_agency_existing_outlet_approved);
+                    FillMapIcon(resp, "tc_agency_auditor_new_outlet", mapIcons.tc_agency_auditor_new_outlet);
+                    FillMapIcon(resp, "tc_agency_auditor_new_outlet_denied", mapIcons.tc_agency_auditor_new_outlet_denied);
+                    FillMapIcon(resp, "tc_agency_auditor_new_outlet_approved", mapIcons.tc_agency_auditor_new_outlet_approved);
+
+                    FillMapIcon(resp, "sr_outlet_audit_denied", mapIcons.sr_outlet_audit_denied);
+                    FillMapIcon(resp, "sr_outlet_audit_approved", mapIcons.sr_outlet_audit_approved);
+                    FillMapIcon(resp, "sr_outlet_non_track", mapIcons.sr_outlet_non_track);
+                    FillMapIcon(resp, "sr_outlet_closed", mapIcons.sr_outlet_closed);
+                    FillMapIcon(resp, "sr_outlet_opened", mapIcons.sr_outlet_opened);
+
+                    FillMapIcon(resp, "dis_outlet_audit_denied", mapIcons.dis_outlet_audit_denied);
+                    FillMapIcon(resp, "dis_outlet_audit_approved", mapIcons.dis_outlet_audit_approved);
+                    FillMapIcon(resp, "dis_outlet_closed", mapIcons.dis_outlet_closed);
+                    FillMapIcon(resp, "dis_outlet_opened", mapIcons.dis_outlet_opened);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Warn(ex, "Cannot get map icons settings.");
+
+                resp.Status = Constants.ErrorCode;
+                resp.ErrorMessage = ex.Message;
+            }
+            return resp;
+        }
+
         public ConfigResponse GetConfig()
         {
             ConfigResponse resp = new ConfigResponse();
             try
             {
                 Log("Get all config");
-                var items = DC.Configs.ToArray();
-                Dictionary<string, string> configDict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                foreach (var i in items)
-                    if (!configDict.ContainsKey(i.Name))
-                        configDict.Add(i.Name, i.Value);
-
-                resp.Items = configDict;
+                resp.Items = DC.GetSettings();
             }
             catch (Exception ex)
             {
+                _logger.Warn(ex, $"Cannot get settings.");
+
                 resp.Status = Constants.ErrorCode;
                 resp.ErrorMessage = ex.Message;
             }
@@ -96,31 +96,32 @@ namespace TradeCensus
             CheckVersionResponse resp = new CheckVersionResponse();
             try
             {
-                Log("Get all config");
-                var latestVersion = DC.Configs.FirstOrDefault(i=>string.Compare(i.Name, "version", StringComparison.OrdinalIgnoreCase) == 0);
-                if (latestVersion != null)
+                var versions = DC.GetVersion();
+                var latestVersion = versions[0];
+                if (!string.IsNullOrWhiteSpace(latestVersion))
                 {
-                    int lastVersionNumber = int.Parse(latestVersion.Value);
+                    int lastVersionNumber = int.Parse(latestVersion);
                     int currVersionNumber = int.Parse(version);
 
                     if (lastVersionNumber > currVersionNumber)
                     {
-                        var msg = DC.Configs.FirstOrDefault(i =>
-                            string.Compare(i.Name, "NewVersionMessage", StringComparison.OrdinalIgnoreCase) == 0 ||
-                            string.Compare(i.Name, "new_version_message", StringComparison.OrdinalIgnoreCase) == 0);
                         resp.Version = lastVersionNumber;
-                        resp.Message = msg != null ? msg.Value : "";
+                        resp.Message = string.IsNullOrWhiteSpace(versions[1]) ? "" : versions[1];
                     }
                 }
             }
             catch (Exception ex)
             {
+                _logger.Warn(ex, $"Cannot get version.");
+
                 resp.Status = Constants.ErrorCode;
                 resp.ErrorMessage = ex.Message;
             }
             return resp;
         }
     }
+
+    #region DTOs
 
     public class OutletMapIcon
     {
@@ -150,4 +151,6 @@ namespace TradeCensus
         public string dis_outlet_closed { get; set; }
         public string dis_outlet_opened { get; set; }
     }
+
+    #endregion
 }

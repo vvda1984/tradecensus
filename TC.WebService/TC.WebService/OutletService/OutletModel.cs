@@ -111,6 +111,17 @@ namespace TradeCensus
         public int CallRate { get; set; }
         [DataMember]
         public int IsSent { get; set; }
+        [DataMember]
+        public string TerritoryID { get; set; }
+        [DataMember]
+        public string LegalName { get; set; }
+        [DataMember]
+        public string TaxID { get; set; }
+
+        [DataMember]
+        public string Comment { get; set; }
+        [DataMember]
+        public bool CompressImage { get; set; }
     }
 
     [DataContract]

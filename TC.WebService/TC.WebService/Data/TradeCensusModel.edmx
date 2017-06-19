@@ -102,9 +102,10 @@
           <Property Name="DISAlias" Type="nchar" MaxLength="10" />
           <Property Name="DEDISID" Type="int" Nullable="false" />
           <Property Name="LegalName" Type="nvarchar" MaxLength="50" />
-          <Property Name="PRowID" Type="uniqueidentifier" Nullable="false" />
-          <Property Name="PModifiedStatus" Type="int" Nullable="false" />
           <Property Name="IsSent" Type="int" />
+          <Property Name="Comment" Type="nvarchar" MaxLength="512" />
+          <Property Name="PModifiedStatus" Type="int" Nullable="false" />
+          <Property Name="PRowID" Type="uniqueidentifier" Nullable="false" />
         </EntityType>
         <EntityType Name="OutletHistory">
           <Key>
@@ -124,6 +125,7 @@
           </Key>
           <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="OutletID" Type="int" Nullable="false" />
+          <Property Name="IsCompressed" Type="bit" />
           <Property Name="Image1" Type="nvarchar(max)" />
           <Property Name="ImageData1" Type="image" />
           <Property Name="Image2" Type="nvarchar(max)" />
@@ -497,6 +499,7 @@
           <NavigationProperty Name="OutletImages" Relationship="tradecensusModel.FK_OutletImage_Outlet" FromRole="Outlet" ToRole="OutletImage" />
           <Property Name="Ward" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="IsSent" Type="Int32" />
+          <Property Name="Comment" Type="String" MaxLength="512" FixedLength="false" Unicode="true" />
         </EntityType>
         <EntityType Name="OutletImage">
           <Key>
@@ -517,6 +520,7 @@
           <Property Name="ImageData5" Type="Binary" MaxLength="Max" FixedLength="false" />
           <Property Name="Image6" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="ImageData6" Type="Binary" MaxLength="Max" FixedLength="false" />
+          <Property Name="IsCompressed" Type="Boolean" />
         </EntityType>
         <Association Name="FK_OutletImage_Outlet">
           <End Type="tradecensusModel.Outlet" Role="Outlet" Multiplicity="1" />
@@ -705,6 +709,7 @@
           <EntitySetMapping Name="Outlets">
             <EntityTypeMapping TypeName="tradecensusModel.Outlet">
               <MappingFragment StoreEntitySet="Outlet">
+                <ScalarProperty Name="Comment" ColumnName="Comment" />
                 <ScalarProperty Name="IsSent" ColumnName="IsSent" />
                 <ScalarProperty Name="Ward" ColumnName="Ward" />
                 <ScalarProperty Name="PModifiedStatus" ColumnName="PModifiedStatus" />
@@ -754,6 +759,7 @@
           <EntitySetMapping Name="OutletImages">
             <EntityTypeMapping TypeName="tradecensusModel.OutletImage">
               <MappingFragment StoreEntitySet="OutletImage">
+                <ScalarProperty Name="IsCompressed" ColumnName="IsCompressed" />
                 <ScalarProperty Name="ImageData6" ColumnName="ImageData6" />
                 <ScalarProperty Name="Image6" ColumnName="Image6" />
                 <ScalarProperty Name="ImageData5" ColumnName="ImageData5" />

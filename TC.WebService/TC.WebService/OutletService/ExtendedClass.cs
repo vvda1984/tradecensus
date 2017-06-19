@@ -22,6 +22,11 @@ namespace TradeCensus
         public bool? PersonIsDSM { get; set; }        
         public int? PersonRole { get; set; }
 
+        public int? AmendByRole { get; set; }
+        public int? InputByRole { get; set; }
+
+        public bool IsCompressed { get; set; }
+
         [IgnoreDataMember]
         public byte[] ImageData1 { get; set; }
         [IgnoreDataMember]

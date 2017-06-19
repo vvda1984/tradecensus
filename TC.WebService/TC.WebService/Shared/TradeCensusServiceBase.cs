@@ -9,7 +9,7 @@ namespace TradeCensus.Shared
 {
     public abstract class TradeCensusServiceBase : IDisposable
     {
-        protected tradecensusEntities DC;
+        protected ServiceDataContext DC;
         protected ILogger _logger;
         protected bool _isDataChanged;
         protected string _name;
@@ -17,7 +17,7 @@ namespace TradeCensus.Shared
 
         protected TradeCensusServiceBase(string name)
         {
-            DC = new tradecensusEntities(); // throw error
+            DC = new ServiceDataContext(); // throw error
             _name = name;
             _logger = DependencyResolver.Resolve<ILogFactory>().GetLogger(name);
         }
@@ -50,17 +50,13 @@ namespace TradeCensus.Shared
 
         protected void ValidatePerson(int personID, string password, bool mustAuditor = false)
         {
-            var person = DC.PersonRoles.FirstOrDefault(i => i.PersonID == personID && i.Password == password);
-            if (person == null)
-                throw new Exception($"Invalid user {personID}");
-
-            if (mustAuditor && !person.IsAuditor)
-                throw new Exception($"Person {personID} is not auditor");
+            if (GetAppSetting("enableValidation", false) == true)
+                DC.ValidatePerson(personID, password, mustAuditor);
         }
 
         protected void Log(string message)
         {
-            _logger.Debug(message);
+            _logger.Info(message);
         }
 
         protected void Log(string message, params object[] args)
@@ -80,39 +76,20 @@ namespace TradeCensus.Shared
             }
         }
 
-        protected string GetSetting(string key, string defaultValue)
-        {
-            string value;
-            try
-            {
-                value = DC.Configs.FirstOrDefault(i => i.Name == key).Value;
-            }
-            catch
-            {
-                Log("Missing setting '{0}', use default: {1}", key, defaultValue);
-                value = defaultValue;
-            }
-            return value;
-        }
-
-        protected string GetAppSetting(string key, string defaultValue = null)
+        protected T GetAppSetting<T>(string key, T defaultValue = default(T))
         {
             if (_appSettingsReader == null)
                 _appSettingsReader = new AppSettingsReader();
 
             try
             {
-                return StringDefault((string)_appSettingsReader.GetValue(key, typeof(string)), defaultValue);
+                var value = (T)_appSettingsReader.GetValue(key, typeof(T));
+                return (value == null) ? defaultValue : value;
             }
             catch
             {
                 return defaultValue;
             }
-        }
-
-        private string StringDefault(string str, string defaultIfNullOrEmpty)
-        {
-            return string.IsNullOrEmpty(str) ? defaultIfNullOrEmpty : str;
         }
 
         private void EnsureDirExist(string path)
@@ -123,6 +100,5 @@ namespace TradeCensus.Shared
             EnsureDirExist(parent);
             Directory.CreateDirectory(path);
         }
-
     }
 }

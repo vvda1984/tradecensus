@@ -139,5 +139,25 @@ namespace TradeCensus
                 };
             }
         }
+
+        [WebInvoke(Method = "POST", UriTemplate = "outlet/search/{personID}/{password}/{outletID}/{outletName}", ResponseFormat = WebMessageFormat.Json)]
+        public GetOutletListResponse SearchOutlet(string personID, string password, string outletID, string outletName)
+        {
+            _logger.Debug("Receive SearchOutlet request");
+            try
+            {
+                IOutletService service = DependencyResolver.Resolve<IOutletService>();
+                return service.SearchOutlet(personID, password, outletID, outletName);
+            }
+            catch (Exception ex)
+            {
+                _logger.Warn(ex, "Process request error");
+                return new GetOutletListResponse
+                {
+                    Status = Constants.ErrorCode,
+                    ErrorMessage = "Service internal error",
+                };
+            }
+        }
     }
 }

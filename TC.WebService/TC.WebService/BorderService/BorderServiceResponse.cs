@@ -19,4 +19,11 @@ namespace TradeCensus
         [DataMember]
         public BorderModel Item { get; set; }
     }
+
+    [DataContract]
+    public class GetProvinceDataResponse : Response
+    {
+        [DataMember]
+        public ProvinceModel Item { get; set; }
+    }
 }

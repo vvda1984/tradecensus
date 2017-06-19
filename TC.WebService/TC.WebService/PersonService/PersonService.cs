@@ -16,29 +16,21 @@ namespace TradeCensus
     
         private PersonModel GetPerson(string userName, string password)
         {
-            Log("Request login: {0}", userName);
-            var user = DC.PersonRoles.FirstOrDefault(i => string.Compare(i.Username, userName, StringComparison.OrdinalIgnoreCase) == 0);
-            if (user == null)
-                throw new Exception(string.Format("User {0} doesn't exist", userName));
-
-            if (user.Password != password)
-                throw new Exception("Password is incorrect.");
-
-            Person person = DC.People.FirstOrDefault(i => i.ID == user.PersonID);
+            var person = DC.GetLoginUser(userName, password);
             if (person == null)
-                throw new Exception(string.Format("User {0} is denied.", userName));
+                throw new Exception("User/password is incorrect");
 
             var res = new PersonModel
             {
                 ID = person.ID,
-                UserID = user.ID,
+                UserID = person.UserID,
                 AreaID = person.AreaID,
                 District = person.District,
                 Email = person.Email,
                 EmailTo = person.EmailTo,
                 FirstName = person.FirstName,
-                HasAuditRole = user.Role % 10 == 1 || user.Role % 10 == 3, // == Constants.RoleAudit || user.Role == Constants.RoleAudit1,
-                Role = user.Role,
+                HasAuditRole = person.Role % 10 == 1 || person.Role % 10 == 3, // == Constants.RoleAudit || user.Role == Constants.RoleAudit1,
+                Role = person.Role,
                 HomeAddress = person.HomeAddress,
                 HouseNo = person.HouseNo,
                 IsTerminate = person.TerminateDate != null,
@@ -50,99 +42,38 @@ namespace TradeCensus
                 WorkAddress = person.WorkAddress,
                 ZoneID = person.ZoneID,
                 IsDSM = person.IsDSM,
+                HireDate = person.HireDate != null ? person.HireDate.Value.ToString("yyyy-MM-DD") : null,
             };
 
-            if (user.Role > 9)
-                user.Role = user.Role % 10;
-            user.AmendBy = user.ID;
-            user.AmendDate = DateTime.Now;
-            DC.SaveChanges();
+            if (person.Role > 9)
+            {
+                var newRole = person.Role % 10;
+                DC.UpdatePersonRoleValue(person.UserID, newRole, person.ID);
+                DC.SaveChanges();
+            }
 
-            res.Token = GenerateToken(user);
+            res.Token = DC.GenerateToken(person.ID, person.AmendDate ?? DateTime.Now);
             return res;      
         }
 
         private void ChangePassword(string token, int personID, string oldPassword, string newPassword)
         {
-            var user = DC.PersonRoles.FirstOrDefault(i => i.PersonID == personID);
-            if (user == null)
-                throw new Exception(string.Format("User ({0}) was not found!", personID));
+            oldPassword = HashPassword(oldPassword);
+            newPassword = HashPassword(newPassword);
 
-            ValidateToken(token, user);
-
-            if (string.IsNullOrEmpty(oldPassword))
-                throw new ArgumentNullException("Old password is empty!");
-
-            if (user.Password != HashPassword(oldPassword))
-                throw new Exception("Current password was not correct!");
-
-            if (string.IsNullOrEmpty(newPassword))
-                throw new ArgumentNullException("New password is empty!");
-
-            user.Password = HashPassword(newPassword);
+            DC.ChangePassword(token, personID, oldPassword, newPassword);
             DC.SaveChanges();
         }
 
         private void ResetPassword(string token, int personID, string password)
         {
-            var user = DC.PersonRoles.FirstOrDefault(i => i.PersonID == personID);
-            if (user == null)
-                throw new Exception(string.Format("User ({0}) was not found!", personID));
-
-            ValidateToken(token, user);
-
-            if (string.IsNullOrEmpty(password))
-                throw new ArgumentNullException("Password is empty!");
-
-            user.Password = HashPassword(password);
+            DC.ResetPassword(token, personID, HashPassword(password));
             DC.SaveChanges();
         }
 
         private string HashPassword(string password)
-        {
-            
+        {   
             return password;
-        }
-
-        private string GenerateToken(PersonRole person)
-        {
-            string text = string.Format("{0}{1}", person.ID, person.AmendDate); // HashUtil.ComputeHash(string.Format("{0}{1}", person.ID, person.AmendDate));
-            using (System.IO.MemoryStream mo = new System.IO.MemoryStream())
-            {
-                using(System.IO.StreamWriter sw = new System.IO.StreamWriter(mo))
-                {
-                    sw.Write(text);
-                    mo.Flush();
-                }
-                return Convert.ToBase64String(mo.ToArray());
-            }
-        }
-
-        private void ValidateToken(string token, PersonRole person)
-        {
-            string generateToken = GenerateToken(person);
-            if (token != generateToken)
-                throw new Exception("You have not logined in ONLINE mode. Please relogin and try again!");
-        }
-
-        private void TrackPing(string pingInfo)
-        {
-            ConnectionSession connection = Parse(pingInfo); //Newtonsoft.Json.JsonConvert.DeserializeObject<ConnectionSession>(pingInfo);
-            if (string.IsNullOrEmpty(connection.Uuid)) return; // should throw exception here...
-
-            var existing = DC.ConnectionSessions.FirstOrDefault(i => i.Uuid == connection.Uuid);
-            if (existing != null)
-            {
-                existing.Token = connection.Token;
-                existing.AmendBy = connection.AmendBy;
-                existing.AmendDate = DateTime.Now;
-            }
-            else
-            {
-                connection.AmendDate = DateTime.Now;
-                DC.ConnectionSessions.Add(connection);
-            }
-            DC.SaveChanges();
         }
 
         private ConnectionSession Parse(string pingInfo)
@@ -190,19 +121,6 @@ namespace TradeCensus
             return res;
         }
 
-        private List<Salesman> GetSalesmen(int personID)
-        {
-            List<Salesman> result = new List<Salesman>();
-
-            string queryString = GetAppSetting("SQL:getsaleman", "With cte(EmployeeID) as (select ID from Person where ReportTo = @p0 UNION ALL select ID from Person JOIN cte d ON Person.ReportTo = d.EmployeeID where Person.TerminateDate is null) select * from person join cte on cte.EmployeeID=person.ID where ltrim(Person.FirstName) not like 'TBA%'");
-            var personArr = DC.Database.SqlQuery<Person>(queryString, personID).ToArray();
-            if (personArr.Length > 0)
-                foreach (var person in personArr)
-                    result.Add(new Salesman { Id = person.ID, FirstName = person.FirstName, LastName = person.LastName });
-
-            return result;
-        }
-
         #region IPersonService Interfaces
 
         public LoginResponse Login(string username, string password)
@@ -214,7 +132,7 @@ namespace TradeCensus
                 resp.Sales = new List<Salesman>();
 
                 if (resp.People.HasAuditRole)
-                    resp.Sales = GetSalesmen(resp.People.ID);
+                    resp.Sales = DC.GetSalesmanList(resp.People.ID);
             }
             catch (Exception ex)
             {
@@ -259,19 +177,10 @@ namespace TradeCensus
             Response res = new Response();
             try
             {
-                _logger.Debug(string.Format("Received ping from {0}", deviceinfo));
                 if (!string.IsNullOrWhiteSpace(deviceinfo))
-                    (new System.Threading.Tasks.Task(() =>
-                    {
-                        try
-                        {
-                            TrackPing(deviceinfo);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.Debug(string.Format("Write ping info error: {0}", ex));
-                        }
-                    })).Start();
+                {
+                    _logger.Debug($"Received ping from {deviceinfo}");
+                }
             }
             catch (Exception ex)
             {
@@ -285,8 +194,11 @@ namespace TradeCensus
         {
             int personID = int.Parse(personid);
             ValidatePerson(personID, password, true);
-            var response = new GetSalesmanResponse();
-            response.Items = GetSalesmen(personID);
+
+            var response = new GetSalesmanResponse
+            {
+                Items = DC.GetSalesmanList(personID)
+            };
             return response;
         }
 
@@ -329,5 +241,13 @@ namespace TradeCensus
 
             return Convert.ToBase64String(hashWithSaltBytes);                        
         }               
+    }
+
+    public class User : Person
+    {
+        public int UserID { get; set; }
+        public int Role { get; set; }
+        public string UserName { get; set; }
+        public string Password { get; set; }
     }
 }

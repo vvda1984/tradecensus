@@ -18,7 +18,7 @@ namespace TradeCensus
             {
                 IBorderService borderService = DependencyResolver.Resolve<IBorderService>();
                 var response = borderService.GetBorderByParent(provinceGeoID);
-                if(response.Status != Constants.ErrorCode)
+                if (response.Status != Constants.ErrorCode)
                     foreach (var district in response.Items)
                     {
                         var districtModel = new DistrictModel()
@@ -52,16 +52,16 @@ namespace TradeCensus
 
         public ProvinceResponse GetProvinces()
         {
-            ProvinceResponse resp = new ProvinceResponse {Items = new List<ProvinceModel>() };
+            ProvinceResponse resp = new ProvinceResponse { Items = new List<ProvinceModel>() };
             try
             {
-                _logger.Debug("Get all provinces");
-                foreach (var item in DC.Provinces)
-                    resp.Items.Add(new ProvinceModel {
+                var provinces = DC.GetProvinces();
+                foreach (var item in provinces)
+                    resp.Items.Add(new ProvinceModel
+                    {
                         Id = item.ID,
                         Name = item.Name,
                         ReferenceGeoID = item.RefGeoID != null ? item.RefGeoID.Value : 0,
-
                     });
             }
             catch (Exception ex)

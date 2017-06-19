@@ -28,6 +28,7 @@ namespace TradeCensus.Data
         public byte[] ImageData5 { get; set; }
         public string Image6 { get; set; }
         public byte[] ImageData6 { get; set; }
+        public Nullable<bool> IsCompressed { get; set; }
     
         public virtual Outlet Outlet { get; set; }
     }

@@ -87,5 +87,45 @@ namespace TradeCensus
                 };
             }
         }
+
+        [WebInvoke(Method = "POST", UriTemplate = "border/getdistricts/{provinceID}", ResponseFormat = WebMessageFormat.Json)]
+        public GetBorderArrayResponse GetDistrictBorders(string provinceID)
+        {
+            _logger.Debug("Receive GetDistrictBorders request");
+            try
+            {
+                IBorderService service = DependencyResolver.Resolve<IBorderService>();
+                return service.GetBorderByParent(provinceID);
+            }
+            catch (Exception ex)
+            {
+                _logger.Warn(ex, "Process request error");
+                return new GetBorderArrayResponse
+                {
+                    Status = Constants.ErrorCode,
+                    ErrorMessage = "Service internal error",
+                };
+            }
+        }
+
+        [WebInvoke(Method = "POST", UriTemplate = "border/getwards/{provinceID}/{districtName}", ResponseFormat = WebMessageFormat.Json)]
+        public GetBorderArrayResponse GetWardBorders(string provinceID, string districtName)
+        {
+            _logger.Debug("Receive GetWardBorders request");
+            try
+            {
+                IBorderService service = DependencyResolver.Resolve<IBorderService>();
+                return service.GetWardBorders(districtName, provinceID);
+            }
+            catch (Exception ex)
+            {
+                _logger.Warn(ex, "Process request error");
+                return new GetBorderArrayResponse
+                {
+                    Status = Constants.ErrorCode,
+                    ErrorMessage = "Service internal error",
+                };
+            }
+        }
     }
 }

@@ -17,6 +17,12 @@ namespace TradeCensus
 
         [DataMember(Name = "referenceGeoID")]
         public int ReferenceGeoID { get; set; }
+
+        [DataMember(Name = "parentID")]
+        public string ParentID { get; set; }
+
+        [DataMember(Name = "districts")]
+        public List<DistrictModel> Districts { get; set; }
     }
 
     [DataContract]
@@ -27,6 +33,9 @@ namespace TradeCensus
 
         [DataMember(Name = "name")]
         public string Name { get; set; }
+
+        [DataMember(Name = "parentID")]
+        public string ParentID { get; set; }
 
         [DataMember(Name = "wards")]
         public List<WardModel> Wards { get; set; }
@@ -40,5 +49,8 @@ namespace TradeCensus
 
         [DataMember(Name = "name")]
         public string Name { get; set; }
+
+        [DataMember(Name = "parentID")]
+        public string ParentID { get; set; }
     }
 }

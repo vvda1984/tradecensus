@@ -15,7 +15,7 @@
         public const int RoleAgencyAudit1 = 103;
 
         public const int StatusInitial = 0;
-     
+
         public const int StatusNew = 10;
         public const int StatusPost = 11;
         public const int StatusAuditAccept = 12;
@@ -40,5 +40,6 @@
 
         public const string ShortDateFormat = "yyyy-MM-dd";
         public const string DatetimeFormat = "yyyy-MM-dd HH:mm:ss";
+
     }
 }

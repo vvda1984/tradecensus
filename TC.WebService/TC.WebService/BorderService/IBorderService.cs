@@ -20,5 +20,11 @@ namespace TradeCensus
 
         [OperationContract]
         GetBorderArrayResponse DownloadBorders(string provinceID, string provinceName);
+
+        [OperationContract]
+        GetBorderArrayResponse GetDistrictBorders(string provinceID);
+
+        [OperationContract]
+        GetBorderArrayResponse GetWardBorders(string districtName, string provinceID);
     }
 }
