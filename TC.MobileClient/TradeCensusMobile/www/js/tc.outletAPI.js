@@ -1,4 +1,5 @@
 ﻿/// <reference path="tc.databaseAPI.js" />
+/// <reference path="tc.utils.js" />
 
 const StatusInitial = 0;
 
@@ -224,6 +225,15 @@ function initializeOutlet(outlet) {
     } else {
         outlet.LastModifiedTS = new Date('2010-01-01 00:00:00');
     }
+
+    if (outlet.CompressImage) {
+        outlet.StringImage1 = tcutils.decompress(outlet.StringImage1);
+        outlet.StringImage2 = tcutils.decompress(outlet.StringImage2);
+        outlet.StringImage3 = tcutils.decompress(outlet.StringImage3);
+        outlet.StringImage4 = tcutils.decompress(outlet.StringImage4);
+        outlet.StringImage5 = tcutils.decompress(outlet.StringImage5);
+        outlet.StringImage6 = tcutils.decompress(outlet.StringImage6);
+    }
 }
 
 function queryOutlets(isbackground, view, callback) {
@@ -417,7 +427,7 @@ var OUTLET = {
     },
 
     lastSync: new Date(),
-  
+
     saveOutletToServer: function (nghttp, outlet, action, state, callback) {
         dialogUtils.showClosableDlg(R.save_outlet, R.please_wait, function (hideLoadingFunc, isCancelledFunc) {
             try {
@@ -479,44 +489,6 @@ var OUTLET = {
     saveOutlet: function (nghttp, outlet, action, state, callback) {
         dialogUtils.showClosableDlg(R.save_outlet, R.please_wait, function (hideLoadingFunc, isCancelledFunc) {
             try {
-                //#region Obsoluted
-                var onSuccessOld = function () {
-                    if (networkReady()) {
-                        var now = new Date();
-                        var dif = getDifTime(OUTLET.lastSync, now);
-                        if (dif > config.submit_outlet_time) {
-                            dialogUtils.setClosableDlgContent(R.synchronize_outlets, R.please_wait);
-                            OUTLET.syncOutlets(nghttp, function (errMsg) {
-                                if (isCancelledFunc()) return;
-                                hideLoadingFunc();
-
-                                if (errMsg)
-                                    showError(errMsg);
-                                else {
-                                    $("#home-topright-sync-hint").css('display', 'none');
-                                    OUTLET.lastSync = now;
-                                    callback();
-                                    //showDlg(R.save_outlet, "Save successfully!", function () { callback(); });
-                                }
-                            });
-                        } else {
-                            $("#home-topright-sync-hint").css('display', 'inline-block');
-                            //$("#home-topright-offline").css('display', 'none');
-                            if (isCancelledFunc()) return;
-                            hideLoadingFunc();
-                            callback();
-                            //showDlg(R.save_outlet, "Save successfully!", function () { callback(); });
-                        }
-                    }
-                    else {
-                        if (isCancelledFunc()) return;
-                        hideLoadingFunc();
-                        callback();
-                        //showDlg(R.save_outlet, "Save successfully!", function () { callback(); });
-                    }
-                };
-                //#endregion
-
                 var __onComplete = function () {
                     if (isCancelledFunc()) return;
                     hideLoadingFunc();
@@ -547,6 +519,14 @@ var OUTLET = {
                     __onComplete();
                 };
 
+                //outlet.StringImage1 = tcutils.compress(outlet.StringImage1);
+                //outlet.StringImage2 = tcutils.compress(outlet.StringImage2);
+                //outlet.StringImage3 = tcutils.compress(outlet.StringImage3);
+                //outlet.StringImage4 = tcutils.compress(outlet.StringImage4);
+                //outlet.StringImage5 = tcutils.compress(outlet.StringImage5);
+                //outlet.StringImage6 = tcutils.compress(outlet.StringImage4);
+                outlet.CompressImage = false;
+                
                 if (action == OUTLET_NEW) {
                     addOutletDB(config.tbl_outlet, outlet, false, __onSuccess, __onError);
                 } else if (action == OUTLET_EDIT) {
@@ -648,7 +628,7 @@ var OUTLET = {
             callback(R.check_network_connection);
         }
     },
-  
+
     checkSyncedStatus: function () {
         selectAllUnsyncedOutlets(config.tbl_outlet,
             function (dbres) {
@@ -670,7 +650,7 @@ var OUTLET = {
             if (typeof config.item_count !== undefined && config.item_count !== null) {
                 itemCount = config.item_count;
             }
-           
+
             var url = baseURL + '/outlet/getoutlets/'
                             + userID + '/'
                             + pass + '/'
@@ -687,8 +667,8 @@ var OUTLET = {
                 success: function (data) {
                     try {
                         if (data.Status == -1) { // error
-                            onError(data.ErrorMessage);                       
-                        } else {                       
+                            onError(data.ErrorMessage);
+                        } else {
                             var foundOutlets = data.Items;
                             foundOutlets.sort(function (a, b) { return a.Distance - b.Distance });
                             if (!isbackground) {
@@ -715,39 +695,6 @@ var OUTLET = {
                 }
             });
 
-
-            //nghttp({
-            //    method: config.http_method,
-            //    url: url
-            //}).then(function (resp) {
-            //    try {
-            //        var data = resp.data;
-            //        if (data.Status == -1) { // error
-            //            onError(data.ErrorMessage);                       
-            //        } else {                       
-            //            var foundOutlets = data.Items;
-            //            foundOutlets.sort(function (a, b) { return a.Distance - b.Distance });
-            //            if (!isbackground) {
-            //                showDlg(R.get_near_by_outlets, R.found + foundOutlets.length.toString() + R.outlets_loading);
-            //            }
-            //            for (var i = 0; i < foundOutlets.length; i++) {
-            //                var outlet = foundOutlets[i];
-            //                outlet.positionIndex = i;
-            //                outlet.isOnline = true;
-            //                if (outlet.PStatus == null || outlet.PStatus == undefined)
-            //                    outlet.PStatus = 0;
-            //                initializeOutlet(outlet);
-            //            }
-            //            onSuccess(false, foundOutlets);
-            //        }
-            //    } catch (err) {
-            //        console.error(err);
-            //        onError(err.message + ' (#12012)');
-            //    }
-            //}, function (err) {
-            //    console.error(err);
-            //    onError(R.check_network_connection + ' (#12011)');
-            //});
         } catch (err) {
             console.error(err);
             onError(R.check_network_connection + ' (#12010)');
@@ -769,9 +716,9 @@ var OUTLET = {
                     var rowLen = dbres.rows.length;
                     console.log('Found outlets from db: ' + rowLen.toString());
                     if (rowLen) {
-                        var found = 0;                        
+                        var found = 0;
                         var foundOutlets = [];
-                        
+
                         var tempOutletList = []
                         for (i = 0; i < rowLen; i++) {
                             var outlet = dbres.rows.item(i);
@@ -786,24 +733,24 @@ var OUTLET = {
                                 isMatched = tempOutletList[i].Distance <= meter;
 
                             if (isMatched) {
-                                var outlet = tempOutletList[i];                                
+                                var outlet = tempOutletList[i];
                                 initializeOutlet(outlet);
                                 outlet.positionIndex = found;
                                 foundOutlets[found] = outlet;
                                 found++;
                             }
-                        }                    
+                        }
                         callback(true, foundOutlets);
                     } else {
                         callback(true, []);
                     }
                 },
                 function (dberr) {
-                    console.error(dberr);                    
+                    console.error(dberr);
                     callback(false, []);
                 });
         } catch (err) {
-            console.error(err);            
+            console.error(err);
             callback(false, []);
         }
     },
@@ -877,77 +824,13 @@ var OUTLET = {
                         callback(false, null);
                     }
                     else
-                        callback(true, outlets);                    
-                });
-        } else {
-            OUTLET.queryOutletsOnline(nghttp, isbackground, view,
-                function (synced, onlineOutlets) {
-                    if (!isbackground) hideDlg();
-                    callback(true, onlineOutlets);
-                },
-                function (errMessage) {
-                    if (!isbackground) {
-                        hideDlg();
-                        showError(R.query_outlet_error);
-                    }
-                    callback(false, []);
-                });
-        }
-    },
-
-    __queryOutletsOld: function (nghttp, isbackground, view, callback) {
-        if (!isbackground) {
-            showDlg(R.get_near_by_outlets, R.please_wait, function () { });
-        }
-        if (!networkReady()) {
-            OUTLET.queryOutletsOffline(
-                view,
-                function (isSuccess, outlets) {
-                    if (!isbackground) hideDlg();
-
-                    if (!isSuccess && !isbackground) {
-                        showError(R.query_outlet_error);
-                        callback(false, null);
-                    }
-                    else
                         callback(true, outlets);
                 });
         } else {
             OUTLET.queryOutletsOnline(nghttp, isbackground, view,
                 function (synced, onlineOutlets) {
                     if (!isbackground) hideDlg();
-
-                    OUTLET.queryUnsyncedOutlets(view, function (isSuccess, offlineOutlets) {
-                        var foundOutlets = onlineOutlets;
-                        if (!isSuccess || offlineOutlets.length == 0) {
-                            callback(true, onlineOutlets);
-                        } else {
-                            var outletDict = [];
-                            for (var i = 0 ; i < offlineOutlets.length; i++) {
-                                var o = offlineOutlets[i];
-                                outletDict[o.PRowID] = o;
-                            }
-
-                            for (var i = 0; i < onlineOutlets.length; i++) {
-                                var o = onlineOutlets[i];
-                                var key = o.PRowID;
-                                if (typeof outletDict[key] === 'undefined')
-                                    outletDict[key] = o;
-                            }
-
-                            var foundOutlets = [];
-                            var i = 0;
-                            for (var o in outletDict) {
-                                var outlet = outletDict[o];
-                                outlet.positionIndex = i;
-                                foundOutlets.push(outletDict[o]);
-                                i++;
-                                if (i === config.item_count) break;
-                            }
-                            //foundOutlets.sort(function (a, b) { return a.Distance - b.Distance });
-                            callback(true, foundOutlets);
-                        }
-                    });
+                    callback(true, onlineOutlets);
                 },
                 function (errMessage) {
                     if (!isbackground) {
@@ -997,6 +880,177 @@ var OUTLET = {
                 console.error(dberr);
                 callback("Error while access local database! (#3001)");
             });
-    }
+    },
+
+    ensureOutletImagesAreLoaded: function (nghttp, outlet, callback) {
+        if (isEmpty(outlet.StringImage1) &&
+            isEmpty(outlet.StringImage2) &&
+            isEmpty(outlet.StringImage3) &&
+            isEmpty(outlet.StringImage4) &&
+            isEmpty(outlet.StringImage5) &&
+            isEmpty(outlet.StringImage6) &&
+            networkReady()) {
+
+            dialogUtils.showClosableDlg(R.load_images, R.please_wait, function (hideLoadingFunc, isCancelledFunc) {
+                try {
+                    var url = baseURL + '/outlet/getimages/' + userID + '/' + pass + '/' + outlet.ID.toString();
+                    console.info('Call service api: ' + url);
+                    nghttp({
+                        method: config.http_method,
+                        url: url
+                    }).then(function (resp) {
+                        if (isCancelledFunc()) return;
+                        hideLoadingFunc();
+
+                        try {
+                            var data = resp.data;
+                            if (data.Status == -1) { // error
+                                showError(data.ErrorMessage);
+                            } else {
+                                //outlet.StringImage1 = data.Image1;
+                                if (outlet.CompressImage) {
+                                    outlet.StringImage1 = tcutils.decompress(data.Image1);
+                                    outlet.StringImage2 = tcutils.decompress(data.Image2);
+                                    outlet.StringImage3 = tcutils.decompress(data.Image3);
+                                    outlet.StringImage4 = tcutils.decompress(data.Image4);
+                                    outlet.StringImage5 = tcutils.decompress(data.Image5);
+                                    outlet.StringImage6 = tcutils.decompress(data.Image6);
+                                } else {
+                                    outlet.StringImage1 = data.Image1;
+                                    outlet.StringImage2 = data.Image2;
+                                    outlet.StringImage3 = data.Image3;
+                                    outlet.StringImage4 = data.Image4;
+                                    outlet.StringImage5 = data.Image5;
+                                    outlet.StringImage6 = data.Image6;
+                                }
+
+                                callback();
+                            }
+                        } catch (err) {
+                            console.error(err);
+                            showError('Cannot connect to server, please check network connection and retry! (#10003)');
+                        }
+                    }, function (err) {
+                        if (isCancelledFunc()) return;
+                        hideLoadingFunc();
+
+                        showError('Cannot connect to server, please check network connection and retry! (#10002)');
+
+                        console.error(err);
+                        callback();
+                    });
+                } catch (err) {
+                    if (isCancelledFunc()) return;
+                    hideLoadingFunc();
+                    console.error(err);
+                    showError('Cannot connect to server, please check network connection and retry! (#10001)');
+                }
+            });
+        } else {
+            callback();
+        }
+    },
+
+    searchOutlets: function (nghttp, outletID, outletName, callback) {
+        //showDlg(R.Searching_outlet, R.please_wait, function () { });
+        if (!networkReady()) {
+            OUTLET.searchOutletsOffline(outletID, outletName,
+                function (isSuccess, outlets) {
+                    //hideDlg();
+                    if (!isSuccess && !isbackground) {
+                        showError(R.query_outlet_error);
+                        callback(false, null);
+                    }
+                    else
+                        callback(true, outlets);
+                });
+        } else {
+            OUTLET.searchOutletsOnline(nghttp, outletID, outletName,
+                function (synced, onlineOutlets) {
+                    //hideDlg();
+                    callback(true, onlineOutlets);
+                },
+                function (errMessage) {
+                    //hideDlg();
+                    showError(R.query_outlet_error);
+                    callback(false, []);
+                });
+        }
+    },
+
+    searchOutletsOnline: function (nghttp, outletID, outletName, onSuccess, onError) {
+        try {
+            var url = baseURL + '/outlet/search/' + userID + '/' + pass;
+            url = url.concat("/", outletID.toString(), "/", isEmpty(outletName) ? "none" : outletName);
+            console.log(url);
+            $.ajax({
+                url: url,
+                type: "POST",
+                success: function (data) {
+                    try {
+                        if (data.Status == -1) { // error
+                            onError(data.ErrorMessage);
+                        } else {
+                            var foundOutlets = data.Items;
+                            for (var i = 0; i < foundOutlets.length; i++) {
+                                var outlet = foundOutlets[i];
+                                outlet.positionIndex = i;
+                                outlet.isOnline = true;
+                                if (outlet.PStatus == null || outlet.PStatus == undefined)
+                                    outlet.PStatus = 0;
+                                initializeOutlet(outlet);
+                            }
+
+                            if (foundOutlets.length > 0) {
+                                panTo(foundOutlets[0].Latitude, foundOutlets[0].Longitude);
+                            }
+                            onSuccess(false, foundOutlets);
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        onError(err.message + ' (#12012)');
+                    }
+                },
+                error: function (msg) {
+                    console.error(msg);
+                    onError(msg + ' (#12012)');
+                }
+            });
+
+        } catch (err) {
+            console.error(err);
+            onError(R.check_network_connection + ' (#12010)');
+        }
+    },
+
+    searchOutletsOffline: function (outletID, outletName, callback) {
+        try {
+            searchOutletsDB(config.tbl_outlet, outletID, outletName,
+                function (dbres) {
+                    var rowLen = dbres.rows.length;
+                    if (rowLen) {
+                        var foundOutlets = [];
+                        for (i = 0; i < rowLen; i++) {
+                            var outlet = dbres.rows.item(i);
+
+                            initializeOutlet(outlet);
+                            outlet.positionIndex = i;
+                            foundOutlets.push(outlet);
+                        }
+                        callback(true, foundOutlets);
+                    } else {
+                        callback(true, []);
+                    }
+                },
+                function (dberr) {
+                    console.error(dberr);
+                    callback(false, []);
+                });
+        } catch (err) {
+            console.error(err);
+            callback(false, []);
+        }
+    },
+
 };
 //#endregion

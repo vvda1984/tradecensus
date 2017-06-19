@@ -166,10 +166,18 @@
     },
 
     compress(val) {
-        return LZString.compress(val);
+        if (val != undefined && val != null && val.length > 0) {
+            return Base64String.compressToUTF16(val);
+        }
+        else
+            return "";
     },
 
     decompress(val) {
-        return LZString.compress(val);
+        if (val != undefined && val != null && val.length > 0) {
+            return Base64String.decompressFromUTF16(val);
+        }
+        else
+            return "";
     },
 };

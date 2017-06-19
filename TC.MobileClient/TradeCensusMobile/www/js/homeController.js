@@ -23,7 +23,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     var viewDropdown = 0;
     var selectProvince;
 
-    var curOutletView = 0; // 0: near-by; 1: new: 2: updated 4: audit
+    var curOutletView = 0; // 0: near-by; 1: new: 2: updated 4: audit, 5: search
     $scope.testlat = curlat;
     $scope.testlng = curlng;
     $scope.testacc = curacc;
@@ -352,6 +352,10 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         }
     }
 
+    $scope.searchOutlets = function () {
+        if (!isEmpty($("#searchOutletCode").val())) getOutletsByView(false);
+    }
+
     //*************************************************************************
     $scope.createNewOutlet = function () {
         showCurPositionDlg(false,
@@ -421,7 +425,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 
     //*************************************************************************    
     $scope.postOutlet = function (outlet) {
-        loadImagesIfNeed(outlet, function () {            
+        OUTLET.ensureOutletImagesAreLoaded($http, outlet, function () {
             if (isEmpty(outlet.StringImage1) && isEmpty(outlet.StringImage2) && isEmpty(outlet.StringImage3) &&
                 //isEmpty(outlet.StringImage4) && // ignore selfie image
                 isEmpty(outlet.StringImage5) && isEmpty(outlet.StringImage6)) {
@@ -469,7 +473,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
 
     //*************************************************************************    
     $scope.reviseOutlet = function (outlet) {                       
-        loadImagesIfNeed(outlet, function () {
+        OUTLET.ensureOutletImagesAreLoaded($http, outlet, function () {
             performReviseOutlet(outlet);
         });
     }
@@ -1060,16 +1064,26 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
    
     function getOutletsByView(isbackground) {
         __isLoadingOutlet = true;
-        startGetOutletTS = new Date(); // now
-        OUTLET.queryOutlets($http, isbackground, curOutletView, function (isSuccess, foundOutlets) {
-            if (isSuccess) {
-                //if (curOutletView == 0) nearByOutlets = foundOutlets;                
-                nearByOutlets = foundOutlets;
-                loadOutlets(foundOutlets);
-                startGetOutletTS = new Date();
-            }
-            __isLoadingOutlet = false;
-        });
+        if (curOutletView <= 4) {
+            startGetOutletTS = new Date(); // now
+            OUTLET.queryOutlets($http, isbackground, curOutletView, function (isSuccess, foundOutlets) {
+                if (isSuccess) {
+                    //if (curOutletView == 0) nearByOutlets = foundOutlets;                
+                    nearByOutlets = foundOutlets;
+                    loadOutlets(foundOutlets);
+                    startGetOutletTS = new Date();
+                }
+                __isLoadingOutlet = false;
+            });
+        } else {
+            OUTLET.searchOutlets($http, $("#searchOutletCode").val(), "" , function (isSuccess, foundOutlets) {
+                if (isSuccess) {
+                    nearByOutlets = foundOutlets;
+                    loadOutlets(foundOutlets);
+                }
+                __isLoadingOutlet = false;
+            });
+        }
     }
 
     function loadOutlets(outlets) {
@@ -1174,13 +1188,15 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         curlat = lat;
         curlng = lng;
 
+        updatedisplayAccuracyStatus();
+
         tcutils.tcapp.lastUpdateLocationTS = new Date();
 
         displayCurrentPostion();
 
         journals.trackJournal(lat, lng, acc);
 
-        if (tcutils.tcapp.checkToRefreshOutlet(lat, lng)) {
+        if (curOutletView <=4 && tcutils.tcapp.checkToRefreshOutlet(lat, lng)) {
             tcutils.logging.info('Refreshing outlet list...');
 
             var now = new Date();
@@ -1221,7 +1237,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                 orgOutlet = curOutlets[j];
             }
 
-            loadImagesIfNeed(orgOutlet, function () {
+            OUTLET.ensureOutletImagesAreLoaded($http, orgOutlet, function () {
                 var clonedOutlet = cloneObj(orgOutlet);
                 var i = clonedOutlet.positionIndex;
                 console.log('Display outlet...');
@@ -1309,6 +1325,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                               orgOutlet.SpShift = outlet.SpShift;
                               orgOutlet.CallRate = outlet.CallRate;
                               orgOutlet.TerritoryID = outlet.TerritoryID;
+                              orgOutlet.Comment = outlet.Comment;
 
                               var img1 = outlet.StringImage1;
                               var img2 = outlet.StringImage2;
@@ -1385,65 +1402,6 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                   });               
             });
         });
-    }
-
-    //*************************************************************************
-    function loadImagesIfNeed(outlet, callback) {
-        if (isEmpty(outlet.StringImage1) && isEmpty(outlet.StringImage2) && isEmpty(outlet.StringImage3) &&
-            isEmpty(outlet.StringImage4) && isEmpty(outlet.StringImage5) && isEmpty(outlet.StringImage6) &&
-            networkReady()) {
-
-            dialogUtils.showClosableDlg(R.load_images, R.please_wait, function (hideLoadingFunc, isCancelledFunc) {
-                try {
-                    var url = baseURL + '/outlet/getimages/' + userID + '/' + pass + '/' + outlet.ID.toString();
-                    console.info('Call service api: ' + url);
-                    $http({
-                        method: config.http_method,
-                        url: url
-                    }).then(function (resp) {
-                        if (isCancelledFunc()) return;
-                        hideLoadingFunc();
-
-                        try {
-                            var data = resp.data;
-                            if (data.Status == -1) { // error
-                                showError(data.ErrorMessage);
-                            } else {
-                                outlet.StringImage1 = data.Image1;
-                                outlet.StringImage2 = data.Image2;
-                                outlet.StringImage3 = data.Image3;
-                                outlet.StringImage4 = data.Image4;
-                                outlet.StringImage5 = data.Image5;
-                                outlet.StringImage6 = data.Image6;
-
-                                callback();
-
-                                //updateOutletImageDB($scope.config.tbl_outlet, outlet, callback);
-                            }
-                        } catch (err) {
-                            console.error(err);
-                            showError('Cannot connect to server, please check network connection and retry! (#10003)');
-                        }
-                    }, function (err) {
-                        if (isCancelledFunc()) return;
-                        hideLoadingFunc();
-
-                        showError('Cannot connect to server, please check network connection and retry! (#10002)');
-
-                        console.error(err);
-                        callback();
-                    });
-                } catch (err) {
-                    if (isCancelledFunc()) return;
-                    hideLoadingFunc();                                        
-                    console.error(err);
-                    //callback();
-                    showError('Cannot connect to server, please check network connection and retry! (#10001)');
-                }
-            });
-        } else {
-            callback();
-        }
     }
 
     //*************************************************************************

@@ -150,7 +150,7 @@ function loginController($scope, $http) {
                     if (data.Status == -1) { // error
                         onError(data.ErrorMessage);
                     } else {
-                        salesmans.push({ personID: 0, firstName: '', lastName: '', display: '', searchKey : '' });
+                        salesmans.push({ personID: 0, firstName: '', lastName: '', display: '', searchKey: '' });
                         if (data.People.HasAuditRole && data.salesmans) {
                             for (var i = 0; i < data.salesmans.length; i++) {
                                 var item = data.salesmans[i];
@@ -196,53 +196,6 @@ function loginController($scope, $http) {
                 }
             }
         });
-
-        //$http({
-        //    method: config.http_method,
-        //    url: url,
-        //    timeout: 200,
-        //}).then(function (resp) {
-        //    hideDlg();            
-        //    try {
-        //        log('Login response: ');                
-        //        var data = resp.data;
-        //        if (data.Status == -1) { // error
-        //            onError(data.ErrorMessage);
-        //        } else {                    
-		//			salesmans.push({ personID: 0, firstName: '', lastName: '', });
-        //            if (data.People.HasAuditRole && data.salesmans) {
-        //                for (var i = 0; i < data.salesmans.length; i++) {
-        //                    salesmans.push(data.salesmans[i]);
-        //                }
-        //            }
-        //            insertUserDB(data.People, $scope.userName,  $scope.password,
-        //                function (tx, row) {                                                  
-        //                    onSuccess(data.People);
-        //                },
-        //                function (dberr) {
-        //                    onError(dberr.message);
-        //                });
-        //        }
-        //    }
-        //    catch (ex) {
-        //        log(ex);
-        //        onError(ex.message);
-        //    }
-        //}, function (err) {                        
-        //    log(err);
-        //    if (retry < $scope.config.time_out) {
-        //        setTimeout(function () {
-        //            loginOnline(retry+1, onSuccess, onError);
-        //        }, 1000);
-        //    } else {
-        //        try {
-        //            //var errormg = 'Cannot connect to: ' + baseURL + ' : ' + R.connection_timeout;
-        //            onError(R.connection_timeout);
-        //        } catch (ex) {
-        //            onError(ex.message);
-        //        }
-        //    }
-        //});
     }
   
     function loginOffline(onSuccess, onError) {
@@ -540,6 +493,10 @@ function loginController($scope, $http) {
                         config.item_count_max = parseInt(value);
                     } else if (name == 'submit_outlet_time') {
                         config.submit_outlet_time = parseInt(value);
+                    } else if (name == 'image_width') {
+                        config.image_width = parseInt(value);
+                    } else if (name == 'image_height') {
+                        config.image_height = parseInt(value);
                     }
                 }
                 

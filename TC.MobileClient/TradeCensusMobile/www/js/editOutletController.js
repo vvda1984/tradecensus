@@ -43,7 +43,9 @@ function editOutletController($scope, $mdDialog, $timeout) {
     if ($scope.outlet.AuditStatus == 0) {
         isSameSystem = true;
     } else {
-        if ((user.role == 0 || user.role == 1) && ($scope.outlet.AmendByRole == 0 || $scope.outlet.AmendByRole == 1))
+        if ((user.role == 2 || user.role == 3) && ($scope.outlet.InputByRole == 2 || $scope.outlet.InputByRole == 3))
+            isSameSystem = true;
+        else if ((user.role == 0 || user.role == 1) && ($scope.outlet.AmendByRole == 0 || $scope.outlet.AmendByRole == 1))
             isSameSystem = true;
         else if ((user.role == 2 || user.role == 3) && ($scope.outlet.AmendByRole == 2 || $scope.outlet.AmendByRole == 3))
             isSameSystem = true;

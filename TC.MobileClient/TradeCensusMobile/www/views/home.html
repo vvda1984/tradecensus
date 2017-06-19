@@ -22,7 +22,7 @@
         </div>
         <div ng-show="enableSearch" id="seachOutletContainer" class="square-bar float-left white">
             <span>Code:</span>
-            <input placeholder="e.g.65000001" name="searchOutletCode" style="width:120px;">
+            <input id="searchOutletCode" placeholder="e.g.65000001" name="searchOutletCode" style="width:120px;">
             <span> </span>
         </div>
         <div ng-show="enableSearch" class="square-button float-left blue" ng-click="searchOutlets()">
@@ -34,7 +34,7 @@
             <div class="dropdown-item" ng-click="changeOutletView(4)"><img src="assets/img/outlet-new-own.svg" /><span>{{R.my_new_outlets}}</span></div>
             <div class="dropdown-item" ng-click="changeOutletView(2)"><img src="assets/img/outlet-edit.svg" /><span>{{R.updated_outlets}}</span></div>
             <div class="dropdown-item" ng-show="hasAuditRole" ng-click="changeOutletView(3)"><img src="assets/img/outlet-audit.svg" /><span>{{R.auditted_outlets}}</span></div>
-            <!--<div class="dropdown-item" ng-click="changeOutletView(5)"><img src="assets/img/search.svg" /><span>{{R.search_outlets}}</span></div>-->
+            <div class="dropdown-item" ng-click="changeOutletView(5)"><img src="assets/img/search.svg" /><span>{{R.search_outlets}}</span></div>
         </div>
     </div>
 
@@ -207,19 +207,21 @@
         </div>
     </div>
 
-    <!--<div id="home-topright-status">
-        <div style="display:inline-block;">
-            <img src="assets/img/network-connected.svg" style="width:32px;height:32px;" id="connectedIcon" />
-            <img src="assets/img/network-disconnected.svg" style="width:32px;height:32px;" id="disconnectedIcon"/>
-        </div>
-        <div id="unsyncText">
-            <span>Unsynced</span>
-        </div>
-    </div>-->
-
     <div id="home-topright-sync-hint">
         <div class="square-box-red float-right normal-text">
             <span>{{R.hint_do_sync}}</span>
+        </div>
+    </div>
+
+    <div id="home-topright-status-container">
+        <div id="home-topright-offline" class="float-right normal-text status-message">
+            {{R.you_are_in_offline_mode}}
+        </div>
+        <div id="home-topright-sync-hint" class="float-right normal-text status-message">
+            {{R.hint_do_sync}}
+        </div>
+        <div id="home-topright_accuracy_incorrect" class="float-right normal-text status-message">
+           {{R.accuracy_incorrect}}
         </div>
     </div>
 

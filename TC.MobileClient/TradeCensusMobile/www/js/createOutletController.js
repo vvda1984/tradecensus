@@ -8,6 +8,7 @@ function newOutletController($scope, $http, $mdDialog, $timeout) {
     var outlet = OUTLET.dialog.outlet();
     var orgOutlet = null;
     var isCreatedNew = isEmpty(outlet.Name);
+    var __selectedGeoProvince = null;
 
     //addressModel.wardArr = [];
 
@@ -327,8 +328,10 @@ function newOutletController($scope, $http, $mdDialog, $timeout) {
             }
         }
 
+        __selectedGeoProvince = selectedProvince;
+
         if (tcutils.networks.isReady()) {
-            var url = baseURL + '/border/getsubborders/' + selectedProvince.referenceGeoID;
+            var url = baseURL + '/border/getdistricts/' + selectedProvince.referenceGeoID;
             log('Call service api: ' + url);
             $http({
                 method: config.http_method,
@@ -375,7 +378,7 @@ function newOutletController($scope, $http, $mdDialog, $timeout) {
         }
 
         if (tcutils.networks.isReady()) {
-            var url = baseURL + '/border/getsubbordersbyparentname/' + outlet1.District;
+            var url = baseURL + '/border/getwards/' + __selectedGeoProvince.referenceGeoID + "/" + outlet1.District;
             log('Call service api: ' + url);
             $http({
                 method: config.http_method,
@@ -542,6 +545,10 @@ function newOutletController($scope, $http, $mdDialog, $timeout) {
                 t = R.create_new_outlet;
             } else {
                 t = R.edit_outlet;
+            }
+        } else {
+            if (outlet.ID != 60000000) {
+                t += ' (' + outlet.ID.toString() + ')';
             }
         }
         return t;

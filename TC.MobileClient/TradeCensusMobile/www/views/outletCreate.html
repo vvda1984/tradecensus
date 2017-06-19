@@ -140,10 +140,21 @@
                 </md-input-container>
             </div>
 
-            <div layout-gt-sm="row" style="margin-bottom:0px; margin-top:4px;" ng-show="canComment">
+            <div layout-gt-sm="row" style="margin-bottom:0px; margin-top:4px;">
                 <md-input-container class="md-block" flex-gt-sm="">
                     <label>{{R.comment}}</label>
-                    <textarea id="inputComment" ng-model="outlet.Note" md-maxlength="150" rows="2" md-select-on-focus="" ng-disabled="{{disableComment}}" style="margin-bottom:0px;" required="" maxlength="512"></textarea>
+                    <textarea id="inputComment" ng-model="outlet.Comment" md-maxlength="512" rows="2" 
+                              md-select-on-focus="" 
+                              style="margin-bottom:0px;" 
+                              required="" 
+                              maxlength="512"></textarea>
+                </md-input-container>
+            </div>
+
+            <div layout-gt-sm="row" style="margin-bottom:0px; margin-top:4px;" ng-show="canComment">
+                <md-input-container class="md-block" flex-gt-sm="">
+                    <label>{{R.auditor_comment}}</label>
+                    <textarea id="inputComment" ng-model="outlet.Note" md-maxlength="512" rows="2" md-select-on-focus="" ng-disabled="{{disableComment}}" style="margin-bottom:0px;" required="" maxlength="512"></textarea>
                 </md-input-container>
             </div>
 

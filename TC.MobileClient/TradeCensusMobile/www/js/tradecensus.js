@@ -1,7 +1,7 @@
 ﻿var _WEB = true;
 var _PROD = false;
-var _VERSION = 24;
-var _VERSION_DISPLAY = '1.24.27';
+var _VERSION = 26;
+var _VERSION_DISPLAY = '1.26.28';
 
 (function (global) {
     "use strict";
@@ -210,7 +210,9 @@ function newConfig() {
         refresh_time_out: 3 * 60,   // Time to get outlet
         session_time_out: 0 * 60,
         location_age: 10,           // last avaliable location
-        submit_outlet_time: 3 * 60,  //
+        submit_outlet_time: 3 * 60, //
+        image_width: 800,               // image width
+        image_height: 600,               // image height
 
         enable_journal: false,      // False after login until user start
         journal_update_time: 1 * 10,//
@@ -546,6 +548,12 @@ function loadSettings(tx, callback) {
                         config.get_location_time_out = parseInt(value);
                     } else if (name == 'submit_outlet_time') {
                         config.submit_outlet_time = parseInt(value);
+                    }
+
+                    else if (name == 'image_width') {
+                        config.image_width = parseInt(value);
+                    } else if (name == 'image_height') {
+                        config.image_height = parseInt(value);
                     }
                 }
             }

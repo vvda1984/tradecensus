@@ -632,6 +632,8 @@ function getCurPosition(moveToCur, onSuccess, onError) {
                 moveToCurrentLocation();
             }
             log('Found location: lat=' + lat.toString() + ',lng=' + lng.toString());
+
+            updatedisplayAccuracyStatus();
             onSuccess(lat, lng);
         },
         function (err) {
@@ -834,4 +836,14 @@ function isGPSAvailable(callback) {
             callback(false);
         });
     }
+}
+
+function updatedisplayAccuracyStatus() {
+    try {
+        if (curacc > config.audit_accuracy) {
+            $("#home-topright_accuracy_incorrect").show();
+        } else {
+            $("#home-topright_accuracy_incorrect").hide();
+        }
+    } catch (e) { }
 }

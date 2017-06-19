@@ -45,6 +45,7 @@ function language_en() {
         current_pass_is_empty: 'Current password is empty!',
         new_pass_is_empty: 'New password is empty!',
         confirm_pass_doesnot_match: 'Confirm password does not match!',
+        accuracy_incorrect: "Your location is incorrect!",
 		
         connecting_server: 'Connecting to server',
         loading_map : 'Loading map',
@@ -137,6 +138,7 @@ function language_en() {
         revise: 'Revise',
         draft: 'Draft',        
         comment: 'Comment',
+        auditor_comment: 'Auditor Comment',
         revert: 'Reset',
         legal_name: 'Legal Name',
         vat: 'VAT',
@@ -151,6 +153,7 @@ function language_en() {
         cannot_revise : 'The action is NOT allowed in offline mode',
         get: 'Get ',
         get_near_by_outlets: 'Get near-by outlets',
+        Searching_outlet: 'Searching outlet',
         found: 'Found ',
         outlets_loading: ' outlet(s). Loading...',
         saving_outlet: 'Saving Outlet',

@@ -111,15 +111,12 @@
             </div>
 
             <div layout-gt-sm="row" style="margin-top:-8px;">
-                <!--<div class="md-block-item" ng-show="needAudit" style="margin-top:-12px;">
-                <div class="md-block-item-title" style="min-width:80px">{{R.audit_status}}</div>
-                  <md-radio-group ng-model="outlet.AuditStatus">
-                    <md-radio-button value="2" class="md-primary" style="margin-bottom:8px;">{{R.approve}}</md-radio-button>
-                    <md-radio-button value="3" class="md-primary" style="margin-bottom:4px;">{{R.deny}}</md-radio-button>
-                </md-radio-group>
-            </div>-->
-                <md-input-container class="md-block" flex-gt-sm="" ng-show="isAuditor">
+                <md-input-container class="md-block" flex-gt-sm="">
                     <label>{{R.comment}}</label>
+                    <textarea ng-model="outlet.Comment" rows="2" style="margin-bottom:0px;" readonly></textarea>
+                </md-input-container>
+                <md-input-container class="md-block" flex-gt-sm="" ng-show="isAuditor">
+                    <label>{{R.auditor_comment}}</label>
                     <textarea id="inputComment" ng-model="outlet.Note" md-maxlength="150" rows="2" md-select-on-focus="" ng-disabled="{{disableComment}}" style="margin-bottom:0px;" required=""></textarea>
                 </md-input-container>
             </div>

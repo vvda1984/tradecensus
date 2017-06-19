@@ -152,10 +152,6 @@ function currentDate() {
     return yyyy + '-' + mm + '-' + dd;
 }
 
-
-/**
-* compareDate
-*/
 function compareDate(date1, date2, dateformat) {    
     if (date1 != null && date2 == null) return -1;
     if (date1 == null && date2 != null) return 1;
@@ -170,126 +166,6 @@ function compareDate(date1, date2, dateformat) {
         return 1;
     }
     return -1;
-}
-
-function openImgViewer(title, viewOnly, url, callback) {
-    newImageFile = null;
-    onImageViewerClose = callback;
-    log('Open image: ' + url + ' ' + title);
-    var dlg =
-        '<div id="image-overlay">' +
-            '<div class="loading-window">' +
-                '<div class="dialog" style="margin-left:20%;margin-right:20%;">' +
-                    '<div class="content">' +
-                        '<div class="title">' + title + ' <div style="float:right; margin-right:8px;" onclick="closeImgViewer()">X</div> </div><br>' +
-                        '<div><img id="curOutletImage" class="outlet-image-large" src="' + url + '"/></div>' +
-                    '</div>' +
-                    '<div class="button label-blue" onclick="closeImgViewer()">' +
-                        '<div class="center" fit>CLOSE</div>' +
-                        '<paper-ripple fit></paper-ripple>' +
-                    '</div>' +                  
-                    '<div class="button label-blue">' +
-                        '<div class="center" fit onclick="replaceImage()">CAPTURE</div>' +
-                        '<paper-ripple fit></paper-ripple>' +
-                    '</div>' +
-                    //'<div class="button label-blue">' +
-                    //    '<div class="center" fit onclick="deleteImage()">DELETE</div>' +
-                    //    '<paper-ripple fit></paper-ripple>' +
-                    //'</div>' +
-                '</div>' +
-            '</div>' +
-        '</div>';
-
-    if (viewOnly) {
-        dlg =
-        '<div id="image-overlay">' +
-            '<div class="loading-window">' +
-                '<div class="dialog" style="margin-left:20%;margin-right:20%;">' +
-                    '<div class="content">' +
-                        '<div class="title">' + title + ' <div style="float:right; margin-right:8px;" onclick="closeImgViewer()">X</div> </div><br>' +
-                        '<div><img id="curOutletImage" class="outlet-image-large" src="' + url + '"/></div>' +
-                    '</div>' +
-                    '<div class="button label-blue" onclick="closeImgViewer()">' +
-                        '<div class="center" fit>CLOSE</div>' +
-                        '<paper-ripple fit></paper-ripple>' +
-                    '</div>' +
-                '</div>' +
-            '</div>' +
-        '</div>';
-    }
-
-
-    try {      
-        $(dlg).appendTo('body');
-    } catch (err) {
-        log(err);
-    }
-}
-
-function closeImgViewer() {
-    try {
-        $('#image-overlay').remove();
-        if (onImageViewerClose != null) {
-            onImageViewerClose(newImageFile);
-        }
-    }
-    catch (err) {
-    }
-}
-
-function replaceImage() {
-    captureImage(function (imageURI) {
-        var image = document.getElementById('curOutletImage');
-        image.src = imageURI;
-        log('set new image path: ' + imageURI);
-        newImageFile = imageURI;
-    }, function (err) {
-        //showError(err);
-    });
-}
-
-function deleteImage() {
-    showConfirm('Delete Image?', "Are you sure you want to delete image?", function () {
-        try {
-            $('#image-overlay').remove();
-            if (onImageViewerClose != null) {
-                onImageViewerClose('');
-            }
-        }
-        catch (err) {
-        }
-    }, function () { });   
-}
-
-function captureImage(onSuccess, onError, useFrontCamera) {
-    try {
-        if (config.enable_devmode) {
-            onSuccess('http://lorempixel.com/output/technics-q-c-800-600-3.jpg');
-        } else {
-            if (typeof useFrontCamera === 'undefined' || useFrontCamera === false) {
-                navigator.camera.getPicture(onSuccess, onError,
-                    {
-                        quality: 30,
-                        targetWidth: 800,
-                        targetHeight: 600,
-                        correctOrientation: true,
-                        destinationType: Camera.DestinationType.FILE_URI, // DATA_URL for base64 => not recommend due to memory issue
-                    });
-            } else {
-                navigator.camera.getPicture(onSuccess, onError,
-                    {
-                        cameraDirection: Camera.Direction.FRONT,
-                        quality: 30,
-                        targetWidth: 800,
-                        targetHeight: 600,
-                        correctOrientation: true,
-                        destinationType: Camera.DestinationType.FILE_URI, // DATA_URL for base64 => not recommend due to memory issue
-                    });
-            }
-        }
-    } catch (err) {
-        showError(err);
-    }
 }
 
 function getDifTime(st, en) {
@@ -355,6 +231,128 @@ function detectRootedDevice(complete) {
         complete(-1);//
     }
 }
+
+//#region Capture/Image Viewer
+function openImgViewer(title, viewOnly, url, callback) {
+    newImageFile = null;
+    onImageViewerClose = callback;
+    log('Open image: ' + url + ' ' + title);
+    var dlg =
+        '<div id="image-overlay">' +
+            '<div class="loading-window">' +
+                '<div class="dialog" style="margin-left:20%;margin-right:20%;">' +
+                    '<div class="content">' +
+                        '<div class="title">' + title + ' <div style="float:right; margin-right:8px;" onclick="closeImgViewer()">X</div> </div><br>' +
+                        '<div><img id="curOutletImage" class="outlet-image-large" src="' + url + '"/></div>' +
+                    '</div>' +
+                    '<div class="button label-blue" onclick="closeImgViewer()">' +
+                        '<div class="center" fit>CLOSE</div>' +
+                        '<paper-ripple fit></paper-ripple>' +
+                    '</div>' +
+                    '<div class="button label-blue">' +
+                        '<div class="center" fit onclick="replaceImage()">CAPTURE</div>' +
+                        '<paper-ripple fit></paper-ripple>' +
+                    '</div>' +
+                    //'<div class="button label-blue">' +
+                    //    '<div class="center" fit onclick="deleteImage()">DELETE</div>' +
+                    //    '<paper-ripple fit></paper-ripple>' +
+                    //'</div>' +
+                '</div>' +
+            '</div>' +
+        '</div>';
+
+    if (viewOnly) {
+        dlg =
+        '<div id="image-overlay">' +
+            '<div class="loading-window">' +
+                '<div class="dialog" style="margin-left:20%;margin-right:20%;">' +
+                    '<div class="content">' +
+                        '<div class="title">' + title + ' <div style="float:right; margin-right:8px;" onclick="closeImgViewer()">X</div> </div><br>' +
+                        '<div><img id="curOutletImage" class="outlet-image-large" src="' + url + '"/></div>' +
+                    '</div>' +
+                    '<div class="button label-blue" onclick="closeImgViewer()">' +
+                        '<div class="center" fit>CLOSE</div>' +
+                        '<paper-ripple fit></paper-ripple>' +
+                    '</div>' +
+                '</div>' +
+            '</div>' +
+        '</div>';
+    }
+
+
+    try {
+        $(dlg).appendTo('body');
+    } catch (err) {
+        log(err);
+    }
+}
+
+function closeImgViewer() {
+    try {
+        $('#image-overlay').remove();
+        if (onImageViewerClose != null) {
+            onImageViewerClose(newImageFile);
+        }
+    }
+    catch (err) {
+    }
+}
+
+function replaceImage() {
+    captureImage(function (imageURI) {
+        var image = document.getElementById('curOutletImage');
+        image.src = imageURI;
+        log('set new image path: ' + imageURI);
+        newImageFile = imageURI;
+    }, function (err) {
+        //showError(err);
+    });
+}
+
+function deleteImage() {
+    showConfirm('Delete Image?', "Are you sure you want to delete image?", function () {
+        try {
+            $('#image-overlay').remove();
+            if (onImageViewerClose != null) {
+                onImageViewerClose('');
+            }
+        }
+        catch (err) {
+        }
+    }, function () { });
+}
+
+function captureImage(onSuccess, onError, useFrontCamera) {
+    try {
+        if (config.enable_devmode) {
+            onSuccess('http://lorempixel.com/output/technics-q-c-800-600-3.jpg');
+        } else {
+            if (typeof useFrontCamera === 'undefined' || useFrontCamera === false) {
+                navigator.camera.getPicture(onSuccess, onError,
+                    {
+                        quality: 30,
+                        targetWidth: config.image_width,
+                        targetHeight: config.image_height,
+                        correctOrientation: true,
+                        destinationType: Camera.DestinationType.FILE_URI, // DATA_URL for base64 => not recommend due to memory issue
+                    });
+            } else {
+                navigator.camera.getPicture(onSuccess, onError,
+                    {
+                        cameraDirection: Camera.Direction.FRONT,
+                        quality: 30,
+                        targetWidth: config.image_width,
+                        targetHeight: config.image_height,
+                        correctOrientation: true,
+                        destinationType: Camera.DestinationType.FILE_URI, // DATA_URL for base64 => not recommend due to memory issue
+                    });
+            }
+        }
+    } catch (err) {
+        showError(err);
+    }
+}
+//#endregion
 
 //#region Connection
 var __serverConnected = true;
