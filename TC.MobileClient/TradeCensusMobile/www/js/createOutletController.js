@@ -43,7 +43,7 @@ function newOutletController($scope, $http, $mdDialog, $timeout) {
         }
     }
     $scope.provinces = downloadProvinces;
-
+    
     $scope.callRates = _callRates;
     $scope.classes = _classes;
     $scope.territories = _territories;
@@ -422,9 +422,16 @@ function newOutletController($scope, $http, $mdDialog, $timeout) {
         });
     }
 
-    function setSelectedDistrict() {
-        if (isLoaded) return;
-
+    function mapProvinceToGeoProvince() {
+        var selectedProvince = null;
+        var outlet1 = isLoaded ? $scope.outlet : outlet;
+        for (var i = 0; i < $scope.provinces.length; i++) {
+            if ($scope.provinces[i].id === outlet1.ProvinceID) {
+                selectedProvince = $scope.provinces[i];
+                break;
+            }
+        }
+        __selectedGeoProvince = selectedProvince;
     }
 
     function checkDistance(callback) {
@@ -504,10 +511,18 @@ function newOutletController($scope, $http, $mdDialog, $timeout) {
             return false;
         }
 
-        //if ($scope.outlet.VBLVolume == 0) {
-        //    showErrorAdv(R.vbl_is_empty, function () { $("#vblvolume").focus(); });
-        //    return false;
-        //}
+        if ($scope.outlet.ID == NewOutletDefaultID) {
+            if (isEmpty($scope.outlet.StringImage1) &&
+                isEmpty($scope.outlet.StringImage2) &&
+                isEmpty($scope.outlet.StringImage3) &&
+                //isEmpty($scope.outlet.StringImage4) && // Selfie
+                isEmpty($scope.outlet.StringImage5) &&
+                isEmpty($scope.outlet.StringImage6)) {
+
+                showValidationErr("Please capture image before save new outlet!", function () { });
+                return false;
+            }
+        }
 
         if ($scope.outlet.VBLVolume > $scope.outlet.TotalVolume) {
             showValidationErr(R.vbl_cannot_greater_than_total, function () { $("#total").focus(); });
@@ -607,6 +622,7 @@ function newOutletController($scope, $http, $mdDialog, $timeout) {
     }
 
     loadImages();
+    mapProvinceToGeoProvince();
 
     if (isCreatedNew)
         setOutlet();

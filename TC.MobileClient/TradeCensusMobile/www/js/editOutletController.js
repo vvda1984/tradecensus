@@ -376,6 +376,7 @@ function editOutletController($scope, $mdDialog, $timeout) {
 
             if ($scope.outlet.AuditStatus == StatusInitial) {
                 $scope.outlet.AuditStatus = StatusEdit;
+                $scope.outlet.InputBy = user.id;
             }
 
             hideDialog(true);
