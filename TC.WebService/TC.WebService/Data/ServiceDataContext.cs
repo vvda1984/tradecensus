@@ -9,26 +9,48 @@ namespace TradeCensus.Data
 {
     public class ServiceDataContext : IDisposable
     {
-        const string SQL_SELECT_PERSON = "SELECT top 1 * FROM PersonRole (NOLOCK) where PersonID = @p0 AND [Password] = @p1'";
-        const string SQL_SELECT_VERSION = "SELECT * FROM Config (NOLOCK) where Name = 'version' OR Name = 'new_version_message' OR Name = 'NewVersionMessage'";
-        const string SQL_SELECT_CONFIG = "SELECT top 1 * FROM Config (NOLOCK) where Name = @p0";
-        const string SQL_SELECT_SUBBORDER = "SELECT gb.*, (select COUNT(Id) from GeoBorder (NOLOCK) as tmp where tmp.ParentID = gb.ID) as 'ChildrenCount' FROM GeoBorder (NOLOCK) as gb WHERE gb.ParentID = @p0 order by gb.Name";
-        const string SQL_SELECT_SUBBORDER_1 = "SELECT TOP 1 gb.*, (select COUNT(Id) from GeoBorder (NOLOCK) as tmp where tmp.ParentID = gb.ID) as 'ChildrenCount' FROM GeoBorder as gb (NOLOCK) WHERE gb.ID = {0} OR gb.Name LIKE N'{1}'";
-        const string SQL_SELECT_SUBBORDER_NAME = "SELECT gb3.*, (select COUNT(Id) from GeoBorder (NOLOCK) as tmp where tmp.ParentID = gb3.ID) as 'ChildrenCount' FROM (SELECT gb1.*, gb2.Name as ParentName FROM (GeoBorder (NOLOCK) gb1 inner join GeoBorder (NOLOCK) gb2 on gb1.ParentID = gb2.ID)) as gb3 WHERE gb3.ParentName like N'{0}' ORDER by Name";
-        const string SQL_SELECT_BORDER = "SELECT TOP 1 gb.*, (select COUNT(Id) from GeoBorder (NOLOCK) as tmp where tmp.ParentID = gb.ID) as 'ChildrenCount' FROM GeoBorder (NOLOCK) as gb WHERE gb.ID = @p0";
-        const string SQL_SELECT_JOURNAL = "SELECT TOP 1 * FROM [Journal] (NOLOCK) WHERE JournalDate = @p0 and Data like @p1";
-        const string SQL_UPDATE_JOURNAL = "UPDATE [Journal] set StartTS = @p0, EndTS=@p1, JournalDate = @p2, Data = @p3 WHERE ID = @p4";
-        const string SQL_SELECT_JOURNALS = "SELECT * FROM [Journal] (NOLOCK) WHERE PersonID = @p0 AND JournalDate >= @p1 AND JournalDate <= @p2";
-        const string SQL_SELECT_LOGIN_USER = "SELECT pr.Id as UserID,  pr.Role, pr.Username, pr.Password,  p.* FROM PersonRole (NOLOCK) pr left join Person (NOLOCK) p on pr.PersonId = p.ID where [Username] = @p0 AND [Password] = @p1";
-        const string SQL_UPDATE_ROLE = "UPDATE PersonRole set Role = @p0, AmendBy=@p1, AmendDate=@p2 where ID=@p3";
-        const string SQL_CHANGE_PASSWORD = "UPDATE PersonRole set Password = @p0 where PersonID=@p1 AND Password = @p2";
-        const string SQL_GET_SALESMANS = "With cte(EmployeeID) as (select ID from Person where ReportTo = @p0 UNION ALL select ID from Person JOIN cte d ON Person.ReportTo = d.EmployeeID where Person.TerminateDate is null) select * from person join cte on cte.EmployeeID=person.ID where ltrim(Person.FirstName) not like 'TBA%'";
-        const string SQL_GET_OUTLET_IMAGE = "SELECT top 1 * FROM OutletImage (NOLOCK) WHERE [OutletID] = @p0";
-        const string SQL_GET_OUTLET_1 = "SELECT top 1 * FROM Outlet (NOLOCK) WHERE [ID] = @p0 OR [PRowID] = @p1 ";
-        const string SQL_DELETE_OUTLET = "DELETE FROM Outlet WHERE [ID] = @p0";
-        const string SQL_DELETE_OUTLET_IMAGE = "DELETE FROM OutletImage WHERE OutletID = @p0";
-        const string SQL_GET_SETTING = "SELECT top 1 * FROM [Config] (NOLOCK) where Name like @p0";
-        const string SQL_GET_PERSON_ROLE = "SELECT top 1 * FROM [PersonRole] (NOLOCK) where PersonID = @p0";
+        static string SQL_SELECT_PERSON { get { return Utils.GetAppSetting("SQL_SELECT_PERSON", _SQL_SELECT_PERSON); } }
+        static string SQL_SELECT_VERSION { get { return Utils.GetAppSetting("SQL_SELECT_VERSION", _SQL_SELECT_VERSION); } }
+        static string SQL_SELECT_CONFIG { get { return Utils.GetAppSetting("SQL_SELECT_CONFIG", _SQL_SELECT_CONFIG); } }
+        static string SQL_SELECT_SUBBORDER { get { return Utils.GetAppSetting("SQL_SELECT_SUBBORDER", _SQL_SELECT_SUBBORDER); } }
+        static string SQL_SELECT_SUBBORDER_1 { get { return Utils.GetAppSetting("SQL_SELECT_SUBBORDER_1", _SQL_SELECT_SUBBORDER_1); } }
+        static string SQL_SELECT_SUBBORDER_2 { get { return Utils.GetAppSetting("SQL_SELECT_SUBBORDER_2", _SQL_SELECT_SUBBORDER_2); } }
+        static string SQL_SELECT_BORDER { get { return Utils.GetAppSetting("SQL_SELECT_BORDER", _SQL_SELECT_BORDER); } }
+        static string SQL_SELECT_JOURNAL { get { return Utils.GetAppSetting("SQL_SELECT_JOURNAL", _SQL_SELECT_JOURNAL); } }
+        static string SQL_UPDATE_JOURNAL { get { return Utils.GetAppSetting("SQL_UPDATE_JOURNAL", _SQL_UPDATE_JOURNAL); } }
+        static string SQL_SELECT_JOURNALS { get { return Utils.GetAppSetting("SQL_SELECT_JOURNALS", _SQL_SELECT_JOURNALS); } }
+        static string SQL_SELECT_LOGIN_USER { get { return Utils.GetAppSetting("SQL_SELECT_LOGIN_USER", _SQL_SELECT_LOGIN_USER); } }
+        static string SQL_UPDATE_ROLE { get { return Utils.GetAppSetting("SQL_UPDATE_ROLE", _SQL_UPDATE_ROLE); } }
+        static string SQL_CHANGE_PASSWORD { get { return Utils.GetAppSetting("SQL_CHANGE_PASSWORD", _SQL_CHANGE_PASSWORD); } }
+        static string SQL_GET_SALESMANS { get { return Utils.GetAppSetting("SQL_GET_SALESMANS", _SQL_GET_SALESMANS); } }
+        static string SQL_GET_OUTLET_IMAGE { get { return Utils.GetAppSetting("SQL_GET_OUTLET_IMAGE", _SQL_GET_OUTLET_IMAGE); } }
+        static string SQL_GET_OUTLET_TOP1 { get { return Utils.GetAppSetting("SQL_GET_OUTLET_1", _SQL_GET_OUTLET_TOP1); } }
+        static string SQL_DELETE_OUTLET { get { return Utils.GetAppSetting("SQL_DELETE_OUTLET", _SQL_DELETE_OUTLET); } }
+        static string SQL_DELETE_OUTLET_IMAGE { get { return Utils.GetAppSetting("SQL_DELETE_OUTLET_IMAGE", _SQL_DELETE_OUTLET_IMAGE); } }
+        static string SQL_GET_SETTING { get { return Utils.GetAppSetting("SQL_GET_SETTING", _SQL_GET_SETTING); } }
+        static string SQL_GET_PERSON_ROLE { get { return Utils.GetAppSetting("SQL_GET_PERSON_ROLE", _SQL_GET_PERSON_ROLE); } }
+
+
+        const string _SQL_SELECT_PERSON = "SELECT top 1 * FROM PersonRole (NOLOCK) where PersonID = @p0 AND [Password] = @p1'";
+        const string _SQL_SELECT_VERSION = "SELECT * FROM Config (NOLOCK) where Name = 'version' OR Name = 'new_version_message' OR Name = 'NewVersionMessage'";
+        const string _SQL_SELECT_CONFIG = "SELECT top 1 * FROM Config (NOLOCK) where Name = @p0";
+        const string _SQL_SELECT_SUBBORDER = "SELECT gb.*, (select COUNT(Id) from GeoBorder (NOLOCK) as tmp where tmp.ParentID = gb.ID) as 'ChildrenCount' FROM GeoBorder (NOLOCK) as gb WHERE gb.ParentID = @p0 order by gb.Name";
+        const string _SQL_SELECT_SUBBORDER_1 = "SELECT TOP 1 gb.*, (select COUNT(Id) from GeoBorder (NOLOCK) as tmp where tmp.ParentID = gb.ID) as 'ChildrenCount' FROM GeoBorder as gb (NOLOCK) WHERE gb.ID = {0} OR gb.Name LIKE N'{1}'";
+        const string _SQL_SELECT_SUBBORDER_2 = "SELECT gb3.*, (select COUNT(Id) from GeoBorder (NOLOCK) as tmp where tmp.ParentID = gb3.ID) as 'ChildrenCount' FROM (SELECT gb1.*, gb2.Name as ParentName FROM (GeoBorder (NOLOCK) gb1 inner join GeoBorder (NOLOCK) gb2 on gb1.ParentID = gb2.ID)) as gb3 WHERE gb3.ParentName like N'{0}' ORDER by Name";
+        const string _SQL_SELECT_BORDER = "SELECT TOP 1 gb.*, (select COUNT(Id) from GeoBorder (NOLOCK) as tmp where tmp.ParentID = gb.ID) as 'ChildrenCount' FROM GeoBorder (NOLOCK) as gb WHERE gb.ID = @p0";
+        const string _SQL_SELECT_JOURNAL = "SELECT TOP 1 * FROM [Journal] (NOLOCK) WHERE JournalDate = @p0 and Data like @p1";
+        const string _SQL_UPDATE_JOURNAL = "UPDATE [Journal] set StartTS = @p0, EndTS=@p1, JournalDate = @p2, Data = @p3 WHERE ID = @p4";
+        const string _SQL_SELECT_JOURNALS = "SELECT * FROM [Journal] (NOLOCK) WHERE PersonID = @p0 AND JournalDate >= @p1 AND JournalDate <= @p2";
+        const string _SQL_SELECT_LOGIN_USER = "SELECT pr.Id as UserID,  pr.Role, pr.Username, pr.Password,  p.* FROM PersonRole (NOLOCK) pr left join Person (NOLOCK) p on pr.PersonId = p.ID where [Username] = @p0 AND [Password] = @p1";
+        const string _SQL_UPDATE_ROLE = "UPDATE PersonRole set Role = @p0, AmendBy=@p1, AmendDate=@p2 where ID=@p3";
+        const string _SQL_CHANGE_PASSWORD = "UPDATE PersonRole set Password = @p0 where PersonID=@p1 AND Password = @p2";
+        const string _SQL_GET_SALESMANS = "With cte(EmployeeID) as (select ID from Person where ReportTo = @p0 UNION ALL select ID from Person JOIN cte d ON Person.ReportTo = d.EmployeeID where Person.TerminateDate is null) select * from person join cte on cte.EmployeeID=person.ID where ltrim(Person.FirstName) not like 'TBA%'";
+        const string _SQL_GET_OUTLET_IMAGE = "SELECT top 1 * FROM OutletImage (NOLOCK) WHERE [OutletID] = @p0";
+        const string _SQL_GET_OUTLET_TOP1 = "SELECT top 1 * FROM Outlet (NOLOCK) WHERE [ID] = @p0 OR [PRowID] = @p1 ";
+        const string _SQL_DELETE_OUTLET = "DELETE FROM Outlet WHERE [ID] = @p0";
+        const string _SQL_DELETE_OUTLET_IMAGE = "DELETE FROM OutletImage WHERE OutletID = @p0";
+        const string _SQL_GET_SETTING = "SELECT top 1 * FROM [Config] (NOLOCK) where Name like @p0";
+        const string _SQL_GET_PERSON_ROLE = "SELECT top 1 * FROM [PersonRole] (NOLOCK) where PersonID = @p0";
 
 
         private tradecensusEntities DC;
@@ -162,13 +184,13 @@ namespace TradeCensus.Data
 
         public List<GeoBorderEx> GetBordersByParentName(string parentName)
         {
-            var sqlCommand = string.Format(SQL_SELECT_SUBBORDER_NAME, parentName.Replace("'", "''"));
+            var sqlCommand = string.Format(SQL_SELECT_SUBBORDER_2, parentName.Replace("'", "''"));
             return DC.Database.SqlQuery<GeoBorderEx>(sqlCommand).ToList();
         }
 
         public List<GeoBorderEx> GettWards(string districtName, int provinceID)
         {
-            const string SQL_SELECT_WARDS = 
+            const string SQL_SELECT_WARDS =
                 @"SELECT gb3.ID, gb3.ParentID, gb3.Name, 
                         (select COUNT(Id) from GeoBorder (NOLOCK) as tmp where tmp.ParentID = gb3.ID) as ChildrenCount, 
                         gb4.ParentID as ProvinceID 
@@ -442,7 +464,7 @@ namespace TradeCensus.Data
         public OutletEntity[] GetNearByOutlets(double lat, double lng, double maxDistanceInMeter, int maxItemCount, int status, int personID, bool auditor)
         {
             // {0}: lat, {1}: lng, {2}: max_distance, {3}: max_item_count
-            var SQL_QUERY = @"SELECT TOP ({3}) * FROM 
+            var SQL_QUERY_NEAR_BY = @"SELECT TOP ({3}) * FROM 
 	                (SELECT o.*, 
 			                ot.Name as OutletTypeName, 
 			                pr.Name as ProvinceName,
@@ -465,11 +487,11 @@ namespace TradeCensus.Data
                             oi.ImageData5, 
                             oi.ImageData6,
 			                (pc.distance_unit
-				                 * DEGREES(ACOS(COS(RADIANS({0}))
-				                 * COS(RADIANS(o.Latitude))
-				                 * COS(RADIANS({1}) - RADIANS(o.Longitude))
-				                 + SIN(RADIANS({0}))
-				                 * SIN(RADIANS(o.Latitude)))) * 1000) AS Distance
+				                 * DEGREES(ACOS(COS(RADIANS(pc.latpoint))
+								 * COS(RADIANS(o.latitude))
+								 * COS(RADIANS(pc.longpoint - o.longitude))
+								 + SIN(RADIANS(pc.latpoint))
+								 * SIN(RADIANS(o.latitude)))) * 1000) AS Distance
 	                FROM 
 		                ((Outlet as o with(nolock)
                             left join OutletImage oi with(nolock) on oi.OutletID = o.ID
@@ -479,18 +501,24 @@ namespace TradeCensus.Data
 			                left join PersonRole r with(nolock) on p.ID = r.PersonID 
 			                left join PersonRole r1 with(nolock) on r1.PersonID = o.InputBy
 			                left join PersonRole r2 with(nolock) on r2.PersonID = o.AmendBy) 
-		                JOIN (SELECT 50.0 AS radius, 111.045 AS distance_unit) AS pc ON 1=1) 
+		                JOIN (SELECT  {0}  AS latpoint, {1} AS longpoint, 50.0 AS radius, 111.045 AS distance_unit) AS pc ON 1=1) 
 
 	                WHERE o.Latitude
-		                BETWEEN {0}  - (pc.radius / pc.distance_unit)
-		                AND {0}  + (pc.radius / pc.distance_unit)
-		                AND o.Longitude BETWEEN {1} - (pc.radius / (pc.distance_unit * COS(RADIANS({0}))))
-		                AND {1} + (pc.radius / (pc.distance_unit * COS(RADIANS({0}))))) as tb
+						 BETWEEN pc.latpoint  - (pc.radius / pc.distance_unit)
+							 AND pc.latpoint  + (pc.radius / pc.distance_unit)
+						AND o.Longitude
+						 BETWEEN pc.longpoint - (pc.radius / (pc.distance_unit * COS(RADIANS(pc.latpoint))))
+							 AND pc.longpoint + (pc.radius / (pc.distance_unit * COS(RADIANS(pc.latpoint))))) as tb
 	                WHERE tb.Distance <= {2} ";
 
+            var SQL_QUERY =  Utils.GetAppSetting("SQL_QUERY_NEAR_BY", SQL_QUERY_NEAR_BY);
             if (status == 0)        // NEAR-BY
             {
-                SQL_QUERY += $"AND tb.AuditStatus <> {Constants.StatusDelete}";
+                SQL_QUERY += $"AND tb.AuditStatus IN ({Constants.StatusInitial}, ";
+                SQL_QUERY += $"{Constants.StatusPost}, {Constants.StatusAuditAccept}, {Constants.StatusAuditDeny}, {Constants.StatusAuditorAccept}, ";
+                SQL_QUERY += $"{Constants.StatusEdit}, {Constants.StatusExistingPost}, {Constants.StatusExistingDeny}, {Constants.StatusExistingAccept}, ";
+                SQL_QUERY += $"{Constants.StatusDone}, {Constants.StatusDeny}, {Constants.StatusRevert}) ";
+                SQL_QUERY += $" OR ((tb.AuditStatus = {Constants.StatusNew} OR tb.AuditStatus = {Constants.StatusAuditorNew}) AND tb.PersonID = {personID})";
             }
             else if (status == 1)   // NEW
             {
@@ -571,7 +599,8 @@ namespace TradeCensus.Data
 	            WHERE 
 		            o.Name like N'%{0}%' OR o.ID = {1}";
 
-            return DC.Database.SqlQuery<OutletEntity>(string.Format(SQL_QUERY, name, code)).ToArray();
+            string queryCommand = Utils.GetAppSetting("SQL_SEARCH_OUTLET", SQL_QUERY);
+            return DC.Database.SqlQuery<OutletEntity>(string.Format(queryCommand, name, code)).ToArray();
         }
     }
 }

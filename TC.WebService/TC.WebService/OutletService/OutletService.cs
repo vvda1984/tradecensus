@@ -78,6 +78,7 @@ namespace TradeCensus
 
                 CompressImage = outlet.CompressImage,
                 Comment = outlet.Comment,
+                Distance = Math.Round(outlet.Distance, 1),
             };
 
             foundOutlet.FullAddress = $"{outlet.AddLine} {outlet.AddLine2} {outlet.Ward} {outlet.District} {foundOutlet.ProvinceName}".Trim().Replace("  ", " ");
@@ -392,6 +393,7 @@ namespace TradeCensus
                     auditor);
                 foreach (var outlet in query)
                 {
+                   
                     resp.Items.Add(ToOutletModel(outlet));
                 }
             }

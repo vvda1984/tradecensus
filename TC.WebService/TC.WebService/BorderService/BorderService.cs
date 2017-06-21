@@ -154,7 +154,7 @@ namespace TradeCensus
             return GetBorderByParent(provinceID);
         }
 
-        public GetBorderArrayResponse GetWardBorders(string districtName, string provinceID)
+        public GetBorderArrayResponse GetWardBorders(string provinceID, string districtName)
         {
             GetBorderArrayResponse resp = new GetBorderArrayResponse();
             try

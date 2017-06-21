@@ -115,7 +115,7 @@ namespace TradeCensus
             try
             {
                 IBorderService service = DependencyResolver.Resolve<IBorderService>();
-                return service.GetWardBorders(districtName, provinceID);
+                return service.GetWardBorders(provinceID, districtName);
             }
             catch (Exception ex)
             {

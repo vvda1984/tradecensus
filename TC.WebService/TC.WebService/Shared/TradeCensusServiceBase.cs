@@ -2,7 +2,6 @@
 using System;
 using System.Configuration;
 using System.IO;
-using System.Linq;
 using TradeCensus.Data;
 
 namespace TradeCensus.Shared
@@ -78,18 +77,7 @@ namespace TradeCensus.Shared
 
         protected T GetAppSetting<T>(string key, T defaultValue = default(T))
         {
-            if (_appSettingsReader == null)
-                _appSettingsReader = new AppSettingsReader();
-
-            try
-            {
-                var value = (T)_appSettingsReader.GetValue(key, typeof(T));
-                return (value == null) ? defaultValue : value;
-            }
-            catch
-            {
-                return defaultValue;
-            }
+            return Utils.GetAppSetting(key, defaultValue);
         }
 
         private void EnsureDirExist(string path)
