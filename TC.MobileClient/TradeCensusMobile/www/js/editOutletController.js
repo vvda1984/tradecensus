@@ -3,11 +3,12 @@
 /// <reference path="tc.outletAPI.js" />
 
 function editOutletController($scope, $mdDialog, $timeout) {
-    isOutletDlgOpen = true;
+    __isOutletDlgOpen = true;
     isViewOnly = false;
     $scope.outlet = OUTLET.dialog.outlet();
     if ($scope.outlet.TaxID === "null" || $scope.outlet.TaxID === null) $scope.outlet.TaxID = '';
     if ($scope.outlet.LegalName === "null" || $scope.outlet.LegalName === null) $scope.outlet.LegalName = '';
+    if ($scope.outlet.Comment === "null" || $scope.outlet.Comment === null) $scope.outlet.Comment = '';
 
     function hideDialog(answer) {
         //$mdDialog.hide(answer);
@@ -43,11 +44,16 @@ function editOutletController($scope, $mdDialog, $timeout) {
     if ($scope.outlet.AuditStatus == 0) {
         isSameSystem = true;
     } else {
-        if ((user.role == 2 || user.role == 3) && ($scope.outlet.InputByRole == 2 || $scope.outlet.InputByRole == 3))
+        if (user.role == 1) { // SALE auditor
             isSameSystem = true;
-        else if ((user.role == 0 || user.role == 1) && ($scope.outlet.AmendByRole == 0 || $scope.outlet.AmendByRole == 1))
+        } else if (!user.hasAuditRole) {
             isSameSystem = true;
-        else if ((user.role == 2 || user.role == 3) && ($scope.outlet.AmendByRole == 2 || $scope.outlet.AmendByRole == 3))
+        } else if ((user.role == 2 || user.role == 3) && ($scope.outlet.InputByRole == 2 || $scope.outlet.InputByRole == 3)) {
+            isSameSystem = true;
+        } else if ((user.role == 0) && ($scope.outlet.AmendByRole == 0 || $scope.outlet.AmendByRole == 1))
+            isSameSystem = true;
+        else if ((user.role == 2 || user.role == 3) &&
+            ($scope.outlet.AmendByRole == 2 || $scope.outlet.AmendByRole == 3))
             isSameSystem = true;
     }
 
@@ -427,8 +433,11 @@ function editOutletController($scope, $mdDialog, $timeout) {
                     $scope.outlet.IsDraft = false; // POST
                     $scope.outlet.AuditStatus = StatusPost;
                 }
-
                 $scope.outlet.isChanged = true;
+                setOpenCloseValue();
+                if (!validate())
+                    return;
+
                 hideDialog(true);
             });
         }, function () { });
@@ -510,6 +519,7 @@ function editOutletController($scope, $mdDialog, $timeout) {
         $scope.canChangeOpenClose = true;       // view only
         $scope.canChangeTrackNonTrack = true;   // view only
         $scope.isDeleted = false;
+        $scope.viewOnly = true;
 
         isViewOnly = true;
     }

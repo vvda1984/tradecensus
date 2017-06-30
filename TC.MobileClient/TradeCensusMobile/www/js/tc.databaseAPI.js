@@ -1,82 +1,90 @@
 ﻿function initalizeDB(onSuccess, onError) {
-    try{
+    try {
         db = window.openDatabase('tc-v1-06.db', "2.0", 'tc-v1-06.db', 499 * 1024 * 1024); //~500MB
-        db.transaction(function (tx) {
-            if (resetDB) {
-                tx.executeSql('DROP TABLE IF EXISTS user1');
-                tx.executeSql('DROP TABLE IF EXISTS config');
-                tx.executeSql('DROP TABLE IF EXISTS province');
-                tx.executeSql('DROP TABLE IF EXISTS outletType');
-                tx.executeSql('DROP TABLE IF EXISTS [outletImage1]');
-            }
+        db.transaction(function(tx) {
+                if (resetDB) {
+                    tx.executeSql("DROP TABLE IF EXISTS user1");
+                    tx.executeSql("DROP TABLE IF EXISTS config");
+                    //tx.executeSql("DROP TABLE IF EXISTS province");
+                    tx.executeSql("DROP TABLE IF EXISTS outletType");
+                    tx.executeSql("DROP TABLE IF EXISTS [outletImage1]");
+                }
 
-            if (config.versionNum < 5) {
-                tx.executeSql('DROP TABLE IF EXISTS [province]', [],
-                function (tx1) {
-                },
-                function (tx1, dberr) {
-                    onError(dberr.message);
-                });
-            }
-           
-            log("ensure table [user] exist");
-            tx.executeSql('CREATE TABLE IF NOT EXISTS [user1] ([ID] integer PRIMARY KEY NOT NULL, [UserName] text, [FirstName] text, [LastName] text, [IsTerminate] text NOT NULL,	[HasAuditRole] text NOT NULL COLLATE NOCASE, [PosID] text NOT NULL COLLATE NOCASE, [ZoneID] text NOT NULL COLLATE NOCASE, [AreaID] text NOT NULL COLLATE NOCASE, [ProvinceID] text NOT NULL COLLATE NOCASE, [Email] text, [EmailTo] text, [HouseNo] text, [Street] text, [District] text, [HomeAddress] text, [WorkAddress] text, [Phone] text, [IsDSM] text NOT NULL, [OfflinePassword] text NOT NULL)',
-                [],
-                function (tx1) {
-                },
-                function (tx1, dberr) {
-                    onError(dberr.message);
-                });
+                if (config.versionNum < 5) {
+                    tx.executeSql('DROP TABLE IF EXISTS [province]',
+                        [],
+                        function() {
+                        },
+                        function(tx1, dberr) {
+                            onError(dberr.message);
+                        });
+                }
 
-            log("ensure table [config] exist");
-            tx.executeSql('CREATE TABLE IF NOT EXISTS [config] ( [Name] text PRIMARY KEY NOT NULL COLLATE NOCASE, [Value] text)',
-                [],
-                function (tx1) {
-                },
-                function (tx1, dberr) {
-                    onError(dberr.message);
-                });
+                log("ensure table [user] exist");
+                tx.executeSql(
+                    'CREATE TABLE IF NOT EXISTS [user1] ([ID] integer PRIMARY KEY NOT NULL, [UserName] text, [FirstName] text, [LastName] text, [IsTerminate] text NOT NULL,	[HasAuditRole] text NOT NULL COLLATE NOCASE, [PosID] text NOT NULL COLLATE NOCASE, [ZoneID] text NOT NULL COLLATE NOCASE, [AreaID] text NOT NULL COLLATE NOCASE, [ProvinceID] text NOT NULL COLLATE NOCASE, [Email] text, [EmailTo] text, [HouseNo] text, [Street] text, [District] text, [HomeAddress] text, [WorkAddress] text, [Phone] text, [IsDSM] text NOT NULL, [OfflinePassword] text NOT NULL)',
+                    [],
+                    function() {
+                    },
+                    function(tx1, dberr) {
+                        onError(dberr.message);
+                    });
 
-            log("ensure table [province] exist");
-            tx.executeSql('CREATE TABLE IF NOT EXISTS [province] ( [id] text PRIMARY KEY NOT NULL, [name] text COLLATE NOCASE, [referenceGeoID])',
-                [],
-                function (tx1) {
-                },
-                function (tx1, dberr) {
-                    onError(dberr.message);
-                });
+                log("ensure table [config] exist");
+                tx.executeSql(
+                    'CREATE TABLE IF NOT EXISTS [config] ( [Name] text PRIMARY KEY NOT NULL COLLATE NOCASE, [Value] text)',
+                    [],
+                    function() {
+                    },
+                    function(tx1, dberr) {
+                        onError(dberr.message);
+                    });
 
-            log("ensure table [outletType] exist");
-            tx.executeSql('CREATE TABLE IF NOT EXISTS [outletType] ( [ID] text PRIMARY KEY NOT NULL, [Name] text COLLATE NOCASE, [OGroupID] text COLLATE NOCASE, [KPIType] int NOT NULL)',
-                [],
-                function (tx1) {
-                },
-                function (tx1, dberr) {
-                    onError(dberr.message);
-                });
+                //log("ensure table [province] exist");
+                //tx.executeSql(
+                //    'CREATE TABLE IF NOT EXISTS [province] ( [id] text PRIMARY KEY NOT NULL, [name] text COLLATE NOCASE, [referenceGeoID])',
+                //    [],
+                //    function(tx1) {
+                //    },
+                //    function(tx1, dberr) {
+                //        onError(dberr.message);
+                //    });
 
-            log("ensure table [outletImage1] exist");
-            tx.executeSql('CREATE TABLE IF NOT EXISTS [outletImage1] ( [ID] text NOT NULL, [OutletID] text NOT NULL, [ImageIndex] text NOT NULL, [ImagePath] text NOT NULL, [Uploaded] text NOT NULL, [CreatedDate] text NOT NULL, [CreatedBy] text NOT NULL )',
-                [],
-                function (tx1) {
-                },
-                function (tx1, dberr) {
-                    onError(dberr.message);
-                });
-           
-            tx.executeSql('ALTER TABLE [user1] ADD COLUMN [Role] text NULL', [], function (tx1) { }, function (tx1, dberr) { });            
+                log("ensure table [outletType] exist");
+                tx.executeSql(
+                    'CREATE TABLE IF NOT EXISTS [outletType] ( [ID] text PRIMARY KEY NOT NULL, [Name] text COLLATE NOCASE, [OGroupID] text COLLATE NOCASE, [KPIType] int NOT NULL)',
+                    [],
+                    function(tx1) {
+                    },
+                    function(tx1, dberr) {
+                        onError(dberr.message);
+                    });
 
-            addressModel.initialize(db, tx);
-            onSuccess(tx);
+                log("ensure table [outletImage1] exist");
+                tx.executeSql(
+                    'CREATE TABLE IF NOT EXISTS [outletImage1] ( [ID] text NOT NULL, [OutletID] text NOT NULL, [ImageIndex] text NOT NULL, [ImagePath] text NOT NULL, [Uploaded] text NOT NULL, [CreatedDate] text NOT NULL, [CreatedBy] text NOT NULL )',
+                    [],
+                    function(tx1) {
+                    },
+                    function(tx1, dberr) {
+                        onError(dberr.message);
+                    });
 
-            log("initialized db successfully");
-        },
-        function (error) {
-            // error
-            System.out.println(error);
-        });
-    }
-    catch (ex) {
+                tx.executeSql('ALTER TABLE [user1] ADD COLUMN [Role] text NULL',
+                    [],
+                    function(tx1) {},
+                    function(tx1, dberr) {});
+
+                addressModel.initialize(db, tx);
+                onSuccess(tx);
+
+                log("initialized db successfully");
+            },
+            function(error) {
+                // error
+                System.out.println(error);
+            });
+    } catch (ex) {
         log(ex);
         onError(ex.message);
         //onError('Cannot access database, please restart app!');
@@ -140,17 +148,9 @@ function changePasswordDB(userID, password, onSuccess, onError) {
 }
 
 function selectSettingDB(tx, onSuccess, onError) {
-    var sql = "SELECT * FROM config";
+    var sql = "SELECT * FROM [config]";
     logSqlCommand(sql);
     tx.executeSql(sql, [], onSuccess, onError);
-}
-
-function selectConfigs(onSuccess, onError) {
-    db.transaction(function (tx) {
-        var sql = "SELECT * FROM config";
-        logSqlCommand(sql);
-        tx.executeSql(sql, [], onSuccess, onError);
-    });   
 }
 
 function selectUserDB(userName, password, onSuccess, onError) {
@@ -162,123 +162,200 @@ function selectUserDB(userName, password, onSuccess, onError) {
     });
 }
 
-function insertProvinces(items, onSuccess, onError) {
-    db.transaction(function (tx) {
-        provinces = [];
-        var len = items.length;
-        for (i = 0 ; i < len; i++) {
-            var p = items[i];
-            provinces[i] = p;
-            var sql = "INSERT OR REPLACE INTO [province] VALUES (";
-            sql = sql.concat("'", p.id, "', ");
-            sql = sql.concat("'", quoteText(p.name), "', ");
-            sql = sql.concat(p.referenceGeoID, ")");
-            logSqlCommand(sql);
-            tx.executeSql(sql, [], function (tx) { }, onError);
-        };
-        onSuccess();        
-    });
-}
+function insertProvincesDB(curItems, items, callback) {
+    db.transaction(function(tx) {
+            //var deletesql = "DELETE * from " + config.tbl_downloadProvince;
+            //logSqlCommand(deletesql);
+            //tx.executeSql(deletesql, [], function () { }, function (tx, dberr) {
+            //    console.error(dberr);
+            //    callback("Insert database error.");
+            //});
 
-function insertOutletTypes(items, onSuccess, onError) {
-    db.transaction(function (tx) {
-        items.sort(function (i1, i2) {
-            if (i1.KPIType < i2.KPIType)
-                return -1;
-            if (i1.KPIType > i2.KPIType)
-                return 1;
-            return 0;
-        });
-
-        outletTypes = [];
-        outletTypes[0] = { ID: '-1', Name: ' ' };
-
-        var sql = "DELETE FROM [outletType]";
-        tx.executeSql(sql, [], function (tx) {
+            provinces = [];
             var len = items.length;
-            for (i = 0 ; i < len; i++) {
+            for (var i = 0; i < len; i++) {
                 var p = items[i];
-                outletTypes[i + 1] = p;
-                var sql = "INSERT INTO [outletType] VALUES (";
-                sql = sql.concat("'", p.ID, "', ");
-                sql = sql.concat("'", quoteText(p.Name), "', ");
-                sql = sql.concat("'", p.OGroupID, "', ");
-                sql = sql.concat(p.KPIType.toString(), ")");
-                logSqlCommand(sql);
-                tx.executeSql(sql, [], function (tx) { }, function (dberr) {
-                    log(dberr.message);
+
+                console.log("add: " + JSON.stringify(p));
+
+                var foundProvince = null;
+
+                for (var j = 0; j < curItems.length; j++) {
+                    var curProvince = curItems[j];
+                    if (curProvince.id === p.id) {
+                        foundProvince = curProvince;
+                        break;
+                    }
+                }
+
+                provinces.push({
+                    id: p.id,
+                    name: p.name,
+                    download: foundProvince == null ? 0 : foundProvince.download,
+                    referenceGeoID: p.referenceGeoID
                 });
+
+                var sql = "";
+                if (foundProvince == null) {
+                    sql = "INSERT INTO [" + config.tbl_downloadProvince + "] VALUES (";
+                    sql = sql.concat("'", p.id, "', ");
+                    sql = sql.concat("'", quoteText(p.name), "', ");
+                    sql = sql.concat("0", ",");
+                    sql = sql.concat(p.referenceGeoID, ")");
+                } else {
+                    sql = "UPDATE [" + config.tbl_downloadProvince + "] SET ";
+                    sql = sql.concat("name='", p.name, "', ");
+                    sql = sql.concat("download=", foundProvince.download, ", ");
+                    sql = sql.concat("referenceGeoID=", p.referenceGeoID, " WHERE id='", p.id, "'");
+                }
+
+                logSqlCommand(sql);
+                tx.executeSql(sql,
+                    [],
+                    function() {},
+                    function(tx, dberr) {
+                        console.error(dberr);
+                        callback("Update database error.");
+                    });
             };
-            onSuccess();
 
-        }, function (dberr) {
-            log(dberr.message);
+            provinces.sort(function (a, b) {
+                var n1 = changeAlias(a.name);
+                var n2 = changeAlias(b.name);
+
+                if (n1 > n2) {
+                    return 1;
+                } else if (n1 < n2) {
+                    return -1;
+                } else {
+                    return 0;
+                }
+            });
+
+            callback();
+        },
+        function(tx, dberr) {
+            console.error(dberr);
+            callback("Insert database error.");
         });
-    });
 }
 
-function insertSettingDB(config, onSuccess, onError) {
-    db.transaction(function (tx) {        
-        insertSetting(tx, "protocol", config.protocol);
-        insertSetting(tx, "ip", config.ip, onError);
-        insertSetting(tx, "port", config.port);
-        insertSetting(tx, "service_name", config.service_name);
-        insertSetting(tx, "item_count", config.item_count == undefined ? 20 : config.item_count.toString());
-        insertSetting(tx, "distance", config.distance == undefined ? 200 : config.distance.toString());
-        insertSetting(tx, "province_id", config.province_id);
-        insertSetting(tx, "calc_distance_algorithm", config.calc_distance_algorithm);
-        insertSetting(tx, "tbl_area_ver", config.tbl_area_ver);
-        insertSetting(tx, "tbl_outlettype_ver", config.tbl_outlettype_ver);
-        insertSetting(tx, "tbl_province_ver", config.tbl_province_ver);
-        insertSetting(tx, "tbl_zone_ver", config.tbl_zone_ver);
-		insertSetting(tx, "map_api_key", config.map_api_key);
-		insertSetting(tx, "sync_time", config.sync_time);
-		insertSetting(tx, "cluster_size", config.cluster_size);
-		insertSetting(tx, "cluster_max_zoom", config.cluster_max_zoom);
-		insertSetting(tx, "max_oulet_download", config.max_oulet_download.toString());
-		insertSetting(tx, "enable_check_in", config.enable_check_in.toString());
-		insertSetting(tx, "enable_send_request", config.enable_send_request.toString());
-		insertSetting(tx, "hotlines", JSON.stringify(config.hotlines));
-		insertSetting(tx, "map_icons_version", config.map_icons_version.toString());
-		insertSetting(tx, "map_tc_salesman_outlet", config.map_tc_salesman_outlet);
-		insertSetting(tx, "map_tc_salesman_outlet_denied", config.map_tc_salesman_outlet_denied);
-		insertSetting(tx, "map_tc_auditor_outlet", config.map_tc_auditor_outlet);
-		insertSetting(tx, "map_tc_auditor_outlet_denied", config.map_tc_auditor_outlet_denied);
-		insertSetting(tx, "map_tc_agency_new_outlet", config.map_tc_agency_new_outlet);
-		insertSetting(tx, "map_tc_agency_new_outlet_denied", config.map_tc_agency_new_outlet_denied);
-		insertSetting(tx, "map_tc_agency_new_outlet_approved", config.map_tc_agency_new_outlet_approved);
-		insertSetting(tx, "map_tc_agency_existing_outlet_edited", config.map_tc_agency_existing_outlet_edited);
-		insertSetting(tx, "map_tc_agency_existing_outlet_denied", config.map_tc_agency_existing_outlet_denied);
-		insertSetting(tx, "map_tc_agency_existing_outlet_approved", config.map_tc_agency_existing_outlet_approved);
-		insertSetting(tx, "map_tc_agency_auditor_new_outlet", config.map_tc_agency_auditor_new_outlet);
-		insertSetting(tx, "map_tc_agency_auditor_new_outlet_denied", config.map_tc_agency_auditor_new_outlet_denied);
-		insertSetting(tx, "map_tc_agency_auditor_new_outlet_approved", config.map_tc_agency_auditor_new_outlet_approved);
-		insertSetting(tx, "map_sr_outlet_audit_denied", config.map_sr_outlet_audit_denied);
-		insertSetting(tx, "map_sr_outlet_audit_approved", config.map_sr_outlet_opened);
-		insertSetting(tx, "map_sr_outlet_closed", config.map_sr_outlet_closed);
-		insertSetting(tx, "map_sr_outlet_non_track", config.map_sr_outlet_non_track);
-		insertSetting(tx, "map_sr_outlet_opened", config.map_sr_outlet_opened);
-		insertSetting(tx, "map_dis_outlet_audit_denied", config.map_dis_outlet_audit_denied);
-		insertSetting(tx, "map_dis_outlet_audit_approved", config.map_dis_outlet_audit_approved);
-		insertSetting(tx, "map_dis_outlet_closed", config.map_dis_outlet_closed);
-		insertSetting(tx, "map_dis_outlet_opened", config.map_dis_outlet_opened);
-		insertSetting(tx, "get_location_time_out", config.get_location_time_out.toString());
-		insertSetting(tx, "item_count_max", config.item_count_max.toString());		
-        onSuccess();
-    }, onError);
+function insertOutletTypesDB(items, callback) {
+    db.transaction(function(tx) {
+            items.sort(function(i1, i2) {
+                if (i1.KPIType < i2.KPIType)
+                    return -1;
+                if (i1.KPIType > i2.KPIType)
+                    return 1;
+                return 0;
+            });
+
+            outletTypes = [];
+            outletTypes[0] = { ID: '-1', Name: ' ' };
+
+            var sql = "DELETE FROM [outletType]";
+            tx.executeSql(sql,
+                [],
+                function(tx) {
+                    var len = items.length;
+                    for (i = 0; i < len; i++) {
+                        var p = items[i];
+                        outletTypes[i + 1] = p;
+                        var sql = "INSERT INTO [outletType] VALUES (";
+                        sql = sql.concat("'", p.ID, "', ");
+                        sql = sql.concat("'", quoteText(p.Name), "', ");
+                        sql = sql.concat("'", p.OGroupID, "', ");
+                        sql = sql.concat(p.KPIType.toString(), ")");
+                        logSqlCommand(sql);
+                        tx.executeSql(sql, [], function() {}, function(tx, dberr) { console.error(dberr); });
+                    };
+                    callback();
+                },
+                function(tx, dberr) {
+                    console.error(dberr);
+                    callback("Insert database error.");
+                });
+        },
+        function(tx, dberr) {
+            console.error(dberr);
+            callback("Insert database error.");
+        });
 }
 
-function insertSetting(tx, name, value) {
+function insertSettingDB(config, callback) {
+    db.transaction(function(tx) {
+            //var onError = function (tx1, dberr) { console.error(dberr); };
+
+            __insertSetting(tx, "protocol", config.protocol);
+            __insertSetting(tx, "ip", config.ip);
+            __insertSetting(tx, "port", config.port);
+            __insertSetting(tx, "service_name", config.service_name);
+            __insertSetting(tx, "item_count", config.item_count == undefined ? 20 : config.item_count.toString());
+            __insertSetting(tx, "distance", config.distance == undefined ? 200 : config.distance.toString());
+            __insertSetting(tx, "province_id", config.province_id);
+            __insertSetting(tx, "calc_distance_algorithm", config.calc_distance_algorithm);
+            __insertSetting(tx, "tbl_area_ver", config.tbl_area_ver);
+            __insertSetting(tx, "tbl_outlettype_ver", config.tbl_outlettype_ver);
+            __insertSetting(tx, "tbl_province_ver", config.tbl_province_ver);
+            __insertSetting(tx, "tbl_zone_ver", config.tbl_zone_ver);
+            __insertSetting(tx, "map_api_key", config.map_api_key);
+            __insertSetting(tx, "sync_time", config.sync_time);
+            __insertSetting(tx, "cluster_size", config.cluster_size);
+            __insertSetting(tx, "cluster_max_zoom", config.cluster_max_zoom);
+            __insertSetting(tx, "max_oulet_download", config.max_oulet_download.toString());
+            __insertSetting(tx, "enable_check_in", config.enable_check_in.toString());
+            __insertSetting(tx, "enable_send_request", config.enable_send_request.toString());
+            __insertSetting(tx, "hotlines", JSON.stringify(config.hotlines));
+            __insertSetting(tx, "map_icons_version", config.map_icons_version.toString());
+            __insertSetting(tx, "map_tc_salesman_outlet", config.map_tc_salesman_outlet);
+            __insertSetting(tx, "map_tc_salesman_outlet_denied", config.map_tc_salesman_outlet_denied);
+            __insertSetting(tx, "map_tc_auditor_outlet", config.map_tc_auditor_outlet);
+            __insertSetting(tx, "map_tc_auditor_outlet_denied", config.map_tc_auditor_outlet_denied);
+            __insertSetting(tx, "map_tc_agency_new_outlet", config.map_tc_agency_new_outlet);
+            __insertSetting(tx, "map_tc_agency_new_outlet_denied", config.map_tc_agency_new_outlet_denied);
+            __insertSetting(tx, "map_tc_agency_new_outlet_approved", config.map_tc_agency_new_outlet_approved);
+            __insertSetting(tx, "map_tc_agency_existing_outlet_edited", config.map_tc_agency_existing_outlet_edited);
+            __insertSetting(tx, "map_tc_agency_existing_outlet_denied", config.map_tc_agency_existing_outlet_denied);
+            __insertSetting(tx,
+                "map_tc_agency_existing_outlet_approved",
+                config.map_tc_agency_existing_outlet_approved);
+            __insertSetting(tx, "map_tc_agency_auditor_new_outlet", config.map_tc_agency_auditor_new_outlet);
+            __insertSetting(tx,
+                "map_tc_agency_auditor_new_outlet_denied",
+                config.map_tc_agency_auditor_new_outlet_denied);
+            __insertSetting(tx,
+                "map_tc_agency_auditor_new_outlet_approved",
+                config.map_tc_agency_auditor_new_outlet_approved);
+            __insertSetting(tx, "map_sr_outlet_audit_denied", config.map_sr_outlet_audit_denied);
+            __insertSetting(tx, "map_sr_outlet_audit_approved", config.map_sr_outlet_opened);
+            __insertSetting(tx, "map_sr_outlet_closed", config.map_sr_outlet_closed);
+            __insertSetting(tx, "map_sr_outlet_non_track", config.map_sr_outlet_non_track);
+            __insertSetting(tx, "map_sr_outlet_opened", config.map_sr_outlet_opened);
+            __insertSetting(tx, "map_dis_outlet_audit_denied", config.map_dis_outlet_audit_denied);
+            __insertSetting(tx, "map_dis_outlet_audit_approved", config.map_dis_outlet_audit_approved);
+            __insertSetting(tx, "map_dis_outlet_closed", config.map_dis_outlet_closed);
+            __insertSetting(tx, "map_dis_outlet_opened", config.map_dis_outlet_opened);
+            __insertSetting(tx, "get_location_time_out", config.get_location_time_out.toString());
+            __insertSetting(tx, "item_count_max", config.item_count_max.toString());
+            callback();
+        },
+        function(tx, dberr) {
+            console.error(dberr);
+            callback("Insert database error.");
+        });
+}
+
+function __insertSetting(tx, name, value) {
     var sql = "INSERT OR REPLACE INTO [config] VALUES (";
     sql = sql.concat("'", name, "', ");
     sql = sql.concat("'", value, "')");
     logSqlCommand(sql);
-    tx.executeSql(sql, [],
-        function (tx1) { log("Insert settings: " + name + "=" + value); },
-        function (tx1, err) {
-            console.error(err);
-            completed(err)
-        });
+    tx.executeSql(sql,
+        [],
+        function() {
+            log("Inserted settings: " + name + "=" + value);
+        },
+        function(tx, err) { console.error(err); });
 }
 
 function selectProvincesDB(tx, onSuccess, onError) {
@@ -550,6 +627,8 @@ function addDownloadOutletsDB(outletTbl, outlets, onSuccess, onError) {
             var sql = buildOutletInsertSql(outletTbl, outlets[i], date);
             tx.executeSql(sql, [], function (tx1) { }, function (tx1, dberr) {
                 err = dberr;
+                console.log(sql);
+                console.error(dberr);
             });
         }
         if (err == null) {
@@ -593,7 +672,7 @@ function _addDownloadOutletForeachDB(tx, outletTbl, outlets, i, onSuccess, onErr
 }
 
 function quoteText(str) {
-    if (isEmpty(str)) return str;
+    if (isEmpty(str)) return '';
     return str.replace(/'/g, " ");
     //return str.replace(/[\0\x08\x09\x1a\n\r"'\\\%]/g, function (char) {
     //    switch (char) {
@@ -697,7 +776,7 @@ function buildOutletInsertSql(outletTbl, outlet, modifiedDate) {
     sql = sql.concat(quoteInt(outlet.IsSent), ",");             //[IsSent] int
     sql = sql.concat("'", quoteText(outlet.LegalName), "',");   //[LegalName] text
     sql = sql.concat("'", quoteText(outlet.Comment), "',");     //[Comment] text
-    sql = sql.concat(quoteInt(outlet.IsCompressed), ")");       //[IsCompressed] text
+    sql = sql.concat(outlet.IsCompressed ? "1" : "0", ")");       //[IsCompressed] text
     return sql;
 }
 
@@ -764,7 +843,7 @@ function _addNewOutlet(tx, outletTbl, outlet, isAdd, isMod, isAud, synced, marke
     sql = sql.concat(quoteInt(outlet.IsSent), ",");             //[IsSent] int
     sql = sql.concat("'", quoteText(outlet.LegalName), "',");   //[LegalName] text
     sql = sql.concat("'", quoteText(outlet.Comment), "',");     //[Comment] text
-    sql = sql.concat(quoteInt(outlet.IsCompressed), ")");       //[IsCompressed] text
+    sql = sql.concat(outlet.IsCompressed ? "1" : "0", ")");       //[IsCompressed] text
 
     logSqlCommand(sql);
     tx.executeSql(sql, [],
@@ -887,9 +966,9 @@ function _updateOutlet(tx, outletTbl, outlet, state, synced, updateImage) {
     sql = sql.concat("PMarked=", marked ? "1" : "0", ", ");
     sql = sql.concat("InputByRole=", quoteInt(outlet.InputByRole), ", ");
     sql = sql.concat("AmendByRole=", quoteInt(outlet.AmendByRole), ", ");
-    sql = sql.concat("LegalName='", quoteText(outlet.LegalName), "' ");
-    sql = sql.concat("Comment=", quoteInt(outlet.Comment), ", ");
-    sql = sql.concat("IsCompressed='", quoteText(outlet.IsCompressed), "' ");
+    sql = sql.concat("LegalName='", quoteText(outlet.LegalName), "', ");
+    sql = sql.concat("Comment='", quoteText(outlet.Comment), "', ");
+    sql = sql.concat("IsCompressed=", outlet.IsCompressed ? "1" : "0");
 
     sql = sql.concat(" WHERE PRowID like '", outlet.PRowID, "'");
     /*
@@ -1008,7 +1087,22 @@ function selectNearByOutlets(outletTbl, latMin, latMax, lngMin, lngMax, view, sy
         var sql = 'SELECT * FROM [' + outletTbl + '] WHERE ' // WHERE provinceID = "' + provinceID + '" AND  ';
 
         if (view == 0) {
-            sql = sql.concat('AuditStatus <> ' + StatusDelete.toString());
+            var statusArr = [];
+            statusArr.push(StatusInitial);
+            statusArr.push(StatusPost);
+            statusArr.push(StatusAuditAccept);
+            statusArr.push(StatusAuditDeny);
+            statusArr.push(StatusAuditorAccept);
+            statusArr.push(StatusEdit);
+            statusArr.push(StatusExitingPost);
+            statusArr.push(StatusExitingDeny);
+            statusArr.push(StatusExitingAccept);
+            statusArr.push(StatusDone);
+            statusArr.push(StatusDeny);
+            statusArr.push(StatusRevert);
+
+            sql = sql.concat('AuditStatus IN (', statusArr.join() ,') ');
+            sql = sql.concat('OR ((AuditStatus=', StatusNew,' OR AuditStatus=', StatusAuditorNew, ') AND PersonID=', user.id , ')');
         } else if (view == 1) {
             if (user.hasAuditRole) {
                 sql = sql.concat(' AuditStatus = ', StatusPost.toString());
@@ -1207,10 +1301,19 @@ function selectUnsyncedOutletsByView(outletTbl, view, onSuccess, onError) {
 
 function selectUnsyncedOutletsOfProvince(outletTbl, provinceid, onSuccess, onError) {
     db.transaction(function (tx) {
-        log('Select existing outlet')
         var sql = 'SELECT * FROM ' + outletTbl + ' WHERE PSynced = 0 AND ProvinceID = " ' + provinceid + '"';
         logSqlCommand(sql);
         tx.executeSql(sql, [], function (tx1, dbres) {
+            onSuccess(dbres);
+        }, onError);
+    }, onError);
+}
+
+function selectUnsyncedOutletsDB(outletTbl, onSuccess, onError) {
+    db.transaction(function (tx) {
+        var sql = 'SELECT * FROM [' + outletTbl + '] WHERE PSynced = 0';
+        logSqlCommand(sql);
+        tx.executeSql(sql, [], function (tx, dbres) {
             onSuccess(dbres);
         }, onError);
     }, onError);
@@ -1321,10 +1424,47 @@ function selectUserOutletsDB(outletTbl, start, end, onSuccess, onError) {
 
 function searchOutletsDB(outletTbl, outletID, outletName, onSuccess, onError) {
     db.transaction(function (tx) {
-        var sql = 'SELECT * FROM [' + outletTbl + '] WHERE ID = ' + outletID + ' OR Name like "' + outletName + '" ORDER BY ID';
+        var sql = 'SELECT * FROM [' + outletTbl + '] WHERE ID = ' + outletID;
+
+        var statusArr = [];
+        statusArr.push(StatusInitial);
+        statusArr.push(StatusPost);
+        statusArr.push(StatusAuditAccept);
+        statusArr.push(StatusAuditDeny);
+        statusArr.push(StatusAuditorAccept);
+        statusArr.push(StatusEdit);
+        statusArr.push(StatusExitingPost);
+        statusArr.push(StatusExitingDeny);
+        statusArr.push(StatusExitingAccept);
+        statusArr.push(StatusDone);
+        statusArr.push(StatusDeny);
+        statusArr.push(StatusRevert);
+
+        sql = sql.concat(' AND (AuditStatus IN (', statusArr.join(), ') ');
+        sql = sql.concat('OR ((AuditStatus=', StatusNew, ' OR AuditStatus=', StatusAuditorNew, ') AND PersonID=', user.id, '))');
+        sql = sql.concat(' LIMIT 1');
+
         logSqlCommand(sql);
         tx.executeSql(sql, [], function (tx, dbres) {
             onSuccess(dbres);
         }, onError);
     }, onError);
+}
+
+function getProvinceDataDB(callback) {
+    db.transaction(function(tx) {
+            var sql = "SELECT * FROM [" + config.tbl_downloadProvince + "]";
+            logSqlCommand(sql);
+            tx.executeSql(sql,
+                [],
+                function(tx, dbres) {
+                    callback(dbres);
+                },
+                function () {
+                    callback();
+                });
+        },
+        function() {
+            callback();
+        });
 }

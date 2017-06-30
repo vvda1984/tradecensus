@@ -1,25 +1,26 @@
 ﻿/// <reference path="tc.databaseAPI.js" />
 /// <reference path="tc.utils.js" />
 
-const StatusInitial = 0;
+var StatusInitial = 0;
 
-const StatusNew = 10;
-const StatusPost = 11;
-const StatusAuditAccept = 12;
-const StatusAuditDeny = 13;
-const StatusAuditorNew = 14;
-const StatusAuditorAccept = 15;
+var StatusNew = 10;
+var StatusPost = 11;
+var StatusAuditAccept = 12;
+var StatusAuditDeny = 13;
+var StatusAuditorNew = 14;
+var StatusAuditorAccept = 15;
 
-const StatusEdit = 30;
-const StatusExitingPost = 31;
-const StatusExitingAccept = 32;
-const StatusExitingDeny = 33;
+var StatusEdit = 30;
+var StatusExitingPost = 31;
+var StatusExitingAccept = 32;
+var StatusExitingDeny = 33;
 
-const StatusDone = 40;
-const StatusExternalSystem = 50;
+var StatusDone = 40;
+var StatusExternalSystem = 50;
 
-const StatusDelete = 100;
-const StatusRevert = 102;
+var StatusDelete = 100;
+var StatusDeny = 101;
+var StatusRevert = 102;
 
 var nearByOutlets = [];
 var curOutlets = [];
@@ -29,14 +30,7 @@ var NewOutletDefaultID = 600000000;
 
 
 function newOutlet(provinceName) {
-    //var provineName  = '';
-	//log('province id: ' + config.province_id);
-    //for (p = 0; p < provinces.length; p++)
-    //    if (provinces[p].id === config.province_id) {
-    //        provinceName = provinces[p].name;
-    //        break;
-    //    }
-    //log('provineName: ' + provineName);
+   
     var provinceId = config.province_id;
     if (isEmpty(provinceName)) {
         for (p = 0; p < provinces.length; p++)
@@ -195,11 +189,6 @@ function initializeOutlet(outlet) {
     outlet.IsExistingDraft = outlet.AuditStatus == StatusEdit;
     outlet.canPost = !user.hasAuditRole && ((outlet.AuditStatus == StatusNew && outlet.PersonID == user.id ) || (outlet.AuditStatus == StatusEdit && outlet.AmendBy == user.id));
     outlet.canApprove = outlet.AuditStatus == StatusAuditorNew && outlet.PersonID == userID;
-    //if (networkReady()) {
-    //    outlet.canRevise = outlet.AuditStatus == StatusPost && outlet.PersonID == userID;
-    //} else {
-    //    outlet.canRevise = outlet.AuditStatus == StatusPost && outlet.PersonID == userID && !outlet.IsSynced;
-    //}
     outlet.canRevise = !user.hasAuditRole && ((outlet.AuditStatus == StatusPost && outlet.PersonID == userID) ||
                        (outlet.AuditStatus == StatusExitingPost && outlet.AmendBy == userID));
  
@@ -233,6 +222,25 @@ function initializeOutlet(outlet) {
         outlet.StringImage4 = tcutils.decompress(outlet.StringImage4);
         outlet.StringImage5 = tcutils.decompress(outlet.StringImage5);
         outlet.StringImage6 = tcutils.decompress(outlet.StringImage6);
+    }
+
+    if (!__serverConnected) {
+        var isInDownloadProvinces = false;
+        for (var i = 0; i < provinces.length; i++) {
+            var province = provinces[i];
+            if (province.id === outlet.ProvinceID && province.download === 1) {
+                isInDownloadProvinces = true;
+                break;
+            }
+        }
+
+        if (isInDownloadProvinces == false) {
+            outlet.canDelete = false;
+            outlet.canRevert = false;
+            outlet.canPost = false;
+            outlet.canApprove = false;
+            outlet.canRevise = false;
+        }
     }
 }
 
@@ -407,7 +415,7 @@ var OUTLET = {
             if (typeof outlet !== 'undefined') {
                 __outletDialogContext.currentOutlet = outlet;
             }
-            isOutletDlgOpen = false;
+            __isOutletDlgOpen = false;
             __detroyOutletDialog();
 
             if (dialogClosedCallback) dialogClosedCallback();
@@ -957,7 +965,7 @@ var OUTLET = {
             OUTLET.searchOutletsOffline(outletID, outletName,
                 function (isSuccess, outlets) {
                     //hideDlg();
-                    if (!isSuccess && !isbackground) {
+                    if (!isSuccess) {
                         showError(R.query_outlet_error);
                         callback(false, null);
                     }
@@ -1003,6 +1011,8 @@ var OUTLET = {
 
                             if (foundOutlets.length > 0) {
                                 panTo(foundOutlets[0].Latitude, foundOutlets[0].Longitude);
+                            } else {
+                                showInfo("Outlet is not found!");
                             }
                             onSuccess(false, foundOutlets);
                         }
@@ -1037,6 +1047,11 @@ var OUTLET = {
                             outlet.positionIndex = i;
                             foundOutlets.push(outlet);
                         }
+
+                        if (foundOutlets.length == 0) {
+                            showInfo("Outlet is not found!");
+                        }
+
                         callback(true, foundOutlets);
                     } else {
                         callback(true, []);

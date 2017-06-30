@@ -12,24 +12,12 @@ namespace TradeCensus.Shared
         protected ILogger _logger;
         protected bool _isDataChanged;
         protected string _name;
-        private AppSettingsReader _appSettingsReader;
 
         protected TradeCensusServiceBase(string name)
         {
             DC = new ServiceDataContext(); // throw error
             _name = name;
             _logger = DependencyResolver.Resolve<ILogFactory>().GetLogger(name);
-        }
-
-        protected string ImagesPath
-        {
-            get
-            {
-                string path = AppDomain.CurrentDomain.BaseDirectory;
-                path = Path.GetDirectoryName(path) + "\\Images";
-                EnsureDirExist(path);
-                return path;
-            }
         }
 
         public void Dispose()
@@ -78,15 +66,6 @@ namespace TradeCensus.Shared
         protected T GetAppSetting<T>(string key, T defaultValue = default(T))
         {
             return Utils.GetAppSetting(key, defaultValue);
-        }
-
-        private void EnsureDirExist(string path)
-        {
-            if (Directory.Exists(path)) return;
-
-            string parent = Path.GetDirectoryName(path);
-            EnsureDirExist(parent);
-            Directory.CreateDirectory(path);
         }
     }
 }

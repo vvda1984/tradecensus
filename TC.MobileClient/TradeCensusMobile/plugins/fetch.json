@@ -124,19 +124,19 @@
         "is_top_level": true,
         "variables": {}
     },
-    "cordova-plugin-crosswalk-webview": {
-        "source": {
-            "type": "registry",
-            "id": "cordova-plugin-crosswalk-webview@2.1.0"
-        },
-        "is_top_level": true,
-        "variables": {}
-    },
     "cordova.plugins.diagnostic": {
         "source": {
             "type": "git",
             "url": "https://github.com/dpa99c/cordova-diagnostic-plugin",
             "subdir": "."
+        },
+        "is_top_level": true,
+        "variables": {}
+    },
+    "cordova-plugin-crosswalk-webview": {
+        "source": {
+            "type": "registry",
+            "id": "cordova-plugin-crosswalk-webview@2.1.0"
         },
         "is_top_level": true,
         "variables": {}

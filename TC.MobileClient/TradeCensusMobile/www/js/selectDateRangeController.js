@@ -5,7 +5,7 @@
 
 
 function selectDateRangeController($scope, $http, $mdDialog) {
-    isOutletDlgOpen = true;
+    __isOutletDlgOpen = true;
     $scope.R = R;
 
     var now = new Date();

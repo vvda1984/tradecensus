@@ -201,18 +201,6 @@
         <span id="textLogMessage" class="float-left small-text"></span>
     </div>
 
-    <div id="home-topright-offline">
-        <div class="square-box-red float-right normal-text">
-            <span>{{R.you_are_in_offline_mode}}</span>
-        </div>
-    </div>
-
-    <div id="home-topright-sync-hint">
-        <div class="square-box-red float-right normal-text">
-            <span>{{R.hint_do_sync}}</span>
-        </div>
-    </div>
-
     <div id="home-topright-status-container">
         <div id="home-topright-offline" class="float-right normal-text status-message">
             {{R.you_are_in_offline_mode}}
@@ -238,7 +226,7 @@
                     <md-input-container class="md-block" flex-gt-sm="" style="margin-bottom:0px;">
                         <label>{{ R.working_province }}</label>
                         <md-select ng-model="config.province_id" ng-change="provinceChanged(0)">
-                            <md-option ng-repeat="p in dprovinces" value="{{p.id}}" onclick="javascript: provinceItemClicked();">
+                            <md-option ng-repeat="p in provinces" value="{{p.id}}" onclick="javascript: provinceItemClicked();">
                                 {{p.name}}
                                 <img ng-show="p.download" src="assets/img/check.svg"
                                      style="width:18px;height:18px;margin:0px;position:absolute;right:16px;" />

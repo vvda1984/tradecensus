@@ -1,7 +1,7 @@
-﻿var _WEB = true;
-var _PROD = false;
-var _VERSION = 26;
-var _VERSION_DISPLAY = '1.26.28';
+﻿var _WEB = false;
+var _PROD = true;
+var _VERSION = 27;
+var _VERSION_DISPLAY = '1.27.32';
 
 (function (global) {
     "use strict";
@@ -203,7 +203,7 @@ function newConfig() {
         time_out: 30,               // Connection timeout
         auto_sync: 0,               // 
         sync_time: 3 * 60 * 1000,   // Sync interval...
-        sync_time_out: 5 * 60,      // Sync timeout
+        sync_time_out: 15 * 1000,   // Sync timeout
         sync_batch_size: 100,       // Number of uploaded outlets in sync request
         ping_time: 30,              // Time
         refresh_time: 30,           // 
@@ -211,8 +211,9 @@ function newConfig() {
         session_time_out: 0 * 60,
         location_age: 10,           // last avaliable location
         submit_outlet_time: 3 * 60, //
-        image_width: 800,               // image width
-        image_height: 600,               // image height
+        image_width: 800,           // image width
+        image_height: 600,          // image height
+        manual_monitor_network: 1,  // image height
 
         enable_journal: false,      // False after login until user start
         journal_update_time: 1 * 10,//
@@ -275,9 +276,9 @@ function newConfig() {
         c.audit_range = 5000;
 
     if (_PROD) {
-        c.ip = '203.34.144.29/trade-census';       
+        c.ip = '203.34.144.29/trade-census';
     }
-    
+
     return c;
 }
 
@@ -340,10 +341,8 @@ function newDeviceInfo() {
 function initializeEnvironment(callback) {
     initalizeDB(function (tx) {
         loadOutletTypes(tx, function (tx1) {
-            loadProvinces(tx1, function (tx2) {
-                loadSettings(tx2, function (tx3) {
-                    callback();
-                });
+            loadSettings(tx1, function (tx2) {
+                callback();
             });
         });
     }, function (errMsg) {
@@ -380,11 +379,6 @@ function loadOutletTypes(tx, callback) {
     }, function (dberr) {
         showError(dberr.message);
     });
-}
-
-function loadProvinces(tx, callback) {
-    provinces = [];
-    callback(tx);
 }
 
 function loadSettings(tx, callback) {
@@ -554,6 +548,8 @@ function loadSettings(tx, callback) {
                         config.image_width = parseInt(value);
                     } else if (name == 'image_height') {
                         config.image_height = parseInt(value);
+                    } else if (name == 'manual_monitor_network') {
+                        config.manual_monitor_network = parseInt(manual_monitor_network);
                     }
                 }
             }

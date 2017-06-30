@@ -5,6 +5,9 @@
 
 var __isSync = false;
 function outletStatusControlle($scope, $http, $mdDialog) {
+    
+    $scope.syncButtonCaption = "Sync all Pending";
+
     $scope.closeOutletStatusForm = function () {
         hideDialog(false);
     }
@@ -13,6 +16,12 @@ function outletStatusControlle($scope, $http, $mdDialog) {
             queryUserOulet($scope.currentOutletDate);
     }
     $scope.syncAllPending = function () {
+        if (__isSync === true) {
+            __isSync = false;
+            $scope.syncButtonCaption = "Sync all Pending";
+            return;
+        }
+
         if (!networkReady()) {
             showError(R.check_network_connection);
             return;
@@ -24,13 +33,18 @@ function outletStatusControlle($scope, $http, $mdDialog) {
         $("#syncingStatusText").html();
         $("#syncingText").show();
 
+
         __isSync = true;
+        $scope.syncButtonCaption = "Stop";
+
         syncOutlets(0, function (error) {
-            __isSync = true;
-            $("#ovdatePicker").prop('disabled', false);
-            $("#ovqueryButton").prop('disabled', false);
-            $("#ovsyncButton").prop('disabled', false);
-            $("#syncingText").hide();
+            __isSync = false;
+            if (error == undefined) {
+                $("#ovdatePicker").prop('disabled', false);
+                $("#ovqueryButton").prop('disabled', false);
+                $("#ovsyncButton").prop('disabled', false);
+                $("#syncingText").hide();
+            }
             queryUserOulet($scope.currentOutletDate);
         });
     }
@@ -54,7 +68,7 @@ function outletStatusControlle($scope, $http, $mdDialog) {
                     $("#noOutletText").hide();
                     $("#outletTable").show();
                     _outlets = outlets;
-                    _pendingOutlets = [];
+                    pendingOutlets = [];
                     $("#outletTableBody").empty();
                     var hasPending = false;
                     var html = '';
@@ -66,7 +80,7 @@ function outletStatusControlle($scope, $http, $mdDialog) {
                             syncStatus = 'Pending';
                             hasPending = true;
                             style = 'color:#F44336;"';
-                            _pendingOutlets.push(outlet);
+                            pendingOutlets.push(outlet);
                         }
                         html +=
                             '<tr>' +
@@ -78,26 +92,39 @@ function outletStatusControlle($scope, $http, $mdDialog) {
                     }
                     $("#outletTableBody").html(html);
                     $scope.canSync = hasPending;
+
+                    if (hasPending) {
+                        $("#ovsyncButton").show();
+                    } else {
+                        $("#ovsyncButton").hide();
+                    }
                 }
             }
         });
     }
     function syncOutlets(startIndex, callback) {
         if (!networkReady()) {
+            __isSync = false;
             showError(R.check_network_connection);
             return;
         }
 
-        $("#syncingStatusText").html((((startIndex) / _pendingOutlets.length) * 100).toFixed(2).toString() + '%');
+        if (!__isSync) {
+            callback();
+            return; // stopped
+        }
+
+        $("#syncingStatusText").html((((startIndex) / pendingOutlets.length) * 100).toFixed(2).toString() + '%');
         var unsyncedOutlets = [];
-        var nextStartIndex = startIndex + 10;
-        for (var i = startIndex; i < _pendingOutlets.length && i < nextStartIndex; i++) {
-            unsyncedOutlets.push(_pendingOutlets[i]);
+        var nextStartIndex = startIndex + config.sync_batch_size;
+        for (var i = startIndex; i < pendingOutlets.length && i < nextStartIndex; i++) {
+            unsyncedOutlets.push(pendingOutlets[i]);
         }
 
         var url = baseURL + '/outlet/saveoutlets/' + userID + '/' + pass;
         log('Call service api: ' + url);
         $http({
+            timeout: config.sync_time_out,
             method: config.http_method,
             data: unsyncedOutlets,
             url: url,
@@ -106,11 +133,17 @@ function outletStatusControlle($scope, $http, $mdDialog) {
             var data = resp.data;
             if (data.Status == -1 || data.Status == 1) { // error
                 console.error(data.ErrorMessage);
-                callback("Error while synchronizing outlets to server! (#3201)");
+                //callback("Error while synchronizing outlets to server! (#3201)");
+
+                if (nextStartIndex >= pendingOutlets.length) {
+                    callback();
+                } else {
+                    syncOutlets(nextStartIndex, callback);
+                }
             } else {
                 setSyncStatusDB($scope.config.tbl_outlet, data.Outlets, true,
                     function () {
-                        if (nextStartIndex >= _pendingOutlets.length) {
+                        if (nextStartIndex >= pendingOutlets.length) {
                             callback();
                         } else {
                             syncOutlets(nextStartIndex, callback);
@@ -127,11 +160,11 @@ function outletStatusControlle($scope, $http, $mdDialog) {
         });
     }
 
-    var _currentDate = new Date();
+    var currentDate = new Date();
     var _outlets = [];
-    var _pendingOutlets = [];
-    $scope.canSync = false;
-    $scope.currentOutletDate = _currentDate;
+    var pendingOutlets = [];
+    $("#ovsyncButton").hide();
+    $scope.currentOutletDate = currentDate;
 
     queryUserOulet($scope.currentOutletDate);
 }

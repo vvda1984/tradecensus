@@ -272,28 +272,32 @@ function loginController($scope, $http) {
         config.tbl_downloadProvince = 'outlet_province_' + $scope.user.id;
         config.tbl_journal = 'journal_tracking_' + $scope.user.id;
 
-        log($scope.user.hasAuditRole);        
+        log($scope.user.hasAuditRole);
         resetLocal = loginUser.Role >= 100;
 
         console.info($scope.user);
-        log('create outlet tables');
-        
+        console.log("ensureUserOutletDBExist");
         ensureUserOutletDBExist(resetLocal,
             config.tbl_outletSync,
             config.tbl_outlet,
             config.tbl_downloadProvince,
             config.tbl_journal,
-            function () {                
+            function() {
                 if (networkReady()) {
                     showDlg(R.download_settings, R.please_wait);
-                    downloadServerConfig(function () {                        
-                        checkRootDevice(function () { finalizeLoginView(); });
-                    }, function (dberr) {
-                        console.error(dberr);
-                        checkRootDevice(function () { finalizeLoginView(); });
+                    downloadServerConfig(function(errMsg) {
+                        if (errMsg != undefined) {
+                            showError(errMsg);
+                        } else {
+                            checkRootDevice(function() {
+                                finalizeLoginView();
+                            });
+                        }
                     });
-                } else {                    
-                    checkRootDevice(function () { finalizeLoginView(); });
+                } else {
+                    checkRootDevice(function() {
+                        finalizeLoginView();
+                    });
                 }
             });
     }
@@ -304,7 +308,7 @@ function loginController($scope, $http) {
     }   
     
     function checkRootDevice(onsucccess) {
-        if (config.check_rooted_device) {
+        if (config.check_rooted_device && _WEB === false) {
             detectRootedDevice(function (result) {
                 if (result === 1) {
                     hideDlg();
@@ -323,69 +327,65 @@ function loginController($scope, $http) {
 
     function finalizeLoginView() {
         enableBackgroundMode();
+        startMonitorNetworkState();
 
-        log('Load downloaded provinces table');
-        selectDownloadProvincesDB(config.tbl_downloadProvince, function (dbres) {
-            dprovinces = [];
-            log('Found downloaded provinces: ' + dbres.rows.length.toString());
-            if (dbres.rows.length == 0 || dbres.rows.item(i).referenceGeoID == undefined) {
-                for (var i = 0; i < provinces.length; i++) {
-                    dprovinces[i] = {
-                        id: provinces[i].id,
-                        name: provinces[i].name,
-                        referenceGeoID: provinces[i].referenceGeoID,
-                        download: 0,
-                    };
-                }
+        $scope.changeView('home');
 
-                saveDownloadProvincesDB(config.tbl_downloadProvince, dprovinces, function () {
-                    dprovinces.sort(function (a, b) {
-                        if (a.name > b.name) {
-                            return 1;
-                        } else if (a.name < b.name) {
-                            return -1;
-                        } else {
-                            return 0;
-                        }
-                    });
-                    
-                    hideDlg();
-                    $scope.changeView('home');
-                }, function (dberr) {
-                    hideDlg();
-                    showError(dberr.message);
-                });
-            } else {
-                for (var i = 0; i < dbres.rows.length; i++) {
-                    var item = dbres.rows.item(i);
-                    dprovinces[i] = {
-                        id: dbres.rows.item(i).id,
-                        name: dbres.rows.item(i).name,
-                        download: dbres.rows.item(i).download,
-                        referenceGeoID: dbres.rows.item(i).referenceGeoID,
-                    };
-                }
-
-                dprovinces.sort(function (a, b) {
-                    if (a.name > b.name) {
-                        return 1;
-                    } else if (a.name < b.name) {
-                        return -1;
-                    } else {
-                        return 0;
-                    }
-                });
-
-                hideDlg();
-                $scope.changeView('home');
-            }            
-        }, function (dberr) {
-            hideDlg();
-            showError(dberr.message);
-        });
+        //selectDownloadProvincesDB(config.tbl_downloadProvince, function (dbres) {
+        //    log('Found downloaded provinces: ' + dbres.rows.length.toString());
+        //    if (dbres.rows.length === 0 || dbres.rows.item(0).referenceGeoID == undefined) {
+        //        for (var i = 0; i < provinces.length; i++) {
+        //            dprovinces[i] = {
+        //                id: provinces[i].id,
+        //                name: provinces[i].name,
+        //                referenceGeoID: provinces[i].referenceGeoID,
+        //                download: 0,
+        //            };
+        //        }
+        //        saveDownloadProvincesDB(config.tbl_downloadProvince, dprovinces, function () {
+        //            dprovinces.sort(function (a, b) {
+        //                if (a.name > b.name) {
+        //                    return 1;
+        //                } else if (a.name < b.name) {
+        //                    return -1;
+        //                } else {
+        //                    return 0;
+        //                }
+        //            });        
+        //            hideDlg();
+        //            $scope.changeView('home');
+        //        }, function (dberr) {
+        //            hideDlg();
+        //            showError(dberr.message);
+        //        });
+        //    } else {
+        //        for (var i = 0; i < dbres.rows.length; i++) {
+        //            dprovinces[i] = {
+        //                id: dbres.rows.item(i).id,
+        //                name: dbres.rows.item(i).name,
+        //                download: dbres.rows.item(i).download,
+        //                referenceGeoID: dbres.rows.item(i).referenceGeoID,
+        //            };
+        //        }
+        //        dprovinces.sort(function (a, b) {
+        //            if (a.name > b.name) {
+        //                return 1;
+        //            } else if (a.name < b.name) {
+        //                return -1;
+        //            } else {
+        //                return 0;
+        //            }
+        //        });
+        //        hideDlg();
+        //        $scope.changeView('home');
+        //    }            
+        //}, function (dberr) {
+        //    hideDlg();
+        //    showError(dberr.message);
+        //});
     }
    
-    function downloadServerConfig(onSuccess, onError) {
+    function downloadServerConfig(callback) {
         var url = baseURL + '/config/getall';
         log('Call service api: ' + url);
         $http({
@@ -394,14 +394,14 @@ function loginController($scope, $http) {
         }).then(function (resp) {
             var data = resp.data;
             if (data.Status == -1) { // error
-                onError(data.ErrorMessage);
+                callback(data.ErrorMessage);
             } else {
                 setDlgMsg(R.update_settings);
-                
+
                 var syncProvinces = true;
                 var syncOutletTypes = false;
                 var syncMapIcons = false;
-                for (var i = 0; i < data.Items.length;i++) {
+                for (var i = 0; i < data.Items.length; i++) {
                     p = data.Items[i];
                     var name = data.Items[i].Key;
                     var value = data.Items[i].Value;
@@ -471,8 +471,10 @@ function loginController($scope, $http) {
                     } else if (name == 'journal_color') {
                         config.journal_color = value;
                     } else if (name == 'journal_opacity') {
-                        try { config.journal_opacity = parseFloat(value); }
-                        catch (err) { }
+                        try {
+                            config.journal_opacity = parseFloat(value);
+                        } catch (err) {
+                        }
                     } else if (name == 'journal_weight') {
                         config.journal_weight = parseInt(value);
                     } else if (name == 'journal_nonstop') {
@@ -497,142 +499,194 @@ function loginController($scope, $http) {
                         config.image_width = parseInt(value);
                     } else if (name == 'image_height') {
                         config.image_height = parseInt(value);
+                    } else if (name == 'manual_monitor_network') {
+                        config.manual_monitor_network = parseInt(value);
                     }
                 }
-                
+
                 var downloadOptions = {
                     downloadProvinces: syncProvinces,
                     downloadOutletTypes: syncOutletTypes,
                     downloadMapIcons: syncMapIcons
                 };
 
-                downloadProvinces(downloadOptions, function () {
-                    downloadOutletTypes(downloadOptions, function () {
-                        downloadOutletMapIcons(downloadOptions, function () {
-                            insertSettingDB(config, onSuccess, onError);
-                        }, onError);
-                    }, onError);
-                }, onError);
+                downloadProvinces(downloadOptions,
+                    function(errMsg1) {
+                        if (typeof errMsg1 != 'undefined') {
+                            callback(errMsg1);
+                        } else {
+                            downloadOutletTypes(downloadOptions,
+                                function(errMsg2) {
+                                    if (typeof errMsg2 != 'undefined') {
+                                        callback(errMsg2);
+                                    } else {
+                                        downloadOutletMapIcons(downloadOptions,
+                                            function(errMsg3) {
+                                                if (typeof errMsg3 != 'undefined') {
+                                                    callback(errMsg3);
+                                                } else {
+                                                    insertSettingDB(config,
+                                                        function(errMsg4) {
+                                                            callback(errMsg4);
+                                                        });
+                                                }
+                                            });
+                                    }
+                                });
+                        }
+                    });
             }
         }, handleHttpError);
     }
-   
-    function downloadProvinces(downloadOptions, onSuccess, onError) {
-        if (downloadOptions.downloadProvinces) {
-            setDlgMsg(R.download_provinces);
-            var url = baseURL + '/provinces/getall';
-            log('Call service api: ' + url);
-            $http({
-                method: config.http_method,
-                url: url
-            }).then(function (resp) {
-                var data = resp.data;
-                if (data.Status == -1) { // error
-                    onError(data.ErrorMessage);
-                } else {
-                    insertProvinces(data.Items, onSuccess, onError);
-                }
-            }, handleHttpError);
-        } else {
-            onSuccess();
-        }
+
+    function downloadProvinces(downloadOptions, callback) {
+        getProvinceDataDB(function (dbres) {
+            var notDownload = dbres.rows.length === 0 || dbres.rows.item(0).referenceGeoID == undefined;
+            if (notDownload || downloadOptions.downloadProvinces === true) {
+                setDlgMsg(R.download_provinces);
+                var url = baseURL + '/provinces/getall';
+                log('Call service api: ' + url);
+                $http({
+                    method: config.http_method,
+                    url: url
+                }).then(function(resp) {
+                        var data = resp.data;
+                        if (data.Status === -1) { // error
+                            callback(data.ErrorMessage);
+                        } else {
+
+                            var curProvinces = [];
+                            for (var i = 0; i < dbres.rows.length; i++) {
+                                curProvinces.push(
+                                    {
+                                        id: dbres.rows.item(i).id,
+                                        name: dbres.rows.item(i).name,
+                                        download: dbres.rows.item(i).download,
+                                        referenceGeoID: dbres.rows.item(i).referenceGeoID
+                                    });
+                            }
+
+                            insertProvincesDB(curProvinces, data.Items, callback);
+                        }
+                    },
+                    function() {
+                        callback("Cannot connect to server!");
+                    });
+            } else {
+                provinces.sort(function (a, b) {
+                    var n1 = changeAlias(a.name);
+                    var n2 = changeAlias(b.name);
+
+                    if (n1 > n2) {
+                        return 1;
+                    } else if (n1 < n2) {
+                        return -1;
+                    } else {
+                        return 0;
+                    }
+                });
+
+                callback();
+            }
+        });
     }
-   
-    function downloadOutletTypes(downloadOptions, onSuccess, onError) {
-        if (downloadOptions.downloadOutletTypes) { // force download
+
+    function downloadOutletTypes(downloadOptions, callback) {
+        if (!downloadOptions.downloadOutletTypes) {
+            callback();
+        } else { // force download
             setDlgMsg(R.download_outlet_types);
             var url = baseURL + '/outlet/getoutlettypes';
             log('Call service api: ' + url);
             $http({
                 method: config.http_method,
                 url: url
-            }).then(function (resp) {
-                var data = resp.data;
-                if (data.Status == -1) { // error
-                    onError(data.ErrorMessage);
-                } else {
-                    insertOutletTypes(data.Items, onSuccess, onError);
-                }
-            }, handleHttpError);
-        } else {
-            onSuccess();
+            }).then(function(resp) {
+                    var data = resp.data;
+                    if (data.Status === -1) { // error
+                        callback(data.ErrorMessage);
+                    } else {
+                        insertOutletTypesDB(data.Items, callback);
+                    }
+                },
+                function() {
+                    callback("Cannot connect to server!");
+                });
         }
     }
 
-    function downloadOutletMapIcons(downloadOptions, onSuccess, onError) {
-        if (downloadOptions.downloadMapIcons) {
+    function downloadOutletMapIcons(downloadOptions, callback) {
+        if (!downloadOptions.downloadMapIcons) {
+            callback();
+        } else {
             setDlgMsg(R.download_map_icons);
             var url = baseURL + '/config/downloadmapicons';
             log('Call service api: ' + url);
             $http({
                 method: config.http_method,
                 url: url
-            }).then(function (resp) {
-                var data = resp.data;
-                if (data.Status == -1) { // error
-                    onError(data.ErrorMessage);
-                } else {
-                    for (var i = 0; i < data.Icons.length; i++) {
-                        p = data.Icons[i];
-                        var name = data.Icons[i].Key;
-                        var value = data.Icons[i].Value;
+            }).then(function(resp) {
+                    var data = resp.data;
+                    if (data.Status === -1) { // error
+                        callback(data.ErrorMessage);
+                    } else {
+                        for (var i = 0; i < data.Icons.length; i++) {
+                            var name = data.Icons[i].Key;
+                            var value = data.Icons[i].Value;
 
-                        if (name == 'tc_salesman_outlet') {
-                            config.map_tc_salesman_outlet = value;
-                        } else if (name == 'tc_salesman_outlet_denied') {
-                            config.map_tc_salesman_outlet_denied = value;
-                        } else if (name == 'tc_auditor_outlet') {
-                            config.map_tc_auditor_outlet = value;
-                        } else if (name == 'tc_auditor_outlet_denied') {
-                            config.map_tc_auditor_outlet_denied = value;
+                            if (name == 'tc_salesman_outlet') {
+                                config.map_tc_salesman_outlet = value;
+                            } else if (name == 'tc_salesman_outlet_denied') {
+                                config.map_tc_salesman_outlet_denied = value;
+                            } else if (name == 'tc_auditor_outlet') {
+                                config.map_tc_auditor_outlet = value;
+                            } else if (name == 'tc_auditor_outlet_denied') {
+                                config.map_tc_auditor_outlet_denied = value;
+                            } else if (name == 'tc_agency_new_outlet') {
+                                config.map_tc_agency_new_outlet = value;
+                            } else if (name == 'tc_agency_new_outlet_denied') {
+                                config.map_tc_agency_new_outlet_denied = value;
+                            } else if (name == 'tc_agency_new_outlet_approved') {
+                                config.map_tc_agency_new_outlet_approved = value;
+                            } else if (name == 'tc_agency_existing_outlet_edited') {
+                                config.map_tc_agency_existing_outlet_edited = value;
+                            } else if (name == 'tc_agency_existing_outlet_denied') {
+                                config.map_tc_agency_existing_outlet_denied = value;
+                            } else if (name == 'tc_agency_existing_outlet_approved') {
+                                config.map_tc_agency_existing_outlet_approved = value;
+                            } else if (name == 'tc_agency_auditor_new_outlet') {
+                                config.map_tc_agency_auditor_new_outlet = value;
+                            } else if (name == 'tc_agency_auditor_new_outlet_denied') {
+                                config.map_tc_agency_auditor_new_outlet_denied = value;
+                            } else if (name == 'tc_agency_auditor_new_outlet_approved') {
+                                config.map_tc_agency_auditor_new_outlet_approved = value;
+                            } else if (name == 'sr_outlet_audit_denied') {
+                                config.map_sr_outlet_audit_denied = value;
+                            } else if (name == 'sr_outlet_audit_approved') {
+                                config.map_sr_outlet_audit_approved = value;
+                            } else if (name == 'sr_outlet_closed') {
+                                config.map_sr_outlet_closed = value;
+                            } else if (name == 'sr_outlet_non_track') {
+                                config.map_sr_outlet_non_track = value;
+                            } else if (name == 'sr_outlet_opened') {
+                                config.map_sr_outlet_opened = value;
+                            } else if (name == 'dis_outlet_audit_denied') {
+                                config.map_dis_outlet_audit_denied = value;
+                            } else if (name == 'dis_outlet_audit_approved') {
+                                config.map_dis_outlet_audit_approved = value;
+                            } else if (name == 'dis_outlet_closed') {
+                                config.map_dis_outlet_closed = value;
+                            } else if (name == 'dis_outlet_opened') {
+                                config.map_dis_outlet_opened = value;
+                            }
                         }
 
-                        else if (name == 'tc_agency_new_outlet') {
-                            config.map_tc_agency_new_outlet = value;
-                        } else if (name == 'tc_agency_new_outlet_denied') {
-                            config.map_tc_agency_new_outlet_denied = value;
-                        } else if (name == 'tc_agency_new_outlet_approved') {
-                            config.map_tc_agency_new_outlet_approved = value;
-                        } else if (name == 'tc_agency_existing_outlet_edited') {
-                            config.map_tc_agency_existing_outlet_edited = value;
-                        } else if (name == 'tc_agency_existing_outlet_denied') {
-                            config.map_tc_agency_existing_outlet_denied = value;
-                        } else if (name == 'tc_agency_existing_outlet_approved') {
-                            config.map_tc_agency_existing_outlet_approved = value;
-                        } else if (name == 'tc_agency_auditor_new_outlet') {
-                            config.map_tc_agency_auditor_new_outlet = value;
-                        } else if (name == 'tc_agency_auditor_new_outlet_denied') {
-                            config.map_tc_agency_auditor_new_outlet_denied = value;
-                        } else if (name == 'tc_agency_auditor_new_outlet_approved') {
-                            config.map_tc_agency_auditor_new_outlet_approved = value;
-                        }
-
-                        else if (name == 'sr_outlet_audit_denied') {
-                            config.map_sr_outlet_audit_denied = value;
-                        } else if (name == 'sr_outlet_audit_approved') {
-                            config.map_sr_outlet_audit_approved = value;
-                        } else if (name == 'sr_outlet_closed') {
-                            config.map_sr_outlet_closed = value;
-                        } else if (name == 'sr_outlet_non_track') {
-                            config.map_sr_outlet_non_track = value;
-                        } else if (name == 'sr_outlet_opened') {
-                            config.map_sr_outlet_opened = value;
-                        } else if (name == 'dis_outlet_audit_denied') {
-                            config.map_dis_outlet_audit_denied = value;
-                        } else if (name == 'dis_outlet_audit_approved') {
-                            config.map_dis_outlet_audit_approved = value;
-                        } else if (name == 'dis_outlet_closed') {
-                            config.map_dis_outlet_closed = value;
-                        } else if (name == 'dis_outlet_opened') {
-                            config.map_dis_outlet_opened = value;
-                        }
+                        callback();
                     }
-
-                    onSuccess();
-                }
-            }, handleHttpError);
-        } else {
-            onSuccess();
+                },
+                function() {
+                    callback("Cannot connect to server!");
+                });
         }
     }
 

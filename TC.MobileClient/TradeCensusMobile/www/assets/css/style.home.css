@@ -628,11 +628,13 @@
     right: 152px;
     z-index: 3;
     border: 0px;
-    max-width: 300px;
+    max-width: 200px;
 }
 
 .status-message{
-    color: red;
+    border-radius: 10px;
+    background: #FEA500;
+    color: #FFFFFF;
     padding:0 5px 0 5px;
     display:none;
 }

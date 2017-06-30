@@ -11,8 +11,6 @@ namespace TradeCensus
     {
         static object Locker = new object();
 
-        const byte OActionDenyUpdate = 17;
-
         public OutletService() : base("Outlet")
         {
         }
@@ -137,59 +135,60 @@ namespace TradeCensus
                 DC.DeleteOutlet(outlet.ID);
                 return new Tuple<int, string>(outlet.ID, outlet.PRowID);
             }
+            Outlet dboutlet = DC.GetOutlet(outlet.ID, outlet.PRowID);
+            if (dboutlet != null)
+            {
+                if (outlet.ID == 600000000)
+                {
+                    return new Tuple<int, string>(dboutlet.ID, dboutlet.PRowID.ToString());
+                }
+                UpdateOutlet(outlet, dboutlet, false);
+            }
             else
             {
-                Outlet dboutlet = DC.GetOutlet(outlet.ID, outlet.PRowID);
-                if (dboutlet != null)
+                lock (Locker)
                 {
-                    UpdateOutlet(outlet, dboutlet, false);
-                }
-                else
-                {
-                    lock (Locker)
+                    if (outlet.ID == 600000000)
+                        outlet.ID = DC.GetNextOutletID(int.Parse(outlet.ProvinceID));
+
+                    outlet.AmendBy = outlet.InputBy;
+                    dboutlet = new Outlet
                     {
-                        if (outlet.ID == 600000000)
-                            outlet.ID = DC.GetNextOutletID(int.Parse(outlet.ProvinceID));
+                        ID = outlet.ID,
+                        TerritoryID = "",
+                        CallRate = 0,
+                        CloseDate = null,
+                        CreateDate = DateTime.Now,
+                        LastContact = "",
+                        Tracking = 0,
+                        Class = "",
+                        Ward = outlet.Ward,
+                        Open1st = null,
+                        Close1st = null,
+                        Open2nd = null,
+                        Close2nd = null,
+                        SpShift = 0,
+                        LastVisit = null,
+                        TaxID = null,
+                        ModifiedStatus = 0,
+                        InputBy = outlet.InputBy,
+                        InputDate = DateTime.Now,
+                        OutletEmail = null,
+                        DEDISID = 0,
+                        DISAlias = null,
+                        LegalName = null,
+                        PRowID = new Guid(outlet.PRowID), //Guid.NewGuid(),
+                        AuditStatus = Constants.StatusNew,
+                        PModifiedStatus = 0,
+                    };
 
-                        outlet.AmendBy = outlet.InputBy;
-                        dboutlet = new Outlet
-                        {
-                            ID = outlet.ID,
-                            TerritoryID = "",
-                            CallRate = 0,
-                            CloseDate = null,
-                            CreateDate = DateTime.Now,
-                            LastContact = "",
-                            Tracking = 0,
-                            Class = "",
-                            Ward = outlet.Ward,
-                            Open1st = null,
-                            Close1st = null,
-                            Open2nd = null,
-                            Close2nd = null,
-                            SpShift = 0,
-                            LastVisit = null,
-                            TaxID = null,
-                            ModifiedStatus = 0,
-                            InputBy = outlet.InputBy,
-                            InputDate = DateTime.Now,
-                            OutletEmail = null,
-                            DEDISID = 0,
-                            DISAlias = null,
-                            LegalName = null,
-                            PRowID = new Guid(outlet.PRowID), //Guid.NewGuid(),
-                            AuditStatus = Constants.StatusNew,
-                            PModifiedStatus = 0,
-                        };
-
-                        UpdateOutlet(outlet, dboutlet, true);
-                        DC.AddNewOutlet(dboutlet);
-                    }
+                    UpdateOutlet(outlet, dboutlet, true);
+                    DC.AddNewOutlet(dboutlet);
                 }
-                
-                DC.SaveChanges();
-                return new Tuple<int, string>(dboutlet.ID, dboutlet.PRowID.ToString());
             }
+                
+            DC.SaveChanges();
+            return new Tuple<int, string>(dboutlet.ID, dboutlet.PRowID.ToString());
         }
 
         private void UpdateOutlet(OutletModel outlet, Outlet dbOutlet, bool isNewOutlet)
@@ -255,63 +254,104 @@ namespace TradeCensus
 
             #region Images
             OutletImage outletImage = null;
-            if (isNewOutlet)
+            if (!isNewOutlet)
+                outletImage = dbOutlet.OutletImages.FirstOrDefault();
+
+            if (outletImage == null)
             {
-                outletImage = new OutletImage();
-                outletImage.Outlet = dbOutlet;
+                outletImage = new OutletImage {Outlet = dbOutlet};
                 dbOutlet.OutletImages.Add(outletImage);
             }
-            else
-                outletImage = dbOutlet.OutletImages.FirstOrDefault();
 
             outletImage.IsCompressed = outlet.CompressImage;
 
             // IMAGE1
             if (!string.IsNullOrWhiteSpace(outlet.StringImage1) && !outlet.StringImage1.ToUpper().StartsWith("/IMAGE"))
             {
-                outletImage.Image1 = outlet.StringImage1;
-                if(!outlet.CompressImage)
-                    outletImage.ImageData1 = Convert.FromBase64String(outlet.StringImage1);
+                string relativePath;
+                byte[] data;
+                Utils.SaveToFile(_logger, outlet.ID, 1, outlet.StringImage1, out relativePath, out data);
+
+                outletImage.Image1 = relativePath;
+                outletImage.ImageData1 = Convert.FromBase64String(outlet.StringImage1);
+
+                //if (!outlet.CompressImage)
+                //    outletImage.ImageData1 = Convert.FromBase64String(outlet.StringImage1);
             }
 
             // IMAGE2
             if (!string.IsNullOrWhiteSpace(outlet.StringImage2) && !outlet.StringImage2.ToUpper().StartsWith("/IMAGE"))
             {
-                outletImage.Image2 = outlet.StringImage2;
-                if (!outlet.CompressImage)
-                    outletImage.ImageData2 = Convert.FromBase64String(outlet.StringImage2);
+                string relativePath;
+                byte[] data;
+                Utils.SaveToFile(_logger, outlet.ID, 2, outlet.StringImage2, out relativePath, out data);
+
+                outletImage.Image2 = relativePath;
+                outletImage.ImageData2 = Convert.FromBase64String(outlet.StringImage2);
+
+                //outletImage.Image2 = outlet.StringImage2;
+                //if (!outlet.CompressImage)
+                //    outletImage.ImageData2 = Convert.FromBase64String(outlet.StringImage2);
             }
 
             // IMAGE3
             if (!string.IsNullOrWhiteSpace(outlet.StringImage3) && !outlet.StringImage3.ToUpper().StartsWith("/IMAGE"))
             {
-                outletImage.Image3 = outlet.StringImage3;
-                if (!outlet.CompressImage)
-                    outletImage.ImageData3 = Convert.FromBase64String(outlet.StringImage3);
+                string relativePath;
+                byte[] data;
+                Utils.SaveToFile(_logger, outlet.ID, 3, outlet.StringImage3, out relativePath, out data);
+
+                outletImage.Image3 = relativePath;
+                outletImage.ImageData3 = Convert.FromBase64String(outlet.StringImage3);
+
+                //outletImage.Image3 = outlet.StringImage3;
+                //if (!outlet.CompressImage)
+                //    outletImage.ImageData3 = Convert.FromBase64String(outlet.StringImage3);
             }
 
             // IMAGE4
             if (!string.IsNullOrWhiteSpace(outlet.StringImage4) && !outlet.StringImage4.ToUpper().StartsWith("/IMAGE"))
             {
-                outletImage.Image4 = outlet.StringImage4;
-                if (!outlet.CompressImage)
-                    outletImage.ImageData4 = Convert.FromBase64String(outlet.StringImage4);
+                string relativePath;
+                byte[] data;
+                Utils.SaveToFile(_logger, outlet.ID, 4, outlet.StringImage4, out relativePath, out data);
+
+                outletImage.Image4 = relativePath;
+                outletImage.ImageData4 = Convert.FromBase64String(outlet.StringImage4);
+
+                //outletImage.Image4 = outlet.StringImage4;
+                //if (!outlet.CompressImage)
+                //    outletImage.ImageData4 = Convert.FromBase64String(outlet.StringImage4);
             }
 
             // IMAGE5
             if (!string.IsNullOrWhiteSpace(outlet.StringImage5) && !outlet.StringImage5.ToUpper().StartsWith("/IMAGE"))
             {
-                outletImage.Image5 = outlet.StringImage5;
-                if (!outlet.CompressImage)
-                    outletImage.ImageData5 = Convert.FromBase64String(outlet.StringImage5);
+                string relativePath;
+                byte[] data;
+                Utils.SaveToFile(_logger, outlet.ID, 5, outlet.StringImage5, out relativePath, out data);
+
+                outletImage.Image5 = relativePath;
+                outletImage.ImageData5 = Convert.FromBase64String(outlet.StringImage5);
+
+                //outletImage.Image5 = outlet.StringImage5;
+                //if (!outlet.CompressImage)
+                //    outletImage.ImageData5 = Convert.FromBase64String(outlet.StringImage5);
             }
 
             // IMAGE6
             if (!string.IsNullOrWhiteSpace(outlet.StringImage6) && !outlet.StringImage6.ToUpper().StartsWith("/IMAGE"))
             {
-                outletImage.Image6 = outlet.StringImage6;
-                if (!outlet.CompressImage)
-                    outletImage.ImageData6 = Convert.FromBase64String(outlet.StringImage6);
+                string relativePath;
+                byte[] data;
+                Utils.SaveToFile(_logger, outlet.ID, 6, outlet.StringImage6, out relativePath, out data);
+
+                outletImage.Image6 = relativePath;
+                outletImage.ImageData6 = Convert.FromBase64String(outlet.StringImage6);
+
+                //outletImage.Image6 = outlet.StringImage6;
+                //if (!outlet.CompressImage)
+                //    outletImage.ImageData6 = Convert.FromBase64String(outlet.StringImage6);
             }
             #endregion
 
@@ -537,7 +577,7 @@ namespace TradeCensus
             {
                 ValidatePerson(int.Parse(personID), password);
                 
-                var query = DC.SearchOutlets(int.Parse(outletID), outletName);
+                var query = DC.SearchOutlets(int.Parse(personID), int.Parse(outletID), outletName);
                 foreach (var outlet in query)
                 {
                     resp.Items.Add(ToOutletModel(outlet));

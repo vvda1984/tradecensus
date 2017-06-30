@@ -323,6 +323,7 @@ function deleteImage() {
 }
 
 function captureImage(onSuccess, onError, useFrontCamera) {
+    console.log("Capture image: " + config.image_width.toString() + " x " + config.image_height.toString());
     try {
         if (config.enable_devmode) {
             onSuccess('http://lorempixel.com/output/technics-q-c-800-600-3.jpg');
@@ -330,7 +331,7 @@ function captureImage(onSuccess, onError, useFrontCamera) {
             if (typeof useFrontCamera === 'undefined' || useFrontCamera === false) {
                 navigator.camera.getPicture(onSuccess, onError,
                     {
-                        quality: 30,
+                        //quality: 30,
                         targetWidth: config.image_width,
                         targetHeight: config.image_height,
                         correctOrientation: true,
@@ -340,7 +341,7 @@ function captureImage(onSuccess, onError, useFrontCamera) {
                 navigator.camera.getPicture(onSuccess, onError,
                     {
                         cameraDirection: Camera.Direction.FRONT,
-                        quality: 30,
+                        //quality: 30,
                         targetWidth: config.image_width,
                         targetHeight: config.image_height,
                         correctOrientation: true,
@@ -357,8 +358,12 @@ function captureImage(onSuccess, onError, useFrontCamera) {
 //#region Connection
 var __serverConnected = true;
 var __handleNetworkStateChanged;
+var __startMonitorNetwork = false;
 
 function __getNetworkState() {
+    if (!config.mode_online) return false;
+    if (config.enable_devmode) return true;
+
     try {
         var networkState = navigator.connection.type;
         return (networkState !== Connection.NONE && networkState !== Connection.UNKNOWN && networkState !== Connection.CELL_2G)
@@ -369,11 +374,14 @@ function __getNetworkState() {
 }
 
 function networkReady() {
-    if (!config.mode_online) return false;
-    if (config.enable_devmode) return true;
-
-    //if (typeof __serverConnected === 'undefined')
+    var curServerConnected = __serverConnected;
     __serverConnected = __getNetworkState();
+
+    if (__serverConnected != curServerConnected) {
+        if (__handleNetworkStateChanged)
+            __handleNetworkStateChanged(__serverConnected);
+    }
+
     return __serverConnected; // && getNetworkState();
 }
 
@@ -393,5 +401,14 @@ function onNetworkDisconnected() {
         if (__handleNetworkStateChanged)
             __handleNetworkStateChanged(__serverConnected);
     }
+}
+
+function startMonitorNetworkState() {
+    if (config.manual_monitor_network != 1 || __startMonitorNetwork == true) return;
+
+    __startMonitorNetwork = true;
+    window.setInterval(function () {
+        var isNetworkReady = networkReady();
+    }, 30 * 1000);
 }
 //#endregion

@@ -113,7 +113,7 @@
             <div layout-gt-sm="row" style="margin-top:-8px;">
                 <md-input-container class="md-block" flex-gt-sm="">
                     <label>{{R.comment}}</label>
-                    <textarea ng-model="outlet.Comment" rows="2" style="margin-bottom:0px;" readonly></textarea>
+                    <textarea ng-model="outlet.Comment" rows="2" style="margin-bottom:0px;" id="outletComment" ng-disabled="viewOnly"></textarea>
                 </md-input-container>
                 <md-input-container class="md-block" flex-gt-sm="" ng-show="isAuditor">
                     <label>{{R.auditor_comment}}</label>

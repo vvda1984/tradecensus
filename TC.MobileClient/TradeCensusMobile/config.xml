@@ -126,6 +126,6 @@
   <plugin name="cordova-plugin-phonecaller" version="0.0.2" src="https://github.com/codebakery/cordova-plugin-phonecaller" />
   <plugin name="cordova-plugin-geolocation" version="2.4.3" />
   <plugin name="cordova-plugin-locationservices" version="2.1.0" src="https://github.com/louisbl/cordova-plugin-locationservices" />
-  <plugin name="cordova-plugin-crosswalk-webview" version="2.1.0" />
   <plugin name="cordova.plugins.diagnostic" version="3.6.4" src="https://github.com/dpa99c/cordova-diagnostic-plugin" />
+  <plugin name="cordova-plugin-crosswalk-webview" version="2.1.0" />
 </widget>

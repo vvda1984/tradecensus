@@ -5,7 +5,7 @@
 /// <reference path="tc.databaseAPI.js" />
 /// <reference path="tc.appAPI.js" />
 
-var isOutletDlgOpen = false;
+var __isOutletDlgOpen = false;
 var __isLoadingOutlet = false;
 var dialogClosedCallback;
 
@@ -35,7 +35,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     $scope.mapReady = false;
     $scope.isSatellite = false;
     $scope.canAddNewOutlet = true; //!user.hasAuditRole;
-    $scope.dprovinces = dprovinces;
+    $scope.provinces = provinces;
     $scope.config = config;
     $scope.editOutletFull = false;
     $scope.hasAuditRole = user.hasAuditRole;
@@ -56,10 +56,11 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     $scope.enableNearby = true;
     $scope.enableSearch = false;
 
-    for (var i = 0; i < dprovinces.length; i++) {
-        if (dprovinces[i].id == $scope.config.province_id) {
-            selectProvince = dprovinces[i];
-            if (dprovinces[i].download) {
+    var i;
+    for (i = 0; i < provinces.length; i++) {
+        if (provinces[i].id == $scope.config.province_id) {
+            selectProvince = provinces[i];
+            if (provinces[i].download) {
                 $("#buttonDownload").css('display', 'none');
                 $("#buttonRedownload").css('display', 'table');
                 $("#buttonDeleteOffline").css('display', 'table');
@@ -71,8 +72,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             break;
         }
     }
-
-    for (var i = 0; i < provinces.length; i++) {
+    for (i = 0; i < provinces.length; i++) {
         if (provinces[i].id === $scope.config.province_id) {
             addressModel.provinceRaw = provinces[i];
             break;
@@ -364,8 +364,8 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                 if (curAccRound <= $scope.config.audit_accuracy) {
                     if (!networkReady()) {
                         var hasDownloadProvince = false;
-                        for (var i = 0; i < dprovinces.length; i++) {
-                            if (dprovinces[i].download) {
+                        for (var i = 0; i < provinces.length; i++) {
+                            if (provinces[i].download) {
                                 hasDownloadProvince = true;
                                 break;
                             }
@@ -570,10 +570,12 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         var provId = $scope.config.province_id;
         log('Change to province: ' + provId.toString());
 
-        for (var i = 0; i < dprovinces.length; i++) {
-            if (dprovinces[i].id === provId) {
-                selectProvince = dprovinces[i];
-                if (dprovinces[i].download) {
+        for (var i = 0; i < provinces.length; i++) {
+            if (provinces[i].id === provId) {
+                addressModel.provinceRaw = provinces[i];
+                selectProvince = provinces[i];
+
+                if (provinces[i].download) {
                     $("#buttonDownload").css('display', 'none');
                     $("#buttonRedownload").css('display', 'table');
                     $("#buttonDeleteOffline").css('display', 'table');
@@ -582,13 +584,6 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                     $("#buttonRedownload").css('display', 'none');
                     $("#buttonDeleteOffline").css('display', 'none');
                 }
-                break;
-            }
-        }
-
-        for (var i = 0; i < provinces.length; i++) {
-            if (provinces[i].id === provId) {
-                addressModel.provinceRaw = provinces[i];
                 break;
             }
         }
@@ -653,8 +648,8 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         }
         var p = selectProvince;
         var downloadedCount = 0;
-        for (var i = 0; i < $scope.dprovinces.length; i++) {
-            if ($scope.dprovinces[i].download && p.id != $scope.dprovinces[i].id)
+        for (var i = 0; i < $scope.provinces.length; i++) {
+            if ($scope.provinces[i].download && p.id !== $scope.provinces[i].id)
                 downloadedCount++;
 
             if (downloadedCount >= config.max_oulet_download) {
@@ -673,14 +668,14 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
         }
 
         try {
-            showDlg(R.validate_unsynced_outlets, R.please_wait);
-            selectUnsyncedOutletsOfProvince($scope.config.tbl_outlet, p.id, function (dbres) {
+            //showDlg(R.validate_unsynced_outlets, R.please_wait);
+            selectUnsyncedOutletsDB($scope.config.tbl_outlet, function (dbres) {
                 hideDlg();
                 if (dbres.rows.length > 0) {
-                    showDlg(R.error, R.unsynced_outlet_in_province);
+                    showInfo(R.unsynced_outlet_in_province);
                     return;
                 }
-                isOutletDlgOpen = true;
+                __isOutletDlgOpen = true;
 
                 showConfirm(R.download_outlets, R.download_outlets_confim + selectProvince.name + '?', function () {
                     setTimeout(function () {
@@ -688,7 +683,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                         try {
                             showLoading(R.downloading_outlet, R.please_wait, R.cancel_download_confirm,
                                 function () {
-                                    isOutletDlgOpen = false;
+                                    __isOutletDlgOpen = false;
                                     if (dialogClosedCallback) dialogClosedCallback();
                                     log('*** CANCEL download');
                                     cancelLoadingDlg = true;
@@ -704,7 +699,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                             }).then(function (resp) {
                                 if (cancelLoadingDlg || sessionID != downloadSession) {
                                     lastDownloadProvinceTS = new Date();
-                                    isOutletDlgOpen = false;
+                                    __isOutletDlgOpen = false;
                                     if (dialogClosedCallback) dialogClosedCallback();
                                     return;
                                 }
@@ -721,7 +716,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                                                 downloadProvinceOutletsZip(selectProvince.id, sessionID, 0, maxPage,
                                                     function () {
                                                         downloadDistricts(addressModel.provinceRaw.referenceGeoID, function () {
-                                                            isOutletDlgOpen = false;
+                                                            __isOutletDlgOpen = false;
                                                             if (dialogClosedCallback) dialogClosedCallback();
                                                             if (sessionID == downloadSession) {
                                                                 changeDownloadProvinceStatusDB(config.tbl_downloadProvince, selectProvince.id, 1, function () {
@@ -739,13 +734,13 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                                                             }
                                                         });
                                                     }, function (errMsg) {
-                                                        isOutletDlgOpen = false;
+                                                        __isOutletDlgOpen = false;
                                                         if (dialogClosedCallback) dialogClosedCallback();
                                                         if (sessionID == downloadSession) {
                                                             showError(errMsg);
                                                         }
                                                     }, function () {
-                                                        isOutletDlgOpen = false;
+                                                        __isOutletDlgOpen = false;
                                                         if (dialogClosedCallback) dialogClosedCallback();
                                                         try {
                                                             hideLoadingDlg();
@@ -767,12 +762,12 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                                     }
                                 } catch (err) {
                                     showError(err.message);
-                                    isOutletDlgOpen = false;
+                                    __isOutletDlgOpen = false;
                                     if (dialogClosedCallback) dialogClosedCallback();
                                 }
                             }, function (err) {
                                 if (sessionID == downloadSession) {
-                                    isOutletDlgOpen = false;
+                                    __isOutletDlgOpen = false;
                                     if (dialogClosedCallback) dialogClosedCallback();
                                     showError($scope.R.text_ConnectionTimeout);
                                     log('HTTP error...');
@@ -783,24 +778,24 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                             });
                         } catch (ex) {
                             showError(ex.message);
-                            isOutletDlgOpen = false;
+                            __isOutletDlgOpen = false;
                             if (dialogClosedCallback) dialogClosedCallback();
                         }
                         lastDownloadProvinceTS = new Date();
                     }, 500);
                 }, function () {
-                    isOutletDlgOpen = false;
+                    __isOutletDlgOpen = false;
                     if (dialogClosedCallback) dialogClosedCallback();
                 });
             }, function (tx, dberr) {
                 showError(dberr.message);
-                isOutletDlgOpen = false;
+                __isOutletDlgOpen = false;
                 if (dialogClosedCallback) dialogClosedCallback();
             });
         }
         catch (e) {
             showError(e.message);
-            isOutletDlgOpen = false;
+            __isOutletDlgOpen = false;
             if (dialogClosedCallback) dialogClosedCallback();
         }
     }
@@ -1015,7 +1010,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             }, function (err) {
                 log(err);
                 hideDlg();
-                onError(err_download_province);
+                onError(R.err_download_province);
             });
         } catch (ex) {
             onError(ex.message);
@@ -1204,7 +1199,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                 return;
             }
 
-            if (isOutletDlgOpen) {
+            if (__isOutletDlgOpen) {
                 log('Dialog was opened');
                 return;
             }
@@ -1235,6 +1230,24 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                 orgOutlet = $scope.outlets[j + $scope.currentPage * $scope.pageSize];
             } else {
                 orgOutlet = curOutlets[j];
+            }
+
+            if (!networkReady() ) {
+                
+                var isInDownloadProvinces = false;
+                for (var i = 0; i < provinces.length; i++) {
+                    var province = provinces[i];
+                    if (province.id === orgOutlet.ProvinceID && province.download === 1) {
+                        isInDownloadProvinces = true;
+                        break;
+                    }
+                }
+
+                if (isInDownloadProvinces == false)
+                {
+                    tcutils.messageBox.info("Could not edit outlet which not in downloaded provinces in OFFLINE mode!");
+                    return;
+                }
             }
 
             OUTLET.ensureOutletImagesAreLoaded($http, orgOutlet, function () {
@@ -1302,7 +1315,6 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                               orgOutlet.AmendBy = outlet.AmendBy;
                               orgOutlet.AddLine = outlet.AddLine;
                               orgOutlet.AddLine2 = outlet.AddLine2;
-                              orgOutlet.AuditStatus = outlet.AuditStatus;
                               orgOutlet.CloseDate = outlet.CloseDate;
                               orgOutlet.Distance = outlet.Distance;
                               orgOutlet.District = outlet.District;
@@ -1470,8 +1482,6 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
     }
 
     //*************************************************************************
-    var isSyncing = false;
-    var lastAutoSyncTS = new Date();
     function autoSyncOutlets(onSuccess, onError) {
         if (!config.auto_sync) {
             log('Auto sync is OFF');
@@ -1577,7 +1587,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                 $scope.mapReady = true;
             }
             initializeBorders(true);
-            if (!isOutletDlgOpen) {
+            if (!__isOutletDlgOpen) {
                 if (tcutils.tcapp.lastRefreshOutletsTS == null)
                     tcutils.tcapp.lastRefreshOutletsTS = new Date();
                 OUTLET.queryOutlets($http, false, curOutletView, function (isSuccess, foundOutlets) {
@@ -1856,7 +1866,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                   },
                   null,
                   function (answer, outlet) {
-                      isOutletDlgOpen = false;
+                      __isOutletDlgOpen = false;
                       if (dialogClosedCallback) dialogClosedCallback();
                       if (answer) {
                           setCurrenBorder(userSelectedBorder);

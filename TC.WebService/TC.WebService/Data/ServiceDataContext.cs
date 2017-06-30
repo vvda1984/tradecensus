@@ -29,7 +29,7 @@ namespace TradeCensus.Data
         static string SQL_DELETE_OUTLET_IMAGE { get { return Utils.GetAppSetting("SQL_DELETE_OUTLET_IMAGE", _SQL_DELETE_OUTLET_IMAGE); } }
         static string SQL_GET_SETTING { get { return Utils.GetAppSetting("SQL_GET_SETTING", _SQL_GET_SETTING); } }
         static string SQL_GET_PERSON_ROLE { get { return Utils.GetAppSetting("SQL_GET_PERSON_ROLE", _SQL_GET_PERSON_ROLE); } }
-
+        
 
         const string _SQL_SELECT_PERSON = "SELECT top 1 * FROM PersonRole (NOLOCK) where PersonID = @p0 AND [Password] = @p1'";
         const string _SQL_SELECT_VERSION = "SELECT * FROM Config (NOLOCK) where Name = 'version' OR Name = 'new_version_message' OR Name = 'NewVersionMessage'";
@@ -46,7 +46,7 @@ namespace TradeCensus.Data
         const string _SQL_CHANGE_PASSWORD = "UPDATE PersonRole set Password = @p0 where PersonID=@p1 AND Password = @p2";
         const string _SQL_GET_SALESMANS = "With cte(EmployeeID) as (select ID from Person where ReportTo = @p0 UNION ALL select ID from Person JOIN cte d ON Person.ReportTo = d.EmployeeID where Person.TerminateDate is null) select * from person join cte on cte.EmployeeID=person.ID where ltrim(Person.FirstName) not like 'TBA%'";
         const string _SQL_GET_OUTLET_IMAGE = "SELECT top 1 * FROM OutletImage (NOLOCK) WHERE [OutletID] = @p0";
-        const string _SQL_GET_OUTLET_TOP1 = "SELECT top 1 * FROM Outlet (NOLOCK) WHERE [ID] = @p0 OR [PRowID] = @p1 ";
+        const string _SQL_GET_OUTLET_TOP1 = "SELECT TOP (1) *  FROM [Outlet] o inner join OutletImage oi on o.ID = oi.OutletID where PRowID = @p0";
         const string _SQL_DELETE_OUTLET = "DELETE FROM Outlet WHERE [ID] = @p0";
         const string _SQL_DELETE_OUTLET_IMAGE = "DELETE FROM OutletImage WHERE OutletID = @p0";
         const string _SQL_GET_SETTING = "SELECT top 1 * FROM [Config] (NOLOCK) where Name like @p0";
@@ -335,8 +335,10 @@ namespace TradeCensus.Data
 
         public Outlet GetOutlet(int id, string guid)
         {
-            if (!string.IsNullOrWhiteSpace(guid)) guid = "";
-            return DC.Outlets.Include(x => x.OutletImages).FirstOrDefault(x => x.ID == id || x.PRowID.ToString() == guid);
+            if (string.IsNullOrWhiteSpace(guid)) guid = "";
+            return DC.Outlets.Include(x => x.OutletImages).FirstOrDefault(x =>
+                x.ID == id ||
+                string.Compare(x.PRowID.ToString(), guid, StringComparison.OrdinalIgnoreCase) == 0);
 
             //if (string.IsNullOrWhiteSpace(guid)) guid = "";
             //return DC.Database.SqlQuery<Outlet>(SQL_GET_OUTLET_1, id, guid).FirstOrDefault();
@@ -563,7 +565,7 @@ namespace TradeCensus.Data
             return DC.Database.SqlQuery<OutletEntity>(string.Format(SQL_QUERY, lat, lng, maxDistanceInMeter, maxItemCount)).ToArray();
         }
 
-        public OutletEntity[] SearchOutlets(int code, string name)
+        public OutletEntity[] SearchOutlets(int personID, int code, string name)
         {
             // {0}: lat, {1}: lng, {2}: max_distance, {3}: max_item_count
             var SQL_QUERY = @"SELECT o.*, 
@@ -597,7 +599,13 @@ namespace TradeCensus.Data
 			            left join PersonRole r1 with(nolock) on r1.PersonID = o.InputBy
 			            left join PersonRole r2 with(nolock) on r2.PersonID = o.AmendBy) 
 	            WHERE 
-		            o.Name like N'%{0}%' OR o.ID = {1}";
+		            (o.Name like N'%{0}%' OR o.ID = {1}) ";
+
+            SQL_QUERY += $"AND (o.AuditStatus IN ({Constants.StatusInitial}, ";
+            SQL_QUERY += $"{Constants.StatusPost}, {Constants.StatusAuditAccept}, {Constants.StatusAuditDeny}, {Constants.StatusAuditorAccept}, ";
+            SQL_QUERY += $"{Constants.StatusEdit}, {Constants.StatusExistingPost}, {Constants.StatusExistingDeny}, {Constants.StatusExistingAccept}, ";
+            SQL_QUERY += $"{Constants.StatusDone}, {Constants.StatusDeny}, {Constants.StatusRevert}) ";
+            SQL_QUERY += $" OR ((o.AuditStatus = {Constants.StatusNew} OR o.AuditStatus = {Constants.StatusAuditorNew}) AND o.PersonID = {personID}))";
 
             string queryCommand = Utils.GetAppSetting("SQL_SEARCH_OUTLET", SQL_QUERY);
             return DC.Database.SqlQuery<OutletEntity>(string.Format(queryCommand, name, code)).ToArray();

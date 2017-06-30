@@ -3,12 +3,19 @@
 /// <reference path="tc.appAPI.js" />
 
 function newOutletController($scope, $http, $mdDialog, $timeout) {
-    isOutletDlgOpen = true;
+    __isOutletDlgOpen = true;
     var isLoaded = false;
     var outlet = OUTLET.dialog.outlet();
     var orgOutlet = null;
     var isCreatedNew = isEmpty(outlet.Name);
+
     var __selectedGeoProvince = null;
+    for (var i = 0; i < provinces.length; i++) {
+        if (provinces[i].id == outlet.ProvinceID.toString()) {
+            __selectedGeoProvince = provinces[i];
+            break;
+        }
+    }
 
     //addressModel.wardArr = [];
 
@@ -35,9 +42,9 @@ function newOutletController($scope, $http, $mdDialog, $timeout) {
         downloadProvinces = provinces;
     } else {
         var c = 0;
-        for (var j = 0; j < dprovinces.length; j++) {
-            if (dprovinces[j].download) {
-                downloadProvinces[c] = dprovinces[j];
+        for (var j = 0; j < provinces.length; j++) {
+            if (provinces[j].download) {
+                downloadProvinces[c] = provinces[j];
                 c++;
             }
         }
@@ -318,16 +325,15 @@ function newOutletController($scope, $http, $mdDialog, $timeout) {
         }
 
         if (selectedProvince == undefined) {
-            selectedProvince = null;
             var outlet1 = isLoaded ? $scope.outlet : outlet;
-            for (var i = 0; i < $scope.provinces.length; i++) {
-                if ($scope.provinces[i].id === outlet1.ProvinceID) {
-                    selectedProvince = $scope.provinces[i];
+            for (var i = 0; i < provinces.length; i++) {
+                var provinceId = provinces[i].id;
+                if (provinceId == outlet1.ProvinceID.toString()) {
+                    selectedProvince = provinces[i];
                     break;
                 }
             }
         }
-
         __selectedGeoProvince = selectedProvince;
 
         if (tcutils.networks.isReady()) {
@@ -422,17 +428,17 @@ function newOutletController($scope, $http, $mdDialog, $timeout) {
         });
     }
 
-    function mapProvinceToGeoProvince() {
-        var selectedProvince = null;
-        var outlet1 = isLoaded ? $scope.outlet : outlet;
-        for (var i = 0; i < $scope.provinces.length; i++) {
-            if ($scope.provinces[i].id === outlet1.ProvinceID) {
-                selectedProvince = $scope.provinces[i];
-                break;
-            }
-        }
-        __selectedGeoProvince = selectedProvince;
-    }
+    //function mapProvinceToGeoProvince() {
+    //    var selectedProvince = null;
+    //    var outlet1 = isLoaded ? $scope.outlet : outlet;
+    //    for (var i = 0; i < $scope.provinces.length; i++) {
+    //        if ($scope.provinces[i].id === outlet1.ProvinceID) {
+    //            selectedProvince = $scope.provinces[i];
+    //            break;
+    //        }
+    //    }
+    //    __selectedGeoProvince = selectedProvince;
+    //}
 
     function checkDistance(callback) {
         if (isModified(orgOutlet, $scope.outlet)) {
@@ -622,7 +628,7 @@ function newOutletController($scope, $http, $mdDialog, $timeout) {
     }
 
     loadImages();
-    mapProvinceToGeoProvince();
+    //mapProvinceToGeoProvince();
 
     if (isCreatedNew)
         setOutlet();

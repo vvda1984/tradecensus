@@ -45,7 +45,7 @@
         <md-datepicker id="ovdatePicker" ng-model="currentOutletDate" md-placeholder="Enter date"></md-datepicker>
         <md-button id="ovqueryButton" class="md-raised md-primary" ng-click="queryOutlet()" style="margin-left:16px;">View</md-button>
         <md-button class="md-raised" ng-click="closeOutletStatusForm()" style="float:right;">Close</md-button>
-        <md-button id="ovsyncButton" class="md-raised md-primary" ng-disabled="disableAccess" ng-click="syncAllPending()" ng-show="canSync" style="float:right;">Sync all Pending</md-button>
+        <md-button id="ovsyncButton" class="md-raised md-primary" ng-disabled="disableAccess" ng-click="syncAllPending()" style="float:right; display:none;">{{syncButtonCaption}}</md-button>
     </div>
     <!--<div id="syncOverlay" style="position:fixed; width:100%; height: 100%; background-color: rgba(0,0,0, 0.5)">
         <div style="display:table; width:100%; height: 100%;">

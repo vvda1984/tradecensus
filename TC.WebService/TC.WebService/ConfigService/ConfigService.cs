@@ -15,7 +15,7 @@ namespace TradeCensus
         private void FillMapIcon(DownloadMapIconsResponse resp, string name, string relativedPath)
         {
             string content = null;
-            var imageFile = Path.Combine(ImagesPath, relativedPath);
+            var imageFile = Path.Combine(Utils.ImagesPath, relativedPath);
             if (File.Exists(imageFile))
                 content = Convert.ToBase64String(File.ReadAllBytes(imageFile));
 

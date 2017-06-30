@@ -10,7 +10,7 @@ function selectGeoBorderController($scope, $http, $mdDialog) {
         OUTLET.dialog.close(answer, null);
     };
 
-    isOutletDlgOpen = true;
+    __isOutletDlgOpen = true;
     var t_level = border_level;
     var t_borders_0 = borders_0;
     var t_borders_1 = borders_1;
@@ -108,6 +108,8 @@ function selectGeoBorderController($scope, $http, $mdDialog) {
 
     $scope.nextBorder = function (b) {
         try {
+            if (b.ChildrenCount == 0) return;
+
             if (t_level == 0) {
                 t_selected_border_0 = b;
             } else if (t_level == 1) {
