@@ -75,5 +75,24 @@ namespace TradeCensus.Shared
                 return defaultValue;
             }
         }
+
+        public static string GetCustomSQL(string key, string defaultValue)
+        {
+            lock (_locker)
+            {
+                if (_appSettingsReader == null)
+                    _appSettingsReader = new AppSettingsReader();
+            }
+
+            try
+            {
+                var value = (string) _appSettingsReader.GetValue(key, typeof(string));
+                return value == null ? defaultValue : File.ReadAllText(value);
+            }
+            catch
+            {
+                return defaultValue;
+            }
+        }
     }
 }

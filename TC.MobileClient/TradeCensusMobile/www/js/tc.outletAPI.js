@@ -616,6 +616,7 @@ var OUTLET = {
             var url = baseURL + '/outlet/save/' + userID + '/' + pass;
             log('Call service api: ' + url);
             nghttp({
+                timeout: config.submit_outlet_time_out,
                 method: config.http_method,
                 data: outlet,
                 url: url,

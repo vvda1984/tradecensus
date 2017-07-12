@@ -2195,7 +2195,7 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                   function () {
                       $mdDialog.show({
                           scope: $scope.$new(),
-                          controller: outletStatusControlle,
+                          controller: outletStatusController,
                           templateUrl: 'views/outletStatusView.html',
                           parent: angular.element(document.body),
                           clickOutsideToClose: false,

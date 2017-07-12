@@ -4,20 +4,30 @@
 /// <reference path="tc.mapAPI.js" />
 
 var __isSync = false;
-function outletStatusControlle($scope, $http, $mdDialog) {
-    
+
+function outletStatusController($scope, $http, $mdDialog, $timeout) {
+
+    var ngtimeout = $timeout;
+    var currentDate = new Date();
+    var _curSyncIndex = 0;
+    var _curSyncTimeout = null;
+    var _curSyncOutlet = null;
+    var _outlets;
+    var _pendingOutlets = [];
+
     $scope.syncButtonCaption = "Sync all Pending";
 
-    $scope.closeOutletStatusForm = function () {
+    $scope.closeOutletStatusForm = function() {
         hideDialog(false);
     }
-    $scope.queryOutlet = function () {
+    $scope.queryOutlet = function() {
         if ($scope.currentOutletDate != null)
             queryUserOulet($scope.currentOutletDate);
     }
-    $scope.syncAllPending = function () {
+    $scope.syncAllPending = function() {
         if (__isSync === true) {
             __isSync = false;
+            _stopSync();
             $scope.syncButtonCaption = "Sync all Pending";
             return;
         }
@@ -29,24 +39,27 @@ function outletStatusControlle($scope, $http, $mdDialog) {
 
         $("#ovdatePicker").prop('disabled', true);
         $("#ovqueryButton").prop('disabled', true);
-        $("#ovsyncButton").prop('disabled', true);
         $("#syncingStatusText").html();
         $("#syncingText").show();
-
 
         __isSync = true;
         $scope.syncButtonCaption = "Stop";
 
-        syncOutlets(0, function (error) {
-            __isSync = false;
-            if (error == undefined) {
-                $("#ovdatePicker").prop('disabled', false);
-                $("#ovqueryButton").prop('disabled', false);
-                $("#ovsyncButton").prop('disabled', false);
-                $("#syncingText").hide();
-            }
-            queryUserOulet($scope.currentOutletDate);
-        });
+        if (config.sync_batch_size > 1 || config.manual_sync_time_out == 0) {
+            syncOutlets(0,
+                function() {
+                    __isSync = false;
+                    $("#ovdatePicker").prop('disabled', false);
+                    $("#ovqueryButton").prop('disabled', false);
+                    $("#syncingText").hide();
+                    queryUserOulet($scope.currentOutletDate);
+                });
+        } else {
+            _curSyncIndex = 0;
+            _curSyncTimeout = null;
+            _curSyncOutlet = null;
+            _syncOutlet();
+        }
     }
 
     function hideDialog(answer) {
@@ -54,54 +67,69 @@ function outletStatusControlle($scope, $http, $mdDialog) {
         $mdDialog.hide(answer);
         OUTLET.dialog.close(answer, null);
     };
+
     function queryUserOulet(date) {
         $("#statusText").html('Query outlet...');
         $("#outletTable").hide();
         $("#noOutletText").show();
-        OUTLET.queryUserOutlets(date, function (error, outlets) {
-            if (error !== null) {
-                $("#statusText").html(error);
-            } else {
-                if (outlets.length == 0) {
-                    $("#statusText").html('No outlet found!');
+        OUTLET.queryUserOutlets(date,
+            function(error, outlets) {
+                if (error !== null) {
+                    $("#statusText").html(error);
                 } else {
-                    $("#noOutletText").hide();
-                    $("#outletTable").show();
-                    _outlets = outlets;
-                    pendingOutlets = [];
-                    $("#outletTableBody").empty();
-                    var hasPending = false;
-                    var html = '';
-                    for (var i in outlets) {
-                        var outlet = outlets[i];
-                        var syncStatus = 'Synced';
-                        var style = '';
-                        if (outlet.PSynced == 0) {
-                            syncStatus = 'Pending';
-                            hasPending = true;
-                            style = 'color:#F44336;"';
-                            pendingOutlets.push(outlet);
-                        }
-                        html +=
-                            '<tr>' +
-                                '<td style="width:100px;">' + outlet.ID + '</td>' +
-                                '<td style="width:320px; text-overflow: ellipsis;">' + outlet.Name + '</td>' +
-                                '<td style="width:100px;">' + tcutils.formatTime(outlet.LastModifiedTS) + '</td>' +
-                                '<td style="width:100px; text-align:right; ' + style + '"' + outlet.positionIndex.toString() + '">' + syncStatus + '</td>' +
-                            '</tr>';
-                    }
-                    $("#outletTableBody").html(html);
-                    $scope.canSync = hasPending;
-
-                    if (hasPending) {
-                        $("#ovsyncButton").show();
+                    if (outlets.length == 0) {
+                        $("#statusText").html('No outlet found!');
                     } else {
-                        $("#ovsyncButton").hide();
+                        $("#noOutletText").hide();
+                        $("#outletTable").show();
+                        _outlets = outlets;
+                        _pendingOutlets = [];
+                        $("#outletTableBody").empty();
+                        var hasPending = false;
+                        var html = '';
+                        for (var i in outlets) {
+                            var outlet = outlets[i];
+                            var syncStatus = 'Synced';
+                            var style = '';
+                            if (outlet.PSynced == 0) {
+                                syncStatus = 'Pending';
+                                hasPending = true;
+                                style = 'color:#F44336;';
+                                _pendingOutlets.push(outlet);
+                            }
+                            html +=
+                                '<tr>' +
+                                '<td style="width:100px;">' +
+                                outlet.ID +
+                                '</td>' +
+                                '<td style="width:320px; text-overflow: ellipsis;">' +
+                                outlet.Name +
+                                '</td>' +
+                                '<td style="width:100px;">' +
+                                tcutils.formatTime(outlet.LastModifiedTS) +
+                                '</td>' +
+                                '<td id="syncStatus' +
+                                outlet.positionIndex.toString() +
+                                '" style="width:100px; text-align:right; ' +
+                                style +
+                                '">' +
+                                syncStatus +
+                                '</td>' +
+                                '</tr>';
+                        }
+                        $("#outletTableBody").html(html);
+                        $scope.canSync = hasPending;
+
+                        if (hasPending) {
+                            $("#ovsyncButton").show();
+                        } else {
+                            $("#ovsyncButton").hide();
+                        }
                     }
                 }
-            }
-        });
-    }
+            });
+    };
+
     function syncOutlets(startIndex, callback) {
         if (!networkReady()) {
             __isSync = false;
@@ -114,11 +142,11 @@ function outletStatusControlle($scope, $http, $mdDialog) {
             return; // stopped
         }
 
-        $("#syncingStatusText").html((((startIndex) / pendingOutlets.length) * 100).toFixed(2).toString() + '%');
+        $("#syncingStatusText").html((((startIndex) / _pendingOutlets.length) * 100).toFixed(2).toString() + '%');
         var unsyncedOutlets = [];
         var nextStartIndex = startIndex + config.sync_batch_size;
-        for (var i = startIndex; i < pendingOutlets.length && i < nextStartIndex; i++) {
-            unsyncedOutlets.push(pendingOutlets[i]);
+        for (var i = startIndex; i < _pendingOutlets.length && i < nextStartIndex; i++) {
+            unsyncedOutlets.push(_pendingOutlets[i]);
         }
 
         var url = baseURL + '/outlet/saveoutlets/' + userID + '/' + pass;
@@ -129,42 +157,124 @@ function outletStatusControlle($scope, $http, $mdDialog) {
             data: unsyncedOutlets,
             url: url,
             headers: { 'Content-Type': 'application/json' }
-        }).then(function (resp) {
-            var data = resp.data;
-            if (data.Status == -1 || data.Status == 1) { // error
-                console.error(data.ErrorMessage);
-                //callback("Error while synchronizing outlets to server! (#3201)");
+        }).then(function(resp) {
+                var data = resp.data;
+                if (data.Status == -1 || data.Status == 1) { // error
+                    console.error(data.ErrorMessage);
+                    //callback("Error while synchronizing outlets to server! (#3201)");
 
-                if (nextStartIndex >= pendingOutlets.length) {
-                    callback();
+                    if (nextStartIndex >= _pendingOutlets.length) {
+                        callback();
+                    } else {
+                        syncOutlets(nextStartIndex, callback);
+                    }
                 } else {
-                    syncOutlets(nextStartIndex, callback);
+                    setSyncStatusDB($scope.config.tbl_outlet,
+                        data.Outlets,
+                        true,
+                        function() {
+                            if (nextStartIndex >= _pendingOutlets.length) {
+                                callback();
+                            } else {
+                                syncOutlets(nextStartIndex, callback);
+                            }
+                        },
+                        function(err) {
+                            console.error(err);
+                            callback("Error while synchronizing outlets to server! (#3202)");
+                        });
                 }
-            } else {
-                setSyncStatusDB($scope.config.tbl_outlet, data.Outlets, true,
-                    function () {
-                        if (nextStartIndex >= pendingOutlets.length) {
-                            callback();
-                        } else {
-                            syncOutlets(nextStartIndex, callback);
-                        }
-                    },
-                    function (err) {
-                        console.error(err);
-                        callback("Error while synchronizing outlets to server! (#3202)");
-                    });
-            }
-        }, function (err) {
-            console.error(err);
-            callback("Cannot connect to server, please try again! (#3203)");
-        });
+            },
+            function(err) {
+                console.error(err);
+                callback("Cannot connect to server, please try again! (#3203)");
+            });
+    };
+
+    function _stopSync() {
+        if (_curSyncTimeout != undefined && _curSyncTimeout != null) {
+            ngtimeout.cancel(_curSyncTimeout);
+            _curSyncTimeout = null;
+        }
+        queryUserOulet($scope.currentOutletDate);
     }
 
-    var currentDate = new Date();
-    var _outlets = [];
-    var pendingOutlets = [];
+    function _syncAllOutletsComplete() {
+        $("#ovdatePicker").prop('disabled', false);
+        $("#ovqueryButton").prop('disabled', false);
+        $("#syncingText").hide();
+        $scope.syncButtonCaption = "Sync all Pending";
+        queryUserOulet($scope.currentOutletDate);
+    }
+
+    function _syncOutletComplete() {
+        if (_curSyncTimeout != undefined && _curSyncTimeout != null) {
+            ngtimeout.cancel(_curSyncTimeout);
+            _curSyncTimeout = null;
+        }
+        _syncOutlet();
+    }
+
+    function _syncOutlet() {
+        if (_curSyncIndex < _pendingOutlets.length && __isSync) {
+            _curSyncOutlet = _pendingOutlets[_curSyncIndex];
+            _curSyncIndex++;
+            $("#syncingStatusText").html(_curSyncIndex.toString() + "/" + _pendingOutlets.length.toString());
+            _curSyncTimeout = ngtimeout(function() {
+                    $("#syncStatus" + _curSyncOutlet.positionIndex.toString()).html("Error");
+                    _syncOutletComplete();
+                },
+                config.sync_time_out);
+            _submitOutlet();
+        } else {
+            _syncAllOutletsComplete();
+        }
+    };
+
+    function _submitOutlet() {
+        $("#syncStatus" + _curSyncOutlet.positionIndex.toString()).html("Synchronizing");
+        if (!networkReady()) {
+            $("#syncStatus" + _curSyncOutlet.positionIndex.toString()).html("No network");
+            _syncOutletComplete();
+            return;
+        }
+        var unsyncedOutlets = [];
+        unsyncedOutlets.push(_curSyncOutlet);
+        var url = baseURL + '/outlet/saveoutlets/' + userID + '/' + pass;
+        log('Call service api: ' + url);
+        $http({
+            timeout: config.sync_time_out,
+            method: config.http_method,
+            data: unsyncedOutlets,
+            url: url,
+            headers: { 'Content-Type': 'application/json' }
+        }).then(function(resp) {
+                var data = resp.data;
+                if (data.Status == -1 || data.Status == 1) { // error
+                    console.error(data.ErrorMessage);
+                    _syncOutletComplete();
+                } else {
+                    setSyncStatusDB($scope.config.tbl_outlet,
+                        data.Outlets,
+                        true,
+                        function() {
+                            _syncOutletComplete();
+                        },
+                        function (err) {
+                            console.error(err);
+                            $("#syncStatus" + _curSyncOutlet.positionIndex.toString()).html("Error");
+                            _syncOutletComplete();
+                        });
+                }
+            },
+            function (err) {
+                console.error(err);
+                $("#syncStatus" + _curSyncOutlet.positionIndex.toString()).html("Error");
+                _syncOutletComplete();
+            });
+    }
+
     $("#ovsyncButton").hide();
     $scope.currentOutletDate = currentDate;
-
     queryUserOulet($scope.currentOutletDate);
 }

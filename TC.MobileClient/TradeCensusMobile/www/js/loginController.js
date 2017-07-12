@@ -22,7 +22,6 @@ function loginController($scope, $http) {
     var port = $scope.config.port;
     var province_id = $scope.config.province_id;        
     var online = $scope.config.mode_online;
-    var timeo = $scope.config.time_out;
     var dist = $scope.config.liveGPS_distance;
 
     $scope.exit = function () {
@@ -36,7 +35,6 @@ function loginController($scope, $http) {
             config.port = port;
             config.province_id = province_id;
             config.mode_online = online;
-            $scope.config.time_out = timeo;
             $scope.config.liveGPS_distance = dist;
 
             $("#loginscreen").css('display', 'block');
@@ -52,10 +50,10 @@ function loginController($scope, $http) {
                 return;
             }
 
-            if (isEmpty($scope.config.time_out)) {
-                showError(R.timeout_is_empty);
-                return;
-            }
+            //if (isEmpty($scope.config.time_out)) {
+            //    showError(R.timeout_is_empty);
+            //    return;
+            //}
 
             if (isEmpty($scope.config.liveGPS_distance)) {
                 showError('Refresh Distance is empty!');
@@ -141,7 +139,7 @@ function loginController($scope, $http) {
             data: '',
             processData: false,
             dataType: "json",
-            timeout: config.time_out * 1000,
+            timeout: config.time_out,
             success: function (data) {
                 hideDlg();
                 try {
@@ -183,10 +181,11 @@ function loginController($scope, $http) {
                 }
             },
             error: function (a, b, c) {
-                if (retry < $scope.config.time_out) {
-                    setTimeout(function () {
-                        loginOnline(retry + 1, onSuccess, onError);
-                    }, 1000);
+                if (retry < $scope.config.time_out / 1000) {
+                    setTimeout(function() {
+                            loginOnline(retry + 1, onSuccess, onError);
+                        },
+                        1000);
                 } else {
                     try {
                         onError(R.connection_timeout);
@@ -420,7 +419,9 @@ function loginController($scope, $http) {
                     } else if (name == 'map_api_key') {
                         config.map_api_key = value;
                     } else if (name == 'http_method') {
-                        config.http_method = value;
+                        config.http_method = value; 
+                    } else if (name == 'manual_sync_time_out') {
+                        config.manual_sync_time_out = parseInt(value);
                     } else if (name == 'sync_time') {
                         config.sync_time = parseInt(value);
                     } else if (name == 'protocol') {
@@ -494,7 +495,9 @@ function loginController($scope, $http) {
                     } else if (name == 'item_count_max') {
                         config.item_count_max = parseInt(value);
                     } else if (name == 'submit_outlet_time') {
-                        config.submit_outlet_time = parseInt(value);
+                        config.submit_outlet_time_out = parseInt(value);
+                    } else if (name == 'submit_outlet_time_out') {
+                        config.submit_outlet_time_out = parseInt(value);
                     } else if (name == 'image_width') {
                         config.image_width = parseInt(value);
                     } else if (name == 'image_height') {

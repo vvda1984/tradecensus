@@ -1,7 +1,7 @@
 ﻿var _WEB = false;
 var _PROD = true;
 var _VERSION = 27;
-var _VERSION_DISPLAY = '1.27.32';
+var _VERSION_DISPLAY = '1.28.33';
 
 (function (global) {
     "use strict";
@@ -199,10 +199,11 @@ function newConfig() {
         map_api_key: 'AIzaSyDpKidHSrPMfErXLJSts9R6pam7iUOr_W0',
         max_oulet_download: 1,
         download_batch_size: 5000,
-        get_location_time_out: 15,  // Connection timeout
-        time_out: 30,               // Connection timeout
-        auto_sync: 0,               // 
-        sync_time: 3 * 60 * 1000,   // Sync interval...
+        get_location_time_out: 15,  // Get location timeout
+        time_out: 30 * 1000,        // Connection timeout
+        auto_sync: 0,               // On/Off auto sync
+        manual_sync_time_out: 0,    // On/Off Manual sync timeout
+        sync_time: 3 * 60 * 1000,   // Sync interval
         sync_time_out: 15 * 1000,   // Sync timeout
         sync_batch_size: 100,       // Number of uploaded outlets in sync request
         ping_time: 30,              // Time
@@ -210,7 +211,7 @@ function newConfig() {
         refresh_time_out: 3 * 60,   // Time to get outlet
         session_time_out: 0 * 60,
         location_age: 10,           // last avaliable location
-        submit_outlet_time: 3 * 60, //
+        submit_outlet_time_out: 15 * 1000, //
         image_width: 800,           // image width
         image_height: 600,          // image height
         manual_monitor_network: 1,  // image height
@@ -541,10 +542,10 @@ function loadSettings(tx, callback) {
                     } else if (name == 'get_location_time_out') {
                         config.get_location_time_out = parseInt(value);
                     } else if (name == 'submit_outlet_time') {
-                        config.submit_outlet_time = parseInt(value);
-                    }
-
-                    else if (name == 'image_width') {
+                        config.submit_outlet_time_out = parseInt(value);
+                    } else if (name == 'submit_outlet_time_out') {
+                        config.submit_outlet_time_out = parseInt(value);
+                    } else if (name == 'image_width') {
                         config.image_width = parseInt(value);
                     } else if (name == 'image_height') {
                         config.image_height = parseInt(value);
@@ -614,7 +615,7 @@ function checkUpdate() {
             data: '',
             processData: false,
             dataType: "json",
-            timeout: config.time_out * 1000,
+            timeout: config.time_out,
             success: function (response) {
                 hideDlg();
                 if (response.Status == -1) { // error

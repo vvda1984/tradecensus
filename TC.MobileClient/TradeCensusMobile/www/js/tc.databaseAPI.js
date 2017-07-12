@@ -316,16 +316,10 @@ function insertSettingDB(config, callback) {
             __insertSetting(tx, "map_tc_agency_new_outlet_approved", config.map_tc_agency_new_outlet_approved);
             __insertSetting(tx, "map_tc_agency_existing_outlet_edited", config.map_tc_agency_existing_outlet_edited);
             __insertSetting(tx, "map_tc_agency_existing_outlet_denied", config.map_tc_agency_existing_outlet_denied);
-            __insertSetting(tx,
-                "map_tc_agency_existing_outlet_approved",
-                config.map_tc_agency_existing_outlet_approved);
+            __insertSetting(tx, "map_tc_agency_existing_outlet_approved", config.map_tc_agency_existing_outlet_approved);
             __insertSetting(tx, "map_tc_agency_auditor_new_outlet", config.map_tc_agency_auditor_new_outlet);
-            __insertSetting(tx,
-                "map_tc_agency_auditor_new_outlet_denied",
-                config.map_tc_agency_auditor_new_outlet_denied);
-            __insertSetting(tx,
-                "map_tc_agency_auditor_new_outlet_approved",
-                config.map_tc_agency_auditor_new_outlet_approved);
+            __insertSetting(tx, "map_tc_agency_auditor_new_outlet_denied", config.map_tc_agency_auditor_new_outlet_denied);
+            __insertSetting(tx, "map_tc_agency_auditor_new_outlet_approved", config.map_tc_agency_auditor_new_outlet_approved);
             __insertSetting(tx, "map_sr_outlet_audit_denied", config.map_sr_outlet_audit_denied);
             __insertSetting(tx, "map_sr_outlet_audit_approved", config.map_sr_outlet_opened);
             __insertSetting(tx, "map_sr_outlet_closed", config.map_sr_outlet_closed);
@@ -337,6 +331,8 @@ function insertSettingDB(config, callback) {
             __insertSetting(tx, "map_dis_outlet_opened", config.map_dis_outlet_opened);
             __insertSetting(tx, "get_location_time_out", config.get_location_time_out.toString());
             __insertSetting(tx, "item_count_max", config.item_count_max.toString());
+            __insertSetting(tx, "submit_outlet_time_out", config.submit_outlet_time_out.toString());
+            
             callback();
         },
         function(tx, dberr) {

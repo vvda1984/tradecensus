@@ -3,32 +3,33 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Data.Entity;
 using System.Data.Entity.Core;
+using System.Data.Entity.Infrastructure;
 using TradeCensus.Shared;
 
 namespace TradeCensus.Data
 {
     public class ServiceDataContext : IDisposable
     {
-        static string SQL_SELECT_PERSON { get { return Utils.GetAppSetting("SQL_SELECT_PERSON", _SQL_SELECT_PERSON); } }
-        static string SQL_SELECT_VERSION { get { return Utils.GetAppSetting("SQL_SELECT_VERSION", _SQL_SELECT_VERSION); } }
-        static string SQL_SELECT_CONFIG { get { return Utils.GetAppSetting("SQL_SELECT_CONFIG", _SQL_SELECT_CONFIG); } }
-        static string SQL_SELECT_SUBBORDER { get { return Utils.GetAppSetting("SQL_SELECT_SUBBORDER", _SQL_SELECT_SUBBORDER); } }
-        static string SQL_SELECT_SUBBORDER_1 { get { return Utils.GetAppSetting("SQL_SELECT_SUBBORDER_1", _SQL_SELECT_SUBBORDER_1); } }
-        static string SQL_SELECT_SUBBORDER_2 { get { return Utils.GetAppSetting("SQL_SELECT_SUBBORDER_2", _SQL_SELECT_SUBBORDER_2); } }
-        static string SQL_SELECT_BORDER { get { return Utils.GetAppSetting("SQL_SELECT_BORDER", _SQL_SELECT_BORDER); } }
-        static string SQL_SELECT_JOURNAL { get { return Utils.GetAppSetting("SQL_SELECT_JOURNAL", _SQL_SELECT_JOURNAL); } }
-        static string SQL_UPDATE_JOURNAL { get { return Utils.GetAppSetting("SQL_UPDATE_JOURNAL", _SQL_UPDATE_JOURNAL); } }
-        static string SQL_SELECT_JOURNALS { get { return Utils.GetAppSetting("SQL_SELECT_JOURNALS", _SQL_SELECT_JOURNALS); } }
-        static string SQL_SELECT_LOGIN_USER { get { return Utils.GetAppSetting("SQL_SELECT_LOGIN_USER", _SQL_SELECT_LOGIN_USER); } }
-        static string SQL_UPDATE_ROLE { get { return Utils.GetAppSetting("SQL_UPDATE_ROLE", _SQL_UPDATE_ROLE); } }
-        static string SQL_CHANGE_PASSWORD { get { return Utils.GetAppSetting("SQL_CHANGE_PASSWORD", _SQL_CHANGE_PASSWORD); } }
-        static string SQL_GET_SALESMANS { get { return Utils.GetAppSetting("SQL_GET_SALESMANS", _SQL_GET_SALESMANS); } }
-        static string SQL_GET_OUTLET_IMAGE { get { return Utils.GetAppSetting("SQL_GET_OUTLET_IMAGE", _SQL_GET_OUTLET_IMAGE); } }
-        static string SQL_GET_OUTLET_TOP1 { get { return Utils.GetAppSetting("SQL_GET_OUTLET_1", _SQL_GET_OUTLET_TOP1); } }
-        static string SQL_DELETE_OUTLET { get { return Utils.GetAppSetting("SQL_DELETE_OUTLET", _SQL_DELETE_OUTLET); } }
-        static string SQL_DELETE_OUTLET_IMAGE { get { return Utils.GetAppSetting("SQL_DELETE_OUTLET_IMAGE", _SQL_DELETE_OUTLET_IMAGE); } }
-        static string SQL_GET_SETTING { get { return Utils.GetAppSetting("SQL_GET_SETTING", _SQL_GET_SETTING); } }
-        static string SQL_GET_PERSON_ROLE { get { return Utils.GetAppSetting("SQL_GET_PERSON_ROLE", _SQL_GET_PERSON_ROLE); } }
+        static string SQL_SELECT_PERSON { get { return Utils.GetCustomSQL("SQL_SELECT_PERSON", _SQL_SELECT_PERSON); } }
+        static string SQL_SELECT_VERSION { get { return Utils.GetCustomSQL("SQL_SELECT_VERSION", _SQL_SELECT_VERSION); } }
+        static string SQL_SELECT_CONFIG { get { return Utils.GetCustomSQL("SQL_SELECT_CONFIG", _SQL_SELECT_CONFIG); } }
+        static string SQL_SELECT_SUBBORDER { get { return Utils.GetCustomSQL("SQL_SELECT_SUBBORDER", _SQL_SELECT_SUBBORDER); } }
+        static string SQL_SELECT_SUBBORDER_1 { get { return Utils.GetCustomSQL("SQL_SELECT_SUBBORDER_1", _SQL_SELECT_SUBBORDER_1); } }
+        static string SQL_SELECT_SUBBORDER_2 { get { return Utils.GetCustomSQL("SQL_SELECT_SUBBORDER_2", _SQL_SELECT_SUBBORDER_2); } }
+        static string SQL_SELECT_BORDER { get { return Utils.GetCustomSQL("SQL_SELECT_BORDER", _SQL_SELECT_BORDER); } }
+        static string SQL_SELECT_JOURNAL { get { return Utils.GetCustomSQL("SQL_SELECT_JOURNAL", _SQL_SELECT_JOURNAL); } }
+        static string SQL_UPDATE_JOURNAL { get { return Utils.GetCustomSQL("SQL_UPDATE_JOURNAL", _SQL_UPDATE_JOURNAL); } }
+        static string SQL_SELECT_JOURNALS { get { return Utils.GetCustomSQL("SQL_SELECT_JOURNALS", _SQL_SELECT_JOURNALS); } }
+        static string SQL_SELECT_LOGIN_USER { get { return Utils.GetCustomSQL("SQL_SELECT_LOGIN_USER", _SQL_SELECT_LOGIN_USER); } }
+        static string SQL_UPDATE_ROLE { get { return Utils.GetCustomSQL("SQL_UPDATE_ROLE", _SQL_UPDATE_ROLE); } }
+        static string SQL_CHANGE_PASSWORD { get { return Utils.GetCustomSQL("SQL_CHANGE_PASSWORD", _SQL_CHANGE_PASSWORD); } }
+        static string SQL_GET_SALESMANS { get { return Utils.GetCustomSQL("SQL_GET_SALESMANS", _SQL_GET_SALESMANS); } }
+        static string SQL_GET_OUTLET_IMAGE { get { return Utils.GetCustomSQL("SQL_GET_OUTLET_IMAGE", _SQL_GET_OUTLET_IMAGE); } }
+        static string SQL_GET_OUTLET_TOP1 { get { return Utils.GetCustomSQL("SQL_GET_OUTLET_1", _SQL_GET_OUTLET_TOP1); } }
+        static string SQL_DELETE_OUTLET { get { return Utils.GetCustomSQL("SQL_DELETE_OUTLET", _SQL_DELETE_OUTLET); } }
+        static string SQL_DELETE_OUTLET_IMAGE { get { return Utils.GetCustomSQL("SQL_DELETE_OUTLET_IMAGE", _SQL_DELETE_OUTLET_IMAGE); } }
+        static string SQL_GET_SETTING { get { return Utils.GetCustomSQL("SQL_GET_SETTING", _SQL_GET_SETTING); } }
+        static string SQL_GET_PERSON_ROLE { get { return Utils.GetCustomSQL("SQL_GET_PERSON_ROLE", _SQL_GET_PERSON_ROLE); } }
         
 
         const string _SQL_SELECT_PERSON = "SELECT top 1 * FROM PersonRole (NOLOCK) where PersonID = @p0 AND [Password] = @p1'";
@@ -105,8 +106,7 @@ namespace TradeCensus.Data
             Dictionary<string, string> dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             foreach (var i in settings)
             {
-                if (string.Compare(i.Name, "outlet_map_icons", StringComparison.OrdinalIgnoreCase) == 0 ||
-                    string.Compare(i.Name, "version", StringComparison.OrdinalIgnoreCase) == 0 ||
+                if (string.Compare(i.Name, "version", StringComparison.OrdinalIgnoreCase) == 0 ||
                     string.Compare(i.Name, "NewVersionMessage", StringComparison.OrdinalIgnoreCase) == 0 ||
                     string.Compare(i.Name, "new_version_message", StringComparison.OrdinalIgnoreCase) == 0)
                 {
@@ -466,6 +466,7 @@ namespace TradeCensus.Data
         public OutletEntity[] GetNearByOutlets(double lat, double lng, double maxDistanceInMeter, int maxItemCount, int status, int personID, bool auditor)
         {
             // {0}: lat, {1}: lng, {2}: max_distance, {3}: max_item_count
+
             var SQL_QUERY_NEAR_BY = @"SELECT TOP ({3}) * FROM 
 	                (SELECT o.*, 
 			                ot.Name as OutletTypeName, 
@@ -513,56 +514,53 @@ namespace TradeCensus.Data
 							 AND pc.longpoint + (pc.radius / (pc.distance_unit * COS(RADIANS(pc.latpoint))))) as tb
 	                WHERE tb.Distance <= {2} ";
 
-            var SQL_QUERY =  Utils.GetAppSetting("SQL_QUERY_NEAR_BY", SQL_QUERY_NEAR_BY);
-            if (status == 0)        // NEAR-BY
-            {
-                SQL_QUERY += $"AND tb.AuditStatus IN ({Constants.StatusInitial}, ";
-                SQL_QUERY += $"{Constants.StatusPost}, {Constants.StatusAuditAccept}, {Constants.StatusAuditDeny}, {Constants.StatusAuditorAccept}, ";
-                SQL_QUERY += $"{Constants.StatusEdit}, {Constants.StatusExistingPost}, {Constants.StatusExistingDeny}, {Constants.StatusExistingAccept}, ";
-                SQL_QUERY += $"{Constants.StatusDone}, {Constants.StatusDeny}, {Constants.StatusRevert}) ";
-                SQL_QUERY += $" OR ((tb.AuditStatus = {Constants.StatusNew} OR tb.AuditStatus = {Constants.StatusAuditorNew}) AND tb.PersonID = {personID})";
-            }
-            else if (status == 1)   // NEW
-            {
-                if (auditor)
-                {
-                    SQL_QUERY += $"AND ((tb.AuditStatus = {Constants.StatusAuditorNew} AND tb.PersonID = {personID}) OR tb.AuditStatus IN ({Constants.StatusPost}, {Constants.StatusAuditAccept}, {Constants.StatusAuditDeny}, {Constants.StatusAuditorAccept}))";
-                }
-                else
-                {
-                    SQL_QUERY += $"AND tb.AuditStatus IN ({Constants.StatusNew}, {Constants.StatusPost}, {Constants.StatusAuditAccept}, {Constants.StatusAuditDeny}, {Constants.StatusAuditorAccept})";
-                }
-            }
-            else if (status == 2)   // EDIT
-            {
-                if (auditor)
-                {
-                    SQL_QUERY += $"AND tb.AuditStatus = {Constants.StatusExistingPost} AND tb.PersonID <> {personID}";
-                }
-                else
-                {
-                    SQL_QUERY += $"AND tb.AmendBy = {personID} AND tb.AuditStatus IN ({Constants.StatusEdit}, {Constants.StatusExistingPost}, {Constants.StatusExistingAccept}, {Constants.StatusExistingDeny})";
-                }
-            }
-            else if (status == 3)   // AUDIT
-            {
-                SQL_QUERY += $"AND tb.AmendBy = {personID} AND tb.AuditStatus IN ({Constants.StatusAuditAccept}, {Constants.StatusAuditDeny}, {Constants.StatusExistingAccept}, {Constants.StatusExistingDeny}, {Constants.StatusAuditorAccept})";
-            }
-            else  // NEW BY PERSON ID
-            {
-                if (auditor)
-                {
-                    SQL_QUERY += $"AND tb.PersonID = {personID} AND tb.AuditStatus IN ({Constants.StatusAuditorNew}, {Constants.StatusAuditorAccept})";
-                }
-                else
-                {
-                    SQL_QUERY += $"AND tb.PersonID = {personID} AND tb.AuditStatus IN ({Constants.StatusNew}, {Constants.StatusPost}, { Constants.StatusAuditAccept}, {Constants.StatusAuditDeny})";
-                }
-            }
+            var sqlCommand = Utils.GetCustomSQL("SQL_QUERY_NEAR_BY", SQL_QUERY_NEAR_BY);
 
-            SQL_QUERY += " ORDER BY Distance";
-
-            return DC.Database.SqlQuery<OutletEntity>(string.Format(SQL_QUERY, lat, lng, maxDistanceInMeter, maxItemCount)).ToArray();
+            switch (status)
+            {
+                case 0:
+                    sqlCommand += $"AND tb.AuditStatus IN ({Constants.StatusInitial}, ";
+                    sqlCommand += $"{Constants.StatusPost}, {Constants.StatusAuditAccept}, {Constants.StatusAuditDeny}, {Constants.StatusAuditorAccept}, ";
+                    sqlCommand += $"{Constants.StatusEdit}, {Constants.StatusExistingPost}, {Constants.StatusExistingDeny}, {Constants.StatusExistingAccept}, ";
+                    sqlCommand += $"{Constants.StatusDone}, {Constants.StatusDeny}, {Constants.StatusRevert}) ";
+                    sqlCommand += $" OR ((tb.AuditStatus = {Constants.StatusNew} OR tb.AuditStatus = {Constants.StatusAuditorNew}) AND tb.PersonID = {personID})";
+                    break;
+                case 1:
+                    if (auditor)
+                    {
+                        sqlCommand += $"AND ((tb.AuditStatus = {Constants.StatusAuditorNew} AND tb.PersonID = {personID}) OR tb.AuditStatus IN ({Constants.StatusPost}, {Constants.StatusAuditAccept}, {Constants.StatusAuditDeny}, {Constants.StatusAuditorAccept}))";
+                    }
+                    else
+                    {
+                        sqlCommand += $"AND tb.AuditStatus IN ({Constants.StatusNew}, {Constants.StatusPost}, {Constants.StatusAuditAccept}, {Constants.StatusAuditDeny}, {Constants.StatusAuditorAccept})";
+                    }
+                    break;
+                case 2:
+                    if (auditor)
+                    {
+                        sqlCommand += $"AND tb.AuditStatus = {Constants.StatusExistingPost} AND tb.PersonID <> {personID}";
+                    }
+                    else
+                    {
+                        sqlCommand += $"AND tb.AmendBy = {personID} AND tb.AuditStatus IN ({Constants.StatusEdit}, {Constants.StatusExistingPost}, {Constants.StatusExistingAccept}, {Constants.StatusExistingDeny})";
+                    }
+                    break;
+                case 3:
+                    sqlCommand += $"AND tb.AmendBy = {personID} AND tb.AuditStatus IN ({Constants.StatusAuditAccept}, {Constants.StatusAuditDeny}, {Constants.StatusExistingAccept}, {Constants.StatusExistingDeny}, {Constants.StatusAuditorAccept})";
+                    break;
+                default:
+                    if (auditor)
+                    {
+                        sqlCommand += $"AND tb.PersonID = {personID} AND tb.AuditStatus IN ({Constants.StatusAuditorNew}, {Constants.StatusAuditorAccept})";
+                    }
+                    else
+                    {
+                        sqlCommand += $"AND tb.PersonID = {personID} AND tb.AuditStatus IN ({Constants.StatusNew}, {Constants.StatusPost}, { Constants.StatusAuditAccept}, {Constants.StatusAuditDeny})";
+                    }
+                    break;
+            }
+            sqlCommand += " ORDER BY Distance";
+            return DC.Database.SqlQuery<OutletEntity>(string.Format(sqlCommand, lat, lng, maxDistanceInMeter, maxItemCount, personID)).ToArray();
         }
 
         public OutletEntity[] SearchOutlets(int personID, int code, string name)
@@ -607,8 +605,21 @@ namespace TradeCensus.Data
             SQL_QUERY += $"{Constants.StatusDone}, {Constants.StatusDeny}, {Constants.StatusRevert}) ";
             SQL_QUERY += $" OR ((o.AuditStatus = {Constants.StatusNew} OR o.AuditStatus = {Constants.StatusAuditorNew}) AND o.PersonID = {personID}))";
 
-            string queryCommand = Utils.GetAppSetting("SQL_SEARCH_OUTLET", SQL_QUERY);
+            string queryCommand = Utils.GetCustomSQL("SQL_SEARCH_OUTLET", SQL_QUERY);
             return DC.Database.SqlQuery<OutletEntity>(string.Format(queryCommand, name, code)).ToArray();
+        }
+
+        public void SetAuditStatusDirty(Outlet outlet)
+        {
+            try
+            {
+                DbEntityEntry<Outlet> entry = DC.Entry(outlet);
+                entry.Property("AuditStatus").IsModified = true;
+            }
+            catch
+            {
+                //Ignore error
+            }
         }
     }
 }

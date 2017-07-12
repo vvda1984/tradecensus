@@ -142,6 +142,14 @@ namespace TradeCensus
                 {
                     return new Tuple<int, string>(dboutlet.ID, dboutlet.PRowID.ToString());
                 }
+
+                //if (dboutlet.AuditStatus == Constants.StatusAuditDeny ||
+                //    dboutlet.AuditStatus == Constants.StatusAuditAccept ||
+                //    dboutlet.AuditStatus == Constants.StatusDone)
+                //{
+                //    return new Tuple<int, string>(dboutlet.ID, dboutlet.PRowID.ToString());
+                //}
+
                 UpdateOutlet(outlet, dboutlet, false);
             }
             else
@@ -230,7 +238,7 @@ namespace TradeCensus
             dbOutlet.AmendDate = DateTime.Now;
             if (outlet.AuditStatus != 0)
             {
-                dbOutlet.AuditStatus = (byte)outlet.AuditStatus;
+                dbOutlet.AuditStatus = (byte) outlet.AuditStatus;
             }
             else
             {
@@ -242,7 +250,7 @@ namespace TradeCensus
             dbOutlet.PModifiedStatus = outlet.PStatus;
             dbOutlet.Class = outlet.Class;
             dbOutlet.CallRate = outlet.CallRate;
-            dbOutlet.SpShift = (byte)outlet.SpShift;
+            dbOutlet.SpShift = (byte) outlet.SpShift;
             dbOutlet.IsSent = outlet.IsSent;
             dbOutlet.TerritoryID = outlet.TerritoryID;
             dbOutlet.LegalName = outlet.LegalName;
@@ -253,6 +261,7 @@ namespace TradeCensus
                 dbOutlet.PRowID = new Guid(outlet.PRowID);
 
             #region Images
+
             OutletImage outletImage = null;
             if (!isNewOutlet)
                 outletImage = dbOutlet.OutletImages.FirstOrDefault();
@@ -353,11 +362,13 @@ namespace TradeCensus
                 //if (!outlet.CompressImage)
                 //    outletImage.ImageData6 = Convert.FromBase64String(outlet.StringImage6);
             }
+
             #endregion
 
-            DC.AddHistory(outlet.AmendBy, outlet.ID, (byte)outlet.AuditStatus, ToActionName(outlet.AuditStatus));
+            DC.SetAuditStatusDirty(dbOutlet);
+            DC.AddHistory(outlet.AmendBy, outlet.ID, (byte) outlet.AuditStatus, ToActionName(outlet.AuditStatus));
         }
-       
+
         private DeniedException SyncOutlets(int personID, OutletModel[] outlets, List<SyncOutlet> dboutlets)
         {
             StringBuilder sb = new StringBuilder();
@@ -506,6 +517,7 @@ namespace TradeCensus
             var resp = new SyncOutletResponse();
             try
             {
+                //System.Threading.Thread.Sleep(18 * 1000);
                 ValidatePerson(int.Parse(personID), password);
                 List<SyncOutlet> dboutlets = new List<SyncOutlet>();
                 var error = SyncOutlets(int.Parse(personID), outlets, dboutlets);
