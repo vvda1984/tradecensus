@@ -52,7 +52,7 @@ namespace TradeCensus
                 DC.SaveChanges();
             }
 
-            res.Token = DC.GenerateToken(person.ID, person.AmendDate ?? DateTime.Now);
+            res.Token = DC.GenerateToken(person.ID);
             return res;      
         }
 

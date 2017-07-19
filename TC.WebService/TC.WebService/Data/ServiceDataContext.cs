@@ -85,9 +85,9 @@ namespace TradeCensus.Data
                 throw new Exception($"Person {personID} is not auditor");
         }
 
-        public string GenerateToken(int personID, DateTime amendDate)
+        public string GenerateToken(int personID)
         {
-            string text = $"{personID}{amendDate}";
+            string text = $"{personID}";
             using (System.IO.MemoryStream mo = new System.IO.MemoryStream())
             {
                 using (System.IO.StreamWriter sw = new System.IO.StreamWriter(mo))
@@ -259,15 +259,15 @@ namespace TradeCensus.Data
 
         public void ChangePassword(string token, int personID, string oldPassword, string newPassword)
         {
-            var user = DC.PersonRoles.FirstOrDefault(i => i.PersonID == personID);
+            var user = DC.PersonRoles.FirstOrDefault(i => i.PersonID == personID && i.Password == oldPassword);
             if (user == null)
-                throw new Exception($"User ({personID}) was not found!");
+                throw new Exception($"User/password is incorrect!");
 
-            var generatedToken = GenerateToken(user.PersonID, user.AmendDate);
+            var generatedToken = GenerateToken(user.PersonID);
             if (token != generatedToken)
                 throw new Exception("Please login to change password!");
 
-            var c = DC.Database.ExecuteSqlCommand(SQL_CHANGE_PASSWORD, newPassword, oldPassword, personID);
+            var c = DC.Database.ExecuteSqlCommand(SQL_CHANGE_PASSWORD, newPassword, personID, oldPassword);
             if (c == 0)
                 throw new Exception("Old password is not correct!");
         }
@@ -278,8 +278,7 @@ namespace TradeCensus.Data
             if (user == null)
                 throw new Exception($"User ({personID}) was not found!");
 
-            var generatedToken = GenerateToken(user.PersonID, user.AmendDate);
-
+            var generatedToken = GenerateToken(user.PersonID);
             if (token != generatedToken)
                 throw new Exception("Please login to reset password!");
 
@@ -613,8 +612,8 @@ namespace TradeCensus.Data
         {
             try
             {
-                DbEntityEntry<Outlet> entry = DC.Entry(outlet);
-                entry.Property("AuditStatus").IsModified = true;
+                //DbEntityEntry<Outlet> entry = DC.Entry(outlet);
+                //entry.Property("AuditStatus").IsModified = true;
             }
             catch
             {

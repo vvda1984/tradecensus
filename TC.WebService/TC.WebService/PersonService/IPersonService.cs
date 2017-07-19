@@ -4,9 +4,9 @@ using System.Web.Services;
 namespace TradeCensus
 {
     [ServiceContract]
-    public interface IPersonService 
-    {     
-        [OperationContract]       
+    public interface IPersonService
+    {
+        [OperationContract]
         LoginResponse Login(string username, string password);
 
         [OperationContract]
@@ -19,6 +19,6 @@ namespace TradeCensus
         Response Ping(string deviceinfo);
 
         [OperationContract]
-        GetSalesmanResponse GetSalesmansOfAuditor(string personid,string password);
+        GetSalesmanResponse GetSalesmansOfAuditor(string personid, string password);
     }
 }

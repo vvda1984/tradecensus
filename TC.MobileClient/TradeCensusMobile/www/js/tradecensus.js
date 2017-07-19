@@ -1,5 +1,5 @@
-﻿var _WEB = false;
-var _PROD = true;
+﻿var _WEB = true;
+var _PROD = false;
 var _VERSION = 27;
 var _VERSION_DISPLAY = '1.28.33';
 
