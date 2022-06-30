@@ -1,0 +1,116 @@
+<div id="view-login" class="main-view">
+  <div class="center-view">
+    <div id="loginscreen" class="box">
+      <img src="assets/img/setting.svg" id="login-setting-button" ng-click="changeMode()" />
+      <image id="login-logo" src="images/logo.png" />
+      <div id="login-form">
+        <md-content layout-padding="" class="md-content-white">
+          <form name="loginForm">
+            <md-input-container class="md-block">
+              <label>{{ R.enter_username }}</label>
+              <input required="" name="userName" ng-model="userName" />
+              <!--<div ng-messages="loginForm.user.id.$error" role="alert">
+                                <div ng-message="required">{{ R.text_ValRequired }}</div>
+                            </div>-->
+            </md-input-container>
+
+            <md-input-container class="md-block" style="margin-top: 12px">
+              <label>{{ R.enter_password }}</label>
+              <input required="" name="password" type="password" ng-model="password" />
+              <!--<div ng-messages="loginForm.user.id.$error" role="alert">
+                                <div ng-message="required">{{ R.text_ValRequired }}</div>                                
+                            </div>-->
+            </md-input-container>
+          </form>
+        </md-content>
+      </div>
+
+      <div class="action-buttons" style="margin-top: 16px">
+        <div class="button raised blue" ng-click="login()">{{ R.btn_login }}</div>
+        <div class="button raised" ng-click="exit()">{{ R.btn_exit }}</div>
+      </div>
+    </div>
+
+    <div id="configscreen" class="box" style="padding: 0px; display: none">
+      <md-toolbar class="md-hue-2">
+        <div class="md-toolbar-tools">
+          <h2>
+            <span>{{R.settings}}</span>
+          </h2>
+          <span flex=""></span>
+          <!--<md-button class="md-icon-button" aria-label="Settings" ng-click="changeMode(0)">
+                        <md-icon md-svg-icon="assets/img/close.svg"></md-icon>
+                    </md-button>-->
+        </div>
+      </md-toolbar>
+
+      <div id="config-form">
+        <md-content layout-padding="" class="md-content-white">
+          <form name="configForm">
+            <md-input-container class="md-block">
+              <label>{{ R.enter_protocol }}</label>
+              <md-select ng-model="config.protocol">
+                <md-option value="http">HTTP</md-option>
+                <md-option value="https">HTTPS</md-option>
+              </md-select>
+            </md-input-container>
+
+            <md-input-container class="md-block" style="margin-top: 32px">
+              <label>{{ R.enter_ip_address }}</label>
+              <input required="" name="ipAddress" ng-model="config.ip" />
+              <!--<div ng-messages="configForm.ipAddress.$error" role="alert">
+                                <div ng-message="required">{{ R.text_ValRequired }}</div>
+                            </div>-->
+            </md-input-container>
+
+            <md-input-container class="md-block" style="margin-bottom: 0px">
+              <label>{{ R.enter_port }}</label>
+              <input required="" name="ipAddress" ng-model="config.port" />
+              <!--<div ng-messages="configForm.ipAddress.$error" role="alert">
+                                <div ng-message="required">{{ R.text_ValRequired }}</div>
+                            </div>-->
+            </md-input-container>
+
+            <!--<md-input-container class="md-block" style="margin-bottom:0px;">
+                            <label>{{ R.enter_time_out }}</label>
+                            <input required="" ng-model="config.time_out">
+                        </md-input-container>-->
+
+            <md-input-container class="md-block" style="margin-bottom: 0px">
+              <label>Refresh Distance (m)</label>
+              <input required="" name="ipAddress" ng-model="config.liveGPS_distance" />
+              <!--<div ng-messages="configForm.ipAddress.$error" role="alert">
+                        <div ng-message="required">{{ R.text_ValRequired }}</div>
+                    </div>-->
+            </md-input-container>
+
+            <div class="md-block-item" style="margin-bottom: 0px; margin-top: 0; margin-left: 0px" ng-show="config.enable_devmode">
+              <div class="md-block-item-title small-text">Mode (Online/Offline)</div>
+              <md-switch class="md-primary" ng-model="config.mode_online">{{config.mode_online ? "Online" : "Offline"}}</md-switch>
+            </div>
+          </form>
+
+          <!-- <md-input-container class="md-block" style="margin-bottom: 0px">
+            <div class="md-block-item-title small-text">
+              Network State: {{networkState}} | GPS State: {{gpsState}} | Camera State: {{cameraState}} | Request State: {{requestStatus}}
+            </div>
+          </md-input-container> -->
+        </md-content>
+      </div>
+
+      <div class="action-buttons">
+        <div class="button raised blue" ng-click="closeConfig(1)">{{R.btn_save}}</div>
+        <div class="button raised" ng-click="closeConfig(0)">{{R.btn_cancel}}</div>
+
+        <!-- 
+        <div class="button raised" ng-click="test(1)">Test Network</div>
+        <div class="button raised" ng-click="test(2)">Test GPS</div> 
+        <div class="button raised" ng-click="test(4)">Test Http</div>
+        <div class="button raised" ng-click="test(5)">Test Https</div>
+        <div class="button raised" ng-click="test(3)">Test Camera</div>
+        -->
+      </div>
+    </div>
+  </div>
+  <div style="position: fixed; color: #ffffff; font-size: 12px; bottom: 4px; right: 4px">{{R.version}} {{config.version}}</div>
+</div>

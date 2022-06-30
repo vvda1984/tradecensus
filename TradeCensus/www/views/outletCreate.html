@@ -1,0 +1,235 @@
+﻿<style>
+  .md-block {
+    margin: 0 !important;
+  }
+</style>
+<md-dialog aria-label="New Outlet" ng-cloak>
+  <md-toolbar class="md-hue-2">
+    <div class="md-toolbar-tools" id="toolbar">
+      <div>{{title}}</div>
+      <span flex=""></span>
+      <div>{{R.location}}: {{outlet.Latitude}}, {{outlet.Longitude}}</div>
+    </div>
+  </md-toolbar>
+  <md-content layout-padding="" class="popup-content" style="margin-bottom: -8px">
+    <form name="createOutletForm" style="margin-top: 5px">
+      <div layout-gt-sm="row" style="margin-top: 0px" ng-show="enableExtraFields">
+        <md-input-container class="md-block" flex-gt-sm="">
+          <label>{{R.legal_name}}</label>
+          <input ng-model="outlet.LegalName" name="LegalName" maxlength="50" />
+        </md-input-container>
+        <md-input-container class="md-block" flex-gt-sm="">
+          <label>{{R.vat}}</label>
+          <input ng-model="outlet.TaxID" name="vat" maxlength="40" />
+        </md-input-container>
+      </div>
+
+      <div layout-gt-sm="row" style="margin-bottom: 0px">
+        <!--<md-input-container class="md-block" flex-gt-sm="">
+                    <label>{{R.code}}</label>
+                    <input id="inputID" ng-model="outlet.ID" name="name" required="" ng-change="codeChanged()" ng-disabled="true">
+                    <div ng-messages="createOutletForm.ID.$error" role="alert">
+                        <div ng-message="required">{{ resource.text_ValRequired }}</div>
+                    </div>
+                </md-input-container>-->
+        <md-input-container class="md-block" flex-gt-sm="">
+          <label>{{R.name}}</label>
+          <input id="inputName" ng-model="outlet.Name" name="name" required="" maxlength="40" ng-change="nameChanged()" />
+        </md-input-container>
+        <md-input-container class="md-block" flex-gt-sm="">
+          <label>{{R.outlet_type}}</label>
+          <md-select id="inputOutletType" ng-model="outlet.OTypeID">
+            <md-option ng-repeat="o in outletTypes" value="{{o.ID}}"> {{o.Name}} </md-option>
+          </md-select>
+        </md-input-container>
+        <md-input-container class="md-block" flex-gt-sm="">
+          <label>{{R.phone}}</label>
+          <input id="inputPhone" ng-model="outlet.Phone" name="phone" required="" maxlength="20" />
+        </md-input-container>
+        <md-input-container class="md-block" flex-gt-sm="">
+          <label>{{R.house_no}}</label>
+          <input id="inputAdd1" ng-model="outlet.AddLine" name="houseno" required="" maxlength="40" />
+        </md-input-container>
+      </div>
+
+      <div layout-gt-sm="row" style="margin-top: 4px">
+        <md-input-container class="md-block" flex-gt-sm="">
+          <label>{{R.street}}</label>
+          <input ng-model="outlet.AddLine2" name="street" required="" maxlength="40" />
+        </md-input-container>
+
+        <md-input-container class="md-block" flex-gt-sm="" ng-hide="autoSelectedWard">
+          <label>{{R.ward}}</label>
+          <input id="inputWard" ng-model="outlet.Ward" name="ward" required="" maxlength="40" />
+        </md-input-container>
+        <md-input-container class="md-block" flex-gt-sm="" ng-show="autoSelectedWard">
+          <label>{{R.ward}}</label>
+          <!--<input ng-model="outlet.Ward" disabled="">-->
+          <md-select id="inputWard" ng-model="outlet.Ward">
+            <md-option ng-repeat="p in address.wardArr" value="{{p.Name}}"> {{p.Name}} </md-option>
+          </md-select>
+        </md-input-container>
+
+        <md-input-container class="md-block" flex-gt-sm="" ng-hide="autoSelectedDistrict">
+          <label>{{R.district}}</label>
+          <input id="inputDistrict" ng-model="outlet.District" name="district" required="" maxlength="40" />
+        </md-input-container>
+        <md-input-container class="md-block" flex-gt-sm="" ng-show="autoSelectedDistrict">
+          <label>{{R.district}}</label>
+          <md-select id="inputDistrict" ng-model="outlet.District" ng-change="districtChanged()">
+            <md-option ng-repeat="p in address.districtArr" ng-value="p.Name"> {{p.Name}} </md-option>
+          </md-select>
+        </md-input-container>
+
+        <md-input-container class="md-block" flex-gt-sm="">
+          <label>{{R.province}}</label>
+          <md-select id="inputOutletType" ng-model="outlet.ProvinceID" ng-change="provinceChanged()">
+            <md-option ng-repeat="p in provinces" value="{{p.id}}"> {{p.name}} </md-option>
+          </md-select>
+        </md-input-container>
+      </div>
+
+      <div layout-gt-sm="row" style="margin-top: 4px">
+        <div style="margin-left: 0px; margin-top: -12px; font-size: 9pt" flex-gt-sm="">
+          <p>
+            {{R.volumn}}<br />
+            {{R.create_cartoons_avg_month}}
+          </p>
+        </div>
+        <md-input-container class="md-block" flex-gt-sm="">
+          <label style="color: #103b68">{{R.total}}</label>
+          <input ng-model="outlet.TotalVolume" name="total" type="number" min="0" max="2147483647" step="1" pattern="\d*" required="" />
+        </md-input-container>
+        <md-input-container class="md-block" style="width: 80px" flex-gt-sm="">
+          <label style="color: #103b68">{{R.vbl_product}}</label>
+          <input ng-model="outlet.VBLVolume" type="number" name="vblvolume" min="0" max="2147483647" step="1" pattern="\d*" required="" />
+        </md-input-container>
+        <md-input-container class="md-block" flex-gt-sm="" ng-show="enableExtraFields">
+          <label>{{R.class_type}}</label>
+          <md-select ng-model="outlet.Class">
+            <md-option ng-repeat="o in classes" value="{{o}}"> {{o}} </md-option>
+          </md-select>
+        </md-input-container>
+        <md-input-container class="md-block" flex-gt-sm="" ng-show="enableExtraFields">
+          <label>{{R.Mkt_Sq}}</label>
+          <md-select ng-model="outlet.TerritoryID">
+            <md-option ng-repeat="o in territories" value="{{o}}"> {{o}} </md-option>
+          </md-select>
+        </md-input-container>
+        <md-input-container class="md-block" flex-gt-sm="" ng-show="enableExtraFields">
+          <label>{{R.callRate}}</label>
+          <md-select ng-model="outlet.CallRate">
+            <md-option ng-repeat="o in callRates" value="{{o.ID}}"> {{o.Name}} </md-option>
+          </md-select>
+        </md-input-container>
+      </div>
+
+      <div layout-gt-sm="row" style="margin-bottom: 0px; margin-top: 4px">
+        <md-input-container class="md-block" flex-gt-sm="">
+          <label>{{R.comment}}</label>
+          <textarea
+            id="inputComment"
+            ng-model="outlet.Comment"
+            md-maxlength="512"
+            rows="2"
+            md-select-on-focus=""
+            style="margin-bottom: 0px"
+            required=""
+            maxlength="512"
+          ></textarea>
+        </md-input-container>
+      </div>
+
+      <div layout-gt-sm="row" style="margin-bottom: 0px; margin-top: 4px" ng-show="canComment">
+        <md-input-container class="md-block" flex-gt-sm="">
+          <label>{{R.auditor_comment}}</label>
+          <textarea
+            id="inputComment"
+            ng-model="outlet.Note"
+            md-maxlength="512"
+            rows="2"
+            md-select-on-focus=""
+            ng-disabled="{{disableComment}}"
+            style="margin-bottom: 0px"
+            required=""
+            maxlength="512"
+          ></textarea>
+        </md-input-container>
+      </div>
+
+      <div layout-gt-sm="row" style="margin-bottom: 10px; margin-top: 0px">
+        <table class="image-table">
+          <tr>
+            <td id="selfieImgTitle" ng-show="showImage4">
+              Selfie
+              <div class="image-sub-title">&nbsp;</div>
+            </td>
+            <td>
+              Outside
+              <div class="image-sub-title">(toàn cảnh)</div>
+            </td>
+            <td>
+              Signage
+              <div class="image-sub-title">(bảng hiệu nếu có)</div>
+            </td>
+            <td>
+              Product
+              <div class="image-sub-title">(khu vực sản phẩm)</div>
+            </td>
+            <td>
+              Other
+              <div class="image-sub-title">(hình khác)</div>
+            </td>
+            <td>
+              Other
+              <div class="image-sub-title">(hình khác)</div>
+            </td>
+          </tr>
+          <tr>
+            <td id="selfieImgContent" ng-show="showImage4">
+              <div class="image-frame" ng-click="capture(4);">
+                <img id="outletImg4" src="{{image4URL}}" />
+              </div>
+            </td>
+            <td>
+              <div class="image-frame" ng-click="capture(1);">
+                <img id="outletImg1" src="{{image1URL}}" />
+              </div>
+            </td>
+            <td>
+              <div class="image-frame" ng-click="capture(2);">
+                <img id="outletImg2" src="{{image2URL}}" />
+              </div>
+            </td>
+            <td>
+              <div class="image-frame" ng-click="capture(3);">
+                <img id="outletImg3" src="{{image3URL}}" />
+              </div>
+            </td>
+            <td>
+              <div class="image-frame" ng-click="capture(5);">
+                <img id="outletImg5" src="{{image5URL}}" />
+              </div>
+            </td>
+            <td>
+              <div class="image-frame" ng-click="capture(6);">
+                <img id="outletImg6" src="{{image6URL}}" />
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <div layout-gt-xs="row" layout-margin layout-align="center" style="margin-bottom: 0px; text-align: center">
+        <!--<div class="button raised blue" ng-click="closeConfig(1)">{{R.btn_save}}</div>
+                <div class="button raised" ng-click="closeConfig(0)">{{R.btn_cancel}}</div>-->
+
+        <md-button class="md-raised md-primary" ng-click="postOutlet()" ng-show="canPost">{{R.btn_post}}</md-button>
+        <md-button class="md-raised md-primary" ng-click="approveOutlet()" ng-show="canApprove">{{R.btn_approve}}</md-button>
+        <md-button class="md-raised md-primary" ng-click="deleteOutlet()" ng-show="canDelete">{{R.btn_delete}}</md-button>
+        <md-button class="md-raised md-primary" ng-click="saveUpdate()">{{R.btn_save}}</md-button>
+        <md-button class="md-raised" ng-click="cancelUpdate()">{{R.btn_cancel}}</md-button>
+      </div>
+    </form>
+  </md-content>
+</md-dialog>

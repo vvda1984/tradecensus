@@ -1,0 +1,473 @@
+<div id="view-home">
+    <div id="home-topleft">
+        <div class="square-button float-left white" ng-hide="viewOutletPanel" ng-click="showhideOutletPanel()">
+            <img src="assets/img/menu.svg" />
+        </div>
+        <div class="square-button float-left blue" ng-show="viewOutletPanel" ng-click="showhideOutletPanel()">
+            <img src="assets/img/menu-white.svg" />
+        </div>
+        <div class="square-bar float-left white" ng-click="showDropdown()">
+            <span>{{outletHeader}}</span>
+            <img src="assets/img/arrow-down.svg" />
+        </div>
+        <div ng-show="enableNearby" class="square-bar float-left white">
+            <span>{{R.distance}} (m):</span>
+            <input placeholder="meter" name="distance" ng-model="config.distance" type="number" min="50" required="">
+            <span>{{R.max_outlets}}:</span>
+            <input type="number" required="" placeholder="number" ng-model="config.item_count" min="1">
+            <span> </span>
+        </div>
+        <div ng-show="enableNearby" class="square-button float-left blue" ng-click="refresh()">
+            <img src="assets/img/refresh.svg" />
+        </div>
+        <div ng-show="enableSearch" id="seachOutletContainer" class="square-bar float-left white">
+            <span>Code:</span>
+            <input id="searchOutletCode" placeholder="e.g.65000001" name="searchOutletCode" style="width:120px;">
+            <span> </span>
+        </div>
+        <div ng-show="enableSearch" class="square-button float-left blue" ng-click="searchOutlets()">
+            <img src="assets/img/search-white.svg" />
+        </div>
+        <div id="outlet-dropdown" class="dropdown">
+            <div class="dropdown-item" ng-click="changeOutletView(0)"><img src="assets/img/outlet-near.svg" /><span>{{R.near_by_outlets}}</span></div>
+            <div class="dropdown-item" ng-click="changeOutletView(1)"><img src="assets/img/outlet-new.svg" /><span>{{R.new_outlets}}</span></div>
+            <div class="dropdown-item" ng-click="changeOutletView(4)"><img src="assets/img/outlet-new-own.svg" /><span>{{R.my_new_outlets}}</span></div>
+            <div class="dropdown-item" ng-click="changeOutletView(2)"><img src="assets/img/outlet-edit.svg" /><span>{{R.updated_outlets}}</span></div>
+            <div class="dropdown-item" ng-show="hasAuditRole" ng-click="changeOutletView(3)"><img src="assets/img/outlet-audit.svg" /><span>{{R.auditted_outlets}}</span></div>
+            <div class="dropdown-item" ng-click="changeOutletView(5)"><img src="assets/img/search.svg" /><span>{{R.search_outlets}}</span></div>
+        </div>
+    </div>
+
+    <div id="outletPanel" class="slider-left" ng-click="hideDropdown()">
+        <div class="expandcollapse-box" ng-show="showExpandButton" ng-click="expandOutletPanel()">
+            <img src="assets/img/arrow-right-white.svg" />
+        </div>
+        <div class="expandcollapse-box" ng-show="showCollapseButton" ng-click="collapseOutletPanel()">
+            <img src="assets/img/arrow-left-white.svg" />
+        </div>
+        <div id="slider-left-content">
+            <div class="outlet-list-panel" id="outlet-list">
+                <span id="span-outlet" style="margin-left:0px; color:red" ng-show="showNoOutletFound">{{R.no_outlet_found}}</span>
+                <span id="span-outlet-top" style="float:left;left:0px;top:0px;width:0px;height:0px;"></span>
+                <table class="outlet-table" ng-repeat="o in outlets |  startFrom:currentPage*pageSize | limitTo:pageSize " ng-click="hideDropdown()">
+                    <tr>
+                        <td class="outlet-indicator">
+                            <div class="{{o.IsNew ? 'circle-yellow' : (o.IsDenied ? 'circle-gray' : 'circle-green')}}">{{$index + 1 + (currentPage) * pageSize}}</div>
+                        </td>
+                        <td>
+                            <table class="outlet-detail-table">
+                                <tr>
+                                    <td colspan="4">
+                                        <span class="large-text blue-color span-fix" ng-hide="viewOutletFull" ng-click="openOutlet($index)">{{o.Name}} ({{o.ID}})</span>
+                                        <span class="large-text blue-color" ng-show="viewOutletFull" ng-click="openOutlet($index)">{{o.Name}} {{o.IDalias}}</span>
+                                        <span class="outlet-header-right small-text gray-color">
+                                            {{o.Distance}} m
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2">
+                                        <span class="small-text gray-color" ng-show="viewOutletFull">{{R.address}}: </span>
+                                        <span class="normal-text black-color">{{o.FullAddress}}</span>
+                                    </td>
+
+                                    <td>
+                                        <span class="small-text gray-color" ng-show="viewOutletFull">{{R.last_visit}}: </span>
+                                        <span class="normal-text black-color" ng-show="viewOutletFull">{{o.LastVisit}}</span>
+                                    </td>
+
+                                    <td>
+                                        <span class="small-text gray-color" ng-show="viewOutletFull">{{R.closed_date}}: </span>
+                                        <span class="normal-text black-color" ng-show="viewOutletFull">{{o.CloseDate ? o.CloseDate : "-"}}</span>
+                                    <td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span class="small-text gray-color" ng-show="viewOutletFull">{{R.outlet_type}}: </span>
+                                        <span class="normal-text black-color">{{o.OutletTypeName}}</span>
+                                    </td>
+                                    <td ng-show="viewOutletFull">
+                                        <span class="small-text gray-color">{{R.phone}}: </span>
+                                        <span class="normal-text black-color">{{o.Phone}}</span>
+                                    </td>
+                                    <td ng-show="viewOutletFull">
+                                        <span class="small-text gray-color">{{R.last_contact}}: </span>
+                                        <span class="normal-text black-color">{{o.LastContact ? o.LastContact : "-"}}</span>
+                                    </td>
+                                    <td ng-show="viewOutletFull">
+                                        <span class="small-text gray-color">{{R.tracking}}: </span>
+                                        <span class="normal-text black-color">{{o.IsTracked ? "Yes" : "No"}}</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2">
+                                        <span class="small-text gray-color" ng-show="viewOutletFull">{{R.name}}: </span>
+                                        <span class="normal-text black-color">{{o.ExtractName}}</span>
+                                    </td>
+                                    <td>
+                                        <span class="small-text gray-color" ng-show="viewOutletFull">{{R.total}}: </span>
+                                        <span class="normal-text black-color" ng-show="viewOutletFull">{{o.TotalVolume}}</span>
+                                    </td>
+                                    <td>
+                                        <span class="small-text gray-color" ng-show="viewOutletFull">{{R.vbl_product}}: </span>
+                                        <span class="normal-text black-color" ng-show="viewOutletFull">{{o.VBLVolume}}</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="4">
+                                        <span class="small-text gray-color" ng-show="viewOutletFull">{{R.last_change}}: </span>
+                                        <span class="small-text gray-color">{{o.AmendDate ? o.AmendDate : "-"}}</span>
+
+                                        <!--<div class="m-flat-button-small float-right blue" ng-show="outlet.canApprove" ng-click="approveOutlet(outlet)"><span>Approve</span></div>-->
+                                        <div class="m-flat-button-small float-right blue" ng-show="o.canPost" ng-click="postOutlet(o)"><span>Post</span></div>
+                                        <div class="m-flat-button-small float-right blue" ng-show="o.canRevise" ng-click="reviseOutlet(o)"><span>Revise</span></div>
+                                        <div class="m-flat-button-small float-right red" ng-show="o.canDelete" ng-click="deleteOutlet(o)"><span>Delete</span></div>
+                                        <!--<div class="m-flat-button-small float-right blue" ng-show="outlet.canRevert" ng-click="revertOutlet(outlet)"><span>Reset</span></div>-->
+
+                                        <div class="float-right" ng-show="o.viewAuditStatus">
+                                            <span class="small-text green-color" ng-show="o.IsAudited">{{o.auditResult}}</span>
+                                            <span class="small-text gray-color" ng-hide="o.IsAudited">{{o.auditResult}}</span>
+                                        </div>
+                                        <!--<img class="outlet-header-right small-text gray-color" style="height:24px; width:24px; margin-left:4px" ng-show="outlet.IsDraft" src="assets/img/clear.svg" ng-click="deleteOutlet($index)" />
+                                        <img class="outlet-header-right small-text gray-color" style="height:24px; width:24px;" ng-show="outlet.canPost" src="assets/img/post.svg" ng-click="postOutlet($index)" />
+                                        <img class="outlet-header-right small-text gray-color" style="height:24px; width:24px;" ng-show="outlet.canRevise" src="assets/img/unpost.svg" ng-click="reviseOutlet($index)" />-->
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div id="paging-bar" ng-show="showNaviBar">
+            <button ng-disabled="currentPage >= outlets.length/pageSize - 1" ng-click="currentPage = currentPage+1">
+                <img src="assets/img/arrow-right.svg" />
+            </button>
+            <div class="square-bar float-right white">
+                <span> {{numberOfPages() > 0 ? currentPage + 1 : 0}} / {{numberOfPages()}}</span>
+            </div>
+            <button ng-disabled="currentPage == 0" ng-click="currentPage=currentPage-1">
+                <img src="assets/img/arrow-left.svg" />
+            </button>
+
+            <div class="searchbox">
+                <input id="searchInput" class="search" placeholder="{{R.search}}" ng-model="searchName" ng-change="searchChanged()">
+                <img src="assets/img/search.svg" class="search-img" ng-show="showSearchImg" />
+                <img src="assets/img/clear.svg" class="search-img" ng-show="showClearSearchImg" ng-click='clearSearch()' />
+            </div>
+        </div>
+    </div>
+
+    <div id="home-topright">
+        <div class="cirle-button white float-right" ng-show="showSettingCollapse" ng-click="showHideRightPanel()">
+            <img src="assets/img/arrow-right.svg" />
+        </div>
+        <div class="cirle-button white float-right" ng-show="showSettingExpand" ng-click="showHideRightPanel()">
+            <img src="assets/img/setting-white.svg" />
+        </div>
+
+        <div class="cirle-button white float-right margin-right-4" style="z-index:2" ng-show="journal.showCollapse" ng-click="journal.showHideJournalPanel()">
+            <img src="assets/img/arrow-right.svg" />
+        </div>
+        <div class="cirle-button white float-right margin-right-4" style="z-index:2" ng-show="journal.showExpend" ng-click="journal.showHideJournalPanel()">
+            <img id="journalImage" src="assets/img/journal.svg" />
+        </div>
+
+        <div class="cirle-button blue float-right margin-right-4" ng-show="canAddNewOutlet" style="z-index:2" ng-click="createNewOutlet()">
+            <img src="assets/img/add.svg" />
+        </div>
+
+        <div class="square-box-red float-right">
+            <span id="status" class="blue-color"></span>
+        </div>
+    </div>
+
+    <div id="home-topright-street">
+        <div class="square-button blue" ng-click="closeStreetViewMode()">
+            <img src="assets/img/close.svg" />
+        </div>
+    </div>
+
+    <div id="home-topright-test" ng-show="config.enable_devmode">
+        <input placeholder="acc" ng-model="testacc" style="width:50px;height:28px;" type="number">
+        <input placeholder="lat" ng-model="testlat" style="width:50px;height:28px;" type="number">
+        <input placeholder="lng" ng-model="testlng" style="width:50px;height:28px;" type="number">
+        <button ng-click="testChangeLocation()">Set</button>
+        <input placeholder="lng" type="checkbox" ng-model="config.mode_online">
+        <span>{{config.mode_online ? "Online" : "Offline"}}</span>
+    </div>
+
+    <div id="home-leftbottom" ng-show="config.enable_logview">
+        <span id="textLogMessage" class="float-left small-text"></span>
+    </div>
+
+    <div id="home-topright-status-container">
+        <div id="home-topright-offline" class="float-right normal-text status-message">
+            {{R.you_are_in_offline_mode}}
+        </div>
+        <div id="home-topright-sync-hint" class="float-right normal-text status-message">
+            {{R.hint_do_sync}}
+        </div>
+        <div id="home-topright_accuracy_incorrect" class="float-right normal-text status-message">
+           {{R.accuracy_incorrect}}
+        </div>
+    </div>
+
+    <div id="configPanel" class="slider-right" style="overflow-y:auto;">
+        <!--<div class=hidden-overlay" ng-click="showRightPanel()"></div> -->
+        <div id="slider-right-content" style="min-height:91%;">
+            <md-content layout-padding="" class="md-content-white">
+                <form name="configForm">
+                    <md-input-container class="md-block" style="margin-bottom:0px;">
+                        <label>{{R.page_size}}</label>
+                        <input type="number" required="" name="page_size" ng-model="config.page_size" min="5">
+                    </md-input-container>
+
+                    <md-input-container class="md-block" flex-gt-sm="" style="margin-bottom:0px;">
+                        <label>{{ R.working_province }}</label>
+                        <md-select ng-model="config.province_id" ng-change="provinceChanged(0)">
+                            <md-option ng-repeat="p in provinces" value="{{p.id}}" onclick="javascript: provinceItemClicked();">
+                                {{p.name}}
+                                <img ng-show="p.download" src="assets/img/check.svg"
+                                     style="width:18px;height:18px;margin:0px;position:absolute;right:16px;" />
+                            </md-option>
+                        </md-select>
+                    </md-input-container>
+
+                    <div>
+                        <div id="buttonDownload" class="m-flat-button float-right margin-top-4" ng-click="downloadOutlets()">
+                            <img src="assets/img/download.svg">
+                            <span>{{R.btn_download}}</span>
+                        </div>
+                        <div id="buttonRedownload" class="m-flat-button float-right margin-top-4 display-none" ng-click="downloadOutlets()">
+                            <img src="assets/img/download.svg">
+                            <span>{{R.btn_redownload}}</span>
+                        </div>
+                        <div id="buttonDeleteOffline" class="m-flat-button float-right margin-top-4 display-none" ng-click="deleteOfflineOutlets()">
+                            <img src="assets/img/clear.svg">
+                            <span>{{R.btn_deleteOffline}}</span>
+                        </div>
+                    </div>
+                </form>
+            </md-content>
+
+            <div style="display: block; margin:4px 20px 10px 20px; width:100px;">
+                <span style="font-size:14pt; color:#01541E;">HOTLINES</span>
+            </div>
+
+            <div id="hotlines" style="display: block; overflow: auto; margin:0 0 20px 24px;">
+                <table cellspacing="0" style="border:none; font-size:11pt; width:310px; border-top: 1px solid #E1E1E1 !important;">
+                    <tr style="height:32px;" ng-repeat="hotline in hotlines">
+                        <td style="border-bottom: 1px solid #E1E1E1 !important;">
+                            <div style="vertical-align:middle;">
+                                <div style="font-size:11pt; width:164px; text-overflow: ellipsis;" ng-click="makePhoneCall(hotline)">{{hotline.name}}</div>
+                                <!--<div style="font-size:8pt;">{{hotline.phone}}</div>-->
+                            </div>
+                        </td>
+                        <td style="border-bottom: 1px solid #E1E1E1 !important;">
+                            <div style="vertical-align:middle;">
+                                <table>
+                                    <tr>
+                                        <td>
+                                            <div ng-click="makePhoneCall(hotline)" style="font-size:11pt;">{{hotline.phone}}</div>
+                                        </td>
+                                        <td>
+                                            <img ng-click="makePhoneCall(hotline)"
+                                                 src="assets/img/phone.svg"
+                                                 style="height:24px; height:24px;">
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div style="display: block; margin:4px 20px 10px 20px; width:100px;">
+                <div style="text-align:center; width:160px; background-color: #01541E; color: #FFFFFF; height:36px; float:left; padding-left: 6px; padding-right:6px; cursor: pointer; line-height:36px;"
+                     ng-click="openOutletStatusView()">
+                    Check Outlet Status
+                </div>
+            </div>
+
+            <div style="margin-bottom:4px; z-index:3;">
+                <table>
+                    <tr>
+                        <td>
+                            <div class="text-button" ng-click="displayChangePasswordDlg()">
+                                <div><img src="assets/img/change-password.svg"></div>
+                                <div class="title small-text">{{R.btn_changePassword}}</div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="text-button" ng-click="syncOutlets()">
+                                <div><img src="assets/img/sync.svg"></div>
+                                <div class="title">{{R.btn_sync}}</div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="text-button" ng-click="logoutFromHome()">
+                                <div><img src="assets/img/logout.svg"></div>
+                                <div class="title">{{R.btn_logout}}</div>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="journal-panel" class="slider-right">
+        <!--<div class=hidden-overlay" ng-click="showRightPanel()"></div> -->
+        <div id="slider-right-content">
+            <md-content layout-padding="" class="md-content-white">
+                <form name="journalForm">
+                    <md-input-container id="btnStartJournal" class="md-block" style="margin-left:-4px; margin-bottom:0px;">
+                        <div class="m-flat-button float-left margin-top-4" ng-click="journal.start()">
+                            <!--<img src="assets/img/journal-fill.svg">-->
+                            <span>{{R.btn_start_journal_tracking}}</span>
+                        </div>
+                    </md-input-container>
+
+                    <md-input-container id="btnStopJournal" class="md-block" style="margin-left:-4px; margin-bottom:0px; display:none">
+                        <div class="m-flat-button float-left margin-top-4" ng-click="journal.stop()">
+                            <!--<img src="assets/img/journal-fill.svg">-->
+                            <span style="color:#F44336">{{R.btn_stop_journal_tracking}}</span>
+                        </div>
+                    </md-input-container>
+
+                    <div class="md-block-item" style="margin-bottom:0px;margin-top:8px;">
+                        <div class="md-block-item-title large-text black-color">JOURNAL HISTORY</div>
+                    </div>
+
+                    <div class="md-block-item" style="margin-bottom:0px;margin-top:0px;">
+                        <span>From</span>
+                        <md-datepicker ng-model="journal.from" md-placeholder="Enter date" style="margin-left:4px;"></md-datepicker>
+                    </div>
+
+                    <div class="md-block-item" style="margin-bottom:0px;margin-top:0px;">
+                        <span>To</span>
+                        <md-datepicker ng-model="journal.to" md-placeholder="Enter date" style="margin-left:23px;"></md-datepicker>
+                    </div>
+                    <div layout-gt-sm="row" style="margin-top:0px;" ng-show="hasAuditRole">
+                        <md-autocomplete flex-gt-sm=""
+                                         md-input-name="autocompleteField"
+                                         md-input-minlength="2"
+                                         smd-selected-item="salemanItemSelected"
+                                         md-search-text="salemanSearchText"
+                                         md-selected-item-change="selectedItemChange(item)"
+                                         md-items="item in querySearch(salemanSearchText)"
+                                         md-item-text="item.display"
+                                         md-require-match=""
+                                         md-floating-label="{{ R.text_select_salesman }}">
+                            <md-item-template>
+                                <span md-highlight-text="salemanSearchText" md-highlight-flags="^i">{{item.display}}</span>
+                            </md-item-template>
+                            <div ng-messages="journalForm.autocompleteField.$error" ng-if="journalForm.autocompleteField.$touched">
+                            </div>
+                        </md-autocomplete>
+                        <img src="assets/img/clear.svg" class="search-img" style="width:24px;height:24px; margin-top:24px;" ng-click='clearSalemanSearch()' />
+                    </div>
+
+                    <md-input-container class="md-block" flex-gt-sm="" style="margin-top:4px;margin-bottom:0px; margin-left:-6px">
+                        <div class="md-block-item" style="margin-bottom:0px;margin-top:0px;margin-left:4px">
+                            <div class="md-block-item-title small-text">JOURNAL COLOR</div>
+                            <md-switch class="md-primary"
+                                       ng-model="config.journal_daily_mode">{{config.journal_daily_mode ? "Daily" : "Session"}}</md-switch>
+                        </div>
+                    </md-input-container>
+
+                    <div layout-gt-sm="row" style="margin-top:10px;">
+                        <div class="m-flat-button float-left margin-top-4" ng-click="journal.viewJournal()">
+                            <img src="assets/img/journal-fill.svg">
+                            <span>{{R.btn_view_journals}}</span>
+                        </div>
+                        <div class="m-flat-button float-left margin-top-4" ng-click="journal.clearJournal()">
+                            <img src="assets/img/clear.svg">
+                            <span>{{R.btn_clear_journals}}</span>
+                        </div>
+                    </div>
+                </form>
+            </md-content>
+        </div>
+    </div>
+
+    <div id="map-container">
+        <div id="map"></div>
+    </div>
+
+    <div id="home-bottomright">
+        <!--<div class="square-button-small float-top">
+            <span>M</span>
+            <span>S</span>
+        </div>-->
+        <div id="current-location-button" class="square-button-small float-top white" ng-click="panToCurLocation()" ng-show="mapReady">
+            <img src="assets/img/curloccation.svg" />
+        </div>
+    </div>
+
+    <div id="home-bottomright-border">
+        <div class="m-flat-button-small-shadow float-right-no-margin margin-right-1 white" ng-click="changeMapType(1)" ng-show="mapReady">
+            <span class="tiny-text black-color" style="font-weight:bold" ng-show="isSatellite">Satellite</span>
+            <span class="tiny-text black-color" ng-hide="isSatellite">Satellite</span>
+        </div>
+        <div class="m-flat-button-small-shadow float-right-no-margin margin-right-1 white" ng-click="changeMapType(0)" ng-show="mapReady">
+            <span class="small-text black-color" style="font-weight:bold" ng-hide="isSatellite">Map</span>
+            <span class="small-text black-color" ng-show="isSatellite">Map</span>
+        </div>
+    </div>
+
+    <div id="home-bottomcenter">
+        <div class="square-bar-border white float-left" ng-click="showSelectedBorderDlg()">
+            <span>{{selectedBorder.Name}}</span>
+            <!--<img src="assets/img/arrow-down.svg" />-->
+        </div>
+        <div class="m-flat-button-shadow blue" ng-show="canDrawBorder" ng-click="drawBorder()">
+            <span>View</span>
+        </div>
+        <div class="m-flat-button-shadow gray" ng-hide="canDrawBorder">
+            <span>View</span>
+        </div>
+    </div>
+
+    <div id="dlg-change-password" style="display:none">
+        <div class="loading-window">
+            <div class="dialog">
+                <div class="content">
+                    <div class="title blue-color">{{R.btn_changePassword}}</div><br>
+                    <div>
+                        <div id="Password-form">
+                            <md-content layout-padding="" class="md-content-white">
+                                <form name="changePasswordForm">
+                                    <md-input-container class="md-block" ng-hide="forceChangePassword">
+                                        <label>{{ R.enter_current_password }}</label>
+                                        <input id="cur-pass" required="" name="curpassword" type="password" ng-model="curPass">
+                                    </md-input-container>
+
+                                    <md-input-container class="md-block">
+                                        <label>{{ R.enter_new_password }}</label>
+                                        <input id="new-pass" required="" name="newpassword" type="password" ng-model="newPass">
+                                    </md-input-container>
+
+                                    <md-input-container class="md-block">
+                                        <label>{{ R.enter_confirm_password }}</label>
+                                        <input id="confirm-pass" required="" name="confirmpassword" type="password" ng-model="confirmPass">
+                                    </md-input-container>
+                                </form>
+                            </md-content>
+                        </div>
+                    </div>
+                </div>
+                <div class="button label-blue" ng-click="changePassword(true)" ng-hide="forceChangePassword">
+                    <div class="center" fit>{{R.btn_cancel}}</div>
+                    <paper-ripple fit></paper-ripple>
+                </div>
+                <div class="button label-blue" ng-click="changePassword(false)">
+                    <div class="center" fit>{{R.btn_save}}</div>
+                    <paper-ripple fit></paper-ripple>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

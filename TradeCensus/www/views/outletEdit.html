@@ -1,0 +1,211 @@
+﻿<md-dialog aria-label="Edit" ng-cloak>
+  <md-toolbar>
+    <div class="md-toolbar-tools">
+      <div>{{title}}</div>
+      <span flex=""></span>
+      <div>{{R.distance}}: {{outlet.Distance}} m</div>
+    </div>
+  </md-toolbar>
+  <md-content layout-padding="" class="popup-content" style="margin-bottom: -8px">
+    <form name="userForm" style="margin-bottom: 0px">
+      <div layout-gt-sm="row" style="margin-top: 5px" ng-show="enableExtraFields">
+        <md-input-container class="md-block" flex-gt-sm="">
+          <label>{{R.legal_name}}</label>
+          <input ng-model="outlet.LegalName" name="LegalName" maxlength="50" ng-disabled="disableLegalName" />
+        </md-input-container>
+        <md-input-container class="md-block" flex-gt-sm="">
+          <label>{{R.vat}}</label>
+          <input ng-model="outlet.TaxID" name="vat" maxlength="40" ng-disabled="disableTaxID" />
+        </md-input-container>
+      </div>
+
+      <div layout-gt-sm="row" style="margin-top: -12px">
+        <md-input-container class="md-block" flex-gt-sm="">
+          <label>{{R.address}}</label>
+          <input ng-model="outlet.FullAddress" disabled />
+        </md-input-container>
+
+        <md-input-container class="md-block">
+          <label>{{R.phone}}</label>
+          <input ng-model="outlet.Phone" disabled />
+        </md-input-container>
+
+        <md-input-container class="md-block">
+          <label>{{R.outlet_type}}</label>
+          <input ng-model="outlet.OutletTypeName" disabled />
+        </md-input-container>
+      </div>
+
+      <div layout-gt-sm="row" style="margin-top: -26px">
+        <div class="md-block-item" flex-gt-sm="">
+          <div class="md-block-item-title">{{R.last_contact}}</div>
+          <div class="md-block-item-value">{{outlet.LastContact ? outlet.LastContact : "-"}}</div>
+        </div>
+
+        <div class="md-block-item" flex-gt-sm="">
+          <div class="md-block-item-title">{{R.last_visit}}</div>
+          <div class="md-block-item-value">{{outlet.LastVisit ? outlet.LastVisit : "-"}}</div>
+        </div>
+
+        <div class="md-block-item" flex-gt-sm="" ng-hide="canChangeOpenClose">
+          <div class="md-block-item-title">{{R.open_close}}</div>
+          <div class="md-block-item-value">{{outlet.IsOpened ? R.opened : R.closed}}</div>
+        </div>
+
+        <div class="md-block-item" flex-gt-sm="" ng-show="canChangeOpenClose">
+          <span class="md-block-item-title">{{R.open_close}}</span>
+          <md-checkbox md-no-ink="" aria-label="Is Opened" ng-model="isOutletClosed" ng-disabled="{{disableOpenClose}}" class="md-primary">
+            {{R.closed}}
+          </md-checkbox>
+        </div>
+
+        <div class="md-block-item" flex-gt-sm="" ng-show="canChangeTrackNonTrack">
+          <span class="md-block-item-title">{{R.tracking_status}}</span>
+          <md-checkbox
+            md-no-ink=""
+            aria-label="Is Tracked"
+            ng-model="outlet.IsTracked"
+            ng-disabled="{{disableTracking}}"
+            class="md-primary"
+            style="margin-bottom: 0px"
+          >
+            {{outlet.IsTracked ? R.tracking : R.non_tracking}}
+          </md-checkbox>
+        </div>
+      </div>
+
+      <div layout-gt-sm="row" style="margin-top: 0px">
+        <div flex-gt-sm="" style="margin-left: 12px; margin-top: -4px; font-size: 9pt">
+          <p>
+            {{R.volumn}}<br />
+            {{R.create_cartoons_avg_month}}
+          </p>
+        </div>
+        <md-input-container class="md-block" flex-gt-sm="">
+          <label style="color: #103b68">{{R.total}}</label>
+          <input ng-model="outlet.TotalVolume" name="total" type="number" disabled />
+        </md-input-container>
+
+        <md-input-container class="md-block" style="width: 80px" flex-gt-sm="">
+          <label style="color: #103b68">{{R.vbl_product}}</label>
+          <input ng-model="outlet.VBLVolume" type="number" name="vblvolume" disabled />
+        </md-input-container>
+
+        <md-input-container class="md-block" flex-gt-sm="" ng-show="enableExtraFields">
+          <label>{{R.class_type}}</label>
+          <md-select ng-model="outlet.Class" ng-disabled="disableClass">
+            <md-option ng-repeat="o in classes" value="{{o}}"> {{o}} </md-option>
+          </md-select>
+        </md-input-container>
+        <md-input-container class="md-block" flex-gt-sm="" ng-show="enableExtraFields">
+          <label>{{R.Mkt_Sq}}</label>
+          <md-select ng-model="outlet.TerritoryID" ng-disabled="disableTerritory">
+            <md-option ng-repeat="o in territories" value="{{o}}"> {{o}} </md-option>
+          </md-select>
+        </md-input-container>
+        <md-input-container class="md-block" flex-gt-sm="" ng-show="enableExtraFields">
+          <label>{{R.callRate}}</label>
+          <md-select ng-model="outlet.CallRate" ng-disabled="disableCallrate">
+            <md-option ng-repeat="o in callRates" value="{{o.ID}}"> {{o.Name}} </md-option>
+          </md-select>
+        </md-input-container>
+      </div>
+
+      <div layout-gt-sm="row" style="margin-top: -8px">
+        <md-input-container class="md-block" flex-gt-sm="">
+          <label>{{R.comment}}</label>
+          <textarea ng-model="outlet.Comment" rows="2" style="margin-bottom: 0px" id="outletComment" ng-disabled="disableOutletComment"></textarea>
+        </md-input-container>
+        <md-input-container class="md-block" flex-gt-sm="" ng-show="isAuditor">
+          <label>{{R.auditor_comment}}</label>
+          <textarea
+            id="inputComment"
+            ng-model="outlet.Note"
+            md-maxlength="150"
+            rows="2"
+            md-select-on-focus=""
+            ng-disabled="{{disableComment}}"
+            style="margin-bottom: 0px"
+            required=""
+          ></textarea>
+        </md-input-container>
+      </div>
+
+      <div layout-gt-sm="row" style="margin-bottom: 10px; margin-top: 10px">
+        <table class="image-table">
+          <tr>
+            <td id="selfieImgTitle" ng-show="showImage4">
+              Selfie
+              <div class="image-sub-title">&nbsp;</div>
+            </td>
+            <td>
+              Outside
+              <div class="image-sub-title">(toàn cảnh)</div>
+            </td>
+            <td>
+              Signage
+              <div class="image-sub-title">(bảng hiệu nếu có)</div>
+            </td>
+            <td>
+              Product
+              <div class="image-sub-title">(khu vực sản phẩm)</div>
+            </td>
+            <td>
+              Other
+              <div class="image-sub-title">(hình khác)</div>
+            </td>
+            <td>
+              Other
+              <div class="image-sub-title">(hình khác)</div>
+            </td>
+          </tr>
+          <tr>
+            <td id="selfieImgContent" ng-show="showImage4">
+              <div class="image-frame" ng-click="capture(4);">
+                <img id="outletImg4" src="{{image4URL}}" />
+              </div>
+            </td>
+            <td>
+              <div class="image-frame" ng-click="capture(1);">
+                <img id="outletImg1" src="{{image1URL}}" />
+              </div>
+            </td>
+            <td>
+              <div class="image-frame" ng-click="capture(2);">
+                <img id="outletImg2" src="{{image2URL}}" />
+              </div>
+            </td>
+            <td>
+              <div class="image-frame" ng-click="capture(3);">
+                <img id="outletImg3" src="{{image3URL}}" />
+              </div>
+            </td>
+            <td>
+              <div class="image-frame" ng-click="capture(5);">
+                <img id="outletImg5" src="{{image5URL}}" />
+              </div>
+            </td>
+            <td>
+              <div class="image-frame" ng-click="capture(6);">
+                <img id="outletImg6" src="{{image6URL}}" />
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <div layout-gt-xs="row" layout-margin layout-align="center" style="margin-bottom: 0px; text-align: center">
+        <md-button class="md-raised md-warn" ng-click="sendRequest()" ng-show="enableSendRequest">{{R.btn_send_request}}</md-button>
+
+        <md-button class="md-raised md-primary" ng-show="viewApprove" ng-click="approve()">{{R.btn_approve}}</md-button>
+        <md-button class="md-raised" ng-show="viewDeny" ng-click="deny()">{{R.btn_deny}}</md-button>
+        <md-button class="md-raised md-primary" ng-click="postOutlet()" ng-show="canPost">{{R.btn_post}}</md-button>
+        <md-button class="md-raised md-primary blue1" ng-show="canRevise" ng-click="reviseOutlet()">{{R.btn_revise}}</md-button>
+        <!--<md-button class="md-raised md-primary blue1" ng-show="canRevert" ng-click="revertOutlet()">{{R.btn_revert}}</md-button>-->
+        <md-button class="md-raised md-primary" ng-show="viewSave" ng-click="saveUpdate()">{{R.btn_save}}</md-button>
+
+        <md-button class="md-raised" ng-click="cancelUpdate()">{{isViewOnly ? R.btn_cancel : R.btn_close}}</md-button>
+      </div>
+    </form>
+  </md-content>
+</md-dialog>

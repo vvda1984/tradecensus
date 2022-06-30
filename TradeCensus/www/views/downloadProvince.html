@@ -1,0 +1,32 @@
+﻿<md-dialog aria-label="Download Province" ng-cloak>
+  <md-toolbar class="md-hue-2">
+    <div class="md-toolbar-tools">
+      <h2>
+        <span>DOWNLOAD PROVINCES</span>
+      </h2>
+      <span flex=""></span>
+      <md-button class="md-icon-button" aria-label="Settings" ng-click="close()">
+        <md-icon md-svg-icon="assets/img/close.svg"></md-icon>
+      </md-button>
+    </div>
+  </md-toolbar>
+  <md-content layout-padding="" class="popup-content">
+    <table class="province-table">
+      <thead>
+        <tr>
+          <th>PROVINCE</th>
+          <th>STATUS</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="province in dprovinces | orderBy:'-name'">
+          <td>{{ province.name }}</td>
+          <td>
+            <img ng-hide="province.download" src="assets/img/download.svg" ng-click="download(province)" style="margin-left: 12px" />
+            <span ng-show="province.download">downloaded</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </md-content>
+</md-dialog>

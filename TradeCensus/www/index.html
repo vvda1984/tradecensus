@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+      name="viewport"
+    />
+
+    <!-- Libs -->
+    <script src="assets/libs/jquery.js"></script>
+    <script src="assets/libs/markerclusterer.js"></script>
+    <script src="assets/libs/dateutil.js"></script>
+    <script src="assets/libs/hash.sha256.js"></script>
+    <script src="assets/libs/base64-string.js"></script>
+    <script src="assets/libs/lz-string.min.js"></script>
+
+    <!-- Angular Material -->
+    <link
+      rel="stylesheet"
+      href="assets/libs/angular/angular-material.min.css"
+    />
+    <!--<link rel="stylesheet" href="assets/libs/angular/angular-material-1.1.4.css">-->
+    <script src="assets/libs/angular/angular.min.js"></script>
+    <script src="assets/libs/angular/angular-animate.min.js"></script>
+    <script src="assets/libs/angular/angular-aria.min.js"></script>
+    <script src="assets/libs/angular/angular-messages.min.js"></script>
+    <!--<script src="assets/libs/angular/angular-material-1.1.4.js"></script>-->
+    <script src="assets/libs/angular/angular-material.min.js"></script>
+    <script src="assets/libs/angular/angular-route.js"></script>
+    <!-- <script src="assets/libs/angular/angular-kendo.js"></script> -->
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="assets/css/style.css" />
+    <link rel="stylesheet" href="assets/css/style.home.css" />
+    <link rel="stylesheet" href="assets/css/style.global.css" />
+
+    <link href="assets/css/style.outlet.css" rel="stylesheet" />
+    <!-- MAP -->
+    <!--<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDpKidHSrPMfErXLJSts9R6pam7iUOr_W0"></script>-->
+  </head>
+  <!--<body ng-app="TradeCensus" ng-controller="MainController">-->
+  <body ng-app="TradeCensus" ng-controller="MainController">
+    <ng-view id="mainView"></ng-view>
+    <!--<div style="position:fixed; left:0px; border:0; width:400px;height:32px; background:white;">Log message</div>-->
+
+    <!-- 
+        <div class="app">
+        <h1>Apache Cordova</h1>
+        <div id="deviceready" class="blink">
+            <p class="event listening">Connecting to Device</p>
+            <p class="event received">Device is Ready</p>
+        </div>
+        <div> 
+            <button onclick="takePicture()">CAPTURE</button>
+        </div>
+        <div> 
+            <div id="output"></div>
+        </div>
+    </div> -->
+    <script src="cordova.js"></script>
+    <!-- <script src="js/index.js"></script> -->
+
+    <script src="js/logger.js"></script>
+    <script src="js/tc.utils.js"></script>
+    <script src="js/addressModel.js"></script>
+    <script src="js/tc.journal.js"></script>
+
+    <script src="js/tc.language.js"></script>
+    <script src="js/tc.databaseAPI.js"></script>
+    <script src="js/tc.dlgAPI.js"></script>
+    <script src="js/tc.appAPI.js"></script>
+    <script src="js/tc.mapAPI.js"></script>
+    <script src="js/tc.outletAPI.js"></script>
+
+    <script src="js/router.js"></script>
+    <script src="js/mainController.js"></script>
+    <script src="js/loginController.js"></script>
+    <script src="js/homeController.js"></script>
+    <script src="js/createOutletController.js"></script>
+    <script src="js/editOutletController.js"></script>
+    <script src="js/selectGeoBorderController.js"></script>
+    <script src="js/outletStatusController.js"></script>
+
+    <script src="js/tradecensus.js"></script>
+  </body>
+</html>

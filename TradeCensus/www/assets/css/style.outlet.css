@@ -1,0 +1,16 @@
+.o-table{
+    
+}
+.o-indicator{
+    position:absolute;
+    width: 28px;
+    font-size: 14px;
+    top: 4px;
+    background:yellow;
+}
+
+.o-content{
+    position: absolute;
+    left: 32px;
+    background:green;
+}
