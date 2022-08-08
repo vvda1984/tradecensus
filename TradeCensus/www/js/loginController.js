@@ -77,7 +77,7 @@
           $("#loginscreen").css("display", "block");
         },
         function (dberr) {
-          showError(dberr.message);
+          showError("Cannot access local database " + dberr.message);
         }
       );
     }
@@ -250,7 +250,7 @@
         //hideDlg();
         try {
           const data = JSON.parse(response.data);
-          //showDlg(R.btn_login, R.please_wait + "<br/>Connected: " + data);
+          showDlg(R.btn_login, R.please_wait + "<br/>Connected... ");
 
           if (data.Status == -1) {
             // error

@@ -1,7 +1,13 @@
-﻿var _WEB = false;
+﻿/**
+ * HISTORY
+ * [1.30.04] upgrade to support Android 8++
+ * [1.30.06] change to use https since Android 8 doesn't support http request
+ */
+
+var _WEB = false;
 var _PROD = true;
 var _VERSION = 30;
-var _VERSION_DISPLAY = "1.30.04";
+var _VERSION_DISPLAY = `${_PROD ? "P." : ""}1.30.07`;
 
 document.addEventListener("deviceready", onDeviceReady, false);
 
@@ -163,11 +169,11 @@ function newConfig() {
     cluster_max_zoom: 15.5,
     mode_online: true,
     enable_rereverse_geo: 1,
-    protocol: "http",
-    //ip: '27.0.15.234/trade-census',          // INTERNAL TEST
-    //ip: '203.34.144.29/tc-test',             // TEST
-    ip: "sis.vbl.vn/tc-test", // TEST
-    //ip: '203.34.144.29/trade-census',        // PROD
+    protocol: "https",
+    //ip: '27.0.15.234/trade-census', // INTERNAL TEST
+    //ip: '203.34.144.29/tc-test', / TEST
+    //ip: "sis.vbl.vn/tc-test", // TEST
+    ip: "203.34.144.29/trade-census", // PROD
     //ip: 'localhost/trade-census-test',       // LOCAL
     port: "80",
     service_name: "TradeCensusService.svc", // absolute
@@ -602,7 +608,7 @@ function checkUpdate() {
         hideDlg();
         if (data.Status == -1) {
           // error
-          showError(data.ErrorMessage);
+          showError("Cannot check new version " + data.ErrorMessage);
         } else {
           if (!isEmpty(data.Message)) {
             showInfo(data.Message);
