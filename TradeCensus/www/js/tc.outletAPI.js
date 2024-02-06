@@ -747,10 +747,15 @@ var OUTLET = {
         view.toString();
       console.log("Call service api: " + url);
 
-      $.ajax({
-        url: url,
-        type: "POST",
-        success: function (data) {
+      cordova.plugin.http.sendRequest(
+        url,
+        {
+          method: "post",
+          data: {},
+          headers: {},
+        },
+        function (response) {
+          const data = JSON.parse(response.data);
           try {
             if (data.Status == -1) {
               // error
@@ -777,11 +782,10 @@ var OUTLET = {
             onError(err.message + " (#12012)");
           }
         },
-        error: function (msg) {
-          console.error(msg);
-          onError(msg + " (#12012)");
-        },
-      });
+        function (response) {
+          onError("Cannot get Outlet" + " (#12012)");
+        }
+      );
     } catch (err) {
       console.error(err);
       onError(R.check_network_connection + " (#12010)");

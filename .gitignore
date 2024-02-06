@@ -356,8 +356,5 @@ yarn-error.log
 
 ## Excepts: GtssngCore\.vscode
 .vscode/
-!/GtssngCore/.vscode
 
-GtssngCore/tests/reports/
-
-GtssngCore/.scannerwork/
+_bk/
