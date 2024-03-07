@@ -6,15 +6,15 @@ namespace TradeCensus
 {
     public class JournalService : TradeCensusServiceBase, IJournalService
     {
-        static object SyncJournalSave = new object();
         public JournalService() : base("Journal")
-        {
-        }
+        { }
+
+        static object SyncJournalSave = new object();        
 
         private int AddNewJournal(JournalModel journal)
         {
-            var startTS = DateTime.ParseExact(journal.StartTS, Constants.DatetimeFormat, null);
-            var endTS = DateTime.ParseExact(journal.EndTS, Constants.DatetimeFormat, null);
+            //var startTS = DateTime.ParseExact(journal.StartTS, Constants.DatetimeFormat, null)
+            //var endTS = DateTime.ParseExact(journal.EndTS, Constants.DatetimeFormat, null)
             var journalDate = DateTime.ParseExact(journal.JournalDate, Constants.ShortDateFormat, null);
 
             var existing = DC.GetJournal(journalDate, journal.Data);

@@ -2,7 +2,7 @@
 
 namespace TradeCensus
 {
-    public class DistanceUtil
+    public static class DistanceUtils
     {
         public static double CalcDistance(Point p1, Point p2)
         {

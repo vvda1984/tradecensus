@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
 
 namespace TradeCensus
 {
@@ -26,25 +25,5 @@ namespace TradeCensus
 
         [DataMember(Name = "journalId")]
         public string JournalID { get; set; }
-    }
-
-    [DataContract]
-    public class JournalHistory
-    {
-        [DataMember(Name = "date")]
-        public string date { get; set; }
-
-        [DataMember(Name = "journals")]
-        public List<JournalModel> Journals { get; set; }
-    }
-
-    [DataContract]
-    public class JournalSync
-    {
-        [DataMember(Name = "journalId")]
-        public string JournalID { get; set; }
-
-        [DataMember(Name = "id")]
-        public int Id { get; set; }
     }
 }

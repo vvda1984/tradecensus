@@ -122,14 +122,4 @@ namespace TradeCensus
         [DataMember]
         public bool CompressImage { get; set; }
     }
-
-    [DataContract]
-    public class SyncOutlet
-    {
-        [DataMember]
-        public int ID { get; set; }
-        [DataMember]
-        public string RowID { get; set; }
-    }
-
 }

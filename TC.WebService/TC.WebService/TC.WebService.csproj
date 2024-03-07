@@ -183,12 +183,20 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BorderService\Model\GeoBorderExtend.cs" />
+    <Compile Include="BorderService\Model\GeoZone.cs" />
+    <Compile Include="BorderService\Model\PolylineBorder.cs" />
+    <Compile Include="BorderService\Response\GetBorderResponse.cs" />
+    <Compile Include="BorderService\Response\GetProvinceDataResponse.cs" />
+    <Compile Include="ConfigService\Model\OutletMapIcon.cs" />
+    <Compile Include="ConfigService\Response\CheckVersionResponse.cs" />
+    <Compile Include="ConfigService\Response\DownloadMapIconsResponse.cs" />
     <Compile Include="Data\Area.cs">
       <DependentUpon>TradeCensusModel.tt</DependentUpon>
     </Compile>
-    <Compile Include="BorderService\BorderModel.cs" />
+    <Compile Include="BorderService\Model\BorderModel.cs" />
     <Compile Include="BorderService\BorderService.cs" />
-    <Compile Include="BorderService\BorderServiceResponse.cs" />
+    <Compile Include="BorderService\Response\BorderServiceResponse.cs" />
     <Compile Include="BorderService\IBorderService.cs" />
     <Compile Include="Data\Config.cs">
       <DependentUpon>TradeCensusModel.tt</DependentUpon>
@@ -220,8 +228,11 @@
       <DependentUpon>TradeCensusModel.tt</DependentUpon>
     </Compile>
     <Compile Include="JournalService\IJournalService.cs" />
-    <Compile Include="JournalService\Journal.cs" />
-    <Compile Include="JournalService\JournalResponse.cs" />
+    <Compile Include="JournalService\Model\JournalModel.cs" />
+    <Compile Include="JournalService\Model\JournalHistory.cs" />
+    <Compile Include="JournalService\Model\JournalSync.cs" />
+    <Compile Include="JournalService\Response\GetJournalResponse.cs" />
+    <Compile Include="JournalService\Response\JournalResponse.cs" />
     <Compile Include="JournalService\JournalService.cs" />
     <Compile Include="Data\Outlet.cs">
       <DependentUpon>TradeCensusModel.tt</DependentUpon>
@@ -232,10 +243,12 @@
     <Compile Include="Data\OutletImage.cs">
       <DependentUpon>TradeCensusModel.tt</DependentUpon>
     </Compile>
-    <Compile Include="OutletService\DistanceUtil.cs" />
-    <Compile Include="OutletService\ExtendedClass.cs" />
+    <Compile Include="JournalService\Response\SyncJournalResponse.cs" />
+    <Compile Include="OutletService\DistanceUtils.cs" />
+    <Compile Include="OutletService\Model\DownloadOutlet.cs" />
     <Compile Include="OutletService\IOutletService.cs" />
-    <Compile Include="OutletService\OutletModel.cs" />
+    <Compile Include="OutletService\Model\OutletModel.cs" />
+    <Compile Include="OutletService\Model\SyncOutlet.cs" />
     <Compile Include="OutletService\OutletService.cs" />
     <Compile Include="Data\OutletType.cs">
       <DependentUpon>TradeCensusModel.tt</DependentUpon>
@@ -246,10 +259,23 @@
     <Compile Include="Data\PersonRole.cs">
       <DependentUpon>TradeCensusModel.tt</DependentUpon>
     </Compile>
-    <Compile Include="PersonService\GetSalesmanResponse.cs" />
+    <Compile Include="OutletService\Model\Point.cs" />
+    <Compile Include="OutletService\Response\DownloadOutletResponse.cs" />
+    <Compile Include="OutletService\Response\GetImageResponse.cs" />
+    <Compile Include="OutletService\Response\GetOutletImagesResponse.cs" />
+    <Compile Include="OutletService\Response\GetOutletListResponse.cs" />
+    <Compile Include="OutletService\Response\GetOutletResponse.cs" />
+    <Compile Include="OutletService\Response\GetOutletTypeResponse.cs" />
+    <Compile Include="OutletService\Response\SaveImageResponse.cs" />
+    <Compile Include="OutletService\Response\SaveOutletResponse.cs" />
+    <Compile Include="OutletService\Response\SyncOutletResponse.cs" />
+    <Compile Include="PersonService\HashUtil.cs" />
+    <Compile Include="PersonService\Response\GetSalesmanResponse.cs" />
     <Compile Include="PersonService\IPersonService.cs" />
-    <Compile Include="PersonService\PersonModel.cs" />
+    <Compile Include="PersonService\Model\PersonModel.cs" />
     <Compile Include="PersonService\PersonService.cs" />
+    <Compile Include="PersonService\Model\SalesmanModel.cs" />
+    <Compile Include="PersonService\Model\UserModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ProvinceService\Model\BankCodeModel.cs" />
     <Compile Include="ProvinceService\Model\BankModel.cs" />
@@ -266,11 +292,11 @@
     <Compile Include="Shared\DeniedException.cs" />
     <Compile Include="Shared\GeoCoordinate.cs" />
     <Compile Include="Shared\TradeCensusServiceBase.cs" />
-    <Compile Include="ConfigService\ConfigResponse.cs" />
+    <Compile Include="ConfigService\Response\ConfigResponse.cs" />
     <Compile Include="Shared\Constants.cs" />
-    <Compile Include="PersonService\LoginResponse.cs" />
+    <Compile Include="PersonService\Response\LoginResponse.cs" />
     <Compile Include="Shared\Logging.cs" />
-    <Compile Include="OutletService\OutletResponse.cs" />
+    <Compile Include="OutletService\Response\OutletResponse.cs" />
     <Compile Include="ProvinceService\Response\ProvinceResponse.cs" />
     <Compile Include="Shared\Response.cs" />
     <Compile Include="Data\SyncDetail.cs">

@@ -174,18 +174,18 @@ namespace TradeCensus.Data
             return setting.Value;
         }
 
-        public List<GeoBorderEx> GetBordersByParent(int parentID)
+        public List<GeoBorderExtend> GetBordersByParent(int parentID)
         {
-            return DC.Database.SqlQuery<GeoBorderEx>(SQL_SELECT_SUBBORDER, parentID).ToList();
+            return DC.Database.SqlQuery<GeoBorderExtend>(SQL_SELECT_SUBBORDER, parentID).ToList();
         }
 
-        public List<GeoBorderEx> GetBordersByParentName(string parentName)
+        public List<GeoBorderExtend> GetBordersByParentName(string parentName)
         {
             var sqlCommand = string.Format(SQL_SELECT_SUBBORDER_2, parentName.Replace("'", "''"));
-            return DC.Database.SqlQuery<GeoBorderEx>(sqlCommand).ToList();
+            return DC.Database.SqlQuery<GeoBorderExtend>(sqlCommand).ToList();
         }
 
-        public List<GeoBorderEx> GettWards(string districtName, int provinceID)
+        public List<GeoBorderExtend> GettWards(string districtName, int provinceID)
         {
             const string SQL_SELECT_WARDS =
                 @"SELECT gb3.ID, gb3.ParentID, gb3.Name, 
@@ -195,18 +195,18 @@ namespace TradeCensus.Data
                 WHERE gb3.ParentName like N'{0}' AND gb4.ParentID = {1} ORDER by Name";
 
             var sqlCommand = string.Format(SQL_SELECT_WARDS, districtName.Replace("'", "''"), provinceID);
-            return DC.Database.SqlQuery<GeoBorderEx>(sqlCommand).ToList();
+            return DC.Database.SqlQuery<GeoBorderExtend>(sqlCommand).ToList();
         }
 
-        public GeoBorderEx GetProvinceBorder(string provinceID, string provinceName)
+        public GeoBorderExtend GetProvinceBorder(string provinceID, string provinceName)
         {
             var sqlCommand = string.Format(SQL_SELECT_SUBBORDER_1, provinceID, provinceName.Replace("'", "''"));
-            return DC.Database.SqlQuery<GeoBorderEx>(sqlCommand).FirstOrDefault();
+            return DC.Database.SqlQuery<GeoBorderExtend>(sqlCommand).FirstOrDefault();
         }
 
-        public GeoBorderEx GetBorder(int borderID)
+        public GeoBorderExtend GetBorder(int borderID)
         {
-            return DC.Database.SqlQuery<GeoBorderEx>(SQL_SELECT_BORDER, borderID).FirstOrDefault();
+            return DC.Database.SqlQuery<GeoBorderExtend>(SQL_SELECT_BORDER, borderID).FirstOrDefault();
         }
 
         public Journal GetJournal(DateTime jornalDate, string data)
@@ -243,9 +243,9 @@ namespace TradeCensus.Data
             return DC.Database.SqlQuery<Journal>(SQL_SELECT_JOURNALS, personID, dateFrom, dateTo).ToList();
         }
 
-        public User GetLoginUser(string username, string password)
+        public UserModel GetLoginUser(string username, string password)
         {
-            return DC.Database.SqlQuery<User>(SQL_SELECT_LOGIN_USER, username, password).FirstOrDefault();
+            return DC.Database.SqlQuery<UserModel>(SQL_SELECT_LOGIN_USER, username, password).FirstOrDefault();
         }
 
         public void UpdatePersonRoleValue(int personRoleID, int role, int amendBy)
@@ -281,14 +281,14 @@ namespace TradeCensus.Data
             user.Password = password;
         }
 
-        public List<Salesman> GetSalesmanList(int personID)
+        public List<SalesmanModel> GetSalesmanList(int personID)
         {
-            List<Salesman> result = new List<Salesman>();
+            List<SalesmanModel> result = new List<SalesmanModel>();
 
             var personArr = DC.Database.SqlQuery<Person>(SQL_GET_SALESMANS, personID).ToArray();
             if (personArr.Length > 0)
                 foreach (var person in personArr)
-                    result.Add(new Salesman { Id = person.ID, FirstName = person.FirstName, LastName = person.LastName });
+                    result.Add(new SalesmanModel { Id = person.ID, FirstName = person.FirstName, LastName = person.LastName });
 
             return result;
         }

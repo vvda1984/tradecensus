@@ -52,5 +52,4 @@ namespace TradeCensus
         [DataMember]
         public string Token { get; set; }
     }
-
 }

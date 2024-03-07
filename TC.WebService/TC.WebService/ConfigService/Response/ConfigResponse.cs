@@ -4,15 +4,12 @@ using System.Runtime.Serialization;
 namespace TradeCensus
 {
     [DataContract]
-    public class LoginResponse : Response
+    public class ConfigResponse : Response
     {
         [DataMember]
-        public PersonModel People
+        public Dictionary<string, string> Items
         {
             get; set;
         }
-
-        [DataMember(Name = "salesmans")]
-        public List<Salesman> Sales { get; set; }
     }
 }

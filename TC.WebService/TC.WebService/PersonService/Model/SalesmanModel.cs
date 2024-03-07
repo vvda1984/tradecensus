@@ -1,17 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
 
 namespace TradeCensus
 {
     [DataContract]
-    public class GetSalesmanResponse : Response
-    {
-        [DataMember(Name = "items")]
-        public List<Salesman> Items { get; set; }
-    }
-
-    [DataContract]
-    public class Salesman
+    public class SalesmanModel
     {
         [DataMember(Name = "personID")]
         public int Id { get; set; }

@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Security.Cryptography;
-using System.Text;
 using TradeCensus.Data;
 using TradeCensus.Shared;
 
@@ -10,8 +8,7 @@ namespace TradeCensus
     public class PersonService : TradeCensusServiceBase, IPersonService
     {
         public PersonService() : base("Person")
-        {
-        }
+        { }
 
         private PersonModel GetPerson(string userName, string password)
         {
@@ -124,11 +121,11 @@ namespace TradeCensus
 
         public LoginResponse Login(string username, string password)
         {
-            LoginResponse resp = new LoginResponse { Sales = new List<Salesman>() };
+            LoginResponse resp = new LoginResponse { Sales = new List<SalesmanModel>() };
             try
             {
                 resp.People = GetPerson(username, password);
-                resp.Sales = new List<Salesman>();
+                resp.Sales = new List<SalesmanModel>();
 
                 if (resp.People.HasAuditRole)
                     resp.Sales = DC.GetSalesmanList(resp.People.ID);
@@ -202,51 +199,5 @@ namespace TradeCensus
         }
 
         #endregion
-    }
-
-    public class HashUtil
-    {
-        public static string ComputeHash(string text)
-        {
-            Random random = new Random();
-            int saltSize = random.Next(4, 8);
-
-            byte[] saltBytes = new byte[saltSize];
-
-            RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider();
-            rng.GetNonZeroBytes(saltBytes);
-            byte[] plainTextBytes = Encoding.UTF8.GetBytes(text);
-
-            byte[] plainTextWithSaltBytes = new byte[plainTextBytes.Length + saltBytes.Length];
-
-            for (int i = 0; i < plainTextBytes.Length; i++)
-                plainTextWithSaltBytes[i] = plainTextBytes[i];
-
-            for (int i = 0; i < saltBytes.Length; i++)
-                plainTextWithSaltBytes[plainTextBytes.Length + i] = saltBytes[i];
-
-            HashAlgorithm hash = new SHA1Managed();
-
-            byte[] hashBytes = hash.ComputeHash(plainTextWithSaltBytes);
-
-            byte[] hashWithSaltBytes = new byte[hashBytes.Length + saltBytes.Length];
-
-            for (int i = 0; i < hashBytes.Length; i++)
-                hashWithSaltBytes[i] = hashBytes[i];
-
-            // Append salt bytes to the result.
-            for (int i = 0; i < saltBytes.Length; i++)
-                hashWithSaltBytes[hashBytes.Length + i] = saltBytes[i];
-
-            return Convert.ToBase64String(hashWithSaltBytes);
-        }
-    }
-
-    public class User : Person
-    {
-        public int UserID { get; set; }
-        public int Role { get; set; }
-        public string UserName { get; set; }
-        public string Password { get; set; }
     }
 }
