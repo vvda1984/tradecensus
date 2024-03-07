@@ -20,5 +20,11 @@ namespace TradeCensus
 
         [OperationContract]
         BankCodeResponse GetBankCodes(string bankID);
+
+        [OperationContract]
+        SupplierResponse GetPrimarySuppliers(string personID);
+
+        [OperationContract]
+        SupplierResponse GetOtherSuppliers(string personID);
     }
 }

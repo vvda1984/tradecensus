@@ -77,7 +77,7 @@ namespace TradeCensus
             try
             {
                 int id = 0;
-                if(!int.TryParse(bankID, out id)) id = 0;
+                if (!int.TryParse(bankID, out id)) id = 0;
 
                 var items = DC.GetBankCodes(id);
                 if (items.Any())
@@ -114,6 +114,40 @@ namespace TradeCensus
             try
             {
                 var items = DC.GetLeadBrands();
+                if (items.Any())
+                    resp.Items.AddRange(items);
+            }
+            catch (Exception ex)
+            {
+                resp.Status = Constants.ErrorCode;
+                resp.ErrorMessage = ex.Message;
+            }
+            return resp;
+        }
+
+        public SupplierResponse GetPrimarySuppliers(string personID)
+        {
+            SupplierResponse resp = new SupplierResponse();
+            try
+            {
+                var items = DC.GetPrimarySuppliers(personID);
+                if (items.Any())
+                    resp.Items.AddRange(items);
+            }
+            catch (Exception ex)
+            {
+                resp.Status = Constants.ErrorCode;
+                resp.ErrorMessage = ex.Message;
+            }
+            return resp;
+        }
+
+        public SupplierResponse GetOtherSuppliers(string personID)
+        {
+            SupplierResponse resp = new SupplierResponse();
+            try
+            {
+                var items = DC.GetOtherSuppliers(personID);
                 if (items.Any())
                     resp.Items.AddRange(items);
             }

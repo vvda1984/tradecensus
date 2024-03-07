@@ -6,6 +6,9 @@ namespace TradeCensus
     public class OutletModel
     {
         [DataMember]
+        public int? BuildNumber { get; set; } // !Important: use this prop to detect version of the client.
+
+        [DataMember]
         public int ID { get; set; }
         [DataMember]
         public string AreaID { get; set; }
@@ -119,7 +122,55 @@ namespace TradeCensus
 
         [DataMember]
         public string Comment { get; set; }
+
         [DataMember]
         public bool CompressImage { get; set; }
+
+        [DataMember]
+        public int LeadBrandID { get; set; }
+
+        [DataMember]
+        public string LeadBrandName { get; set; }
+
+        [DataMember]
+        public string VisitFrequency { get; set; }
+        [DataMember]
+        public string PreferredVisitWeek { get; set; }
+
+        [DataMember]
+        public string LegalInformation { get; set; }
+
+        [DataMember]
+        public string BusinessOwner { get; set; }
+
+        [DataMember]
+        public string PaymentInformation { get; set; }
+
+        [DataMember]
+        public string Beneficiary { get; set; }
+
+        [DataMember]
+        public string CitizenID { get; set; }
+
+        [DataMember]
+        public string CitizenFrontImage { get; set; }
+
+        [DataMember]
+        public string CitizenRearImage { get; set; }
+
+        [DataMember]
+        public string PersonalTaxID { get; set; }
+
+        [DataMember]
+        public int? BankID { get; set; }
+
+        [DataMember]
+        public string BankName { get; set; }
+
+        [DataMember]
+        public int? BankCodeID { get; set; }
+
+        [DataMember]
+        public string BankCode { get; set; }
     }
 }
