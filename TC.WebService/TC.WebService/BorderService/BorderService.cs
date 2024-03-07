@@ -9,7 +9,7 @@ using TradeCensus.Shared;
 
 namespace TradeCensus
 {
-    public class BorderService: TradeCensusServiceBase, IBorderService
+    public class BorderService : TradeCensusServiceBase, IBorderService
     {
         public BorderService() : base("BorderService")
         {
@@ -260,7 +260,7 @@ namespace TradeCensus
             int step = 0;
 
             StringBuilder number = new StringBuilder();
-            GeoZone curZone= null;
+            GeoZone curZone = null;
             List<GeoCoordinate> coors = new List<GeoCoordinate>();
             GeoCoordinate curCoor = new GeoCoordinate();
             foreach (char c in data)
@@ -284,9 +284,9 @@ namespace TradeCensus
                     }
                     curZone = null;
                 }
-                else if(c == ',')
+                else if (c == ',')
                 {
-                    if(curZone == null)
+                    if (curZone == null)
                     {
                         // do nothing
                         number.Clear();

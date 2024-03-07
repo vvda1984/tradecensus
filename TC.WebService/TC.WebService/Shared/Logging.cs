@@ -13,7 +13,7 @@ namespace TradeCensus
         {
             return LogManager.GetLogger(name);
         }
-    }   
+    }
 
     public static class LoggerEx
     {

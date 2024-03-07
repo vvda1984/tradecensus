@@ -1,5 +1,4 @@
 ﻿using System.ServiceModel;
-using System.Web.Services;
 
 namespace TradeCensus
 {

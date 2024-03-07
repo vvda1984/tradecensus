@@ -1,7 +1,5 @@
 ﻿using NLog;
 using System;
-using System.Configuration;
-using System.IO;
 using TradeCensus.Data;
 
 namespace TradeCensus.Shared

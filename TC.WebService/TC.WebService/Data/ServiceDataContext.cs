@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Data.Entity;
-using System.Data.Entity.Core;
-using System.Data.Entity.Infrastructure;
+using System.Linq;
 using TradeCensus.Shared;
 
 namespace TradeCensus.Data
 {
-    public class ServiceDataContext : IDisposable
+    public sealed partial class ServiceDataContext : IDisposable
     {
         static string SQL_SELECT_PERSON { get { return Utils.GetCustomSQL("SQL_SELECT_PERSON", _SQL_SELECT_PERSON); } }
         static string SQL_SELECT_VERSION { get { return Utils.GetCustomSQL("SQL_SELECT_VERSION", _SQL_SELECT_VERSION); } }
@@ -30,7 +28,7 @@ namespace TradeCensus.Data
         static string SQL_DELETE_OUTLET_IMAGE { get { return Utils.GetCustomSQL("SQL_DELETE_OUTLET_IMAGE", _SQL_DELETE_OUTLET_IMAGE); } }
         static string SQL_GET_SETTING { get { return Utils.GetCustomSQL("SQL_GET_SETTING", _SQL_GET_SETTING); } }
         static string SQL_GET_PERSON_ROLE { get { return Utils.GetCustomSQL("SQL_GET_PERSON_ROLE", _SQL_GET_PERSON_ROLE); } }
-        
+
 
         const string _SQL_SELECT_PERSON = "SELECT top 1 * FROM PersonRole (NOLOCK) where PersonID = @p0 AND [Password] = @p1'";
         const string _SQL_SELECT_VERSION = "SELECT * FROM Config (NOLOCK) where Name = 'version' OR Name = 'new_version_message' OR Name = 'NewVersionMessage'";
@@ -54,7 +52,7 @@ namespace TradeCensus.Data
         const string _SQL_GET_PERSON_ROLE = "SELECT top 1 * FROM [PersonRole] (NOLOCK) where PersonID = @p0";
 
 
-        private tradecensusEntities DC;
+        readonly tradecensusEntities DC;
 
         public ServiceDataContext()
         {
@@ -176,7 +174,6 @@ namespace TradeCensus.Data
             return setting.Value;
         }
 
-
         public List<GeoBorderEx> GetBordersByParent(int parentID)
         {
             return DC.Database.SqlQuery<GeoBorderEx>(SQL_SELECT_SUBBORDER, parentID).ToList();
@@ -211,7 +208,6 @@ namespace TradeCensus.Data
         {
             return DC.Database.SqlQuery<GeoBorderEx>(SQL_SELECT_BORDER, borderID).FirstOrDefault();
         }
-
 
         public Journal GetJournal(DateTime jornalDate, string data)
         {
@@ -302,12 +298,10 @@ namespace TradeCensus.Data
             return DC.Database.SqlQuery<PersonRole>(SQL_GET_PERSON_ROLE, personID).FirstOrDefault();
         }
 
-
         public List<Province> GetProvinces()
         {
             return DC.Provinces.ToList();
         }
-
 
         public OutletImage GetOutletImage(int outletID)
         {
@@ -554,7 +548,7 @@ namespace TradeCensus.Data
                     }
                     else
                     {
-                        sqlCommand += $"AND tb.PersonID = {personID} AND tb.AuditStatus IN ({Constants.StatusNew}, {Constants.StatusPost}, { Constants.StatusAuditAccept}, {Constants.StatusAuditDeny})";
+                        sqlCommand += $"AND tb.PersonID = {personID} AND tb.AuditStatus IN ({Constants.StatusNew}, {Constants.StatusPost}, {Constants.StatusAuditAccept}, {Constants.StatusAuditDeny})";
                     }
                     break;
             }

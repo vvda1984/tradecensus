@@ -8,12 +8,11 @@ namespace TradeCensus
     public class ProvinceService : TradeCensusServiceBase, IProvinceService
     {
         public ProvinceService() : base("Province")
-        {
-        }
+        { }
 
-        public GetDistrictsResponse GetDistricts(string provinceGeoID)
+        public DistrictResponse GetDistricts(string provinceGeoID)
         {
-            GetDistrictsResponse resp = new GetDistrictsResponse { Items = new List<DistrictModel>() };
+            DistrictResponse resp = new DistrictResponse { Items = new List<DistrictModel>() };
             try
             {
                 IBorderService borderService = DependencyResolver.Resolve<IBorderService>();
@@ -63,6 +62,60 @@ namespace TradeCensus
                         Name = item.Name,
                         ReferenceGeoID = item.RefGeoID != null ? item.RefGeoID.Value : 0,
                     });
+            }
+            catch (Exception ex)
+            {
+                resp.Status = Constants.ErrorCode;
+                resp.ErrorMessage = ex.Message;
+            }
+            return resp;
+        }
+
+        public BankCodeResponse GetBankCodes(string bankID)
+        {
+            BankCodeResponse resp = new BankCodeResponse();
+            try
+            {
+                int id = 0;
+                if(!int.TryParse(bankID, out id)) id = 0;
+
+                var items = DC.GetBankCodes(id);
+                if (items.Any())
+                    resp.Items.AddRange(items);
+            }
+            catch (Exception ex)
+            {
+                resp.Status = Constants.ErrorCode;
+                resp.ErrorMessage = ex.Message;
+            }
+            return resp;
+        }
+
+        public BankResponse GetBanks()
+        {
+            BankResponse resp = new BankResponse();
+            try
+            {
+                var items = DC.GetBanks();
+                if (items.Any())
+                    resp.Items.AddRange(items);
+            }
+            catch (Exception ex)
+            {
+                resp.Status = Constants.ErrorCode;
+                resp.ErrorMessage = ex.Message;
+            }
+            return resp;
+        }
+
+        public BrandResponse GetLeadBrands()
+        {
+            BrandResponse resp = new BrandResponse();
+            try
+            {
+                var items = DC.GetLeadBrands();
+                if (items.Any())
+                    resp.Items.AddRange(items);
             }
             catch (Exception ex)
             {

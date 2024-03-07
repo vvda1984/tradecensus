@@ -44,13 +44,13 @@ namespace TradeCensus
         {
             List<JournalHistory> journals = new List<JournalHistory>();
             Dictionary<string, JournalHistory> dict = new Dictionary<string, JournalHistory>(StringComparer.InvariantCultureIgnoreCase);
-            
+
             DateTime fromTS = DateTime.ParseExact(dateFrom, Constants.ShortDateFormat, null);
             DateTime toTSTemp = DateTime.ParseExact(dateTo, Constants.ShortDateFormat, null);
             DateTime toTS = new DateTime(toTSTemp.Year, toTSTemp.Month, toTSTemp.Day, 23, 59, 59);
 
             var query = DC.GetJournalsOrPerson(person, fromTS, toTS);
-           
+
             foreach (var item in query)
             {
                 var polyineJson = GeoCoordinate.ParseJournal(item.Data);

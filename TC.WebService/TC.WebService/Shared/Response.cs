@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Runtime.Serialization;
-using System.Web;
 
 namespace TradeCensus
 {
@@ -13,6 +10,13 @@ namespace TradeCensus
         public int Status { get; set; }
 
         [DataMember]
-        public string ErrorMessage { get;set; }
+        public string ErrorMessage { get; set; }
+    }
+
+    [DataContract]
+    public class Response<T> : Response where T : class
+    {
+        [DataMember(Name = "items")]
+        public List<T> Items { get; set; } = new List<T>();
     }
 }

@@ -73,7 +73,7 @@ namespace TradeCensus
     {
         [DataMember]
         public List<SyncOutlet> Outlets { get; set; }
-       
+
     }
 
     [DataContract]

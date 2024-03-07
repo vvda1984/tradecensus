@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using TradeCensus.Data;
@@ -13,7 +12,7 @@ namespace TradeCensus
         public PersonService() : base("Person")
         {
         }
-    
+
         private PersonModel GetPerson(string userName, string password)
         {
             var person = DC.GetLoginUser(userName, password);
@@ -53,7 +52,7 @@ namespace TradeCensus
             }
 
             res.Token = DC.GenerateToken(person.ID);
-            return res;      
+            return res;
         }
 
         private void ChangePassword(string token, int personID, string oldPassword, string newPassword)
@@ -72,7 +71,7 @@ namespace TradeCensus
         }
 
         private string HashPassword(string password)
-        {   
+        {
             return password;
         }
 
@@ -208,18 +207,18 @@ namespace TradeCensus
     public class HashUtil
     {
         public static string ComputeHash(string text)
-        {                    
+        {
             Random random = new Random();
             int saltSize = random.Next(4, 8);
 
             byte[] saltBytes = new byte[saltSize];
-         
-            RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider();         
-            rng.GetNonZeroBytes(saltBytes);        
+
+            RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider();
+            rng.GetNonZeroBytes(saltBytes);
             byte[] plainTextBytes = Encoding.UTF8.GetBytes(text);
 
             byte[] plainTextWithSaltBytes = new byte[plainTextBytes.Length + saltBytes.Length];
-            
+
             for (int i = 0; i < plainTextBytes.Length; i++)
                 plainTextWithSaltBytes[i] = plainTextBytes[i];
 
@@ -227,7 +226,7 @@ namespace TradeCensus
                 plainTextWithSaltBytes[plainTextBytes.Length + i] = saltBytes[i];
 
             HashAlgorithm hash = new SHA1Managed();
-            
+
             byte[] hashBytes = hash.ComputeHash(plainTextWithSaltBytes);
 
             byte[] hashWithSaltBytes = new byte[hashBytes.Length + saltBytes.Length];
@@ -239,8 +238,8 @@ namespace TradeCensus
             for (int i = 0; i < saltBytes.Length; i++)
                 hashWithSaltBytes[hashBytes.Length + i] = saltBytes[i];
 
-            return Convert.ToBase64String(hashWithSaltBytes);                        
-        }               
+            return Convert.ToBase64String(hashWithSaltBytes);
+        }
     }
 
     public class User : Person

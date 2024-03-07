@@ -194,7 +194,7 @@ namespace TradeCensus
                     DC.AddNewOutlet(dboutlet);
                 }
             }
-                
+
             DC.SaveChanges();
             return new Tuple<int, string>(dboutlet.ID, dboutlet.PRowID.ToString());
         }
@@ -238,7 +238,7 @@ namespace TradeCensus
             dbOutlet.AmendDate = DateTime.Now;
             if (outlet.AuditStatus != 0)
             {
-                dbOutlet.AuditStatus = (byte) outlet.AuditStatus;
+                dbOutlet.AuditStatus = (byte)outlet.AuditStatus;
             }
             else
             {
@@ -250,7 +250,7 @@ namespace TradeCensus
             dbOutlet.PModifiedStatus = outlet.PStatus;
             dbOutlet.Class = outlet.Class;
             dbOutlet.CallRate = outlet.CallRate;
-            dbOutlet.SpShift = (byte) outlet.SpShift;
+            dbOutlet.SpShift = (byte)outlet.SpShift;
             dbOutlet.IsSent = outlet.IsSent;
             dbOutlet.TerritoryID = outlet.TerritoryID;
             dbOutlet.LegalName = outlet.LegalName;
@@ -268,7 +268,7 @@ namespace TradeCensus
 
             if (outletImage == null)
             {
-                outletImage = new OutletImage {Outlet = dbOutlet};
+                outletImage = new OutletImage { Outlet = dbOutlet };
                 dbOutlet.OutletImages.Add(outletImage);
             }
 
@@ -366,7 +366,7 @@ namespace TradeCensus
             #endregion
 
             DC.SetAuditStatusDirty(dbOutlet);
-            DC.AddHistory(outlet.AmendBy, outlet.ID, (byte) outlet.AuditStatus, ToActionName(outlet.AuditStatus));
+            DC.AddHistory(outlet.AmendBy, outlet.ID, (byte)outlet.AuditStatus, ToActionName(outlet.AuditStatus));
         }
 
         private DeniedException SyncOutlets(int personID, OutletModel[] outlets, List<SyncOutlet> dboutlets)
@@ -398,7 +398,7 @@ namespace TradeCensus
             else return null;
         }
 
-        
+
         #region IOutletService Interfaces
 
         public GetOutletTypeResponse GetOutletTypes()
@@ -444,7 +444,7 @@ namespace TradeCensus
                     auditor);
                 foreach (var outlet in query)
                 {
-                   
+
                     resp.Items.Add(ToOutletModel(outlet));
                 }
             }
@@ -588,7 +588,7 @@ namespace TradeCensus
             try
             {
                 ValidatePerson(int.Parse(personID), password);
-                
+
                 var query = DC.SearchOutlets(int.Parse(personID), int.Parse(outletID), outletName);
                 foreach (var outlet in query)
                 {
@@ -604,5 +604,5 @@ namespace TradeCensus
         }
 
         #endregion
-    }   
+    }
 }

@@ -7,7 +7,7 @@ namespace TradeCensus
     {
         Dictionary<Type, Tuple<bool, object, object>> _dictionary = new Dictionary<Type, Tuple<bool, object, object>>();
         object _lock = new object();
-      
+
         public void Register<T>(Func<T> resovlver, bool isSingleInstance = true)
         {
             if (resovlver == null) throw new ArgumentException("Resovler is required");

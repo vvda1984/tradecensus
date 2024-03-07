@@ -1,10 +1,4 @@
-﻿
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-
-namespace TradeCensus.Data
+﻿namespace TradeCensus.Data
 {
     public class OutletEntity : Outlet
     {

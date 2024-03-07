@@ -1,10 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
 
 namespace TradeCensus
 {
     [DataContract]
-    public class BorderModel 
+    public class BorderModel
     {
         [DataMember]
         public string ID { get; set; }

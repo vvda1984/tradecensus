@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.Serialization;
-using System.Text;
 using TradeCensus.Data;
 
 namespace TradeCensus
@@ -9,9 +8,9 @@ namespace TradeCensus
     {
         public double Lat { get; set; }
         public double Lng { get; set; }
-    }   
+    }
 
-    
+
 
     [Serializable]
     public class DownloadOutlet : Outlet
@@ -19,7 +18,7 @@ namespace TradeCensus
         public long RowNo { get; set; }
         public string PersonFirstName { get; set; }
         public string PersonLastName { get; set; }
-        public bool? PersonIsDSM { get; set; }        
+        public bool? PersonIsDSM { get; set; }
         public int? PersonRole { get; set; }
 
         public int? AmendByRole { get; set; }

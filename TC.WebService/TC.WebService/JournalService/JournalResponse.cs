@@ -7,7 +7,7 @@ namespace TradeCensus
     public class JournalResponse : Response
     {
         [DataMember(Name = "id")]
-        public int JournalID { get; set; }       
+        public int JournalID { get; set; }
     }
 
     [DataContract]

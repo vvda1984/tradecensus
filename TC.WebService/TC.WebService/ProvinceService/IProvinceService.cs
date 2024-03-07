@@ -10,6 +10,15 @@ namespace TradeCensus
         ProvinceResponse GetProvinces();
 
         [OperationContract]
-        GetDistrictsResponse GetDistricts(string provinceGeoID);
+        DistrictResponse GetDistricts(string provinceGeoID);
+
+        [OperationContract]
+        BrandResponse GetLeadBrands();
+
+        [OperationContract]
+        BankResponse GetBanks();
+
+        [OperationContract]
+        BankCodeResponse GetBankCodes(string bankID);
     }
 }

@@ -3,12 +3,12 @@
 namespace TradeCensus
 {
     [ServiceContract]
-    public interface ITradeCensusService : 
-        IPersonService, 
-        IProvinceService, 
+    public interface ITradeCensusService :
+        IPersonService,
+        IProvinceService,
         IConfigService,
         IOutletService,
         IBorderService,
         IJournalService
-    {}    
+    { }
 }

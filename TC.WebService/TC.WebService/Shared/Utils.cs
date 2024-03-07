@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using NLog;
+using System;
 using System.Configuration;
 using System.IO;
-using System.Linq;
-using System.Web;
-using NLog;
 
 namespace TradeCensus.Shared
 {
@@ -86,7 +83,7 @@ namespace TradeCensus.Shared
 
             try
             {
-                var value = (string) _appSettingsReader.GetValue(key, typeof(string));
+                var value = (string)_appSettingsReader.GetValue(key, typeof(string));
                 return value == null ? defaultValue : File.ReadAllText(value);
             }
             catch
