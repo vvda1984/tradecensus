@@ -28,4 +28,5 @@
         public string dis_outlet_closed { get; set; }
         public string dis_outlet_opened { get; set; }
     }
+
 }

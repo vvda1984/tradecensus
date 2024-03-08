@@ -1,12 +1,13 @@
 ﻿namespace TradeCensus
 {
-    public class Constants
+    public static class Constants
     {
         public const int ErrorCode = -1;
         public const int SuccessCode = 0;
         public const int Warning = 1;
 
         public const double EarthR = 6378137; // 6378137: meter
+        public const int DefaultOutletID = 600000000;
 
         //SR/DSM -> SS (auditor 1) -> ASM (auditor 2)
         public const int RoleAudit = 1;

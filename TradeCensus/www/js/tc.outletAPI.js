@@ -103,6 +103,25 @@ function newOutlet(provinceName) {
     TerritoryID: "2",
     TaxID: "",
     LegalName: "",
+    // FEB 2024 CR
+    LeadBrandID: 0,
+    LeadBrandName: "",
+    VisitFrequency: "Every 4 weeks",
+    PreferredVisitWeek: "2",
+    PreferredVisitDay: "Tuesday",
+    LegalInformation: "1",
+    BusinessOwner: "",
+    PaymentInformation: "1",
+    Beneficiary: "",
+    CitizenID: "CitizenID",
+    CitizenFrontImage: "",
+    CitizenRearImage: "",
+    PersonalTaxID: "",
+    BankID: 0,
+    BankName: "",
+    BankCodeID: "",
+    BankCode: "",
+    SupplierJson: "[]",
   };
 }
 

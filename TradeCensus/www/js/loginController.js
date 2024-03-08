@@ -391,6 +391,7 @@
     config.tbl_outlet = "outlet_" + $scope.user.id;
     config.tbl_downloadProvince = "outlet_province_" + $scope.user.id;
     config.tbl_journal = "journal_tracking_" + $scope.user.id;
+    config.tbl_supplier = "supplier_" + $scope.user.id;
 
     log($scope.user.hasAuditRole);
     resetLocal = loginUser.Role >= 100;
@@ -398,26 +399,34 @@
     console.info($scope.user);
     showDlg(R.btn_login, R.please_wait + "<br/>Initialize database...");
 
-    ensureUserOutletDBExist(resetLocal, config.tbl_outletSync, config.tbl_outlet, config.tbl_downloadProvince, config.tbl_journal, function () {
-      if (networkReady()) {
-        showDlg(R.btn_login, R.please_wait + "<br/>Download config...");
-        downloadServerConfig(function (errMsg) {
-          if (errMsg != undefined) {
-            showError(errMsg);
-          } else {
-            showDlg(R.btn_login, R.please_wait + "<br/>Verify device...");
-            checkRootDevice(function () {
-              finalizeLoginView();
-            });
-          }
-        });
-      } else {
-        showDlg(R.btn_login, R.please_wait + "<br/>Verify device...");
-        checkRootDevice(function () {
-          finalizeLoginView();
-        });
+    ensureUserOutletDBExist(
+      resetLocal,
+      config.tbl_outletSync,
+      config.tbl_outlet,
+      config.tbl_downloadProvince,
+      config.tbl_journal,
+      config.tbl_supplier,
+      function () {
+        if (networkReady()) {
+          showDlg(R.btn_login, R.please_wait + "<br/>Download config...");
+          downloadServerConfig(function (errMsg) {
+            if (errMsg != undefined) {
+              showError(errMsg);
+            } else {
+              showDlg(R.btn_login, R.please_wait + "<br/>Verify device...");
+              checkRootDevice(function () {
+                finalizeLoginView();
+              });
+            }
+          });
+        } else {
+          showDlg(R.btn_login, R.please_wait + "<br/>Verify device...");
+          checkRootDevice(function () {
+            finalizeLoginView();
+          });
+        }
       }
-    });
+    );
   }
 
   function loginError(err) {

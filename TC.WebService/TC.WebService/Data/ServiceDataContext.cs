@@ -97,7 +97,6 @@ namespace TradeCensus.Data
             }
         }
 
-
         public Dictionary<string, string> GetSettings()
         {
             var settings = DC.Configs.ToList();
@@ -460,52 +459,93 @@ namespace TradeCensus.Data
         {
             // {0}: lat, {1}: lng, {2}: max_distance, {3}: max_item_count
 
-            var SQL_QUERY_NEAR_BY = @"SELECT TOP ({3}) * FROM 
-	                (SELECT o.*, 
-			                ot.Name as OutletTypeName, 
-			                pr.Name as ProvinceName,
-			                p.FirstName as PersonFirstName,  
-			                p.LastName as PersonLastName,
-			                ISNULL(p.IsDSM, 0) as PersonIsDSM,
-			                ISNULL(r1.Role, 0) as InputByRole,
-			                ISNULL(r2.Role, 0) as AmendByRole,
-                            ISNULL(oi.IsCompressed, 0) as CompressImage,
-                            oi.Image1 as StringImage1, 
-                            oi.Image2 as StringImage2, 
-                            oi.Image3 as StringImage3, 
-                            oi.Image4 as StringImage4,
-                            oi.Image5 as StringImage5, 
-                            oi.Image6 as StringImage6,
-                            oi.ImageData1, 
-                            oi.ImageData2, 
-                            oi.ImageData3, 
-                            oi.ImageData4,
-                            oi.ImageData5, 
-                            oi.ImageData6,
-			                (pc.distance_unit
-				                 * DEGREES(ACOS(COS(RADIANS(pc.latpoint))
-								 * COS(RADIANS(o.latitude))
-								 * COS(RADIANS(pc.longpoint - o.longitude))
-								 + SIN(RADIANS(pc.latpoint))
-								 * SIN(RADIANS(o.latitude)))) * 1000) AS Distance
-	                FROM 
-		                ((Outlet as o with(nolock)
-                            left join OutletImage oi with(nolock) on oi.OutletID = o.ID
-			                left join Province pr with(nolock) on o.ProvinceID = pr.ID
-			                left join OutletType ot with(nolock) on o.OTypeID = ot.ID
-			                left join Person p with(nolock) on p.ID = o.PersonID 
-			                left join PersonRole r with(nolock) on p.ID = r.PersonID 
-			                left join PersonRole r1 with(nolock) on r1.PersonID = o.InputBy
-			                left join PersonRole r2 with(nolock) on r2.PersonID = o.AmendBy) 
-		                JOIN (SELECT  {0}  AS latpoint, {1} AS longpoint, 50.0 AS radius, 111.045 AS distance_unit) AS pc ON 1=1) 
-
-	                WHERE o.Latitude
-						 BETWEEN pc.latpoint  - (pc.radius / pc.distance_unit)
-							 AND pc.latpoint  + (pc.radius / pc.distance_unit)
-						AND o.Longitude
-						 BETWEEN pc.longpoint - (pc.radius / (pc.distance_unit * COS(RADIANS(pc.latpoint))))
-							 AND pc.longpoint + (pc.radius / (pc.distance_unit * COS(RADIANS(pc.latpoint))))) as tb
-	                WHERE tb.Distance <= {2} ";
+            var SQL_QUERY_NEAR_BY = @"SELECT TOP ({3}) 
+	                *
+                FROM 
+                (	
+	                SELECT 
+		                o.*, 
+		                oe.*,
+		                ot.Name				as OutletTypeName, 
+		                pr.Name				as ProvinceName,
+		                p.FirstName			as PersonFirstName,  
+		                p.LastName			as PersonLastName,
+		                ISNULL(p.IsDSM, 0)	as PersonIsDSM,
+		                ISNULL(r1.Role, 0)	as InputByRole,
+		                ISNULL(r2.Role, 0)	as AmendByRole,
+                        ISNULL(oi.IsCompressed, 0) as CompressImage,
+                        oi.Image1			as StringImage1, 
+                        oi.Image2			as StringImage2, 
+                        oi.Image3			as StringImage3, 
+                        oi.Image4			as StringImage4,
+                        oi.Image5			as StringImage5, 
+                        oi.Image6			as StringImage6,
+                        oi.ImageData1, 
+                        oi.ImageData2, 
+                        oi.ImageData3, 
+                        oi.ImageData4,
+                        oi.ImageData5, 
+                        oi.ImageData6,
+		                (pc.distance_unit
+				                * DEGREES(ACOS(COS(RADIANS(pc.latpoint))
+				                * COS(RADIANS(o.latitude))
+				                * COS(RADIANS(pc.longpoint - o.longitude))
+				                + SIN(RADIANS(pc.latpoint))
+				                * SIN(RADIANS(o.latitude)))) * 1000) AS Distance,	
+		                bd.Name				as LeadBrandName,
+		                bn.Name				as BankName,
+		                bc.Code				as BankCode,
+		                (
+		                SELECT 
+			                PrimarySupplier as primarySupplier,
+			                SupplierID		as supplierID,
+			                SupplierName	as supplierName
+		                 FROM 
+			                OutletSupplier
+		                 WHERE 		
+			                OutletID = o.ID
+		                 FOR JSON PATH
+		                ) AS SupplierJson
+                FROM 	
+	                Outlet AS o WITH(NOLOCK)	
+                    LEFT JOIN OutletImage oi WITH(NOLOCK) 
+		                ON oi.OutletID = o.ID
+	                LEFT JOIN Province pr WITH(NOLOCK) 
+		                ON o.ProvinceID = pr.ID
+	                LEFT JOIN OutletType ot WITH(NOLOCK) 
+		                ON o.OTypeID = ot.ID
+	                LEFT JOIN Person p WITH(NOLOCK) 
+		                ON p.ID = o.PersonID 
+	                LEFT JOIN PersonRole r WITH(NOLOCK) 
+		                ON p.ID = r.PersonID 
+	                LEFT JOIN PersonRole r1 WITH(NOLOCK) 
+		                ON r1.PersonID = o.InputBy
+	                LEFT JOIN PersonRole r2 WITH(NOLOCK) 
+		                ON r2.PersonID = o.AmendBy
+	                LEFT JOIN OutletExtend AS oe WITH(NOLOCK)
+		                ON oe.OutletID = o.ID
+	                LEFT JOIN Brand bd WITH(NOLOCK)
+		                ON bd.ID = oe.LeadBrandID
+	                LEFT JOIN Bank bn WITH(NOLOCK)
+		                ON bn.ID = oe.BankID
+	                LEFT JOIN BankCode bc WITH(NOLOCK)
+		                ON bc.ID = oe.BankCodeID
+	                JOIN ( 
+		                SELECT 
+			                {0}		AS latpoint, 
+			                {1}		AS longpoint, 
+			                50.0	AS radius, 
+			                111.045 AS distance_unit 
+		                ) AS pc 
+		                ON 1 = 1		
+                WHERE 
+	                o.Latitude BETWEEN pc.latpoint  - (pc.radius / pc.distance_unit) 
+			                   AND pc.latpoint  + (pc.radius / pc.distance_unit)
+	                AND o.Longitude BETWEEN pc.longpoint - (pc.radius / (pc.distance_unit * COS(RADIANS(pc.latpoint))))
+				                    AND pc.longpoint + (pc.radius / (pc.distance_unit * COS(RADIANS(pc.latpoint))))
+                ) as tb
+                WHERE 
+	                tb.Distance <= {2} ";
 
             var sqlCommand = Utils.GetCustomSQL("SQL_QUERY_NEAR_BY", SQL_QUERY_NEAR_BY);
 

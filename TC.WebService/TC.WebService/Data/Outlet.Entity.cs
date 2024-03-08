@@ -41,5 +41,41 @@
         public byte[] ImageData5 { get; set; }
 
         public byte[] ImageData6 { get; set; }
+        
+        public int? LeadBrandID { get; set; }
+
+        public string LeadBrandName { get; set; }
+
+        public string VisitFrequency { get; set; }
+
+        public string PreferredVisitWeek { get; set; }
+
+        public string PreferredVisitDay { get; set; }
+
+        public string LegalInformation { get; set; }
+
+        public string BusinessOwner { get; set; }
+
+        public string PaymentInformation { get; set; }
+
+        public string Beneficiary { get; set; }
+
+        public string CitizenID { get; set; }
+
+        public string CitizenFrontImage { get; set; }
+
+        public string CitizenRearImage { get; set; }
+
+        public string PersonalTaxID { get; set; }
+
+        public int? BankID { get; set; }
+
+        public string BankName { get; set; }
+
+        public int? BankCodeID { get; set; }
+
+        public string BankCode { get; set; }
+
+        public string SupplierJson { get; set; }
     }
 }

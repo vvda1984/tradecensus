@@ -16,7 +16,7 @@
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <WcfConfigValidationEnabled>True</WcfConfigValidationEnabled>
     <UseIISExpress>true</UseIISExpress>
-    <IISExpressSSLPort />
+    <IISExpressSSLPort>44327</IISExpressSSLPort>
     <IISExpressAnonymousAuthentication />
     <IISExpressWindowsAuthentication />
     <IISExpressUseClassicPipelineMode />
@@ -189,6 +189,7 @@
     <Compile Include="BorderService\Response\GetBorderResponse.cs" />
     <Compile Include="BorderService\Response\GetProvinceDataResponse.cs" />
     <Compile Include="ConfigService\Model\OutletMapIcon.cs" />
+    <Compile Include="ConfigService\Model\ServerConfig.cs" />
     <Compile Include="ConfigService\Response\CheckVersionResponse.cs" />
     <Compile Include="ConfigService\Response\DownloadMapIconsResponse.cs" />
     <Compile Include="Data\Area.cs">
@@ -340,6 +341,7 @@
   <ItemGroup>
     <Folder Include="App_Data\" />
     <Folder Include="Images\" />
+    <Folder Include="Properties\PublishProfiles\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
@@ -347,7 +349,6 @@
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <None Include="Properties\PublishProfiles\File.pubxml" />
     <EntityDeploy Include="Data\TradeCensusModel.edmx">
       <Generator>EntityModelCodeGenerator</Generator>
       <LastGenOutput>TradeCensusModel.Designer.cs</LastGenOutput>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mail;
 using System.Text;
 using TradeCensus.Data;
 using TradeCensus.Shared;
@@ -9,7 +10,7 @@ namespace TradeCensus
 {
     public class OutletService : TradeCensusServiceBase, IOutletService
     {
-        static object Locker = new object();
+        static readonly object Locker = new object();
 
         public OutletService() : base("Outlet")
         {
@@ -77,6 +78,25 @@ namespace TradeCensus
                 CompressImage = outlet.CompressImage,
                 Comment = outlet.Comment,
                 Distance = Math.Round(outlet.Distance, 1),
+
+                LeadBrandID = outlet.LeadBrandID,
+                LeadBrandName = outlet.LeadBrandName,
+                VisitFrequency = outlet.VisitFrequency,
+                PreferredVisitWeek = outlet.PreferredVisitWeek,
+                PreferredVisitDay = outlet.PreferredVisitDay,
+                LegalInformation = outlet.LegalInformation,
+                BusinessOwner = outlet.BusinessOwner,
+                PaymentInformation = outlet.PaymentInformation,
+                Beneficiary = outlet.Beneficiary,
+                CitizenID = outlet.CitizenID,                
+                CitizenFrontImage = outlet.CitizenFrontImage,
+                CitizenRearImage = outlet.CitizenRearImage,
+                PersonalTaxID = outlet.PersonalTaxID,
+                BankID = outlet.BankID,
+                BankName = outlet.BankName,
+                BankCodeID = outlet.BankCodeID,
+                BankCode = outlet.BankCode,
+                SupplierJson = outlet.SupplierJson,
             };
 
             foundOutlet.FullAddress = $"{outlet.AddLine} {outlet.AddLine2} {outlet.Ward} {outlet.District} {foundOutlet.ProvinceName}".Trim().Replace("  ", " ");
@@ -138,7 +158,7 @@ namespace TradeCensus
             Outlet dboutlet = DC.GetOutlet(outlet.ID, outlet.PRowID);
             if (dboutlet != null)
             {
-                if (outlet.ID == 600000000)
+                if (outlet.ID == Constants.DefaultOutletID)
                 {
                     return new Tuple<int, string>(dboutlet.ID, dboutlet.PRowID.ToString());
                 }
@@ -156,7 +176,7 @@ namespace TradeCensus
             {
                 lock (Locker)
                 {
-                    if (outlet.ID == 600000000)
+                    if (outlet.ID == Constants.DefaultOutletID)
                         outlet.ID = DC.GetNextOutletID(int.Parse(outlet.ProvinceID));
 
                     outlet.AmendBy = outlet.InputBy;
@@ -196,6 +216,12 @@ namespace TradeCensus
             }
 
             DC.SaveChanges();
+
+            if (outlet.VersionNumber.HasValue && outlet.VersionNumber >= 5)
+            {
+                UpdateOutletExtend(outlet);
+            }
+
             return new Tuple<int, string>(dboutlet.ID, dboutlet.PRowID.ToString());
         }
 
@@ -369,6 +395,72 @@ namespace TradeCensus
             DC.AddHistory(outlet.AmendBy, outlet.ID, (byte)outlet.AuditStatus, ToActionName(outlet.AuditStatus));
         }
 
+        private void UpdateOutletExtend(OutletModel outlet)
+        {
+            DC.InsertOrUpdateOutletExtend(outlet);           
+        }
+
+        private void SendNotification(int personID)
+        {
+            try
+            {
+                var auditors = DC.GetPersonsoOfNextRoles(personID);
+                var auditorHasEmails = auditors.Where(x => !string.IsNullOrWhiteSpace(x.Email)).ToArray();
+                if (auditorHasEmails.Any())
+                {
+                    var configs = DC.GetServerConfig();
+
+                    var emailProvider = configs.Find(x => string.Equals(x.Name, "email_provider", StringComparison.OrdinalIgnoreCase));
+                    if (emailProvider == null || string.Equals(emailProvider.Value, "default", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var host = configs.Find(x => string.Equals(x.Name, "email_host", StringComparison.OrdinalIgnoreCase));
+                        var port = configs.Find(x => string.Equals(x.Name, "email_port", StringComparison.OrdinalIgnoreCase));
+                        var subject = configs.Find(x => string.Equals(x.Name, "email_outlet_subject", StringComparison.OrdinalIgnoreCase));
+                        var body = configs.Find(x => string.Equals(x.Name, "email_outlet_body", StringComparison.OrdinalIgnoreCase));
+                        var sender = configs.Find(x => string.Equals(x.Name, "email_sender", StringComparison.OrdinalIgnoreCase));
+                        var senderName = configs.Find(x => string.Equals(x.Name, "email_sendername", StringComparison.OrdinalIgnoreCase));
+                        var cc = configs.Find(x => string.Equals(x.Name, "email_cc", StringComparison.OrdinalIgnoreCase));
+                        var bcc = configs.Find(x => string.Equals(x.Name, "email_bcc", StringComparison.OrdinalIgnoreCase));
+                        var ssl = configs.Find(x => string.Equals(x.Name, "email_ssl", StringComparison.OrdinalIgnoreCase));
+
+                        var smtpClient = new SmtpClient(host?.Value, int.Parse(port?.Value));
+                        if (ssl != null && (ssl.Value == "1" || ssl.Value.ToUpper() == "Y" || ssl.Value.ToUpper() == "YES" || ssl.Value.ToUpper() == "TRUE"))
+                        {
+                            smtpClient.EnableSsl = true;
+                        }
+
+                        var mail = new MailMessage();
+                        mail.Subject = subject?.Value ?? "New Outlet";
+                        mail.Body = body?.Value ?? "New Outlet has been added or updated!";
+
+                        if (!string.IsNullOrWhiteSpace(senderName?.Value))
+                            mail.Sender = new MailAddress(sender.Value, senderName.Value);
+                        else
+                            mail.Sender = new MailAddress(sender.Value);
+
+                        if (!string.IsNullOrWhiteSpace(bcc?.Value))
+                        {
+                            var emails = bcc.Value.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+                            foreach (var m in emails)
+                                mail.Bcc.Add(m);
+                        }
+                        if (!string.IsNullOrWhiteSpace(cc?.Value))
+                        {
+                            var emails = cc.Value.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+                            foreach (var m in emails)
+                                mail.CC.Add(m);
+                        }
+
+                        smtpClient.Send(mail);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Warn($"Cannot send email: {ex.ToString()}", ex);
+            }
+        }
+
         private DeniedException SyncOutlets(int personID, OutletModel[] outlets, List<SyncOutlet> dboutlets)
         {
             StringBuilder sb = new StringBuilder();
@@ -395,7 +487,11 @@ namespace TradeCensus
             }
             if (sb.Length > 0)
                 return new DeniedException(sb.ToString());
-            else return null;
+
+            if (outlets.Any())
+                SendNotification(outlets[0].AmendBy);
+
+            return null;
         }
 
 
@@ -467,6 +563,8 @@ namespace TradeCensus
                 var res = InsertOrUpdateOutlet(item);
                 resp.ID = res.Item1;
                 resp.RowID = res.Item2;
+
+                SendNotification(item.AmendBy);
             }
             catch (Exception ex)
             {

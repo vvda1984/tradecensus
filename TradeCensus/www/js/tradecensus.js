@@ -2,12 +2,15 @@
  * HISTORY
  * [1.30.04] upgrade to support Android 8++
  * [1.30.06] change to use https since Android 8 doesn't support http request
+ * [1.30.08] CR:
+ *  (1) change outlet layout and fields
+ *  (2) support email (server)
  */
 
-var _WEB = false;
-var _PROD = true;
-var _VERSION = 30;
-var _VERSION_DISPLAY = `${_PROD ? "P." : ""}1.30.07`;
+var _WEB = true;
+var _PROD = false;
+var _VERSION = 31;
+var _VERSION_DISPLAY = `${_PROD ? "P." : ""}1.30.08`;
 
 document.addEventListener("deviceready", onDeviceReady, false);
 
@@ -41,7 +44,7 @@ function onDeviceReady() {
   cordova.plugin.http.setDataSerializer("json");
 }
 
-var resetDB = true; // force reset database - testing only
+var resetDB = false; // force reset database - testing only
 var db; // database instance
 var devLat = START_LAT;
 var devLng = START_LNG;
@@ -173,9 +176,10 @@ function newConfig() {
     //ip: '27.0.15.234/trade-census', // INTERNAL TEST
     //ip: '203.34.144.29/tc-test', / TEST
     //ip: "sis.vbl.vn/tc-test", // TEST
-    ip: "203.34.144.29/trade-census", // PROD
-    //ip: 'localhost/trade-census-test',       // LOCAL
-    port: "80",
+    ip: "localhost", // LOCAL
+    //ip: "203.34.144.29/trade-census", // PROD
+    //port: "80",
+    port: "61560",
     service_name: "TradeCensusService.svc", // absolute
     enable_liveGPS: true,
     liveGPS_distance: 10,
@@ -258,6 +262,7 @@ function newConfig() {
     tbl_outlet: "uo",
     tbl_downloadProvince: "udp",
     tbl_journal: "jr",
+    tbl_supplier: "sup",
     version: _VERSION_DISPLAY,
     versionNum: _VERSION,
   };

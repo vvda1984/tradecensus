@@ -22,7 +22,7 @@
           );
         }
 
-        log("ensure table [user] exist");
+        log("ensure table [user1] exist");
         tx.executeSql(
           "CREATE TABLE IF NOT EXISTS [user1] ([ID] integer PRIMARY KEY NOT NULL, [UserName] text, [FirstName] text, [LastName] text, [IsTerminate] text NOT NULL,	[HasAuditRole] text NOT NULL COLLATE NOCASE, [PosID] text NOT NULL COLLATE NOCASE, [ZoneID] text NOT NULL COLLATE NOCASE, [AreaID] text NOT NULL COLLATE NOCASE, [ProvinceID] text NOT NULL COLLATE NOCASE, [Email] text, [EmailTo] text, [HouseNo] text, [Street] text, [District] text, [HomeAddress] text, [WorkAddress] text, [Phone] text, [IsDSM] text NOT NULL, [OfflinePassword] text NOT NULL)",
           [],
@@ -72,6 +72,37 @@
           }
         );
 
+        log("ensure table [bank] exist");
+        tx.executeSql(
+          "CREATE TABLE IF NOT EXISTS [bank] ( [ID] int NOT NULL, [Code] text NULL, [Name] text NULL )",
+          [],
+          function (tx1) {},
+          function (tx1, dberr) {
+            onError(dberr.message);
+          }
+        );
+
+        log("ensure table [bankcode] exist");
+        tx.executeSql(
+          "CREATE TABLE IF NOT EXISTS [bankcode] ( [ID] int NOT NULL, [Code] text NULL, [BankID] int NULL )",
+          [],
+          function (tx1) {},
+          function (tx1, dberr) {
+            onError(dberr.message);
+          }
+        );
+
+        log("ensure table [brand] exist");
+        tx.executeSql(
+          "CREATE TABLE IF NOT EXISTS [brand] ( [ID] int NOT NULL, [Name] text NULL, [BrandTypeID] text NULL, [CompanyID] int NULL, [Tracking] text NULL, [BrandCode] text NULL )",
+          [],
+          function (tx1) {},
+          function (tx1, dberr) {
+            onError(dberr.message);
+          }
+        );
+
+        // UPDATE EXISTING
         tx.executeSql(
           "ALTER TABLE [user1] ADD COLUMN [Role] text NULL",
           [],
@@ -259,6 +290,127 @@ function insertProvincesDB(curItems, items, callback) {
   );
 }
 
+function insertBanksDB(items, callback) {
+  db.transaction(
+    function (tx) {
+      banks = [];
+      const len = items.length;
+      for (i = 0; i < len; i++) {
+        const p = items[i];
+        var sql = `INSERT INTO [brand] ( ID, Name, BrandTypeID, CompanyID, Tracking, BrandCode )
+SELECT ${p.id}, '${quoteText(p.name)}', '${quoteText(p.brandTypeID)}', ${quoteInt(p.companyID)}, '${quoteText(p.tracking)}', '${quoteText(
+          p.brandCode
+        )}'
+WHERE NOT EXISTS( SELECT 1 FROM [brand] WHERE ID = ${p.id} )`;
+        logSqlCommand(sql);
+        tx.executeSql(
+          sql,
+          [],
+          function () {},
+          function (tx, dberr) {
+            console.error(dberr);
+          }
+        );
+      }
+      callback();
+    },
+    function (tx, dberr) {
+      console.error(dberr);
+      callback("Insert database error.");
+    }
+  );
+}
+
+function insertBankCodesDB(items, callback) {
+  db.transaction(
+    function (tx) {
+      banks = [];
+      const len = items.length;
+      for (i = 0; i < len; i++) {
+        const p = items[i];
+
+        var sql = `INSERT INTO [bankcode] ( ID, Code, BankID )
+                   SELECT ${p.id}, '${quoteText(p.code)}', ${quoteInt(p.bankID)}
+                   WHERE NOT EXISTS( SELECT 1 FROM [bankcode] WHERE ID = ${p.id} )`;
+        logSqlCommand(sql);
+        tx.executeSql(
+          sql,
+          [],
+          function () {},
+          function (tx, dberr) {
+            console.error(dberr);
+          }
+        );
+      }
+      callback();
+    },
+    function (tx, dberr) {
+      console.error(dberr);
+      callback("Insert database error.");
+    }
+  );
+}
+
+function insertBrandsDB(items, callback) {
+  db.transaction(
+    function (tx) {
+      banks = [];
+      const len = items.length;
+      for (i = 0; i < len; i++) {
+        const p = items[i];
+
+        var sql = `INSERT INTO [brand] ( ID, Code, BankID )
+                   SELECT ${p.id}, '${quoteText(p.code)}', ${quoteInt(p.bankID)}
+                   WHERE NOT EXISTS( SELECT 1 FROM [brand] WHERE ID = ${p.id} )`;
+        logSqlCommand(sql);
+        tx.executeSql(
+          sql,
+          [],
+          function () {},
+          function (tx, dberr) {
+            console.error(dberr);
+          }
+        );
+      }
+      callback();
+    },
+    function (tx, dberr) {
+      console.error(dberr);
+      callback("Insert database error.");
+    }
+  );
+}
+
+function insertSuppliersDB(supplierTbl, items, callback) {
+  db.transaction(
+    function (tx) {
+      banks = [];
+      const len = items.length;
+      for (i = 0; i < len; i++) {
+        const p = items[i];
+
+        var sql = `INSERT INTO [${supplierTbl}] ( SupplierID, SupplierName, PrimarySupplier )
+                   SELECT ${p.supplierID}, '${quoteText(p.supplierName)}', '${quoteText(p.primarySupplier)}'
+                   WHERE NOT EXISTS( SELECT 1 FROM [${supplierTbl}] WHERE SupplierID = ${p.supplierID} )`;
+        logSqlCommand(sql);
+        tx.executeSql(
+          sql,
+          [],
+          function () {},
+          function (tx, dberr) {
+            console.error(dberr);
+          }
+        );
+      }
+      callback();
+    },
+    function (tx, dberr) {
+      console.error(dberr);
+      callback("Insert database error.");
+    }
+  );
+}
+
 function insertOutletTypesDB(items, callback) {
   db.transaction(
     function (tx) {
@@ -416,7 +568,20 @@ function selectOutletTypes(onSuccess, onError) {
   });
 }
 
-function ensureUserOutletDBExist(isReset, outletSyncTbl, outletTbl, provinceDownloadTbl, journalTbl, callback) {
+function alterColumns(tx, table, columns) {
+  for (var i = 0; i < columns.length; i++) {
+    const column = columns[i].name;
+    const type = columns[i].type;
+    tx.executeSql(
+      "ALTER TABLE " + table + " ADD COLUMN [" + column + "] " + type + " NULL",
+      [],
+      function (tx1) {},
+      function (tx1, dberr) {}
+    );
+  }
+}
+
+function ensureUserOutletDBExist(isReset, outletSyncTbl, outletTbl, provinceDownloadTbl, journalTbl, supplierTbl, callback) {
   db.transaction(function (tx) {
     if (isReset) {
       console.error("RESET USER DATABASE");
@@ -469,6 +634,18 @@ function ensureUserOutletDBExist(isReset, outletSyncTbl, outletTbl, provinceDown
       "CREATE TABLE IF NOT EXISTS [" +
       provinceDownloadTbl +
       "] ( [id] text PRIMARY KEY NOT NULL, [name] text COLLATE NOCASE NOT NULL, download int NOT NULL)";
+    logSqlCommand(sql);
+    tx.executeSql(
+      sql,
+      [],
+      function (tx1) {},
+      function (dberr) {
+        log(dberr.message);
+      }
+    );
+
+    log("ensure table [" + supplierTbl + "] exist");
+    sql = "CREATE TABLE IF NOT EXISTS [" + supplierTbl + "] ( [SupplierID] int NOT NULL, [SupplierName] text NULL, [PrimarySupplier] text NULL )";
     logSqlCommand(sql);
     tx.executeSql(
       sql,
@@ -546,6 +723,7 @@ function ensureUserOutletDBExist(isReset, outletSyncTbl, outletTbl, provinceDown
     logSqlCommand(sql);
     tx.executeSql(sql);
 
+    // OUTLET
     tx.executeSql(
       "ALTER TABLE " + outletTbl + " ADD COLUMN [Ward] text NULL",
       [],
@@ -556,75 +734,79 @@ function ensureUserOutletDBExist(isReset, outletSyncTbl, outletTbl, provinceDown
       "ALTER TABLE " + outletTbl + " ADD COLUMN [StringImage4] text NULL",
       [],
       function (tx1) {},
-      function (tx1, dberr) {
-        console.error(dberr);
-      }
+      function (tx1, dberr) {}
     );
     tx.executeSql(
       "ALTER TABLE " + outletTbl + " ADD COLUMN [StringImage5] text NULL",
       [],
       function (tx1) {},
-      function (tx1, dberr) {
-        console.error(dberr);
-      }
+      function (tx1, dberr) {}
     );
     tx.executeSql(
       "ALTER TABLE " + outletTbl + " ADD COLUMN [StringImage6] text NULL",
       [],
       function (tx1) {},
-      function (tx1, dberr) {
-        console.error(dberr);
-      }
+      function (tx1, dberr) {}
     );
     tx.executeSql(
       "ALTER TABLE " + outletTbl + " ADD COLUMN [InputByRole] int NULL",
       [],
       function (tx1) {},
-      function (tx1, dberr) {
-        console.error(dberr);
-      }
+      function (tx1, dberr) {}
     );
     tx.executeSql(
       "ALTER TABLE " + outletTbl + " ADD COLUMN [AmendByRole] int NULL",
       [],
       function (tx1) {},
-      function (tx1, dberr) {
-        console.error(dberr);
-      }
+      function (tx1, dberr) {}
     );
     tx.executeSql(
       "ALTER TABLE " + outletTbl + " ADD COLUMN [IsSent] int NULL",
       [],
       function (tx1) {},
-      function (tx1, dberr) {
-        console.error(dberr);
-      }
+      function (tx1, dberr) {}
     );
     tx.executeSql(
       "ALTER TABLE " + outletTbl + " ADD COLUMN [LegalName] text NULL",
       [],
       function (tx1) {},
-      function (tx1, dberr) {
-        console.error(dberr);
-      }
+      function (tx1, dberr) {}
     );
     tx.executeSql(
       "ALTER TABLE " + outletTbl + " ADD COLUMN [Comment] text NULL",
       [],
       function (tx1) {},
-      function (tx1, dberr) {
-        console.error(dberr);
-      }
+      function (tx1, dberr) {}
     );
     tx.executeSql(
       "ALTER TABLE " + outletTbl + " ADD COLUMN [IsCompressed] bit default 0",
       [],
       function (tx1) {},
-      function (tx1, dberr) {
-        console.error(dberr);
-      }
+      function (tx1, dberr) {}
     );
 
+    alterColumns(tx, outletTbl, [
+      { name: "LeadBrandID", type: "int" }, // int | float |text | bit
+      { name: "LeadBrandName", type: "text" },
+      { name: "VisitFrequency", type: "text" },
+      { name: "PreferredVisitWeek", type: "text" },
+      { name: "PreferredVisitDay", type: "text" },
+      { name: "LegalInformation", type: "text" },
+      { name: "BusinessOwner", type: "text" },
+      { name: "PaymentInformation", type: "text" },
+      { name: "Beneficiary", type: "text" },
+      { name: "CitizenID", type: "text" },
+      { name: "CitizenFrontImage", type: "text" },
+      { name: "CitizenRearImage", type: "text" },
+      { name: "PersonalTaxID", type: "text" },
+      { name: "BankID", type: "int" },
+      { name: "BankName", type: "text" },
+      { name: "BankCodeID", type: "int" },
+      { name: "BankCode", type: "text" },
+      { name: "SupplierJson", type: "text" },
+    ]);
+
+    // PROVINCE DOWNLOAD
     tx.executeSql(
       "ALTER TABLE " + provinceDownloadTbl + " ADD COLUMN [referenceGeoID]",
       [],
@@ -936,6 +1118,8 @@ function buildOutletInsertSql(outletTbl, outlet, modifiedDate) {
   sql = sql.concat("'", quoteText(outlet.LegalName), "',"); //[LegalName] text
   sql = sql.concat("'", quoteText(outlet.Comment), "',"); //[Comment] text
   sql = sql.concat(outlet.IsCompressed ? "1" : "0", ")"); //[IsCompressed] text
+  //
+
   return sql;
 }
 
@@ -1002,7 +1186,26 @@ function _addNewOutlet(tx, outletTbl, outlet, isAdd, isMod, isAud, synced, marke
   sql = sql.concat(quoteInt(outlet.IsSent), ","); //[IsSent] int
   sql = sql.concat("'", quoteText(outlet.LegalName), "',"); //[LegalName] text
   sql = sql.concat("'", quoteText(outlet.Comment), "',"); //[Comment] text
-  sql = sql.concat(outlet.IsCompressed ? "1" : "0", ")"); //[IsCompressed] text
+  sql = sql.concat(outlet.IsCompressed ? "1" : "0", ","); //[IsCompressed] text
+  //
+  sql = sql.concat(outlet.LeadBrandID ? outlet.LeadBrandID : "0", ","); //[IsCompressed] text
+  sql = sql.concat("'", quoteText(outlet.LeadBrandName), "',"); //[LeadBrandName] text
+  sql = sql.concat("'", quoteText(outlet.VisitFrequency), "',"); //[VisitFrequency] text
+  sql = sql.concat("'", quoteText(outlet.PreferredVisitWeek), "',"); //[PreferredVisitWeek] text
+  sql = sql.concat("'", quoteText(outlet.PreferredVisitDay), "',"); //[PreferredVisitDay] text
+  sql = sql.concat("'", quoteText(outlet.LegalInformation), "',"); //[LegalInformation] text
+  sql = sql.concat("'", quoteText(outlet.BusinessOwner), "',"); //[BusinessOwner] text
+  sql = sql.concat("'", quoteText(outlet.PaymentInformation), "',"); //[PaymentInformation] text
+  sql = sql.concat("'", quoteText(outlet.Beneficiary), "',"); //[Beneficiary] text
+  sql = sql.concat("'", quoteText(outlet.CitizenID), "',"); //[CitizenID] text
+  sql = sql.concat("'", outlet.CitizenFrontImage, "',"); //[CitizenFrontImage] text
+  sql = sql.concat("'", outlet.CitizenRearImage, "',"); //[CitizenRearImage] text
+  sql = sql.concat("'", quoteText(outlet.PersonalTaxID), "',"); //[PersonalTaxID] text
+  sql = sql.concat(outlet.BankID ? outlet.BankID : "0", ","); //[BankID] text
+  sql = sql.concat("'", quoteText(outlet.BankName), "',"); //[BankName] text
+  sql = sql.concat(outlet.BankCodeID ? outlet.BankCodeID : "0", ","); //[BankCodeID] text
+  sql = sql.concat("'", quoteText(outlet.BankCode), "',"); //[BankCode] text
+  sql = sql.concat("'", quoteText(outlet.SupplierJson), "',", ")"); //[SupplierJson] text
 
   logSqlCommand(sql);
   tx.executeSql(
@@ -1124,7 +1327,27 @@ function _updateOutlet(tx, outletTbl, outlet, state, synced, updateImage) {
   sql = sql.concat("AmendByRole=", quoteInt(outlet.AmendByRole), ", ");
   sql = sql.concat("LegalName='", quoteText(outlet.LegalName), "', ");
   sql = sql.concat("Comment='", quoteText(outlet.Comment), "', ");
-  sql = sql.concat("IsCompressed=", outlet.IsCompressed ? "1" : "0");
+  sql = sql.concat("IsCompressed=", outlet.IsCompressed ? "1" : "0", ",");
+
+  //
+  sql = sql.concat("LeadBrandID=", quoteInt(outlet.LeadBrandID), ", ");
+  sql = sql.concat("LeadBrandName='", quoteText(outlet.LeadBrandName), "', ");
+  sql = sql.concat("VisitFrequency='", quoteText(outlet.VisitFrequency), "', ");
+  sql = sql.concat("PreferredVisitWeek='", quoteText(outlet.PreferredVisitWeek), "', ");
+  sql = sql.concat("PreferredVisitDay='", quoteText(outlet.PreferredVisitDay), "', ");
+  sql = sql.concat("LegalInformation='", quoteText(outlet.LegalInformation), "', ");
+  sql = sql.concat("BusinessOwner='", quoteText(outlet.BusinessOwner), "', ");
+  sql = sql.concat("PaymentInformation='", quoteText(outlet.PaymentInformation), "', ");
+  sql = sql.concat("Beneficiary='", quoteText(outlet.Beneficiary), "', ");
+  sql = sql.concat("CitizenID='", quoteText(outlet.CitizenID), "', ");
+  sql = sql.concat("CitizenFrontImage='", outlet.CitizenFrontImage, "', ");
+  sql = sql.concat("CitizenRearImage='", outlet.CitizenRearImage, "', ");
+  sql = sql.concat("PersonalTaxID='", quoteText(outlet.PersonalTaxID), "', ");
+  sql = sql.concat("BankID=", quoteInt(outlet.BankID), ", ");
+  sql = sql.concat("BankName='", quoteText(outlet.BankName), "', ");
+  sql = sql.concat("BankCodeID=", quoteInt(outlet.BankCodeID), ", ");
+  sql = sql.concat("BankCode='", quoteText(outlet.BankCode), "', ");
+  sql = sql.concat("SupplierJson='", quoteText(outlet.SupplierJson), "'");
 
   sql = sql.concat(" WHERE PRowID like '", outlet.PRowID, "'");
   /*
