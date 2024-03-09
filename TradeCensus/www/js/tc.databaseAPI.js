@@ -74,7 +74,7 @@
 
         log("ensure table [bank] exist");
         tx.executeSql(
-          "CREATE TABLE IF NOT EXISTS [bank] ( [ID] int NOT NULL, [Code] text NULL, [Name] text NULL )",
+          "CREATE TABLE IF NOT EXISTS [Bank] ( [ID] int NOT NULL, [Code] text NULL, [Name] text NULL )",
           [],
           function (tx1) {},
           function (tx1, dberr) {
@@ -84,7 +84,7 @@
 
         log("ensure table [bankcode] exist");
         tx.executeSql(
-          "CREATE TABLE IF NOT EXISTS [bankcode] ( [ID] int NOT NULL, [Code] text NULL, [BankID] int NULL )",
+          "CREATE TABLE IF NOT EXISTS [BankCode] ( [ID] int NOT NULL, [Code] text NULL, [BankID] int NULL )",
           [],
           function (tx1) {},
           function (tx1, dberr) {
@@ -94,7 +94,7 @@
 
         log("ensure table [brand] exist");
         tx.executeSql(
-          "CREATE TABLE IF NOT EXISTS [brand] ( [ID] int NOT NULL, [Name] text NULL, [BrandTypeID] text NULL, [CompanyID] int NULL, [Tracking] text NULL, [BrandCode] text NULL )",
+          "CREATE TABLE IF NOT EXISTS [Brand] ( [ID] int NOT NULL, [Name] text NULL, [BrandTypeID] text NULL, [CompanyID] int NULL, [Tracking] text NULL, [BrandCode] text NULL )",
           [],
           function (tx1) {},
           function (tx1, dberr) {
@@ -105,6 +105,26 @@
         // UPDATE EXISTING
         tx.executeSql(
           "ALTER TABLE [user1] ADD COLUMN [Role] text NULL",
+          [],
+          function (tx1) {},
+          function (tx1, dberr) {}
+        );
+
+        // TEST ONLY
+        tx.executeSql(
+          "DELETE FROM [Brand]",
+          [],
+          function (tx1) {},
+          function (tx1, dberr) {}
+        );
+        tx.executeSql(
+          "DELETE FROM [BankCode]",
+          [],
+          function (tx1) {},
+          function (tx1, dberr) {}
+        );
+        tx.executeSql(
+          "DELETE FROM [Bank]",
           [],
           function (tx1) {},
           function (tx1, dberr) {}
@@ -290,7 +310,7 @@ function insertProvincesDB(curItems, items, callback) {
   );
 }
 
-function insertBanksDB(items, callback) {
+function insertBrandsDB(items, callback) {
   db.transaction(
     function (tx) {
       banks = [];
@@ -329,9 +349,9 @@ function insertBankCodesDB(items, callback) {
       for (i = 0; i < len; i++) {
         const p = items[i];
 
-        var sql = `INSERT INTO [bankcode] ( ID, Code, BankID )
+        var sql = `INSERT INTO [BankCode] ( ID, Code, BankID )
                    SELECT ${p.id}, '${quoteText(p.code)}', ${quoteInt(p.bankID)}
-                   WHERE NOT EXISTS( SELECT 1 FROM [bankcode] WHERE ID = ${p.id} )`;
+                   WHERE NOT EXISTS( SELECT 1 FROM [BankCode] WHERE ID = ${p.id} )`;
         logSqlCommand(sql);
         tx.executeSql(
           sql,
@@ -351,7 +371,7 @@ function insertBankCodesDB(items, callback) {
   );
 }
 
-function insertBrandsDB(items, callback) {
+function insertBanksDB(items, callback) {
   db.transaction(
     function (tx) {
       banks = [];
@@ -359,9 +379,9 @@ function insertBrandsDB(items, callback) {
       for (i = 0; i < len; i++) {
         const p = items[i];
 
-        var sql = `INSERT INTO [brand] ( ID, Code, BankID )
-                   SELECT ${p.id}, '${quoteText(p.code)}', ${quoteInt(p.bankID)}
-                   WHERE NOT EXISTS( SELECT 1 FROM [brand] WHERE ID = ${p.id} )`;
+        var sql = `INSERT INTO [Bank] ( ID, Code, Name )
+                   SELECT ${p.id}, '${quoteText(p.code)}', '${quoteText(p.name)}'
+                   WHERE NOT EXISTS( SELECT 1 FROM [Bank] WHERE ID = ${p.id} )`;
         logSqlCommand(sql);
         tx.executeSql(
           sql,
@@ -803,6 +823,7 @@ function ensureUserOutletDBExist(isReset, outletSyncTbl, outletTbl, provinceDown
       { name: "BankName", type: "text" },
       { name: "BankCodeID", type: "int" },
       { name: "BankCode", type: "text" },
+      { name: "AccountNumber", type: "text" },
       { name: "SupplierJson", type: "text" },
     ]);
 
@@ -838,7 +859,16 @@ function ensureUserOutletDBExist(isReset, outletSyncTbl, outletTbl, provinceDown
     journals.database = db;
     journals.createTable(tx, callback);
 
+    masterdata.initialize(supplierTbl);
     //callback();
+
+    // TEST ONLY
+    tx.executeSql(
+      `DELETE FROM [${supplierTbl}]`,
+      [],
+      function (tx1) {},
+      function (tx1, dberr) {}
+    );
   });
 }
 
@@ -1117,8 +1147,27 @@ function buildOutletInsertSql(outletTbl, outlet, modifiedDate) {
   sql = sql.concat(quoteInt(outlet.IsSent), ","); //[IsSent] int
   sql = sql.concat("'", quoteText(outlet.LegalName), "',"); //[LegalName] text
   sql = sql.concat("'", quoteText(outlet.Comment), "',"); //[Comment] text
-  sql = sql.concat(outlet.IsCompressed ? "1" : "0", ")"); //[IsCompressed] text
+  sql = sql.concat(outlet.IsCompressed ? "1" : "0", ","); //[IsCompressed] text
   //
+  sql = sql.concat(outlet.LeadBrandID ? outlet.LeadBrandID : "0", ","); //[IsCompressed] text
+  sql = sql.concat("'", quoteText(outlet.LeadBrandName), "',"); //[LeadBrandName] text
+  sql = sql.concat("'", quoteText(outlet.VisitFrequency), "',"); //[VisitFrequency] text
+  sql = sql.concat("'", quoteText(outlet.PreferredVisitWeek), "',"); //[PreferredVisitWeek] text
+  sql = sql.concat("'", quoteText(outlet.PreferredVisitDay), "',"); //[PreferredVisitDay] text
+  sql = sql.concat("'", quoteText(outlet.LegalInformation), "',"); //[LegalInformation] text
+  sql = sql.concat("'", quoteText(outlet.BusinessOwner), "',"); //[BusinessOwner] text
+  sql = sql.concat("'", quoteText(outlet.PaymentInformation), "',"); //[PaymentInformation] text
+  sql = sql.concat("'", quoteText(outlet.Beneficiary), "',"); //[Beneficiary] text
+  sql = sql.concat("'", quoteText(outlet.CitizenID), "',"); //[CitizenID] text
+  sql = sql.concat("'", outlet.CitizenFrontImage, "',"); //[CitizenFrontImage] text
+  sql = sql.concat("'", outlet.CitizenRearImage, "',"); //[CitizenRearImage] text
+  sql = sql.concat("'", quoteText(outlet.PersonalTaxID), "',"); //[PersonalTaxID] text
+  sql = sql.concat(outlet.BankID ? outlet.BankID : "0", ","); //[BankID] text
+  sql = sql.concat("'", quoteText(outlet.BankName), "',"); //[BankName] text
+  sql = sql.concat(outlet.BankCodeID ? outlet.BankCodeID : "0", ","); //[BankCodeID] text
+  sql = sql.concat("'", quoteText(outlet.BankCode), "',"); //[BankCode] text
+  sql = sql.concat("'", quoteText(outlet.AccountNumber), "',"); //[AccountNumber] text
+  sql = sql.concat("'", quoteText(outlet.SupplierJson), "'", ")"); //[SupplierJson] text
 
   return sql;
 }
@@ -1205,7 +1254,8 @@ function _addNewOutlet(tx, outletTbl, outlet, isAdd, isMod, isAud, synced, marke
   sql = sql.concat("'", quoteText(outlet.BankName), "',"); //[BankName] text
   sql = sql.concat(outlet.BankCodeID ? outlet.BankCodeID : "0", ","); //[BankCodeID] text
   sql = sql.concat("'", quoteText(outlet.BankCode), "',"); //[BankCode] text
-  sql = sql.concat("'", quoteText(outlet.SupplierJson), "',", ")"); //[SupplierJson] text
+  sql = sql.concat("'", quoteText(outlet.AccountNumber), "',"); //[AccountNumber] text
+  sql = sql.concat("'", quoteText(outlet.SupplierJson), "'", ")"); //[SupplierJson] text
 
   logSqlCommand(sql);
   tx.executeSql(
@@ -1347,6 +1397,7 @@ function _updateOutlet(tx, outletTbl, outlet, state, synced, updateImage) {
   sql = sql.concat("BankName='", quoteText(outlet.BankName), "', ");
   sql = sql.concat("BankCodeID=", quoteInt(outlet.BankCodeID), ", ");
   sql = sql.concat("BankCode='", quoteText(outlet.BankCode), "', ");
+  sql = sql.concat("AccountNumber='", quoteText(outlet.AccountNumber), "', ");
   sql = sql.concat("SupplierJson='", quoteText(outlet.SupplierJson), "'");
 
   sql = sql.concat(" WHERE PRowID like '", outlet.PRowID, "'");

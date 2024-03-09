@@ -176,7 +176,10 @@ namespace TradeCensus
 
         [DataMember]
         public string BankCode { get; set; }
-        
+
+        [DataMember]
+        public string AccountNumber { get; set; }
+
         [DataMember]
         public string SupplierJson { get; set; }
     }

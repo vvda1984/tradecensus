@@ -96,6 +96,7 @@ namespace TradeCensus
                 BankName = outlet.BankName,
                 BankCodeID = outlet.BankCodeID,
                 BankCode = outlet.BankCode,
+                AccountNumber = outlet.AccountNumber,
                 SupplierJson = outlet.SupplierJson,
             };
 
@@ -217,10 +218,7 @@ namespace TradeCensus
 
             DC.SaveChanges();
 
-            if (outlet.VersionNumber.HasValue && outlet.VersionNumber >= 5)
-            {
-                UpdateOutletExtend(outlet);
-            }
+            UpdateOutletExtend(outlet);
 
             return new Tuple<int, string>(dboutlet.ID, dboutlet.PRowID.ToString());
         }
@@ -527,7 +525,7 @@ namespace TradeCensus
 
                 resp.Items = new List<OutletModel>();
 
-                var auditor = user.Role == Constants.RoleAudit || user.Role == Constants.RoleAudit1 ||
+                var auditor = user.Role == Constants.RoleAudit || user.Role == Constants.RoleAudit1 || user.Role == Constants.RoleAudit2 ||
                               user.Role == Constants.RoleAgencyAudit || user.Role == Constants.RoleAgencyAudit1;
 
                 var query = DC.GetNearByOutlets(

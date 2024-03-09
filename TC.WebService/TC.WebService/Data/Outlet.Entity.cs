@@ -75,6 +75,7 @@
         public int? BankCodeID { get; set; }
 
         public string BankCode { get; set; }
+        public string AccountNumber{ get; set; }
 
         public string SupplierJson { get; set; }
     }

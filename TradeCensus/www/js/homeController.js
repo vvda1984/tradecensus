@@ -1414,6 +1414,17 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
             console.debug("Save outlet...");
             if (!outlet.isChanged) return;
 
+            const suppliers = [];
+            if (outlet.Supplier) {
+              suppliers.push({ primarySupplier: "1", supplierID: outlet.Supplier });
+            }
+            for (var i = 1; i <= 10; i++) {
+              if (outlet[`Supplier${i}Enable`]) {
+                suppliers.push({ primarySupplier: "0", supplierID: outlet[`Supplier${i}`] });
+              }
+            }
+            outlet.SupplierJson = JSON.stringify(suppliers);
+
             var isSendNewOutletRequest = isSent !== outlet.IsSent;
             orgOutlet.IsSent = outlet.IsSent;
             if (!isSendNewOutletRequest) {
@@ -1436,8 +1447,8 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                 outlet.AmendBy = userID;
                 outlet.AmendByRole = user.role;
 
-                var isPost = outlet.IsDraft != orgOutlet.IsDraft;
-                var isAuditChanged = outlet.AuditStatus != orgOutlet.AuditStatus;
+                // var isPost = outlet.IsDraft != orgOutlet.IsDraft;
+                // var isAuditChanged = outlet.AuditStatus != orgOutlet.AuditStatus;
 
                 orgOutlet.AuditStatus = outlet.AuditStatus;
                 orgOutlet.AmendBy = outlet.AmendBy;
@@ -1494,6 +1505,21 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
                 orgOutlet.modifiedImage6 = outlet.modifiedImage6;
 
                 orgOutlet.AmendByRole = user.role;
+
+                orgOutlet.LeadBrandID = outlet.LeadBrandID;
+                orgOutlet.VisitFrequency = outlet.VisitFrequency;
+                orgOutlet.PreferredVisitWeek = outlet.PreferredVisitWeek;
+                orgOutlet.PreferredVisitDay = outlet.PreferredVisitDay;
+                orgOutlet.LegalInformation = outlet.LegalInformation;
+                orgOutlet.BusinessOwner = outlet.BusinessOwner;
+                orgOutlet.PaymentInformation = outlet.PaymentInformation;
+                orgOutlet.Beneficiary = outlet.Beneficiary;
+                orgOutlet.CitizenID = outlet.CitizenID;
+                orgOutlet.PersonalTaxID = outlet.PersonalTaxID;
+                orgOutlet.AccountNumber = outlet.AccountNumber;
+                orgOutlet.BankID = outlet.BankID;
+                orgOutlet.BankCodeID = outlet.BankCodeID;
+                orgOutlet.SupplierJson = outlet.SupplierJson;
               } else {
                 outlet.AuditStatus = StatusRevert;
                 orgOutlet.AuditStatus = outlet.AuditStatus;
@@ -1518,6 +1544,21 @@ function homeController($scope, $http, $mdDialog, $mdMedia, $timeout) {
               orgOutlet.SpShift = outlet.SpShift;
               orgOutlet.CallRate = outlet.CallRate;
               orgOutlet.TerritoryID = outlet.TerritoryID;
+
+              orgOutlet.LeadBrandID = outlet.LeadBrandID;
+              // orgOutlet.VisitFrequency = outlet.VisitFrequency;
+              // orgOutlet.PreferredVisitWeek = outlet.PreferredVisitWeek;
+              // orgOutlet.PreferredVisitDay = outlet.PreferredVisitDay;
+              orgOutlet.LegalInformation = outlet.LegalInformation;
+              orgOutlet.BusinessOwner = outlet.BusinessOwner;
+              orgOutlet.PaymentInformation = outlet.PaymentInformation;
+              orgOutlet.Beneficiary = outlet.Beneficiary;
+              orgOutlet.CitizenID = outlet.CitizenID;
+              orgOutlet.PersonalTaxID = outlet.PersonalTaxID;
+              orgOutlet.AccountNumber = outlet.AccountNumber;
+              orgOutlet.BankID = outlet.BankID;
+              orgOutlet.BankCodeID = outlet.BankCodeID;
+              orgOutlet.SupplierJson = outlet.SupplierJson;
             }
 
             //showDlg(R.saving_outlet, R.please_wait);

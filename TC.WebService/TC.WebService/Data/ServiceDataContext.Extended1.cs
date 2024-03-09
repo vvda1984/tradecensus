@@ -10,6 +10,7 @@ namespace TradeCensus.Data
         const string _SQL_SELECT_LEAD_BRAND = "SELECT * FROM vwLeadBrand (NOLOCK) ORDER BY NAME";
         const string _SQL_SELECT_BANK = "SELECT * FROM bank (NOLOCK) ORDER BY NAME";
         const string _SQL_SELECT_BANK_CODE = "SELECT * FROM BankCode (NOLOCK) where BankId = @p0 ORDER BY CODE ";
+        const string _SQL_SELECT_BANK_CODE_ALL = "SELECT * FROM BankCode (NOLOCK) ORDER BY CODE ";
         const string _SQL_SELECT_PRIMARY_SUPPLIER = "SELECT distinct '1' as PrimarySupplier, s.ID as SupplierID, s.Name + ' - ' + CONCAT_WS( ', ',s.AddLine, s.AddLine2, s.Ward, s.District, c.Name ) as SupplierName FROM vwPrimarySupplier s WITH (NOLOCK) JOIN Province c WITH (NOLOCK) on c.ID = s.ProvinceID LEFT JOIN Person p WITH (NOLOCK) ON p.ZoneID = s.ZoneID WHERE p.ID is null or p.ID = @p0 order by SupplierName";
         const string _SQL_SELECT_OTHER_SUPPLIER = "SELECT distinct '0' as PrimarySupplier, s.ID as SupplierID, s.Name + ' - ' + CONCAT_WS( ', ',s.AddLine, s.AddLine2, s.Ward, s.District, c.Name ) as SupplierName FROM vwOtherSupplier s WITH (NOLOCK) JOIN Province c WITH (NOLOCK) on c.ID = s.ProvinceID LEFT JOIN Person p WITH (NOLOCK) ON p.ZoneID = s.ZoneID WHERE p.ID is null or p.ID = @p0 order by SupplierName";
         const string _SQL_SELECT_USER_NEXT_ROLE = "SELECT r.Role, p.* FROM PersonRole r WITH (NOLOCK) JOIN Person p WITH (NOLOCK) ON p.ID = r.PersonID LEFT JOIN ( SELECT  r.Role as CurrentRole FROM PersonRole r WHERE PersonID = @p0 ) c on 1 = 1 WHERE 1 = CASE WHEN c.CurrentRole = 0 AND r.Role in ( 1, 101 ) THEN 1 WHEN c.CurrentRole = 2 AND r.Role in ( 3, 103) THEN 1 WHEN c.CurrentRole IN ( 1, 101, 3, 103 ) AND r.Role in ( 4, 104) THEN 1 ELSE 0 END";
@@ -37,7 +38,9 @@ namespace TradeCensus.Data
 
         public List<BankCodeModel> GetBankCodes(int bankID)
         {
-            return DC.Database.SqlQuery<BankCodeModel>(SQL_SELECT_BANK_CODE, bankID).ToList();
+            return bankID == 0
+                ? DC.Database.SqlQuery<BankCodeModel>(_SQL_SELECT_BANK_CODE_ALL).ToList()
+                : DC.Database.SqlQuery<BankCodeModel>(SQL_SELECT_BANK_CODE, bankID).ToList();
         }
 
         public List<SupplierModel> GetPrimarySuppliers(string personID)
@@ -71,7 +74,8 @@ namespace TradeCensus.Data
 	                    CitizenRearImage	= @p11,
 	                    PersonalTaxID		= @p12,
 	                    BankID				= @p13,
-	                    BankCodeID			= @p14
+	                    BankCodeID			= @p14,
+                        AccountNumber       = @p15
                     WHERE 
 	                    OutletID = @p0;",
                     outlet.ID,
@@ -88,7 +92,8 @@ namespace TradeCensus.Data
                     outlet.CitizenRearImage,
                     outlet.PersonalTaxID,
                     outlet.BankID,
-                    outlet.BankCodeID);
+                    outlet.BankCodeID,
+                    outlet.AccountNumber);
 
             if (!string.IsNullOrWhiteSpace(outlet.SupplierJson))
             {

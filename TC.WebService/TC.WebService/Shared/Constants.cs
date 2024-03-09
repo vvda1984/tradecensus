@@ -15,8 +15,7 @@
         public const int RoleAgency = 2;
         public const int RoleAgencyAudit = 3;
         public const int RoleAgencyAudit1 = 103;
-        public const int RoleAuditM = 4;
-        public const int RoleAuditM1 = 104;
+        public const int RoleAudit2 = 4;
 
         public const int StatusInitial = 0;
 
@@ -26,6 +25,10 @@
         public const int StatusAuditDeny = 13;
         public const int StatusAuditorNew = 14;
         public const int StatusAuditorAccept = 15;
+
+        // Auditor 2
+        public const int StatusAudit2Accept = 16;
+        public const int StatusAudit2Deny = 17;
 
         public const int StatusEdit = 30;
         public const int StatusExistingPost = 31;

@@ -21,6 +21,8 @@ function newOutletController($scope, $mdDialog) {
 
   $scope.R = R;
   $scope.address = addressModel;
+  $scope.masterdata = masterdata;
+
   //$scope.autoSelectedDistrict = $scope.address.districtArr && $scope.address.districtArr.length > 0;
   //$scope.autoSelectedWard = $scope.autoSelectedDistrict; // tcutils.networks.isReady() && $scope.address.wardArr && $scope.address.wardArr.length > 0;
   $scope.autoSelectedDistrict = true;
@@ -249,6 +251,66 @@ function newOutletController($scope, $mdDialog) {
           function (err) {}
         );
       }
+    } else if (i == 11) {
+      var saveImg11Func = function (imageURI) {
+        $scope.outlet.CitizenFrontImage = imageURI;
+        getFileContentAsBase64(imageURI, function (content) {
+          $scope.outlet.CitizenFrontImage = content.replace("data:image/jpeg;base64,", "");
+          $scope.CitizenFrontURL = content;
+          try {
+            $scope.apply();
+          } catch (e) {}
+          var image = document.getElementById("outletImg11");
+          image.setAttribute("src", imageURI);
+          image.focus();
+        });
+      };
+
+      if (!isEmpty($scope.outlet.CitizenFrontImage)) {
+        openImgViewer($scope.outlet.Name, false, $scope.CitizenFrontURL, function (imageURI) {
+          log("Update CitizenFrontURL 6: " + imageURI);
+          if (imageURI != null) {
+            saveImg11Func(imageURI);
+          }
+        });
+      } else {
+        captureImage(
+          function (imageURI) {
+            saveImg11Func(imageURI);
+          },
+          function (err) {}
+        );
+      }
+    } else if (i == 12) {
+      var saveImg12Func = function (imageURI) {
+        $scope.outlet.CitizenRearImage = imageURI;
+        getFileContentAsBase64(imageURI, function (content) {
+          $scope.outlet.CitizenRearImage = content.replace("data:image/jpeg;base64,", "");
+          $scope.CitizenRearURL = content;
+          try {
+            $scope.apply();
+          } catch (e) {}
+          var image = document.getElementById("outletImg12");
+          image.setAttribute("src", imageURI);
+          image.focus();
+        });
+      };
+
+      if (!isEmpty($scope.outlet.CitizenRearImage)) {
+        openImgViewer($scope.outlet.Name, false, $scope.CitizenRearURL, function (imageURI) {
+          log("Update CitizenRearURL 6: " + imageURI);
+          if (imageURI != null) {
+            saveImg12Func(imageURI);
+          }
+        });
+      } else {
+        captureImage(
+          function (imageURI) {
+            saveImg12Func(imageURI);
+          },
+          function (err) {}
+        );
+      }
     }
   };
 
@@ -362,6 +424,21 @@ function newOutletController($scope, $mdDialog) {
 
   $scope.districtChanged = function () {
     changeDistrict();
+  };
+
+  $scope.bankChanged = function () {
+    changeBank();
+  };
+
+  $scope.addSupplier = function (i) {
+    $scope.outlet.isChanged = true;
+    $scope.outlet[`Supplier${i}Enable`] = true;
+  };
+
+  $scope.deleteSupplier = function (i) {
+    $scope.outlet.isChanged = true;
+    $scope.outlet[`Supplier${i}Enable`] = false;
+    $scope.outlet[`Supplier${i}`] = null;
   };
 
   function changeProvince(selectedProvince) {
@@ -504,6 +581,11 @@ function newOutletController($scope, $mdDialog) {
   //    }
   //    __selectedGeoProvince = selectedProvince;
   //}
+
+  function changeBank() {
+    var outlet1 = isLoaded ? $scope.outlet : outlet;
+    $scope.masterdata.loadBankCodes(outlet1.BankID, () => {});
+  }
 
   function checkDistance(callback) {
     if (isModified(orgOutlet, $scope.outlet)) {
@@ -722,7 +804,18 @@ function newOutletController($scope, $mdDialog) {
     isLoaded = true;
   }
 
+  function loadData() {
+    $scope.masterdata.loadBrands(function () {
+      $scope.masterdata.loadBanks(function () {
+        $scope.masterdata.loadSuppliers(function () {
+          $scope.masterdata.loadOtherSuppliers(() => {});
+        });
+      });
+    });
+  }
+
   loadImages();
+  loadData();
   //mapProvinceToGeoProvince();
 
   if (isCreatedNew) setOutlet();

@@ -551,14 +551,15 @@ namespace TradeCensus.Data
 
             switch (status)
             {
-                case 0:
+                case 0: // NEAR BY
                     sqlCommand += $"AND tb.AuditStatus IN ({Constants.StatusInitial}, ";
                     sqlCommand += $"{Constants.StatusPost}, {Constants.StatusAuditAccept}, {Constants.StatusAuditDeny}, {Constants.StatusAuditorAccept}, ";
                     sqlCommand += $"{Constants.StatusEdit}, {Constants.StatusExistingPost}, {Constants.StatusExistingDeny}, {Constants.StatusExistingAccept}, ";
+                    sqlCommand += $"{Constants.StatusAudit2Accept}, {Constants.StatusAudit2Deny}, ";
                     sqlCommand += $"{Constants.StatusDone}, {Constants.StatusDeny}, {Constants.StatusRevert}) ";
                     sqlCommand += $" OR ((tb.AuditStatus = {Constants.StatusNew} OR tb.AuditStatus = {Constants.StatusAuditorNew}) AND tb.PersonID = {personID})";
                     break;
-                case 1:
+                case 1: // NEW
                     if (auditor)
                     {
                         sqlCommand += $"AND ((tb.AuditStatus = {Constants.StatusAuditorNew} AND tb.PersonID = {personID}) OR tb.AuditStatus IN ({Constants.StatusPost}, {Constants.StatusAuditAccept}, {Constants.StatusAuditDeny}, {Constants.StatusAuditorAccept}))";
@@ -568,7 +569,7 @@ namespace TradeCensus.Data
                         sqlCommand += $"AND tb.AuditStatus IN ({Constants.StatusNew}, {Constants.StatusPost}, {Constants.StatusAuditAccept}, {Constants.StatusAuditDeny}, {Constants.StatusAuditorAccept})";
                     }
                     break;
-                case 2:
+                case 2: // UPDATED
                     if (auditor)
                     {
                         sqlCommand += $"AND tb.AuditStatus = {Constants.StatusExistingPost} AND tb.PersonID <> {personID}";
@@ -578,10 +579,10 @@ namespace TradeCensus.Data
                         sqlCommand += $"AND tb.AmendBy = {personID} AND tb.AuditStatus IN ({Constants.StatusEdit}, {Constants.StatusExistingPost}, {Constants.StatusExistingAccept}, {Constants.StatusExistingDeny})";
                     }
                     break;
-                case 3:
+                case 3: // AUDITTED
                     sqlCommand += $"AND tb.AmendBy = {personID} AND tb.AuditStatus IN ({Constants.StatusAuditAccept}, {Constants.StatusAuditDeny}, {Constants.StatusExistingAccept}, {Constants.StatusExistingDeny}, {Constants.StatusAuditorAccept})";
                     break;
-                default:
+                default: // MY OUTLET
                     if (auditor)
                     {
                         sqlCommand += $"AND tb.PersonID = {personID} AND tb.AuditStatus IN ({Constants.StatusAuditorNew}, {Constants.StatusAuditorAccept})";
@@ -635,6 +636,7 @@ namespace TradeCensus.Data
             SQL_QUERY += $"AND (o.AuditStatus IN ({Constants.StatusInitial}, ";
             SQL_QUERY += $"{Constants.StatusPost}, {Constants.StatusAuditAccept}, {Constants.StatusAuditDeny}, {Constants.StatusAuditorAccept}, ";
             SQL_QUERY += $"{Constants.StatusEdit}, {Constants.StatusExistingPost}, {Constants.StatusExistingDeny}, {Constants.StatusExistingAccept}, ";
+            SQL_QUERY += $"{Constants.StatusAudit2Accept}, {Constants.StatusAudit2Deny}, ";
             SQL_QUERY += $"{Constants.StatusDone}, {Constants.StatusDeny}, {Constants.StatusRevert}) ";
             SQL_QUERY += $" OR ((o.AuditStatus = {Constants.StatusNew} OR o.AuditStatus = {Constants.StatusAuditorNew}) AND o.PersonID = {personID}))";
 

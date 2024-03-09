@@ -113,16 +113,53 @@ function newOutlet(provinceName) {
     BusinessOwner: "",
     PaymentInformation: "1",
     Beneficiary: "",
-    CitizenID: "CitizenID",
+    CitizenID: "",
     CitizenFrontImage: "",
+    CitizenFrontURL: "",
+    ModifiedCitizenFrontImage: false,
     CitizenRearImage: "",
+    CitizenRearURL: "",
+    ModifiedCitizenRearImage: false,
     PersonalTaxID: "",
+    AccountNumber: "",
+    BankName: "", // bank acccount
     BankID: 0,
-    BankName: "",
     BankCodeID: "",
     BankCode: "",
     SupplierJson: "[]",
+    Supplier: null, // primary
+    Supplier1: null,
+    Supplier1Enable: false,
+    Supplier2: null,
+    Supplier2Enable: false,
+    Supplier3: null,
+    Supplier3Enable: false,
+    Supplier4: null,
+    Supplier4Enable: false,
+    Supplier5: null,
+    Supplier5Enable: false,
+    Supplier6: null,
+    Supplier2Enable: false,
+    Supplier7: null,
+    Supplier7Enable: false,
+    Supplier8: null,
+    Supplier8Enable: false,
+    Supplier9: null,
+    Supplier9Enable: false,
   };
+}
+
+function formatOutlet(outlet) {
+  const suppliers = [];
+  if (outlet.Supplier) {
+    suppliers.push({ primarySupplier: "1", supplierID: outlet.Supplier });
+  }
+  for (var i = 1; i <= 10; i++) {
+    if (outlet[`Supplier${i}Enable`]) {
+      suppliers.push({ primarySupplier: "0", supplierID: outlet[`Supplier${i}`] });
+    }
+  }
+  outlet.SupplierJson = JSON.stringify(suppliers);
 }
 
 function initializeOutlet(outlet) {
@@ -260,6 +297,34 @@ function initializeOutlet(outlet) {
       outlet.canApprove = false;
       outlet.canRevise = false;
     }
+  }
+
+  if (outlet.SupplierJson) {
+    try {
+      const suppliers = JSON.parse(outlet.SupplierJson);
+      var otherSupplierIndex = 1;
+      for (var i = 0; i < suppliers.length; i++) {
+        if (suppliers[i].primarySupplier == "1") {
+          outlet.Supplier = suppliers[i].supplierID;
+        } else {
+          outlet[`Supplier${otherSupplierIndex}`] = suppliers[i].supplierID;
+          outlet[`Supplier${otherSupplierIndex}Enable`] = true;
+          otherSupplierIndex++;
+        }
+      }
+    } catch (e) {}
+  }
+
+  if (outlet.LegalInformation == null || outlet.LegalInformation == undefined) {
+    if (outlet.LegalName) {
+      outlet.LegalInformation = "1";
+    } else {
+      outlet.LegalInformation = "0";
+    }
+  }
+
+  if (outlet.PaymentInformation == null || outlet.PaymentInformation == undefined) {
+    outlet.PaymentInformation = "0";
   }
 }
 
@@ -535,6 +600,8 @@ var OUTLET = {
 
   // Main Save Outlet
   saveOutlet: function (nghttp, outlet, action, state, callback) {
+    formatOutlet(outlet);
+
     dialogUtils.showClosableDlg(R.save_outlet, R.please_wait, function (hideLoadingFunc, isCancelledFunc) {
       try {
         var __onComplete = function () {

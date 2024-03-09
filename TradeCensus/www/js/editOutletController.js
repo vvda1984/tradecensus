@@ -23,6 +23,7 @@ function editOutletController($scope, $mdDialog, $timeout) {
   $scope.isSaler = !user.hasAuditRole;
   $scope.outlet.isChanged = false;
   $scope.showImage4 = config.enable_check_in > 0;
+  $scope.masterdata = masterdata;
 
   var title = $scope.outlet.Name;
   if ($scope.outlet.ID != 60000000) {
@@ -68,7 +69,8 @@ function editOutletController($scope, $mdDialog, $timeout) {
     if ($scope.outlet.AuditStatus == StatusAuditAccept || $scope.outlet.AuditStatus == StatusAuditDeny || $scope.outlet.AuditStatus == StatusDone) {
       setViewOnly(); // Outlet is DONE => VIEW only
     } else {
-      $scope.needAudit = user.hasAuditRole && $scope.outlet.AuditStatus == StatusPost && $scope.outlet.PersonID != user.id;
+      $scope.needAudit =
+        user.hasAuditRole && ($scope.outlet.AuditStatus == StatusPost || $scope.outlet.AuditStatus1) && $scope.outlet.PersonID != user.id;
       if (user.hasAuditRole && $scope.outlet.PersonID != userID) {
         $scope.viewSave = false;
         $scope.viewApprove = true;
@@ -166,6 +168,7 @@ function editOutletController($scope, $mdDialog, $timeout) {
     $scope.disableCallrate = false; // !$scope.enableExtraFields;
     $scope.disableLegalName = false; // !$scope.enableExtraFields;
     $scope.disableTaxID = false; // !$scope.enableExtraFields;
+    $scope.disableFields2 = false; // !$scope.enableExtraFields;
   } else {
     var canOpenCloseOrTrack = $scope.canChangeOpenClose || $scope.canChangeTrackNonTrack;
     $scope.disableClass = isViewOnly || !canOpenCloseOrTrack;
@@ -173,6 +176,7 @@ function editOutletController($scope, $mdDialog, $timeout) {
     $scope.disableCallrate = isViewOnly || !canOpenCloseOrTrack;
     $scope.disableLegalName = isViewOnly || !canOpenCloseOrTrack;
     $scope.disableTaxID = isViewOnly || !canOpenCloseOrTrack;
+    $scope.disableFields2 = isViewOnly || !canOpenCloseOrTrack;
   }
 
   var allowCapture = $scope.allowCapture;
@@ -193,6 +197,8 @@ function editOutletController($scope, $mdDialog, $timeout) {
   $scope.image4URL = getImageURL($scope.outlet.StringImage4);
   $scope.image5URL = getImageURL($scope.outlet.StringImage5);
   $scope.image6URL = getImageURL($scope.outlet.StringImage6);
+  $scope.image11URL = getImageURL($scope.outlet.CitizenFrontURL);
+  $scope.image12URL = getImageURL($scope.outlet.CitizenRearURL);
 
   var orgOutlet = cloneObj($scope.outlet);
   try {
@@ -385,6 +391,68 @@ function editOutletController($scope, $mdDialog, $timeout) {
           function (err) {}
         );
       }
+    } else if (i == 11) {
+      var saveImg11Func = function (imageURI) {
+        $scope.outlet.CitizenFrontImage = imageURI;
+        $scope.outlet.ModifiedCitizenFrontImage = true;
+        getFileContentAsBase64(imageURI, function (content) {
+          $scope.outlet.CitizenFrontImage = content.replace("data:image/jpeg;base64,", "");
+          $scope.CitizenFrontURL = content;
+          try {
+            $scope.apply();
+          } catch (e) {}
+          var image = document.getElementById("outletImg11");
+          image.setAttribute("src", imageURI);
+          image.focus();
+        });
+      };
+
+      if (!isEmpty($scope.outlet.CitizenFrontImage)) {
+        openImgViewer($scope.outlet.Name, false, $scope.CitizenFrontURL, function (imageURI) {
+          log("Update CitizenFrontURL 6: " + imageURI);
+          if (imageURI != null) {
+            saveImg11Func(imageURI);
+          }
+        });
+      } else {
+        captureImage(
+          function (imageURI) {
+            saveImg11Func(imageURI);
+          },
+          function (err) {}
+        );
+      }
+    } else if (i == 12) {
+      var saveImg12Func = function (imageURI) {
+        $scope.outlet.CitizenRearImage = imageURI;
+        $scope.outlet.ModifiedCitizenRearImage = true;
+        getFileContentAsBase64(imageURI, function (content) {
+          $scope.outlet.CitizenRearImage = content.replace("data:image/jpeg;base64,", "");
+          $scope.CitizenRearURL = content;
+          try {
+            $scope.apply();
+          } catch (e) {}
+          var image = document.getElementById("outletImg12");
+          image.setAttribute("src", imageURI);
+          image.focus();
+        });
+      };
+
+      if (!isEmpty($scope.outlet.CitizenRearImage)) {
+        openImgViewer($scope.outlet.Name, false, $scope.CitizenRearURL, function (imageURI) {
+          log("Update CitizenRearURL 6: " + imageURI);
+          if (imageURI != null) {
+            saveImg12Func(imageURI);
+          }
+        });
+      } else {
+        captureImage(
+          function (imageURI) {
+            saveImg12Func(imageURI);
+          },
+          function (err) {}
+        );
+      }
     }
   };
 
@@ -510,6 +578,16 @@ function editOutletController($scope, $mdDialog, $timeout) {
       $scope.outlet.isChanged = true;
       hideDialog(true);
     });
+  };
+
+  $scope.bankChanged = function () {
+    changeBank();
+  };
+
+  $scope.deleteSupplier = function (i) {
+    $scope.outlet.isChanged = true;
+    $scope.outlet[`Supplier${i}Enable`] = false;
+    $scope.outlet[`Supplier${i}`] = null;
   };
 
   function validateRange(lat, lng) {
@@ -667,4 +745,21 @@ function editOutletController($scope, $mdDialog, $timeout) {
       }
     }
   }
+
+  function changeBank() {
+    var outlet1 = $scope.outlet;
+    $scope.masterdata.loadBankCodes(outlet1.BankID, () => {});
+  }
+
+  function loadData() {
+    $scope.masterdata.loadBrands(function () {
+      $scope.masterdata.loadBanks(function () {
+        $scope.masterdata.loadSuppliers(function () {
+          $scope.masterdata.loadOtherSuppliers(() => {});
+        });
+      });
+    });
+  }
+
+  loadData();
 }

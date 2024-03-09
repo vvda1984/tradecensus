@@ -51,5 +51,8 @@ namespace TradeCensus
         public bool IsDSM { get; set; }
         [DataMember]
         public string Token { get; set; }
+
+        [DataMember]
+        public bool IsAuditor2 { get; set; }
     }
 }

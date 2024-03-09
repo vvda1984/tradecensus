@@ -8,18 +8,7 @@
   </md-toolbar>
   <md-content layout-padding="" class="popup-content" style="margin-bottom: -8px">
     <form name="userForm" style="margin-bottom: 0px">
-      <div layout-gt-sm="row" style="margin-top: 5px" ng-show="enableExtraFields">
-        <md-input-container class="md-block" flex-gt-sm="">
-          <label>{{R.legal_name}}</label>
-          <input ng-model="outlet.LegalName" name="LegalName" maxlength="50" ng-disabled="disableLegalName" />
-        </md-input-container>
-        <md-input-container class="md-block" flex-gt-sm="">
-          <label>{{R.vat}}</label>
-          <input ng-model="outlet.TaxID" name="vat" maxlength="40" ng-disabled="disableTaxID" />
-        </md-input-container>
-      </div>
-
-      <div layout-gt-sm="row" style="margin-top: -12px">
+      <div layout-gt-sm="row" style="margin-top: 4px">
         <md-input-container class="md-block" flex-gt-sm="">
           <label>{{R.address}}</label>
           <input ng-model="outlet.FullAddress" disabled />
@@ -33,6 +22,27 @@
         <md-input-container class="md-block">
           <label>{{R.outlet_type}}</label>
           <input ng-model="outlet.OutletTypeName" disabled />
+        </md-input-container>
+      </div>
+
+      <div layout-gt-sm="row" style="margin-top: -26px; height: 60px">
+        <md-input-container class="md-block" flex-gt-sm="">
+          <label>Visit Frequency</label>
+          <md-select id="visitFrequency" ng-model="outlet.VisitFrequency" disabled>
+            <md-option ng-repeat="b in masterdata.visitFrequencyArr" value="{{b.value}}"> {{b.caption}} </md-option>
+          </md-select>
+        </md-input-container>
+        <md-input-container class="md-block" flex-gt-sm="">
+          <label>Preferred Visit Week</label>
+          <md-select id="preferredVisitWeek" ng-model="outlet.PreferredVisitWeek" disabled>
+            <md-option ng-repeat="b in masterdata.preferredVisitWeekArr" value="{{b.value}}"> {{b.caption}} </md-option>
+          </md-select>
+        </md-input-container>
+        <md-input-container class="md-block" flex-gt-sm="">
+          <label>Preferred Visit Day</label>
+          <md-select id="preferredVisitDay" ng-model="outlet.PreferredVisitDay" disabled>
+            <md-option ng-repeat="b in masterdata.preferredVisitDayArr" value="{{b.value}}"> {{b.caption}} </md-option>
+          </md-select>
         </md-input-container>
       </div>
 
@@ -72,6 +82,156 @@
             {{outlet.IsTracked ? R.tracking : R.non_tracking}}
           </md-checkbox>
         </div>
+      </div>
+
+      <div layout-gt-sm="row" style="margin-top: 4px; height: 60px">
+        <md-input-container class="md-block" flex-gt-sm="">
+          <label>Legal Information</label>
+          <md-select id="legalInformation" ng-model="outlet.LegalInformation" ng-disabled="disableFields2">
+            <md-option ng-repeat="b in masterdata.booleanArr" value="{{b.value}}"> {{b.caption}} </md-option>
+          </md-select>
+        </md-input-container>
+        <md-input-container class="md-block" flex-gt-sm="" ng-show="outlet.LegalInformation == '0'"> </md-input-container>
+        <md-input-container class="md-block" flex-gt-sm="" ng-show="outlet.LegalInformation == '0'"> </md-input-container>
+        <md-input-container class="md-block" flex-gt-sm="" ng-show="outlet.LegalInformation == '0'"> </md-input-container>
+
+        <md-input-container class="md-block" flex-gt-sm="" ng-show="outlet.LegalInformation == '1'">
+          <label>{{R.legal_name}}</label>
+          <input ng-model="outlet.LegalName" name="LegalName" maxlength="50" ng-disabled="disableFields2" />
+        </md-input-container>
+        <md-input-container class="md-block" flex-gt-sm="" ng-show="outlet.LegalInformation == '1'">
+          <label>{{R.vat}}</label>
+          <input ng-model="outlet.TaxID" name="vat" maxlength="40" ng-disabled="disableFields2" />
+        </md-input-container>
+        <md-input-container class="md-block" flex-gt-sm="" ng-show="outlet.LegalInformation == '1'">
+          <label>Business Owner</label>
+          <input ng-model="outlet.BusinessOwner" name="BusinessOwner" maxlength="40" required="" ng-disabled="disableFields2" />
+        </md-input-container>
+      </div>
+
+      <div layout-gt-sm="row" style="margin-top: 4px; height: 60px">
+        <md-input-container class="md-block" flex-gt-sm="">
+          <label>Payment Information</label>
+          <md-select id="paymentInformation" ng-model="outlet.PaymentInformation" ng-disabled="disableFields2">
+            <md-option ng-repeat="b in masterdata.booleanArr" value="{{b.value}}"> {{b.caption}} </md-option>
+          </md-select>
+        </md-input-container>
+        <md-input-container class="md-block" flex-gt-sm="" ng-show="outlet.PaymentInformation == '0'"> </md-input-container>
+        <md-input-container class="md-block" flex-gt-sm="" ng-show="outlet.PaymentInformation == '0'"> </md-input-container>
+
+        <md-input-container class="md-block" flex-gt-sm="" ng-show="outlet.PaymentInformation == '1'">
+          <label>Beneficiary</label>
+          <input ng-model="outlet.Beneficiary" name="Beneficiary" maxlength="100" required="" ng-disabled="disableFields2" />
+        </md-input-container>
+        <md-input-container class="md-block" flex-gt-sm="" ng-show="outlet.PaymentInformation == '1'">
+          <label>Personal Tax ID</label>
+          <input ng-model="outlet.PersonalTaxID" name="PersonalTaxID" maxlength="100" required="" ng-disabled="disableFields2" />
+        </md-input-container>
+      </div>
+      <div layout-gt-sm="row" style="margin-top: 4px; height: 60px" ng-show="outlet.PaymentInformation == '1'">
+        <md-input-container class="md-block" flex-gt-sm="">
+          <label>Account Number</label>
+          <input ng-model="outlet.AccountNumber" name="AccountNumber" maxlength="100" required="" ng-disabled="disableFields2" />
+        </md-input-container>
+        <md-input-container class="md-block" flex-gt-sm="">
+          <label>Bank Name</label>
+          <md-select id="inputBank" ng-model="outlet.BankID" ng-change="bankChanged()" ng-disabled="disableFields2">
+            <md-option ng-repeat="p in masterdata.bankArr" ng-value="p.id"> {{p.name}} </md-option>
+          </md-select>
+        </md-input-container>
+        <md-input-container class="md-block" flex-gt-sm="">
+          <label>Bank Code</label>
+          <md-select id="inputBankCode" ng-model="outlet.BankCodeID" ng-disabled="disableFields2">
+            <md-option ng-repeat="p in masterdata.currBankcodeArr" ng-value="p.id"> {{p.code}} </md-option>
+          </md-select>
+        </md-input-container>
+      </div>
+
+      <div layout-gt-sm="row" style="margin-bottom: 20px; margin-top: 0px" ng-show="outlet.PaymentInformation == '1'">
+        <table class="image-table">
+          <tr>
+            <td></td>
+            <td>Citizen Front Image</td>
+            <td>Citizen Rear Image</td>
+          </tr>
+          <tr>
+            <td>
+              <md-input-container class="md-block" flex-gt-sm="">
+                <label>Citizen ID</label>
+                <input ng-model="outlet.CitizenID" name="CitizenID" maxlength="100" required="" ng-disabled="disableFields2" />
+              </md-input-container>
+            </td>
+            <td>
+              <div class="image-frame-s" ng-click="capture(11);">
+                <img id="outletImg11" src="{{image11URL}}" />
+              </div>
+            </td>
+            <td>
+              <div class="image-frame-s" ng-click="capture(12);">
+                <img id="outletImg12" src="{{image12URL}}" />
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div layout-gt-sm="row" style="margin-top: 4px; height: 60px">
+        <md-input-container class="md-block" flex-gt-sm="" ng-show="outlet.LegalInformation == '1'">
+          <label>Primary Supplier</label>
+          <md-select id="Supplier" ng-model="outlet.Supplier" ng-disabled="disableFields2">
+            <md-option ng-repeat="b in masterdata.primarySupplierArr" value="{{b.supplierID}}"> {{b.supplierName}} </md-option>
+          </md-select>
+        </md-input-container>
+        <md-input-container class="md-block" flex-gt-sm="" style="margin-top: -12px !important" ng-show="!disableFields2">
+          <md-button class="md-raised" ng-show="!outlet.Supplier1Enable" ng-click="addSupplier(1)">Add</md-button>
+        </md-input-container>
+      </div>
+      <div layout-gt-sm="row" style="margin-top: 4px; height: 60px" ng-show="outlet.Supplier1Enable">
+        <md-input-container class="md-block" flex-gt-sm="">
+          <label>Other Supplier</label>
+          <md-select id="Supplier1" ng-model="outlet.Supplier1" ng-disabled="disableFields2">
+            <md-option ng-repeat="b in masterdata.otherSupplierArr" value="{{b.supplierID}}"> {{b.supplierName}} </md-option>
+          </md-select>
+        </md-input-container>
+        <md-input-container class="md-block" flex-gt-sm="" style="margin-top: -12px !important" ng-show="!disableFields2">
+          <md-button class="md-raised" ng-click="deleteSupplier(1)">Delete</md-button>
+          <md-button class="md-raised" ng-click="addSupplier(2)" ng-show="!outlet.Supplier2Enable">Add</md-button>
+        </md-input-container>
+      </div>
+      <div layout-gt-sm="row" style="margin-top: 4px; height: 60px" ng-show="outlet.Supplier2Enable">
+        <md-input-container class="md-block" flex-gt-sm="">
+          <label>Other Supplier</label>
+          <md-select id="Supplier2" ng-model="outlet.Supplier2" ng-disabled="disableFields2">
+            <md-option ng-repeat="b in masterdata.otherSupplierArr" value="{{b.supplierID}}"> {{b.supplierName}} </md-option>
+          </md-select>
+        </md-input-container>
+        <md-input-container class="md-block" flex-gt-sm="" style="margin-top: -12px !important" ng-show="!disableFields2">
+          <md-button class="md-raised" ng-click="deleteSupplier(2)">Delete</md-button>
+          <md-button class="md-raised" ng-click="addSupplier(3)" ng-show="!outlet.Supplier3Enable">Add</md-button>
+        </md-input-container>
+      </div>
+      <div layout-gt-sm="row" style="margin-top: 4px; height: 60px" ng-show="outlet.Supplier3Enable">
+        <md-input-container class="md-block" flex-gt-sm="">
+          <label>Other Supplier</label>
+          <md-select id="Supplier3" ng-model="outlet.Supplier3" ng-disabled="disableFields2">
+            <md-option ng-repeat="b in masterdata.otherSupplierArr" value="{{b.supplierID}}"> {{b.supplierName}} </md-option>
+          </md-select>
+        </md-input-container>
+        <md-input-container class="md-block" flex-gt-sm="" style="margin-top: -12px !important" ng-show="!disableFields2">
+          <md-button class="md-raised" ng-click="deleteSupplier(3)">Delete</md-button>
+          <md-button class="md-raised" ng-click="addSupplier(4)" ng-show="!outlet.Supplier4Enable">Add</md-button>
+        </md-input-container>
+      </div>
+      <div layout-gt-sm="row" style="margin-top: 4px; height: 60px" ng-show="outlet.Supplier4Enable">
+        <md-input-container class="md-block" flex-gt-sm="">
+          <label>Other Supplier</label>
+          <md-select id="Supplier4" ng-model="outlet.Supplier3" ng-disabled="disableFields2">
+            <md-option ng-repeat="b in masterdata.otherSupplierArr" value="{{b.supplierID}}"> {{b.supplierName}} </md-option>
+          </md-select>
+        </md-input-container>
+        <md-input-container class="md-block" flex-gt-sm="" style="margin-top: -12px !important" ng-show="!disableFields2">
+          <!-- <md-button class="md-raised" ng-click="addSupplier(5)" ng-show="!outlet.Supplier5Enable">Add</md-button> -->
+          <md-button class="md-raised" ng-click="deleteSupplier(4)">Delete</md-button>
+        </md-input-container>
       </div>
 
       <div layout-gt-sm="row" style="margin-top: 0px">
