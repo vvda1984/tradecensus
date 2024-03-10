@@ -11,11 +11,13 @@
 
         //SR/DSM -> SS (auditor 1) -> ASM (auditor 2)
         public const int RoleAudit = 1;
-        public const int RoleAudit1 = 101;
+        public const int RoleAudit1 = 101; 
         public const int RoleAgency = 2;
         public const int RoleAgencyAudit = 3;
         public const int RoleAgencyAudit1 = 103;
-        public const int RoleAudit2 = 4;
+
+        public const int AuditorRoleSS = 1;
+        public const int AuditorRoleASM = 2;
 
         public const int StatusInitial = 0;
 
@@ -24,11 +26,7 @@
         public const int StatusAuditAccept = 12;
         public const int StatusAuditDeny = 13;
         public const int StatusAuditorNew = 14;
-        public const int StatusAuditorAccept = 15;
-
-        // Auditor 2
-        public const int StatusAudit2Accept = 16;
-        public const int StatusAudit2Deny = 17;
+        public const int StatusAuditorAccept = 15; // not use
 
         public const int StatusEdit = 30;
         public const int StatusExistingPost = 31;

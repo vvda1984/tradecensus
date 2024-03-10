@@ -33,10 +33,9 @@ namespace TradeCensus.Shared
             }
         }
 
-        protected void ValidatePerson(int personID, string password, bool mustAuditor = false)
+        protected PersonRoleModel ValidatePerson(int personID, string password, bool mustAuditor = false)
         {
-            if (GetAppSetting("enableValidation", false) == true)
-                DC.ValidatePerson(personID, password, mustAuditor);
+            return DC.ValidatePerson(personID, password, mustAuditor, GetAppSetting("enableValidation", false));
         }
 
         protected void Log(string message)

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime;
 using TradeCensus.Shared;
 
 namespace TradeCensus.Data
@@ -14,12 +15,19 @@ namespace TradeCensus.Data
         const string _SQL_SELECT_PRIMARY_SUPPLIER = "SELECT distinct '1' as PrimarySupplier, s.ID as SupplierID, s.Name + ' - ' + CONCAT_WS( ', ',s.AddLine, s.AddLine2, s.Ward, s.District, c.Name ) as SupplierName FROM vwPrimarySupplier s WITH (NOLOCK) JOIN Province c WITH (NOLOCK) on c.ID = s.ProvinceID LEFT JOIN Person p WITH (NOLOCK) ON p.ZoneID = s.ZoneID WHERE p.ID is null or p.ID = @p0 order by SupplierName";
         const string _SQL_SELECT_OTHER_SUPPLIER = "SELECT distinct '0' as PrimarySupplier, s.ID as SupplierID, s.Name + ' - ' + CONCAT_WS( ', ',s.AddLine, s.AddLine2, s.Ward, s.District, c.Name ) as SupplierName FROM vwOtherSupplier s WITH (NOLOCK) JOIN Province c WITH (NOLOCK) on c.ID = s.ProvinceID LEFT JOIN Person p WITH (NOLOCK) ON p.ZoneID = s.ZoneID WHERE p.ID is null or p.ID = @p0 order by SupplierName";
         const string _SQL_SELECT_USER_NEXT_ROLE = "SELECT r.Role, p.* FROM PersonRole r WITH (NOLOCK) JOIN Person p WITH (NOLOCK) ON p.ID = r.PersonID LEFT JOIN ( SELECT  r.Role as CurrentRole FROM PersonRole r WHERE PersonID = @p0 ) c on 1 = 1 WHERE 1 = CASE WHEN c.CurrentRole = 0 AND r.Role in ( 1, 101 ) THEN 1 WHEN c.CurrentRole = 2 AND r.Role in ( 3, 103) THEN 1 WHEN c.CurrentRole IN ( 1, 101, 3, 103 ) AND r.Role in ( 4, 104) THEN 1 ELSE 0 END";
+        const string _SQL_SELECT_PERSON_BY_ID = "select * from Person where Id = @p0";
+        const string _SQL_SELECT_PERSON_SS = "select * from [dbo].[vwPersonSS]";
+        const string _SQL_SELECT_PERSON_ASM = "select * from [dbo].[vwPersonASM]";
+
 
         static string SQL_SELECT_LEAD_BRAND { get { return Utils.GetCustomSQL("SQL_SELECT_LEADBRAND", _SQL_SELECT_LEAD_BRAND); } }
         static string SQL_SELECT_BANK { get { return Utils.GetCustomSQL("SQL_SELECT_BANK", _SQL_SELECT_BANK); } }
         static string SQL_SELECT_BANK_CODE { get { return Utils.GetCustomSQL("SQL_SELECT_BANK_CODE", _SQL_SELECT_BANK_CODE); } }
-        static string SQL_SELECT_PRIMARY_SUPPLIER { get { return Utils.GetCustomSQL("_SQL_SELECT_PRIMARY_SUPPLIER", _SQL_SELECT_PRIMARY_SUPPLIER); } }
-        static string SQL_SELECT_OTHER_SUPPLIER { get { return Utils.GetCustomSQL("_SQL_SELECT_OTHER_SUPPLIER", _SQL_SELECT_OTHER_SUPPLIER); } }
+        static string SQL_SELECT_PRIMARY_SUPPLIER { get { return Utils.GetCustomSQL("SQL_SELECT_PRIMARY_SUPPLIER", _SQL_SELECT_PRIMARY_SUPPLIER); } }
+        static string SQL_SELECT_OTHER_SUPPLIER { get { return Utils.GetCustomSQL("SQL_SELECT_OTHER_SUPPLIER", _SQL_SELECT_OTHER_SUPPLIER); } }
+        static string SQL_SELECT_PERSON_BY_ID { get { return Utils.GetCustomSQL("SQL_SELECT_PERSON_BY_ID", _SQL_SELECT_PERSON_BY_ID); } }
+        static string SQL_SELECT_PERSON_SS { get { return Utils.GetCustomSQL("SQL_SELECT_PERSON_SS", _SQL_SELECT_PERSON_SS); } }
+        static string SQL_SELECT_PERSON_ASM { get { return Utils.GetCustomSQL("SQL_SELECT_PERSON_ASM", _SQL_SELECT_PERSON_ASM); } }
 
         public List<UserModel> GetPersonsoOfNextRoles(int personID)
         {
@@ -156,9 +164,43 @@ namespace TradeCensus.Data
             }
         }
 
+        static readonly List<ServerConfig> Settings = new List<ServerConfig>();
+        static readonly object _lockSetting = new object();
+
         public List<ServerConfig> GetServerConfig()
         {
-            return DC.Database.SqlQuery<ServerConfig>("select * from ServerConfig").ToList();
+            lock (_lockSetting)
+            {
+                if (Settings.Count == 0)
+                {
+                    var ss = DC.Database.SqlQuery<ServerConfig>("select * from ServerConfig").ToList();
+                    if (ss.Any())
+                        Settings.AddRange(ss);
+                }
+
+                return Settings;
+            }
+        }
+
+        public string GetServerConfigValue(string name, string defaultValue)
+        {
+            var ss = GetServerConfig().Find(x => string.Compare(name, x.Name, StringComparison.OrdinalIgnoreCase) == 0);
+            return ss != null ? ss.Value : defaultValue;
+        }
+
+        public Person GetPerson(string personID)
+        {
+            return DC.Database.SqlQuery<Person>(SQL_SELECT_PERSON_BY_ID, personID).FirstOrDefault();
+        }
+
+        public List<Person> GetPersonSS()
+        {
+            return DC.Database.SqlQuery<Person>(SQL_SELECT_PERSON_SS).ToList();
+        }
+
+        public List<Person> GetPersonASM()
+        {
+            return DC.Database.SqlQuery<Person>(SQL_SELECT_PERSON_ASM).ToList();
         }
     }
 }

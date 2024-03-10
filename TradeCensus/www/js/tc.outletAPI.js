@@ -1,25 +1,25 @@
 ﻿/// <reference path="tc.databaseAPI.js" />
 /// <reference path="tc.utils.js" />
 
-var StatusInitial = 0;
+var StatusInitial = 0; // not directlly set
 
 var StatusNew = 10;
 var StatusPost = 11;
 var StatusAuditAccept = 12;
 var StatusAuditDeny = 13;
 var StatusAuditorNew = 14;
-var StatusAuditorAccept = 15;
+var StatusAuditorAccept = 15; // in home left panel --> disabled 
 
 var StatusEdit = 30;
 var StatusExitingPost = 31;
 var StatusExitingAccept = 32;
 var StatusExitingDeny = 33;
 
-var StatusDone = 40;
+var StatusDone = 40; // not directlly set
 var StatusExternalSystem = 50;
 
 var StatusDelete = 100;
-var StatusDeny = 101;
+var StatusDeny = 101; // not use
 var StatusRevert = 102;
 
 var nearByOutlets = [];

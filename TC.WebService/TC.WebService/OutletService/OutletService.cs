@@ -148,7 +148,7 @@ namespace TradeCensus
             };
         }
 
-        private Tuple<int, string> InsertOrUpdateOutlet(OutletModel outlet)
+        private Tuple<int, string> InsertOrUpdateOutlet(PersonRoleModel person, OutletModel outlet)
         {
             if (outlet.AuditStatus == Constants.StatusDelete)
             {
@@ -156,6 +156,9 @@ namespace TradeCensus
                 DC.DeleteOutlet(outlet.ID);
                 return new Tuple<int, string>(outlet.ID, outlet.PRowID);
             }
+
+            var auditStatus = outlet.AuditStatus;
+            var lastAmendBy = 0;
             Outlet dboutlet = DC.GetOutlet(outlet.ID, outlet.PRowID);
             if (dboutlet != null)
             {
@@ -170,8 +173,8 @@ namespace TradeCensus
                 //{
                 //    return new Tuple<int, string>(dboutlet.ID, dboutlet.PRowID.ToString());
                 //}
-
-                UpdateOutlet(outlet, dboutlet, false);
+                lastAmendBy = dboutlet.AmendBy ?? dboutlet.InputBy ?? 0;
+                UpdateOutlet(outlet, dboutlet, false, person);
             }
             else
             {
@@ -180,6 +183,7 @@ namespace TradeCensus
                     if (outlet.ID == Constants.DefaultOutletID)
                         outlet.ID = DC.GetNextOutletID(int.Parse(outlet.ProvinceID));
 
+                    lastAmendBy = outlet.InputBy;
                     outlet.AmendBy = outlet.InputBy;
                     dboutlet = new Outlet
                     {
@@ -211,7 +215,7 @@ namespace TradeCensus
                         PModifiedStatus = 0,
                     };
 
-                    UpdateOutlet(outlet, dboutlet, true);
+                    UpdateOutlet(outlet, dboutlet, true, person);
                     DC.AddNewOutlet(dboutlet);
                 }
             }
@@ -220,10 +224,12 @@ namespace TradeCensus
 
             UpdateOutletExtend(outlet);
 
+            SendNotification(lastAmendBy, person, outlet, auditStatus);
+
             return new Tuple<int, string>(dboutlet.ID, dboutlet.PRowID.ToString());
         }
 
-        private void UpdateOutlet(OutletModel outlet, Outlet dbOutlet, bool isNewOutlet)
+        private void UpdateOutlet(OutletModel outlet, Outlet dbOutlet, bool isNewOutlet, PersonRoleModel person)
         {
             dbOutlet.AreaID = outlet.AreaID;
             dbOutlet.Name = outlet.Name;
@@ -260,6 +266,8 @@ namespace TradeCensus
             dbOutlet.Latitude = outlet.Latitude;
             dbOutlet.AmendBy = outlet.AmendBy;
             dbOutlet.AmendDate = DateTime.Now;
+
+            #region Audit Status
             if (outlet.AuditStatus != 0)
             {
                 dbOutlet.AuditStatus = (byte)outlet.AuditStatus;
@@ -268,6 +276,22 @@ namespace TradeCensus
             {
                 Log($"Request outlet {outlet.ID} has audit status=0: AmendBy={dbOutlet.AmendBy}, AmendDate={dbOutlet.AmendDate}");
             }
+
+            var auditStatus = outlet.AuditStatus;
+            if (DC.GetServerConfigValue("enable_asm_approval_new_outlet", "1") == "1" && outlet.AuditStatus == Constants.StatusAuditAccept && 
+                person != null && person.IsAuditorSS)
+            {
+                outlet.AuditStatus = Constants.StatusPost;
+                dbOutlet.AuditStatus = Constants.StatusPost; 
+            }
+            //if (DC.GetServerConfigValue("enable_asm_approval_edit_outlet", "1") == "1" && outlet.AuditStatus == Constants.StatusExistingAccept &&
+            //    person != null && person.IsAuditorSS)
+            //{
+            //    outlet.AuditStatus = Constants.StatusExistingPost;
+            //    dbOutlet.AuditStatus = Constants.StatusExistingPost;
+            //}
+
+            #endregion
 
             dbOutlet.TotalVolume = outlet.TotalVolume;
             dbOutlet.VBLVolume = outlet.VBLVolume;
@@ -390,7 +414,7 @@ namespace TradeCensus
             #endregion
 
             DC.SetAuditStatusDirty(dbOutlet);
-            DC.AddHistory(outlet.AmendBy, outlet.ID, (byte)outlet.AuditStatus, ToActionName(outlet.AuditStatus));
+            DC.AddHistory(outlet.AmendBy, outlet.ID, auditStatus, ToActionName(auditStatus));
         }
 
         private void UpdateOutletExtend(OutletModel outlet)
@@ -398,68 +422,25 @@ namespace TradeCensus
             DC.InsertOrUpdateOutletExtend(outlet);           
         }
 
-        private void SendNotification(int personID)
+        private void SendNotification(int personID, PersonRoleModel person, OutletModel outlet, int auditStatus)
         {
             try
             {
-                var auditors = DC.GetPersonsoOfNextRoles(personID);
-                var auditorHasEmails = auditors.Where(x => !string.IsNullOrWhiteSpace(x.Email)).ToArray();
-                if (auditorHasEmails.Any())
+                NotificationService.Instance.Enqueue(new NotificationWob
                 {
-                    var configs = DC.GetServerConfig();
-
-                    var emailProvider = configs.Find(x => string.Equals(x.Name, "email_provider", StringComparison.OrdinalIgnoreCase));
-                    if (emailProvider == null || string.Equals(emailProvider.Value, "default", StringComparison.OrdinalIgnoreCase))
-                    {
-                        var host = configs.Find(x => string.Equals(x.Name, "email_host", StringComparison.OrdinalIgnoreCase));
-                        var port = configs.Find(x => string.Equals(x.Name, "email_port", StringComparison.OrdinalIgnoreCase));
-                        var subject = configs.Find(x => string.Equals(x.Name, "email_outlet_subject", StringComparison.OrdinalIgnoreCase));
-                        var body = configs.Find(x => string.Equals(x.Name, "email_outlet_body", StringComparison.OrdinalIgnoreCase));
-                        var sender = configs.Find(x => string.Equals(x.Name, "email_sender", StringComparison.OrdinalIgnoreCase));
-                        var senderName = configs.Find(x => string.Equals(x.Name, "email_sendername", StringComparison.OrdinalIgnoreCase));
-                        var cc = configs.Find(x => string.Equals(x.Name, "email_cc", StringComparison.OrdinalIgnoreCase));
-                        var bcc = configs.Find(x => string.Equals(x.Name, "email_bcc", StringComparison.OrdinalIgnoreCase));
-                        var ssl = configs.Find(x => string.Equals(x.Name, "email_ssl", StringComparison.OrdinalIgnoreCase));
-
-                        var smtpClient = new SmtpClient(host?.Value, int.Parse(port?.Value));
-                        if (ssl != null && (ssl.Value == "1" || ssl.Value.ToUpper() == "Y" || ssl.Value.ToUpper() == "YES" || ssl.Value.ToUpper() == "TRUE"))
-                        {
-                            smtpClient.EnableSsl = true;
-                        }
-
-                        var mail = new MailMessage();
-                        mail.Subject = subject?.Value ?? "New Outlet";
-                        mail.Body = body?.Value ?? "New Outlet has been added or updated!";
-
-                        if (!string.IsNullOrWhiteSpace(senderName?.Value))
-                            mail.Sender = new MailAddress(sender.Value, senderName.Value);
-                        else
-                            mail.Sender = new MailAddress(sender.Value);
-
-                        if (!string.IsNullOrWhiteSpace(bcc?.Value))
-                        {
-                            var emails = bcc.Value.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries);
-                            foreach (var m in emails)
-                                mail.Bcc.Add(m);
-                        }
-                        if (!string.IsNullOrWhiteSpace(cc?.Value))
-                        {
-                            var emails = cc.Value.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries);
-                            foreach (var m in emails)
-                                mail.CC.Add(m);
-                        }
-
-                        smtpClient.Send(mail);
-                    }
-                }
+                    PersonID = personID,
+                    Person = person,
+                    Outlet = outlet,
+                    AuditStatus = auditStatus
+                });
             }
             catch (Exception ex)
             {
-                _logger.Warn($"Cannot send email: {ex.ToString()}", ex);
+                _logger.Warn($"Cannot add to notification queue: {ex}", ex);
             }
         }
 
-        private DeniedException SyncOutlets(int personID, OutletModel[] outlets, List<SyncOutlet> dboutlets)
+        private DeniedException SyncOutlets(int personID, PersonRoleModel person, OutletModel[] outlets, List<SyncOutlet> dboutlets)
         {
             StringBuilder sb = new StringBuilder();
             foreach (var outlet in outlets)
@@ -467,7 +448,7 @@ namespace TradeCensus
                 try
                 {
                     outlet.AmendBy = personID;
-                    var res = InsertOrUpdateOutlet(outlet);
+                    var res = InsertOrUpdateOutlet(person, outlet);
                     dboutlets.Add(new SyncOutlet { ID = res.Item1, RowID = res.Item2 });
                 }
                 catch (DeniedException ex)
@@ -485,9 +466,6 @@ namespace TradeCensus
             }
             if (sb.Length > 0)
                 return new DeniedException(sb.ToString());
-
-            if (outlets.Any())
-                SendNotification(outlets[0].AmendBy);
 
             return null;
         }
@@ -525,7 +503,7 @@ namespace TradeCensus
 
                 resp.Items = new List<OutletModel>();
 
-                var auditor = user.Role == Constants.RoleAudit || user.Role == Constants.RoleAudit1 || user.Role == Constants.RoleAudit2 ||
+                var auditor = user.Role == Constants.RoleAudit || user.Role == Constants.RoleAudit1 || 
                               user.Role == Constants.RoleAgencyAudit || user.Role == Constants.RoleAgencyAudit1;
 
                 var query = DC.GetNearByOutlets(
@@ -555,14 +533,12 @@ namespace TradeCensus
             var resp = new SaveOutletResponse();
             try
             {
-                ValidatePerson(int.Parse(personID), password);
+                var person = ValidatePerson(int.Parse(personID), password);
                 if (!string.IsNullOrWhiteSpace(personID)) item.AmendBy = int.Parse(personID);
 
-                var res = InsertOrUpdateOutlet(item);
+                var res = InsertOrUpdateOutlet(person, item);
                 resp.ID = res.Item1;
                 resp.RowID = res.Item2;
-
-                SendNotification(item.AmendBy);
             }
             catch (Exception ex)
             {
@@ -613,10 +589,10 @@ namespace TradeCensus
             var resp = new SyncOutletResponse();
             try
             {
-                //System.Threading.Thread.Sleep(18 * 1000);
-                ValidatePerson(int.Parse(personID), password);
+                //System.Threading.Thread.Sleep(18 * 1000)
+                var person = ValidatePerson(int.Parse(personID), password);
                 List<SyncOutlet> dboutlets = new List<SyncOutlet>();
-                var error = SyncOutlets(int.Parse(personID), outlets, dboutlets);
+                var error = SyncOutlets(int.Parse(personID), person, outlets, dboutlets);
                 resp.Outlets = dboutlets;
                 if (error != null)
                 {

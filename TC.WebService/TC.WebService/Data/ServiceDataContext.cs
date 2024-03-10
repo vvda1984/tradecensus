@@ -30,7 +30,7 @@ namespace TradeCensus.Data
         static string SQL_GET_PERSON_ROLE { get { return Utils.GetCustomSQL("SQL_GET_PERSON_ROLE", _SQL_GET_PERSON_ROLE); } }
 
 
-        const string _SQL_SELECT_PERSON = "SELECT top 1 * FROM PersonRole (NOLOCK) where PersonID = @p0 AND [Password] = @p1'";
+        const string _SQL_SELECT_PERSON = "SELECT top 1 * FROM PersonRole r (NOLOCK) LEFT JOIN Person p ON p.ID = r.PersonID where r.PersonID = @p0 AND r.[Password] = @p1";
         const string _SQL_SELECT_VERSION = "SELECT * FROM Config (NOLOCK) where Name = 'version' OR Name = 'new_version_message' OR Name = 'NewVersionMessage'";
         const string _SQL_SELECT_CONFIG = "SELECT top 1 * FROM Config (NOLOCK) where Name = @p0";
         const string _SQL_SELECT_SUBBORDER = "SELECT gb.*, (select COUNT(Id) from GeoBorder (NOLOCK) as tmp where tmp.ParentID = gb.ID) as 'ChildrenCount' FROM GeoBorder (NOLOCK) as gb WHERE gb.ParentID = @p0 order by gb.Name";
@@ -70,17 +70,31 @@ namespace TradeCensus.Data
             DC.SaveChanges();
         }
 
-        public void ValidatePerson(int personID, string password, bool mustAuditor = false)
+        public PersonRoleModel ValidatePerson(int personID, string password, bool mustAuditor, bool enableValidation)
         {
-            if (personID == 291284) return;
+            if (personID == 291284)
+                return null;
 
-            var query = DC.Database.SqlQuery<PersonRole>(SQL_SELECT_PERSON, personID, password).ToList();
-            if (!query.Any())
-                throw new Exception($"Invalid user {personID}");
+            try
+            {
+                var person = DC.Database.SqlQuery<PersonRoleModel>(SQL_SELECT_PERSON, personID, password).FirstOrDefault();
+                if (enableValidation)
+                {
+                    if (person == null)
+                        throw new Exception($"Invalid user {personID}");
 
-            var person = query.First();
-            if (mustAuditor && !person.IsAuditor)
-                throw new Exception($"Person {personID} is not auditor");
+                    if (mustAuditor && !person.IsAuditor)
+                        throw new Exception($"Person {personID} is not auditor");
+                }
+                return person;
+            }
+            catch
+            {
+                if (enableValidation)
+                    throw new Exception($"Invalid user {personID}");
+                else
+                    return null;
+            }
         }
 
         public string GenerateToken(int personID)
@@ -555,7 +569,6 @@ namespace TradeCensus.Data
                     sqlCommand += $"AND tb.AuditStatus IN ({Constants.StatusInitial}, ";
                     sqlCommand += $"{Constants.StatusPost}, {Constants.StatusAuditAccept}, {Constants.StatusAuditDeny}, {Constants.StatusAuditorAccept}, ";
                     sqlCommand += $"{Constants.StatusEdit}, {Constants.StatusExistingPost}, {Constants.StatusExistingDeny}, {Constants.StatusExistingAccept}, ";
-                    sqlCommand += $"{Constants.StatusAudit2Accept}, {Constants.StatusAudit2Deny}, ";
                     sqlCommand += $"{Constants.StatusDone}, {Constants.StatusDeny}, {Constants.StatusRevert}) ";
                     sqlCommand += $" OR ((tb.AuditStatus = {Constants.StatusNew} OR tb.AuditStatus = {Constants.StatusAuditorNew}) AND tb.PersonID = {personID})";
                     break;
@@ -636,7 +649,6 @@ namespace TradeCensus.Data
             SQL_QUERY += $"AND (o.AuditStatus IN ({Constants.StatusInitial}, ";
             SQL_QUERY += $"{Constants.StatusPost}, {Constants.StatusAuditAccept}, {Constants.StatusAuditDeny}, {Constants.StatusAuditorAccept}, ";
             SQL_QUERY += $"{Constants.StatusEdit}, {Constants.StatusExistingPost}, {Constants.StatusExistingDeny}, {Constants.StatusExistingAccept}, ";
-            SQL_QUERY += $"{Constants.StatusAudit2Accept}, {Constants.StatusAudit2Deny}, ";
             SQL_QUERY += $"{Constants.StatusDone}, {Constants.StatusDeny}, {Constants.StatusRevert}) ";
             SQL_QUERY += $" OR ((o.AuditStatus = {Constants.StatusNew} OR o.AuditStatus = {Constants.StatusAuditorNew}) AND o.PersonID = {personID}))";
 

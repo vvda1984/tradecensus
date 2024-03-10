@@ -25,6 +25,7 @@ namespace TradeCensus
                 resolver.Register<IBorderService>(() => new BorderService());
                 resolver.Register<IJournalService>(() => new JournalService());
             });
+            NotificationService.Start();
         }
 
         protected void Session_Start(object sender, EventArgs e)
@@ -62,7 +63,14 @@ namespace TradeCensus
 
         protected void Application_End(object sender, EventArgs e)
         {
-
+            try
+            {
+                NotificationService.Instance.Stop();
+            }
+            catch
+            {
+                // do nothing
+            }
         }
     }
 }

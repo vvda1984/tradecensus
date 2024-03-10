@@ -183,6 +183,8 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BackgroundService\NotificationService.cs" />
+    <Compile Include="BackgroundService\NotificationWob.cs" />
     <Compile Include="BorderService\Model\GeoBorderExtend.cs" />
     <Compile Include="BorderService\Model\GeoZone.cs" />
     <Compile Include="BorderService\Model\PolylineBorder.cs" />
@@ -207,9 +209,10 @@
     <Compile Include="Data\ConnectionSession.cs">
       <DependentUpon>TradeCensusModel.tt</DependentUpon>
     </Compile>
+    <Compile Include="Data\Models\PersonRoleModel.cs" />
     <Compile Include="Data\Outlet.Entity.cs" />
     <Compile Include="Data\Outlet.Extented.cs" />
-    <Compile Include="Data\PersonRole.Extended.cs" />
+    <Compile Include="Data\Models\PersonRoleExtended.cs" />
     <Compile Include="Data\Province.cs">
       <DependentUpon>TradeCensusModel.tt</DependentUpon>
     </Compile>

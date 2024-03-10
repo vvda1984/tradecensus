@@ -64,7 +64,7 @@ namespace TradeCensus.Data
         public string Ward { get; set; }
         public Nullable<int> IsSent { get; set; }
         public string Comment { get; set; }
-    
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<OutletImage> OutletImages { get; set; }
     }
