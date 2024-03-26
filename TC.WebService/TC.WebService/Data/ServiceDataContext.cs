@@ -9,6 +9,7 @@ namespace TradeCensus.Data
     public sealed partial class ServiceDataContext : IDisposable
     {
         static string SQL_SELECT_PERSON { get { return Utils.GetCustomSQL("SQL_SELECT_PERSON", _SQL_SELECT_PERSON); } }
+        static string SQL_SELECT_PERSONROLE_BY_ID { get { return Utils.GetCustomSQL("SQL_SELECT_PERSON_BY_ID", _SQL_SELECT_PERSONROLE_BY_ID); } }
         static string SQL_SELECT_VERSION { get { return Utils.GetCustomSQL("SQL_SELECT_VERSION", _SQL_SELECT_VERSION); } }
         static string SQL_SELECT_CONFIG { get { return Utils.GetCustomSQL("SQL_SELECT_CONFIG", _SQL_SELECT_CONFIG); } }
         static string SQL_SELECT_SUBBORDER { get { return Utils.GetCustomSQL("SQL_SELECT_SUBBORDER", _SQL_SELECT_SUBBORDER); } }
@@ -31,6 +32,7 @@ namespace TradeCensus.Data
 
 
         const string _SQL_SELECT_PERSON = "SELECT top 1 * FROM PersonRole r (NOLOCK) LEFT JOIN Person p ON p.ID = r.PersonID where r.PersonID = @p0 AND r.[Password] = @p1";
+        const string _SQL_SELECT_PERSONROLE_BY_ID = "SELECT top 1 * FROM PersonRole r (NOLOCK) LEFT JOIN Person p ON p.ID = r.PersonID where r.PersonID = @p0";
         const string _SQL_SELECT_VERSION = "SELECT * FROM Config (NOLOCK) where Name = 'version' OR Name = 'new_version_message' OR Name = 'NewVersionMessage'";
         const string _SQL_SELECT_CONFIG = "SELECT top 1 * FROM Config (NOLOCK) where Name = @p0";
         const string _SQL_SELECT_SUBBORDER = "SELECT gb.*, (select COUNT(Id) from GeoBorder (NOLOCK) as tmp where tmp.ParentID = gb.ID) as 'ChildrenCount' FROM GeoBorder (NOLOCK) as gb WHERE gb.ParentID = @p0 order by gb.Name";
@@ -54,6 +56,8 @@ namespace TradeCensus.Data
 
         readonly tradecensusEntities DC;
 
+        public tradecensusEntities EntityDb => DC;
+
         public ServiceDataContext()
         {
             DC = new tradecensusEntities();
@@ -68,6 +72,11 @@ namespace TradeCensus.Data
         public void SaveChanges()
         {
             DC.SaveChanges();
+        }
+
+        public PersonRoleModel GetPersonRoleDetailById(int personID)
+        {
+            return DC.Database.SqlQuery<PersonRoleModel>(SQL_SELECT_PERSONROLE_BY_ID, personID).FirstOrDefault();
         }
 
         public PersonRoleModel ValidatePerson(int personID, string password, bool mustAuditor, bool enableValidation)

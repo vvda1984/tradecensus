@@ -194,6 +194,7 @@
     <Compile Include="ConfigService\Model\ServerConfig.cs" />
     <Compile Include="ConfigService\Response\CheckVersionResponse.cs" />
     <Compile Include="ConfigService\Response\DownloadMapIconsResponse.cs" />
+    <Compile Include="PersonService\Response\SendEmailResponse.cs" />
     <Compile Include="Data\Area.cs">
       <DependentUpon>TradeCensusModel.tt</DependentUpon>
     </Compile>
@@ -359,6 +360,7 @@
     <Content Include="Data\TradeCensusModel.edmx.diagram">
       <DependentUpon>TradeCensusModel.edmx</DependentUpon>
     </Content>
+    <Content Include="TestData\province.json" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

@@ -41,7 +41,7 @@
         public byte[] ImageData5 { get; set; }
 
         public byte[] ImageData6 { get; set; }
-        
+
         public int? LeadBrandID { get; set; }
 
         public string LeadBrandName { get; set; }
@@ -75,7 +75,7 @@
         public int? BankCodeID { get; set; }
 
         public string BankCode { get; set; }
-        public string AccountNumber{ get; set; }
+        public string AccountNumber { get; set; }
 
         public string SupplierJson { get; set; }
     }

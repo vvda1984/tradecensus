@@ -198,6 +198,18 @@ namespace TradeCensus
             return response;
         }
 
+        public SendEmailResponse SendEmail(string personid, string outletid, string action, string email)
+        {
+            NotificationService.Instance.Enqueue(new NoficiationAdhocWob
+            {
+                OutletID = int.Parse(outletid),
+                PersonID = int.Parse(personid),
+                AuditStatus = int.Parse(action),
+                Email = email
+            });
+            return new SendEmailResponse { };
+        }
+
         #endregion
     }
 }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Mail;
 using System.Text;
 using TradeCensus.Data;
 using TradeCensus.Shared;
@@ -88,7 +87,7 @@ namespace TradeCensus
                 BusinessOwner = outlet.BusinessOwner,
                 PaymentInformation = outlet.PaymentInformation,
                 Beneficiary = outlet.Beneficiary,
-                CitizenID = outlet.CitizenID,                
+                CitizenID = outlet.CitizenID,
                 CitizenFrontImage = outlet.CitizenFrontImage,
                 CitizenRearImage = outlet.CitizenRearImage,
                 PersonalTaxID = outlet.PersonalTaxID,
@@ -224,7 +223,7 @@ namespace TradeCensus
 
             UpdateOutletExtend(outlet);
 
-            SendNotification(lastAmendBy, person, outlet, auditStatus);
+            SendNotification(lastAmendBy, person, outlet, dboutlet, auditStatus);
 
             return new Tuple<int, string>(dboutlet.ID, dboutlet.PRowID.ToString());
         }
@@ -278,11 +277,11 @@ namespace TradeCensus
             }
 
             var auditStatus = outlet.AuditStatus;
-            if (DC.GetServerConfigValue("enable_asm_approval_new_outlet", "1") == "1" && outlet.AuditStatus == Constants.StatusAuditAccept && 
+            if (DC.GetServerConfigValue("enable_asm_approval_new_outlet", "1") == "1" && outlet.AuditStatus == Constants.StatusAuditAccept &&
                 person != null && person.IsAuditorSS)
             {
                 outlet.AuditStatus = Constants.StatusPost;
-                dbOutlet.AuditStatus = Constants.StatusPost; 
+                dbOutlet.AuditStatus = Constants.StatusPost;
             }
             //if (DC.GetServerConfigValue("enable_asm_approval_edit_outlet", "1") == "1" && outlet.AuditStatus == Constants.StatusExistingAccept &&
             //    person != null && person.IsAuditorSS)
@@ -419,20 +418,22 @@ namespace TradeCensus
 
         private void UpdateOutletExtend(OutletModel outlet)
         {
-            DC.InsertOrUpdateOutletExtend(outlet);           
+            DC.InsertOrUpdateOutletExtend(outlet);
         }
 
-        private void SendNotification(int personID, PersonRoleModel person, OutletModel outlet, int auditStatus)
+        private void SendNotification(int personID, PersonRoleModel person, OutletModel outlet, Outlet dboutlet, int auditStatus)
         {
             try
             {
-                NotificationService.Instance.Enqueue(new NotificationWob
+                NotificationService.Instance.Enqueue(new NotificationPersonWob
                 {
                     PersonID = personID,
                     Person = person,
                     Outlet = outlet,
-                    AuditStatus = auditStatus
+                    AuditStatus = auditStatus,
+                    DbOutlet = dboutlet
                 });
+                _logger.Debug("Add to notication queue: " + NotificationService.Instance.QueueCount.ToString());
             }
             catch (Exception ex)
             {
@@ -503,7 +504,7 @@ namespace TradeCensus
 
                 resp.Items = new List<OutletModel>();
 
-                var auditor = user.Role == Constants.RoleAudit || user.Role == Constants.RoleAudit1 || 
+                var auditor = user.Role == Constants.RoleAudit || user.Role == Constants.RoleAudit1 ||
                               user.Role == Constants.RoleAgencyAudit || user.Role == Constants.RoleAgencyAudit1;
 
                 var query = DC.GetNearByOutlets(

@@ -9,7 +9,7 @@ namespace TradeCensus
         public JournalService() : base("Journal")
         { }
 
-        static object SyncJournalSave = new object();        
+        static object SyncJournalSave = new object();
 
         private int AddNewJournal(JournalModel journal)
         {

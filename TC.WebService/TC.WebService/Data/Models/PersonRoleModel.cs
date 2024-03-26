@@ -2,7 +2,7 @@
 
 namespace TradeCensus.Data
 {
-    public class PersonRoleModel 
+    public class PersonRoleModel
     {
         public int ID { get; set; }
         public string FirstName { get; set; }

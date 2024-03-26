@@ -134,12 +134,12 @@ namespace TradeCensus
 
         [DataMember]
         public string VisitFrequency { get; set; }
-        
+
         [DataMember]
         public string PreferredVisitWeek { get; set; }
 
         [DataMember]
-        public string PreferredVisitDay { get; set; }        
+        public string PreferredVisitDay { get; set; }
 
         [DataMember]
         public string LegalInformation { get; set; }

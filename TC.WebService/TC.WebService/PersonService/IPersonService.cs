@@ -19,5 +19,8 @@ namespace TradeCensus
 
         [OperationContract]
         GetSalesmanResponse GetSalesmansOfAuditor(string personid, string password);
+
+        [OperationContract]
+        SendEmailResponse SendEmail(string personid, string outletid, string action, string email);
     }
 }

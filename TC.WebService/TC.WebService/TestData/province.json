@@ -1,0 +1,454 @@
+{
+  "ErrorMessage": null,
+  "Status": 0,
+  "Items": [
+    {
+      "districts": null,
+      "id": "11",
+      "name": "Cao Bằng",
+      "parentID": null,
+      "referenceGeoID": 24
+    },
+    {
+      "districts": null,
+      "id": "12",
+      "name": "Lạng Sơn",
+      "parentID": null,
+      "referenceGeoID": 33
+    },
+    {
+      "districts": null,
+      "id": "14",
+      "name": "Quảng Ninh",
+      "parentID": null,
+      "referenceGeoID": 63
+    },
+    {
+      "districts": null,
+      "id": "15",
+      "name": "Hải Phòng",
+      "parentID": null,
+      "referenceGeoID": 62
+    },
+    {
+      "districts": null,
+      "id": "17",
+      "name": "Thái Bình",
+      "parentID": null,
+      "referenceGeoID": 15
+    },
+    {
+      "districts": null,
+      "id": "18",
+      "name": "Nam Định",
+      "parentID": null,
+      "referenceGeoID": 14
+    },
+    {
+      "districts": null,
+      "id": "19",
+      "name": "Phú Thọ",
+      "parentID": null,
+      "referenceGeoID": 35
+    },
+    {
+      "districts": null,
+      "id": "20",
+      "name": "Thái Nguyên",
+      "parentID": null,
+      "referenceGeoID": 26
+    },
+    {
+      "districts": null,
+      "id": "21",
+      "name": "Yên Bái",
+      "parentID": null,
+      "referenceGeoID": 34
+    },
+    {
+      "districts": null,
+      "id": "22",
+      "name": "Tuyên Quang",
+      "parentID": null,
+      "referenceGeoID": 25
+    },
+    {
+      "districts": null,
+      "id": "23",
+      "name": "Hà Giang",
+      "parentID": null,
+      "referenceGeoID": 2
+    },
+    {
+      "districts": null,
+      "id": "24",
+      "name": "Lào Cai",
+      "parentID": null,
+      "referenceGeoID": 6
+    },
+    {
+      "districts": null,
+      "id": "25",
+      "name": "Lai Châu",
+      "parentID": null,
+      "referenceGeoID": 4
+    },
+    {
+      "districts": null,
+      "id": "26",
+      "name": "Sơn La",
+      "parentID": null,
+      "referenceGeoID": 55
+    },
+    {
+      "districts": null,
+      "id": "27",
+      "name": "Điện Biên",
+      "parentID": null,
+      "referenceGeoID": 5
+    },
+    {
+      "districts": null,
+      "id": "28",
+      "name": "Hòa Bình",
+      "parentID": null,
+      "referenceGeoID": 56
+    },
+    {
+      "districts": null,
+      "id": "29",
+      "name": "Hà Tây",
+      "parentID": null,
+      "referenceGeoID": 0
+    },
+    {
+      "districts": null,
+      "id": "32",
+      "name": "Hà Nội",
+      "parentID": null,
+      "referenceGeoID": 16
+    },
+    {
+      "districts": null,
+      "id": "34",
+      "name": "Hải Dương",
+      "parentID": null,
+      "referenceGeoID": 8
+    },
+    {
+      "districts": null,
+      "id": "35",
+      "name": "Ninh Bình",
+      "parentID": null,
+      "referenceGeoID": 57
+    },
+    {
+      "districts": null,
+      "id": "36",
+      "name": "Thanh Hóa",
+      "parentID": null,
+      "referenceGeoID": 54
+    },
+    {
+      "districts": null,
+      "id": "37",
+      "name": "Nghệ An",
+      "parentID": null,
+      "referenceGeoID": 58
+    },
+    {
+      "districts": null,
+      "id": "38",
+      "name": "Hà Tĩnh",
+      "parentID": null,
+      "referenceGeoID": 40
+    },
+    {
+      "districts": null,
+      "id": "43",
+      "name": "Đà Nẵng",
+      "parentID": null,
+      "referenceGeoID": 61
+    },
+    {
+      "districts": null,
+      "id": "47",
+      "name": "Đắc Lắc",
+      "parentID": null,
+      "referenceGeoID": 43
+    },
+    {
+      "districts": null,
+      "id": "48",
+      "name": "Đắc Nông",
+      "parentID": null,
+      "referenceGeoID": 29
+    },
+    {
+      "districts": null,
+      "id": "49",
+      "name": "Lâm Đồng",
+      "parentID": null,
+      "referenceGeoID": 11
+    },
+    {
+      "districts": null,
+      "id": "50",
+      "name": "Hồ Chí Minh",
+      "parentID": null,
+      "referenceGeoID": 13
+    },
+    {
+      "districts": null,
+      "id": "60",
+      "name": "Đồng Nai",
+      "parentID": null,
+      "referenceGeoID": 32
+    },
+    {
+      "districts": null,
+      "id": "61",
+      "name": "Bình Dương",
+      "parentID": null,
+      "referenceGeoID": 31
+    },
+    {
+      "districts": null,
+      "id": "62",
+      "name": "Long An",
+      "parentID": null,
+      "referenceGeoID": 27
+    },
+    {
+      "districts": null,
+      "id": "63",
+      "name": "Tiền Giang",
+      "parentID": null,
+      "referenceGeoID": 39
+    },
+    {
+      "districts": null,
+      "id": "64",
+      "name": "Vĩnh Long",
+      "parentID": null,
+      "referenceGeoID": 51
+    },
+    {
+      "districts": null,
+      "id": "65",
+      "name": "Cần Thơ",
+      "parentID": null,
+      "referenceGeoID": 47
+    },
+    {
+      "districts": null,
+      "id": "66",
+      "name": "Đồng Tháp",
+      "parentID": null,
+      "referenceGeoID": 38
+    },
+    {
+      "districts": null,
+      "id": "67",
+      "name": "An Giang",
+      "parentID": null,
+      "referenceGeoID": 46
+    },
+    {
+      "districts": null,
+      "id": "68",
+      "name": "Kiên Giang",
+      "parentID": null,
+      "referenceGeoID": 59
+    },
+    {
+      "districts": null,
+      "id": "69",
+      "name": "Cà Mau",
+      "parentID": null,
+      "referenceGeoID": 48
+    },
+    {
+      "districts": null,
+      "id": "70",
+      "name": "Tây Ninh",
+      "parentID": null,
+      "referenceGeoID": 30
+    },
+    {
+      "districts": null,
+      "id": "71",
+      "name": "Bến Tre",
+      "parentID": null,
+      "referenceGeoID": 45
+    },
+    {
+      "districts": null,
+      "id": "72",
+      "name": "Bà Rịa-VũngTàu",
+      "parentID": null,
+      "referenceGeoID": 1
+    },
+    {
+      "districts": null,
+      "id": "73",
+      "name": "Quảng Bình",
+      "parentID": null,
+      "referenceGeoID": 7
+    },
+    {
+      "districts": null,
+      "id": "74",
+      "name": "Quảng Trị",
+      "parentID": null,
+      "referenceGeoID": 3
+    },
+    {
+      "districts": null,
+      "id": "75",
+      "name": "Thừa Thiên-Huế",
+      "parentID": null,
+      "referenceGeoID": 22
+    },
+    {
+      "districts": null,
+      "id": "76",
+      "name": "Quảng Ngãi",
+      "parentID": null,
+      "referenceGeoID": 12
+    },
+    {
+      "districts": null,
+      "id": "77",
+      "name": "Bình Định",
+      "parentID": null,
+      "referenceGeoID": 42
+    },
+    {
+      "districts": null,
+      "id": "78",
+      "name": "Phú Yên",
+      "parentID": null,
+      "referenceGeoID": 41
+    },
+    {
+      "districts": null,
+      "id": "79",
+      "name": "Khánh Hòa",
+      "parentID": null,
+      "referenceGeoID": 60
+    },
+    {
+      "districts": null,
+      "id": "81",
+      "name": "Gia Lai",
+      "parentID": null,
+      "referenceGeoID": 44
+    },
+    {
+      "districts": null,
+      "id": "82",
+      "name": "Kon Tum",
+      "parentID": null,
+      "referenceGeoID": 37
+    },
+    {
+      "districts": null,
+      "id": "83",
+      "name": "Sóc Trăng",
+      "parentID": null,
+      "referenceGeoID": 49
+    },
+    {
+      "districts": null,
+      "id": "84",
+      "name": "Trà Vinh",
+      "parentID": null,
+      "referenceGeoID": 50
+    },
+    {
+      "districts": null,
+      "id": "85",
+      "name": "Ninh Thuận",
+      "parentID": null,
+      "referenceGeoID": 9
+    },
+    {
+      "districts": null,
+      "id": "86",
+      "name": "Bình Thuận",
+      "parentID": null,
+      "referenceGeoID": 10
+    },
+    {
+      "districts": null,
+      "id": "88",
+      "name": "Vĩnh Phúc",
+      "parentID": null,
+      "referenceGeoID": 21
+    },
+    {
+      "districts": null,
+      "id": "89",
+      "name": "Hưng Yên",
+      "parentID": null,
+      "referenceGeoID": 19
+    },
+    {
+      "districts": null,
+      "id": "90",
+      "name": "Hà Nam",
+      "parentID": null,
+      "referenceGeoID": 20
+    },
+    {
+      "districts": null,
+      "id": "92",
+      "name": "Quảng Nam",
+      "parentID": null,
+      "referenceGeoID": 36
+    },
+    {
+      "districts": null,
+      "id": "93",
+      "name": "Bình Phước",
+      "parentID": null,
+      "referenceGeoID": 28
+    },
+    {
+      "districts": null,
+      "id": "94",
+      "name": "Bạc Liêu",
+      "parentID": null,
+      "referenceGeoID": 53
+    },
+    {
+      "districts": null,
+      "id": "95",
+      "name": "Hậu Giang",
+      "parentID": null,
+      "referenceGeoID": 52
+    },
+    {
+      "districts": null,
+      "id": "97",
+      "name": "Bắc Kạn",
+      "parentID": null,
+      "referenceGeoID": 23
+    },
+    {
+      "districts": null,
+      "id": "98",
+      "name": "Bắc Giang",
+      "parentID": null,
+      "referenceGeoID": 18
+    },
+    {
+      "districts": null,
+      "id": "99",
+      "name": "Bắc Ninh",
+      "parentID": null,
+      "referenceGeoID": 17
+    }
+  ]
+}

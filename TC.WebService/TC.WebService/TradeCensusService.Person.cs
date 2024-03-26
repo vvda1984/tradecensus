@@ -104,5 +104,25 @@ namespace TradeCensus
                 };
             }
         }
+
+        [WebInvoke(Method = "POST", UriTemplate = "sendemail/{personid}/{outletid}/{action}/{email}", ResponseFormat = WebMessageFormat.Json)]
+        public SendEmailResponse SendEmail(string personid, string outletid, string action, string email)
+        {
+            _logger.Debug("Receive send email resquest");
+            try
+            {
+                IPersonService service = DependencyResolver.Resolve<IPersonService>();
+                return service.SendEmail(personid, outletid, action, email != null ? email.Replace("__", "@") : "na");
+            }
+            catch (Exception ex)
+            {
+                _logger.Warn(ex, "Cannot send email");
+                return new SendEmailResponse
+                {
+                    Status = Constants.ErrorCode,
+                    ErrorMessage = "Service internal error",
+                };
+            }
+        }
     }
 }

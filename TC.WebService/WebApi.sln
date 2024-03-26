@@ -5,6 +5,8 @@ VisualStudioVersion = 17.9.34607.119
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TC.WebService", "TC.WebService\TC.WebService.csproj", "{1381EE4D-120E-4D2A-873A-A612F9DC44E4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TC.Tests", "TC.Tests\TC.Tests.csproj", "{64A32889-47C8-433B-80AE-481D82F2ED44}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{1381EE4D-120E-4D2A-873A-A612F9DC44E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1381EE4D-120E-4D2A-873A-A612F9DC44E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1381EE4D-120E-4D2A-873A-A612F9DC44E4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{64A32889-47C8-433B-80AE-481D82F2ED44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{64A32889-47C8-433B-80AE-481D82F2ED44}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{64A32889-47C8-433B-80AE-481D82F2ED44}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{64A32889-47C8-433B-80AE-481D82F2ED44}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

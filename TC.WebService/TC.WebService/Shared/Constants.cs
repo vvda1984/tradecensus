@@ -11,7 +11,7 @@
 
         //SR/DSM -> SS (auditor 1) -> ASM (auditor 2)
         public const int RoleAudit = 1;
-        public const int RoleAudit1 = 101; 
+        public const int RoleAudit1 = 101;
         public const int RoleAgency = 2;
         public const int RoleAgencyAudit = 3;
         public const int RoleAgencyAudit1 = 103;

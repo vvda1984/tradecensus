@@ -110,26 +110,6 @@
           function (tx1, dberr) {}
         );
 
-        // TEST ONLY
-        tx.executeSql(
-          "DELETE FROM [Brand]",
-          [],
-          function (tx1) {},
-          function (tx1, dberr) {}
-        );
-        tx.executeSql(
-          "DELETE FROM [BankCode]",
-          [],
-          function (tx1) {},
-          function (tx1, dberr) {}
-        );
-        tx.executeSql(
-          "DELETE FROM [Bank]",
-          [],
-          function (tx1) {},
-          function (tx1, dberr) {}
-        );
-
         addressModel.initialize(db, tx);
         onSuccess(tx);
 
