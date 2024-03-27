@@ -34,6 +34,6 @@
   },
   "homepage": "https://github.com/litehelpers/Cordova-sqlite-storage",
   "dependencies": {
-    "cordova-sqlite-storage-dependencies": "1.0.0"
+    "cordova-sqlite-storage-dependencies": "1.2.1"
   }
 }
